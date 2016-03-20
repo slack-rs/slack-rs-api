@@ -16,15 +16,13 @@
 //! documentation](https://api.slack.com/methods).
 
 use std::collections::HashMap;
-use hyper;
 
-use super::ApiResult;
-use super::make_authed_api_call;
+use super::{ApiResult, SlackWebRequestSender, parse_slack_response};
 
 /// Gets the access logs for the current team.
 ///
 /// Wraps https://api.slack.com/methods/team.accessLogs
-pub fn access_logs(client: &hyper::Client, token: &str, count: Option<u32>, page: Option<u32>) -> ApiResult<AccessLogsResponse> {
+pub fn access_logs<R: SlackWebRequestSender>(client: &R, token: &str, count: Option<u32>, page: Option<u32>) -> ApiResult<AccessLogsResponse> {
     let count = count.map(|c| c.to_string());
     let page = page.map(|p| p.to_string());
     let mut params: HashMap<&str, &str> = HashMap::new();
@@ -34,7 +32,8 @@ pub fn access_logs(client: &hyper::Client, token: &str, count: Option<u32>, page
     if let Some(ref page) = page {
         params.insert("page", page);
     }
-    make_authed_api_call(client, "team.accessLogs", token, params)
+    let response = try!(client.send_authed("team.accessLogs", token, params));
+    parse_slack_response(response, true)
 }
 
 #[derive(Clone,Debug,RustcDecodable)]
@@ -60,8 +59,9 @@ pub struct AccessLogsResponse {
 /// Gets information about the current team.
 ///
 /// Wraps https://api.slack.com/methods/team.info
-pub fn info(client: &hyper::Client, token: &str) -> ApiResult<InfoResponse> {
-    make_authed_api_call(client, "team.info", token, HashMap::new())
+pub fn info<R: SlackWebRequestSender>(client: &R, token: &str) -> ApiResult<InfoResponse> {
+    let response = try!(client.send_authed("team.info", token, HashMap::new()));
+    parse_slack_response(response, true)
 }
 
 #[derive(Clone,Debug,RustcDecodable)]
@@ -91,20 +91,19 @@ pub struct InfoResponse {
 
 #[cfg(test)]
 mod tests {
-    use hyper;
     use super::*;
-
-    mock_slack_responder!(MockErrorResponder, r#"{"ok": false, "err": "some_error"}"#);
+    use super::super::test_helpers::*;
 
     #[test]
     fn general_api_error_response() {
-        let client = hyper::Client::with_connector(MockErrorResponder::default());
+        let client = MockSlackWebRequestSender::respond_with(r#"{"ok": false, "err": "some_error"}"#);
         let result = access_logs(&client, "TEST_TOKEN", None, None);
         assert!(result.is_err());
     }
 
-    mock_slack_responder!(MockAccessLogsOkResponder, r#"
-        {
+    #[test]
+    fn access_logs_ok_response() {
+        let client = MockSlackWebRequestSender::respond_with(r#"{
             "ok": true,
             "logins": [
                 {
@@ -138,12 +137,7 @@ mod tests {
                 "page": 1,
                 "pages": 1
             }
-        }
-    "#);
-
-    #[test]
-    fn access_logs_ok_response() {
-        let client = hyper::Client::with_connector(MockAccessLogsOkResponder::default());
+        }"#);
         let result = access_logs(&client, "TEST_TOKEN", None, None);
         if let Err(err) = result {
             panic!(format!("{:?}", err));
@@ -153,8 +147,9 @@ mod tests {
         assert_eq!(result.logins[1].username, "alice");
     }
 
-    mock_slack_responder!(MockInfoOkResponder, r#"
-        {
+    #[test]
+    fn info_ok_response() {
+        let client = MockSlackWebRequestSender::respond_with(r#"{
             "ok": true,
             "team": {
                 "id": "T12345",
@@ -171,12 +166,7 @@ mod tests {
                     "image_default": true
                 }
             }
-        }
-    "#);
-
-    #[test]
-    fn info_ok_response() {
-        let client = hyper::Client::with_connector(MockInfoOkResponder::default());
+        }"#);
         let result = info(&client, "TEST_TOKEN");
         if let Err(err) = result {
             panic!(format!("{:?}", err));

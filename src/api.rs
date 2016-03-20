@@ -18,15 +18,13 @@
 //! documentation](https://api.slack.com/methods).
 
 use std::collections::HashMap;
-use hyper;
 
-use super::ApiResult;
-use super::make_api_call;
+use super::{ApiResult, SlackWebRequestSender, parse_slack_response};
 
 /// Checks API calling code.
 ///
 /// Wraps https://api.slack.com/methods/api.test
-pub fn test(client: &hyper::Client, args: Option<HashMap<&str, &str>>, error: Option<&str>) -> ApiResult<ApiTestResponse> {
+pub fn test<R: SlackWebRequestSender>(client: &R, args: Option<HashMap<&str, &str>>, error: Option<&str>) -> ApiResult<ApiTestResponse> {
     let mut params = HashMap::new();
     if let Some(error) = error {
         params.insert("error", error);
@@ -34,7 +32,9 @@ pub fn test(client: &hyper::Client, args: Option<HashMap<&str, &str>>, error: Op
     if let Some(args) = args {
         params.extend(args);
     }
-    make_api_call(client, "api.test", params)
+    
+    let response = try!(client.send("api.test", params));
+    parse_slack_response(response, true)
 }
 
 #[derive(RustcDecodable)]
@@ -46,31 +46,25 @@ pub struct ApiTestResponse {
 #[cfg(test)]
 mod tests {
     use std::collections::HashMap;
-    use hyper;
     use super::*;
-
-    mock_slack_responder!(MockErrorResponder, r#"{"ok": false, "err": "some_error"}"#);
+    use super::super::test_helpers::*;
 
     #[test]
     fn general_api_error_response() {
-        let client = hyper::Client::with_connector(MockErrorResponder::default());
+        let client = MockSlackWebRequestSender::respond_with(r#"{"ok": false, "err": "some_error"}"#);
         let result = test(&client, None, Some("some_error"));
         assert!(result.is_err());
     }
 
-    mock_slack_responder!(MockTestOkResponder,
-        r#"{
+    #[test]
+    fn test_ok_response() {
+        let client = MockSlackWebRequestSender::respond_with(r#"{
             "ok": true,
             "args": {
                 "arg1": "val1",
                 "arg2": "val2"
             }
-        }"#
-    );
-
-    #[test]
-    fn test_ok_response() {
-        let client = hyper::Client::with_connector(MockTestOkResponder::default());
+        }"#);
         let mut args = HashMap::new();
         args.insert("arg1", "val1");
         args.insert("arg2", "val2");
