@@ -1,0 +1,14 @@
+[package]
+name = "slack_api"
+version = "0.1.0"
+authors = ["Benjamin Elder <ben.the.elder@gmail.com>", "Matt Jones <mthjones@gmail.com>"]
+repository = "https://github.com/slack-rs/slack-api.git"
+description = "Interface for the Slack Web API"
+license = "Apache-2.0"
+
+[dependencies]
+hyper = "0.8.0"
+rustc-serialize = "0.3.18"
+
+[dev-dependencies]
+yup-hyper-mock = "1.3.2"

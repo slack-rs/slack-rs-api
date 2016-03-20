@@ -1,13 +1,16 @@
 //! Low-level, direct interface for the [Slack Web
 //! API](https://api.slack.com/methods).
 
+extern crate hyper;
+extern crate rustc_serialize;
+
+#[cfg(test)] #[macro_use]
+extern crate yup_hyper_mock;
+
 use std::collections::HashMap;
 use std::io::Read;
 
-use hyper;
 use rustc_serialize::{json, Decodable};
-
-use error::Error;
 
 #[cfg(test)]
 #[macro_use]
@@ -23,6 +26,9 @@ pub mod test_helpers {
 
 mod types;
 pub use self::types::*;
+
+mod error;
+pub use error::Error;
 
 mod message_events;
 mod events;
