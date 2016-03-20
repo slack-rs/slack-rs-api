@@ -10,8 +10,6 @@ use rustc_serialize;
 pub enum Error {
     /// Http client error
     Http(hyper::Error),
-    /// Error parsing url
-    Url(hyper::Error),
     /// Error decoding Json
     JsonDecode(rustc_serialize::json::DecoderError),
     /// Error parsing Json
@@ -26,10 +24,7 @@ pub enum Error {
 
 impl From<hyper::Error> for Error {
     fn from(err: hyper::Error) -> Error {
-        match err {
-            hyper::Error::Uri(_) => Error::Url(err),
-            _ => Error::Http(err)
-        }
+        Error::Http(err)
     }
 }
 
@@ -61,7 +56,6 @@ impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
             Error::Http(ref e) => write!(f, "Http (hyper) Error: {:?}", e),
-            Error::Url(ref e) => write!(f, "Url Error: {:?}", e),
             Error::JsonDecode(ref e) => write!(f, "Json Decode Error: {:?}", e),
             Error::JsonParse(ref e) => write!(f, "Json Parse Error: {:?}", e),
             Error::JsonEncode(ref e) => write!(f, "Json Encode Error: {:?}", e),
@@ -75,7 +69,6 @@ impl error::Error for Error {
     fn description(&self) -> &str {
         match *self {
             Error::Http(ref e) => e.description(),
-            Error::Url(ref e) => e.description(),
             Error::JsonDecode(ref e) => e.description(),
             Error::JsonParse(ref e) => e.description(),
             Error::JsonEncode(ref e) => e.description(),
@@ -87,7 +80,6 @@ impl error::Error for Error {
     fn cause(&self) -> Option<&error::Error> {
         match *self {
             Error::Http(ref e) => Some(e),
-            Error::Url(ref e) => Some(e),
             Error::JsonDecode(ref e) => Some(e),
             Error::JsonParse(ref e) => Some(e),
             Error::JsonEncode(ref e) => Some(e),
