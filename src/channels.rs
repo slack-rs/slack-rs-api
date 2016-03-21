@@ -103,7 +103,7 @@ pub fn info(client: &hyper::Client, token: &str, channel: &str) -> ApiResult<Inf
 
 #[derive(Clone,Debug,RustcDecodable)]
 pub struct InfoResponse {
-    channel: super::Channel,
+    pub channel: super::Channel,
 }
 
 /// Invites a user to a channel.
@@ -118,7 +118,7 @@ pub fn invite(client: &hyper::Client, token: &str, channel: &str, user: &str) ->
 
 #[derive(Clone,Debug,RustcDecodable)]
 pub struct InviteResponse {
-    channel: super::Channel,
+    pub channel: super::Channel,
 }
 
 /// Joins a channel, creating it if needed.
@@ -132,8 +132,8 @@ pub fn join(client: &hyper::Client, token: &str, name: &str) -> ApiResult<JoinRe
 
 #[derive(Clone,Debug,RustcDecodable)]
 pub struct JoinResponse {
-    already_in_channel: Option<bool>,
-    channel: super::Channel,
+    pub already_in_channel: Option<bool>,
+    pub channel: super::Channel,
 }
 
 /// Removes a user from a channel.
