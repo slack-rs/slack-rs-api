@@ -1,6 +1,6 @@
 [package]
 name = "slack_api"
-version = "0.13.0"
+version = "0.13.1"
 authors = ["Benjamin Elder <ben.the.elder@gmail.com>", "Matt Jones <mthjones@gmail.com>"]
 repository = "https://github.com/slack-rs/slack-api.git"
 description = "Interface for the Slack Web API"
