@@ -4,7 +4,7 @@
 
 [![Build Status][ci-img]][ci-url] [![Crates.io][crates-img]][crates-url] [![License][license-img]][license-url]
 
-[Documentation](https://slack-rs.github.io/slack-rs-api/)
+[Documentation](https://slack-rs.github.io/slack-rs-api/slack_api/)
 
 # Usage
 
