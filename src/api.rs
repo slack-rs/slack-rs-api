@@ -21,12 +21,12 @@ use std::collections::HashMap;
 use hyper;
 
 use super::ApiResult;
-use super::make_authed_api_call;
+use super::make_api_call;
 
 /// Checks API calling code.
 ///
 /// Wraps https://api.slack.com/methods/api.test
-pub fn test(client: &hyper::Client, token: &str, args: Option<HashMap<&str, &str>>, error: Option<&str>) -> ApiResult<ApiTestResponse> {
+pub fn test(client: &hyper::Client, args: Option<HashMap<&str, &str>>, error: Option<&str>) -> ApiResult<ApiTestResponse> {
     let mut params = HashMap::new();
     if let Some(error) = error {
         params.insert("error", error);
@@ -34,7 +34,7 @@ pub fn test(client: &hyper::Client, token: &str, args: Option<HashMap<&str, &str
     if let Some(args) = args {
         params.extend(args);
     }
-    make_authed_api_call(client, "api.test", token, params)
+    make_api_call(client, "api.test", params)
 }
 
 #[derive(RustcDecodable)]
@@ -54,7 +54,7 @@ mod tests {
     #[test]
     fn general_api_error_response() {
         let client = hyper::Client::with_connector(MockErrorResponder::default());
-        let result = test(&client, "TEST_TOKEN", None, Some("some_error"));
+        let result = test(&client, None, Some("some_error"));
         assert!(result.is_err());
     }
 
@@ -74,7 +74,7 @@ mod tests {
         let mut args = HashMap::new();
         args.insert("arg1", "val1");
         args.insert("arg2", "val2");
-        let result = test(&client, "TEST_TOKEN", Some(args), None);
+        let result = test(&client, Some(args), None);
         if let Err(err) = result {
             panic!(format!("{:?}", err));
         }
