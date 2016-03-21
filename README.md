@@ -2,7 +2,7 @@
 
 [Slack][slack] Web API interface.
 
-[![License][license-img]][license-url] [![Crates.io][crates-img]][crates-url]
+[![Build Status][ci-img]][ci-url] [![Crates.io][crates-img]][crates-url] [![License][license-img]][license-url]
 
 # Usage
 
@@ -21,6 +21,8 @@ extern crate slack_api;
 # License
 `slack-api` is distributed under the [Apache-2.0 License](./LICENSE).
 
+[ci-img]: https://travis-ci.org/slack-rs/slack-rs-api.svg?branch=master
+[ci-url]: https://travis-ci.org/slack-rs/slack-rs-api
 [crates-img]: https://img.shields.io/crates/v/slack_api.svg
 [crates-url]: https://crates.io/crates/slack_api
 [license-img]: https://img.shields.io/github/license/mthjones/slack-rs-api.svg
