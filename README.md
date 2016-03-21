@@ -4,6 +4,8 @@
 
 [![Build Status][ci-img]][ci-url] [![Crates.io][crates-img]][crates-url] [![License][license-img]][license-url]
 
+[Documentation](https://slack-rs.github.io/slack-rs-api/)
+
 # Usage
 
 Add this to your `Cargo.toml`:
