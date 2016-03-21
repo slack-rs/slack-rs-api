@@ -45,9 +45,7 @@ mod error;
 pub use error::Error;
 
 mod message_events;
-mod events;
 pub use self::message_events::Message;
-pub use self::events::Event;
 
 pub mod api;
 pub mod auth;
