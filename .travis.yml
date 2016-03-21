@@ -1,0 +1,30 @@
+language: rust
+rust:
+- nightly
+- beta
+- stable
+matrix:
+  fast_finish: true
+  allow_failures:
+  - rust: nightly
+before_deploy:
+- cargo doc --verbose
+- cargo package --verbose
+deploy:
+  skip_cleanup: true
+  on:
+    tags: true
+    condition: $TRAVIS_RUST_VERSION = stable
+after_deploy:
+- cargo publish --token "$CRATES_IO_TOKEN"
+- |
+  [ $TRAVIS_RUST_VERSION = stable ] &&
+  [ $TRAVIS_PULL_REQUEST = false ] &&
+  echo '<meta http-equiv=refresh content=0;url=slack/index.html>' > target/doc/index.html &&
+  pip install --user ghp-import &&
+  /home/travis/.local/bin/ghp-import -n target/doc &&
+  git push -fq https://${GH_TOKEN}@github.com/${TRAVIS_REPO_SLUG}.git gh-pages
+env:
+  global:
+  - secure: G5B20TuKlUg3OuSZn639H/ZhhsCkel2qyfu2e3ifJUflQZwiqwkYQTWP38JcoEU9tpfS4Mt+zxqPRYpL+zE6G/Pf7IpE3BWelYRCuX1Y7P6NAWq8YvOh7YKI/MhRhYaAYTxfRwZfPRQfB+4dzB3/2YINXcW5mrHihIQuI6nigRjfsM7KB+1N3WKzuz6QDyAYtiZvViSeN/BJrk4kDcWMnoLXp6K2iZ7Q8Lswc3fHFM6JE7Ku1nB31glrc7BimYnemIGVsYQ2mA0Vwi3vDRB2ORZUPPtPtV+tEsHxsfEHM5p1fwF6qO1ZfvdyauyOfQ2gnzdGNSGNEpMbK+T4jkqBaeQL6sM2nmtd3QA62WuCW0KA66iLA+7Y/3SpM3KmsyL7DAsvNjokG9zLaekEIeqp4hnIKwh2mQfjhH1Wd9+XzG25t4uhnz8HJsiKkWv9iF8qv91Fcv6qdiUGSAAhD731UYezxjMGqsoNHOdtRcoa9yDdHooniApURY/7l3p6fn0qC3SkniJYwau9+O0hYU+cdqV+DzB+R+eo2DpoU/pWxyxQoPwWbEzHUVf+5oP+UQ3L/TbLqcRGfwVn9ynQ32AFukBQHhgdQF7T6USc0t8TYCPfD9PY+P7mf/8EuNf7GHGsvw80ZUyuW8aiG9VbnqzOBQD0kX58svfdyE+NBJi7Fy4=
+  - secure: gL35BFVkuCOvxq+SIfQHAQfWV90AW6mFmUmw2WN6H+36S0jeWoyU935ZmkYpo5eT+bUWNgH4bqvShOS7bY8J1vTlpLhePyHptTV40jnFOg1J73Vb8fQXUhNQJRtofVp2yqxr0RhVAL8+GRgo5PU3iZ44bN9qBExNSg7KAqdlw4ppSb7cWDqELx1qn04EGOOuXhv45xRC0K3Wk/8bkbopRZTLvQgODWdldmvVZZbcfqY0jtI3tCjGUVgXnhb2YCELO6+HwYstIc+m9eoZtOye1D4IJpG2VwAa79HtEWVGVFzyLyMb8SArHpkYK/rwbTrcLF3alIuQ0tNg5egfFtWntoUZprjBWncd/eR3wxdaZwcBHVScza9QwMuBWAgHEyiWjDxL7YTczvlxl9DDioEZXmrmnM8EmMC7GoIvw+x1pAD1A9bnELQTFwUZG9D0ZrcWe4D6huvwt585mZtronGlc1j+sjlB5qmdGH4fLwnA4iDQsiXEuzjAJCw4Y1sQ1fTOXbu9b/92tfN39RobcnCI0gZuYkq7b0BBjY/hyk9puKYawIvckdVDK/rzSdwVTiFL/uTpC+cdChHs++Zn5apbKPOiT/WBxoEvVIx3X+cy1zDKNxDOqPGE4J2S2WANc2Y7IXGdvxtGZx0YPsF1RS3ARSZQBZZSmpZlghIu3ZaodZE=
