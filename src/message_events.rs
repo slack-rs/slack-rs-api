@@ -42,7 +42,8 @@ pub enum Message {
     /// Wraps the [`bot_message`](https://api.slack.com/events/message/bot_message) message event.
     BotMessage {
         ts: String,
-        text: String,
+        text: Option<String>,
+        attachments: Option<Vec<super::Attachment>>,
         bot_id: String,
         username: Option<String>,
         icons: Option<HashMap<String, String>>,
@@ -245,6 +246,7 @@ impl Decodable for Message {
                 "bot_message" => Ok(Message::BotMessage {
                         ts: try!(d.read_struct_field("ts", 0, |d| Decodable::decode(d))),
                         text: try!(d.read_struct_field("text", 0, |d| Decodable::decode(d))),
+                        attachments: try!(d.read_struct_field("attachments", 0, |d| Decodable::decode(d))),
                         bot_id: try!(d.read_struct_field("bot_id", 0, |d| Decodable::decode(d))),
                         username: try!(d.read_struct_field("username", 0, |d| Decodable::decode(d))),
                         icons: try!(d.read_struct_field("icons", 0, |d| Decodable::decode(d))),
@@ -487,9 +489,46 @@ mod tests {
         }"#)
                                    .unwrap();
         match message {
-            Message::BotMessage { ts, text, bot_id, username, icons: _ } => {
+            Message::BotMessage { ts, text, bot_id, username, attachments, icons: _ } => {
                 assert_eq!(ts, "1358877455.000010");
-                assert_eq!(text, "Pushing is the answer");
+                assert_eq!(text.unwrap(), "Pushing is the answer");
+                assert_eq!(bot_id, "BB12033");
+                assert!(attachments.is_none());
+                assert_eq!(username.unwrap(), "github")
+            }
+            _ => panic!("Message decoded into incorrect variant."),
+        }
+    }
+
+    #[test]
+    fn decode_bot_message_with_attachments() {
+        let message: Message = json::decode(r#"{
+            "type": "message",
+            "subtype": "bot_message",
+            "ts": "1358877455.000010",
+            "attachments": [
+                {
+                    "color": "D0D0D0",
+                    "fallback": "Test fallback message",
+                    "ts": "1445226476.000002",
+                    "text": "test message",
+                    "author_link": "test-team.slack.com/team/user123",
+                    "author_icon": "https://secure.gravatar.com/avatar/PRIVATE_GUID.jpg",
+                    "mrkdwn_in": ["text"]
+                }
+            ],
+            "bot_id": "BB12033",
+            "username": "github",
+            "icons": {
+                "image_24": "http://some.url.com/test.png"
+            }
+        }"#)
+                                   .unwrap();
+        match message {
+            Message::BotMessage { ts, attachments, bot_id, username, text, icons: _ } => {
+                assert_eq!(ts, "1358877455.000010");
+                assert_eq!(attachments.unwrap()[0].text, "test message");
+                assert!(text.is_none());
                 assert_eq!(bot_id, "BB12033");
                 assert_eq!(username.unwrap(), "github");
             }
