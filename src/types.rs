@@ -51,7 +51,7 @@ pub struct File {
     pub is_external: bool,
     pub external_type: String,
     pub size: u32,
-    pub url: String,
+    pub url: Option<String>,
     pub url_download: Option<String>,
     pub url_private: String,
     pub url_private_download: String,

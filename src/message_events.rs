@@ -952,6 +952,7 @@ mod tests {
         match message {
             Message::FileShare { ts: _, file, text, user: _, upload: _ } => {
                 assert_eq!(text, "<@cal> uploaded a file: <https:...7.png|7.png>");
+                assert_eq!(file.url.unwrap(), "https://slack-files.com/files-pub/PUBLIC-TEST-GUID/test_img.png");
                 assert_eq!(file.id, "F12345678");
             }
             _ => panic!("Message decoded into incorrect variant."),
@@ -1060,7 +1061,6 @@ mod tests {
                 "public_url_shared": false,
                 "display_as_bot": false,
                 "username": "",
-                "url": "https:\/\/slack-files.com\/files-pub\/PUBLIC-TEST-GUID\/test_img.png",
                 "url_download": "https:\/\/slack-files.com\/files-pub\/PUBLIC-TEST-GUID\/download\/test_img.png",
                 "url_private": "https:\/\/files.slack.com\/files-pri\/PRIVATE-ID\/test_img.png",
                 "url_private_download": "https:\/\/files.slack.com\/files-pri\/PRIVATE-ID\/download\/test_img.png",
@@ -1099,6 +1099,7 @@ mod tests {
             Message::FileMention { ts: _, file, text, user: _ } => {
                 assert_eq!(text, "<@cal> mentioned a file: <https:...7.png|7.png>");
                 assert_eq!(file.id, "F12345678");
+                assert!(file.url.is_none());
             }
             _ => panic!("Message decoded into incorrect variant."),
         }
