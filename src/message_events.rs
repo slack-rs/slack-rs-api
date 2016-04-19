@@ -451,7 +451,6 @@ mod tests {
                     "author_icon": "http://flickr.com/icons/bobby.jpg",
                     "title": "Slack API Documentation",
                     "title_link": "https://api.slack.com/",
-                    "text": "Optional text that appears within the attachment",
                     "fields": [
                         {
                             "title": "Priority",
@@ -468,7 +467,9 @@ mod tests {
         match message {
             Message::Standard { ts: _, channel: _, user: _, text: _, is_starred, pinned_to: _, reactions: _, edited: _, attachments } => {
                 assert_eq!(is_starred, Some(false));
-                assert_eq!(attachments.unwrap()[0].color.as_ref().unwrap(), "#36a64f");
+                let ref attachment = attachments.as_ref().unwrap()[0];
+                assert_eq!(attachment.color.as_ref().unwrap(), "#36a64f");
+                assert!(attachment.text.is_none());
             }
             _ => panic!("Message decoded into incorrect variant."),
         }
@@ -527,7 +528,7 @@ mod tests {
         match message {
             Message::BotMessage { ts, attachments, bot_id, username, text, icons: _ } => {
                 assert_eq!(ts, "1358877455.000010");
-                assert_eq!(attachments.unwrap()[0].text, "test message");
+                assert_eq!(attachments.unwrap()[0].text.as_ref().unwrap(), "test message");
                 assert!(text.is_none());
                 assert_eq!(bot_id, "BB12033");
                 assert_eq!(username.unwrap(), "github");
