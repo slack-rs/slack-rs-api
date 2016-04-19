@@ -222,7 +222,7 @@ pub struct Attachment {
     pub author_icon: Option<String>,
     pub title: Option<String>,
     pub title_link: Option<String>,
-    pub text: String,
+    pub text: Option<String>,
     pub fields: Option<Vec<AttachmentField>>,
     pub image_url: Option<String>,
     pub thumb_url: Option<String>,
