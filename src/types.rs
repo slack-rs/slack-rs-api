@@ -55,12 +55,24 @@ pub struct File {
     pub url_download: Option<String>,
     pub url_private: String,
     pub url_private_download: String,
-    pub thumb_64: String,
-    pub thumb_80: String,
-    pub thumb_360: String,
+    pub thumb_64: Option<String>,
+    pub thumb_80: Option<String>,
     pub thumb_360_gif: Option<String>,
-    pub thumb_360_w: u32,
-    pub thumb_360_h: u32,
+    pub thumb_360_w: Option<u32>,
+    pub thumb_360_h: Option<u32>,
+    pub thumb_360: Option<String>,
+    pub thumb_480_w: Option<u32>,
+    pub thumb_480_h: Option<u32>,
+    pub thumb_480: Option<String>,
+    pub thumb_720_w: Option<u32>,
+    pub thumb_720_h: Option<u32>,
+    pub thumb_720: Option<String>,
+    pub thumb_960_w: Option<u32>,
+    pub thumb_960_h: Option<u32>,
+    pub thumb_960: Option<String>,
+    pub thumb_1024_w: Option<u32>,
+    pub thumb_1024_h: Option<u32>,
+    pub thumb_1024: Option<String>,
     pub permalink: String,
     pub edit_link: Option<String>,
     pub preview: Option<String>,
@@ -351,7 +363,7 @@ mod tests {
     }
 
     #[test]
-    fn item_file_decode() {
+    fn item_image_file_decode() {
         let item: Item = json::decode(r#"{
             "type": "file",
             "file": {
@@ -410,6 +422,75 @@ mod tests {
         match item {
             Item::File { file: f } => {
                 assert_eq!(f.id, "F12345678");
+            }
+            _ => panic!("Item decoded into incorrect variant."),
+        }
+    }
+
+    #[test]
+    fn item_non_image_file_decode() {
+        let item: Item = json::decode(r#"{
+            "type": "file",
+            "file": {
+                "id": "F12345678",
+                "created": 1444929467,
+                "timestamp": 1444929467,
+                "name": "test_html.html",
+                "title": "test_img",
+                "mimetype": "text/plain",
+                "filetype": "html",
+                "pretty_type": "HTML",
+                "user": "U12345678",
+                "editable": false,
+                "size": 16153,
+                "mode": "hosted",
+                "is_external": false,
+                "external_type": "",
+                "is_public": true,
+                "public_url_shared": false,
+                "display_as_bot": false,
+                "username": "",
+                "url": "https:\/\/slack-files.com\/files-pub\/PUBLIC-TEST-GUID\/test_html.html",
+                "url_download": "https:\/\/slack-files.com\/files-pub\/PUBLIC-TEST-GUID\/download\/test_html.html",
+                "url_private": "https:\/\/files.slack.com\/files-pri\/PRIVATE-ID\/test_html.html",
+                "url_private_download": "https:\/\/files.slack.com\/files-pri\/PRIVATE-ID\/download\/test_html.html",
+                "permalink": "https:\/\/test-team.slack.com\/files\/testuser\/F12345678\/test_html.html",
+                "permalink_public": "https:\/\/slack-files.com\/PUBLIC-TEST-GUID",
+                "channels": [
+                    "C12345678"
+                ],
+                "groups": [
+
+                ],
+                "ims": [
+
+                ],
+                "comments_count": 0
+            }
+        }"#)
+                             .unwrap();
+        match item {
+            Item::File { file: f } => {
+                assert_eq!(f.id, "F12345678");
+                assert!(f.thumb_64.is_none());
+                assert!(f.thumb_80.is_none());
+                assert!(f.thumb_360_gif.is_none());
+                assert!(f.thumb_360_w.is_none());
+                assert!(f.thumb_360_h.is_none());
+                assert!(f.thumb_360.is_none());
+                assert!(f.thumb_480_w.is_none());
+                assert!(f.thumb_480_h.is_none());
+                assert!(f.thumb_480.is_none());
+                assert!(f.thumb_720_w.is_none());
+                assert!(f.thumb_720_h.is_none());
+                assert!(f.thumb_720.is_none());
+                assert!(f.thumb_960_w.is_none());
+                assert!(f.thumb_960_h.is_none());
+                assert!(f.thumb_960.is_none());
+                assert!(f.thumb_1024_w.is_none());
+                assert!(f.thumb_1024_h.is_none());
+                assert!(f.thumb_1024.is_none());
+
             }
             _ => panic!("Item decoded into incorrect variant."),
         }
