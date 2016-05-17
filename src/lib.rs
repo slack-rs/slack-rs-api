@@ -72,7 +72,7 @@ fn make_api_call<'a, T: Decodable>(client: &hyper::Client, method: &str, custom_
     let url_string = format!("https://slack.com/api/{}", method);
     let mut url = hyper::Url::parse(&url_string).expect("Unable to parse url");
 
-    url.set_query_from_pairs(custom_params.into_iter());
+    url.query_pairs_mut().extend_pairs(custom_params.into_iter());
 
     let response = try!(client.get(url).send());
     transform_api_result(response)
