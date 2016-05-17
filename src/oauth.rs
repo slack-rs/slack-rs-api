@@ -36,7 +36,7 @@ pub fn access(client: &hyper::Client, client_id: &str, client_secret: &str, code
     }
 
     let mut url = hyper::Url::parse("https://slack.com/api/oauth.access").expect("Unable to parse url");
-    url.set_query_from_pairs(params.into_iter());
+    url.query_pairs_mut().extend_pairs(params.into_iter());
 
     let response = try!(client.get(url).send());
     transform_oauth_response(response)
