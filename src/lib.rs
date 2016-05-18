@@ -15,7 +15,7 @@
 //! Low-level, direct interface for the [Slack Web
 //! API](https://api.slack.com/methods).
 
-extern crate hyper;
+pub extern crate hyper;
 extern crate rustc_serialize;
 
 #[cfg(test)] #[macro_use]
