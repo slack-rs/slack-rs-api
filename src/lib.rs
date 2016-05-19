@@ -108,7 +108,7 @@ mod hyper_support {
             let url_string = format!("https://slack.com/api/{}", method);
             let mut url = hyper::Url::parse(&url_string).expect("Unable to parse url");
 
-            url.set_query_from_pairs(params.into_iter());
+            url.query_pairs_mut().extend_pairs(params.into_iter());
 
             let mut response = try!(self.get(url).send());
             let mut res_str = String::new();
