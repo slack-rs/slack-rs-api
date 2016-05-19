@@ -18,19 +18,18 @@
 //! documentation](https://api.slack.com/methods).
 
 use std::collections::HashMap;
-use hyper;
 
-use super::ApiResult;
-use super::make_authed_api_call;
+use super::{ApiResult, SlackWebRequestSender, parse_slack_response};
 
 /// Deletes a message.
 ///
 /// Wraps https://api.slack.com/methods/chat.delete
-pub fn delete(client: &hyper::Client, token: &str, ts: &str, channel: &str) -> ApiResult<DeleteResponse> {
+pub fn delete<R: SlackWebRequestSender>(client: &R, token: &str, ts: &str, channel: &str) -> ApiResult<DeleteResponse> {
     let mut params = HashMap::new();
     params.insert("ts", ts);
     params.insert("channel", channel);
-    make_authed_api_call(client, "chat.delete", token, params)
+    let response = try!(client.send_authed("chat.delete", token, params));
+    parse_slack_response(response, true)
 }
 
 #[derive(Clone,Debug,RustcDecodable)]
@@ -42,7 +41,7 @@ pub struct DeleteResponse {
 /// Sends a message to a channel.
 ///
 /// Wraps https://api.slack.com/methods/chat.postMessage
-pub fn post_message(client: &hyper::Client,
+pub fn post_message<R: SlackWebRequestSender>(client: &R,
                     token: &str,
                     channel: &str,
                     text: &str,
@@ -106,7 +105,8 @@ pub fn post_message(client: &hyper::Client,
     if let Some(icon_emoji) = icon_emoji {
         params.insert("icon_emoji", icon_emoji);
     }
-    make_authed_api_call(client, "chat.postMessage", token, params)
+    let response = try!(client.send_authed("chat.postMessage", token, params));
+    parse_slack_response(response, true)
 }
 
 #[derive(Clone,Debug,RustcDecodable)]
@@ -119,7 +119,7 @@ pub struct PostMessageResponse {
 /// Updates a message.
 ///
 /// Wraps https://api.slack.com/methods/chat.update
-pub fn update(client: &hyper::Client,
+pub fn update<R: SlackWebRequestSender>(client: &R,
               token: &str,
               ts: &str,
               channel: &str,
@@ -146,7 +146,8 @@ pub fn update(client: &hyper::Client,
                           "0"
                       });
     }
-    make_authed_api_call(client, "chat.update", token, params)
+    let response = try!(client.send_authed("chat.update", token, params));
+    parse_slack_response(response, true)
 }
 
 #[derive(Clone,Debug,RustcDecodable)]
@@ -158,15 +159,13 @@ pub struct UpdateResponse {
 
 #[cfg(test)]
 mod tests {
-    use hyper;
     use super::*;
     use super::super::Message;
-
-    mock_slack_responder!(MockErrorResponder, r#"{"ok": false, "err": "some_error"}"#);
+    use super::super::test_helpers::*;
 
     #[test]
     fn general_api_error_response() {
-        let client = hyper::Client::with_connector(MockErrorResponder::default());
+        let client = MockSlackWebRequestSender::respond_with(r#"{"ok": false, "err": "some_error"}"#);
         let result = post_message(&client,
                                   "TEST_TOKEN",
                                   "TEST_CHANNEL",
@@ -183,15 +182,13 @@ mod tests {
         assert!(result.is_err());
     }
 
-    mock_slack_responder!(MockDeleteResponder, r#"{
-        "ok": true,
-        "channel": "C024BE91L",
-        "ts": "1401383885.000061"
-    }"#);
-
     #[test]
     fn delete_ok_response() {
-        let client = hyper::Client::with_connector(MockDeleteResponder::default());
+        let client = MockSlackWebRequestSender::respond_with(r#"{
+            "ok": true,
+            "channel": "C024BE91L",
+            "ts": "1401383885.000061"
+        }"#);
         let result = delete(&client, "TEST_TOKEN", "TEST_CHANNEL", "1401383885.000061");
         if let Err(err) = result {
             panic!(format!("{:?}", err));
@@ -199,21 +196,19 @@ mod tests {
         assert_eq!(result.unwrap().ts, "1401383885.000061");
     }
 
-    mock_slack_responder!(MockPostMessageResponder, r#"{
-        "ok": true,
-        "ts": "1405895017.000506",
-        "channel": "C024BE91L",
-        "message": {
-            "type": "message",
-            "user": "U024BE7LH",
-            "text": "Test message",
-            "ts": "1444078138.000084"
-        }
-    }"#);
-
     #[test]
     fn post_message_ok_response() {
-        let client = hyper::Client::with_connector(MockPostMessageResponder::default());
+        let client = MockSlackWebRequestSender::respond_with(r#"{
+            "ok": true,
+            "ts": "1405895017.000506",
+            "channel": "C024BE91L",
+            "message": {
+                "type": "message",
+                "user": "U024BE7LH",
+                "text": "Test message",
+                "ts": "1444078138.000084"
+            }
+        }"#);
         let result = post_message(&client,
                                   "TEST_TOKEN",
                                   "TEST_CHANNEL",
@@ -238,21 +233,19 @@ mod tests {
         }
     }
 
-    mock_slack_responder!(MockBotPostMessageResponder, r#"{
-        "ok": true,
-        "ts": "1405895017.000506",
-        "channel": "C024BE91L",
-        "message": {
-            "type": "message",
-            "text": "Test message",
-            "ts": "1444078138.000084"
-        }
-    }"#);
-
     #[test]
     fn bot_post_message_ok_response() {
-        let client = hyper::Client::with_connector(MockPostMessageResponder::default());
-        let result = post_message(&client,
+        let sender = MockSlackWebRequestSender::respond_with(r#"{
+            "ok": true,
+            "ts": "1405895017.000506",
+            "channel": "C024BE91L",
+            "message": {
+                "type": "message",
+                "text": "Test message",
+                "ts": "1444078138.000084"
+            }
+        }"#);
+        let result = post_message(&sender,
                                   "TEST_TOKEN",
                                   "TEST_CHANNEL",
                                   "Test message",
@@ -276,16 +269,14 @@ mod tests {
         }
     }
 
-    mock_slack_responder!(MockUpdateResponder, r#"{
-        "ok": true,
-        "channel": "C024BE91L",
-        "ts": "1401383885.000061",
-        "text": "Test message"
-    }"#);
-
     #[test]
     fn update_ok_response() {
-        let client = hyper::Client::with_connector(MockUpdateResponder::default());
+        let client = MockSlackWebRequestSender::respond_with(r#"{
+            "ok": true,
+            "channel": "C024BE91L",
+            "ts": "1401383885.000061",
+            "text": "Test message"
+        }"#);
         let result = update(&client,
                             "TEST_TOKEN",
                             "TEST_CHANNEL",

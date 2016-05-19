@@ -15,37 +15,21 @@
 //! Low-level, direct interface for the [Slack Web
 //! API](https://api.slack.com/methods).
 
-extern crate hyper;
 extern crate rustc_serialize;
 
-#[cfg(test)] #[macro_use]
-extern crate yup_hyper_mock;
+#[cfg(feature = "hyper")]
+extern crate hyper;
 
 use std::collections::HashMap;
-use std::io::Read;
-
 use rustc_serialize::{json, Decodable};
 
-#[cfg(test)]
-#[macro_use]
-pub mod test_helpers {
-    macro_rules! mock_slack_responder {
-        ($name:ident, $json:expr) => {
-            mock_connector!($name {
-                "https://slack.com" => "HTTP/1.1 200 OK\r\n\r\n".to_owned() + $json
-            });
-        }
-    }
-}
-
 mod types;
-pub use self::types::*;
-
 mod error;
-pub use error::Error;
-
 mod message_events;
+
+pub use self::types::*;
 pub use self::message_events::Message;
+pub use self::error::{Error, HttpRequestError};
 
 pub mod api;
 pub mod auth;
@@ -66,41 +50,107 @@ pub mod users;
 
 pub type ApiResult<T> = Result<T, Error>;
 
-/// Make an API call to Slack. Takes a map of parameters that get appended to the request as query
-/// params. Returns the response body string after checking it has "ok": true, or an Error
-fn make_api_call<'a, T: Decodable>(client: &hyper::Client, method: &str, custom_params: HashMap<&str, &'a str>) -> ApiResult<T> {
-    let url_string = format!("https://slack.com/api/{}", method);
-    let mut url = hyper::Url::parse(&url_string).expect("Unable to parse url");
-
-    url.query_pairs_mut().extend_pairs(custom_params.into_iter());
-
-    let response = try!(client.get(url).send());
-    transform_api_result(response)
-}
-
-/// Make an API call to Slack that includes the configured token. Takes a map of parameters that
-/// get appended to the request as query params. Returns the response body string after checking it
-/// has `"ok": true`, or an Error
-fn make_authed_api_call<'a, T: Decodable>(client: &hyper::Client, method: &str, token: &'a str, mut custom_params: HashMap<&str, &'a str>) -> ApiResult<T> {
-    custom_params.insert("token", token);
-    make_api_call(client, method, custom_params)
-}
-
-fn transform_api_result<T: Decodable>(mut res: hyper::client::response::Response) -> ApiResult<T> {
-    let mut res_str = String::new();
-    try!(res.read_to_string(&mut res_str));
-
-    let raw_json = try!(json::Json::from_str(&res_str));
+fn parse_slack_response<T: Decodable>(response: String, check_ok: bool) -> ApiResult<T> {
+    let raw_json = try!(json::Json::from_str(&response));
     let jobj = try!(raw_json.as_object()
-                            .ok_or(Error::Api(format!("bad slack json response (not an object) {:?}", raw_json))));
-    let ok = try!(jobj.get("ok")
-                      .ok_or(Error::Api(format!("slack json reponse does not contain \"ok\" field {:?}",
-                                                raw_json))));
-    let is_ok = try!(ok.as_boolean()
-                       .ok_or(Error::Api(format!("slack json reponse \"ok\" is not a boolean: {:?}", raw_json))));
-    if !is_ok {
-        return Err(Error::Api(format!("slack json reponse \"ok\" is not true: {:?}", raw_json)));
+                            .ok_or(Error::Api(format!("bad slack json response (not an \
+                                                       object) {:?}",
+                                                      raw_json))));
+    if check_ok {
+        let ok = try!(jobj.get("ok")
+                          .ok_or(Error::Api(format!("slack json reponse does not contain \
+                                                     \"ok\" field {:?}",
+                                                    raw_json))));
+        let is_ok = try!(ok.as_boolean()
+                           .ok_or(Error::Api(format!("slack json reponse \"ok\" is not a \
+                                                      boolean: {:?}",
+                                                     raw_json))));
+        if !is_ok {
+            return Err(Error::Api(format!("slack json reponse \"ok\" is not true: {:?}",
+                                          raw_json)));
+        }
     }
 
-    Ok(try!(json::decode(&res_str)))
+    Ok(try!(json::decode(&response)))
+}
+
+/// Functionality for sending authenticated and unauthenticated requests to Slack via HTTP.
+///
+/// Should be implemented for clients to send requests to Slack.
+pub trait SlackWebRequestSender {
+    /// Make an API call to Slack. Takes a map of parameters that get appended to the request as query
+    /// params. Returns the response body string after checking it has "ok": true, or an Error
+    fn send<'a>(&self, method: &str, params: HashMap<&str, &'a str>) -> Result<String, HttpRequestError>;
+
+    /// Make an API call to Slack that includes the configured token. Takes a map of parameters that
+    /// get appended to the request as query params. Returns the response body string after checking it
+    /// has `"ok": true`, or an Error
+    fn send_authed<'a>(&self,
+                       method: &str,
+                       token: &'a str,
+                       mut params: HashMap<&str, &'a str>)
+                       -> Result<String, HttpRequestError> {
+        params.insert("token", token);
+        self.send(method, params)
+    }
+}
+
+#[cfg(feature = "hyper")]
+mod hyper_support {
+    use hyper;
+    use std::collections::HashMap;
+    use std::io::Read;
+    
+    use super::{SlackWebRequestSender, HttpRequestError};
+    
+    impl SlackWebRequestSender for hyper::Client {
+        fn send<'a>(&self, method: &str, params: HashMap<&str, &'a str>) -> Result<String, HttpRequestError> {
+            let url_string = format!("https://slack.com/api/{}", method);
+            let mut url = hyper::Url::parse(&url_string).expect("Unable to parse url");
+
+            url.query_pairs_mut().extend_pairs(params.into_iter());
+
+            let mut response = try!(self.get(url).send());
+            let mut res_str = String::new();
+            try!(response.read_to_string(&mut res_str));
+
+            Ok(res_str)
+        }
+    }
+    
+    impl From<hyper::Error> for HttpRequestError {
+        fn from(err: hyper::Error) -> HttpRequestError {
+            match err {
+                hyper::Error::Io(e) => HttpRequestError::Io(e),
+                e => panic!("Unexpected Hyper request error: {}", e)
+            }
+        }
+    }
+}
+
+#[cfg(feature = "hyper")]
+pub use hyper_support::*;
+
+#[cfg(test)]
+mod test_helpers {
+    use std::collections::HashMap;
+    use super::{SlackWebRequestSender, HttpRequestError};
+    
+    pub struct MockSlackWebRequestSender {
+        response: String
+    }
+
+    impl MockSlackWebRequestSender {
+        pub fn respond_with<S: Into<String>>(response: S) -> Self {
+            MockSlackWebRequestSender {
+                response: response.into()
+            }
+        }
+    }
+
+    impl SlackWebRequestSender for MockSlackWebRequestSender {
+        fn send<'b>(&self, _: &str, _: HashMap<&str, &'b str>) -> Result<String, HttpRequestError> {
+            Ok(self.response.clone())
+        }
+    }
 }

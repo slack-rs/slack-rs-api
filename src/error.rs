@@ -16,14 +16,13 @@ use std::fmt;
 use std::io;
 use std::error;
 
-use hyper;
 use rustc_serialize;
 
-/// slack::Error represents errors that can happen while using the RtmClient
+/// Represents errors that can happen while using the Slack API
 #[derive(Debug)]
 pub enum Error {
-    /// Http client error
-    Http(hyper::Error),
+    /// Error sending HTTP request to Slack
+    HttpRequest(HttpRequestError),
     /// Error decoding Json
     JsonDecode(rustc_serialize::json::DecoderError),
     /// Error parsing Json
@@ -32,14 +31,9 @@ pub enum Error {
     JsonEncode(rustc_serialize::json::EncoderError),
     /// Slack Api Error
     Api(String),
-    /// Errors that do not fit under the other types, Internal is for EG channel errors.
-    Internal(String),
-}
-
-impl From<hyper::Error> for Error {
-    fn from(err: hyper::Error) -> Error {
-        Error::Http(err)
-    }
+    
+    #[doc(hidden)]
+    __Nonexhaustive(Void)
 }
 
 impl From<rustc_serialize::json::DecoderError> for Error {
@@ -60,45 +54,89 @@ impl From<rustc_serialize::json::EncoderError> for Error {
     }
 }
 
-impl From<io::Error> for Error {
-    fn from(err: io::Error) -> Error {
-        Error::Internal(format!("{:?}", err))
+impl From<HttpRequestError> for Error {
+    fn from(err: HttpRequestError) -> Error {
+        Error::HttpRequest(err)
     }
 }
 
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match *self {
-            Error::Http(ref e) => write!(f, "Http (hyper) Error: {:?}", e),
-            Error::JsonDecode(ref e) => write!(f, "Json Decode Error: {:?}", e),
-            Error::JsonParse(ref e) => write!(f, "Json Parse Error: {:?}", e),
-            Error::JsonEncode(ref e) => write!(f, "Json Encode Error: {:?}", e),
-            Error::Api(ref st) => write!(f, "Slack Api Error: {:?}", st),
-            Error::Internal(ref st) => write!(f, "Internal Error: {:?}", st)
-        }
+        use std::error::Error;
+        f.write_str(self.description())
     }
 }
 
 impl error::Error for Error {
     fn description(&self) -> &str {
         match *self {
-            Error::Http(ref e) => e.description(),
+            Error::HttpRequest(ref e) => e.description(),
             Error::JsonDecode(ref e) => e.description(),
             Error::JsonParse(ref e) => e.description(),
             Error::JsonEncode(ref e) => e.description(),
             Error::Api(ref st) => st,
-            Error::Internal(ref st) => st
+            Error::__Nonexhaustive(ref void) => match *void {}
         }
     }
 
     fn cause(&self) -> Option<&error::Error> {
         match *self {
-            Error::Http(ref e) => Some(e),
+            Error::HttpRequest(ref e) => Some(e),
             Error::JsonDecode(ref e) => Some(e),
             Error::JsonParse(ref e) => Some(e),
             Error::JsonEncode(ref e) => Some(e),
             Error::Api(_) => None,
-            Error::Internal(_) => None
+            Error::__Nonexhaustive(ref void) => match *void {}
         }
+    }
+}
+
+/// Represents errors that can happen that occur when sending an HTTP request to Slack
+///
+/// Used in the `Request` variant of the `Error` type.
+#[derive(Debug)]
+pub enum HttpRequestError {
+    /// An error occurring during network stream reading or writing
+    Io(io::Error),
+    
+    #[doc(hidden)]
+    __Nonexhaustive(Void)
+}
+
+impl error::Error for HttpRequestError {
+    fn description(&self) -> &str {
+        match *self {
+            HttpRequestError::Io(ref e) => e.description(),
+            HttpRequestError::__Nonexhaustive(ref void) => match *void {}
+        }
+    }
+
+    fn cause(&self) -> Option<&error::Error> {
+        match *self {
+            HttpRequestError::Io(ref e) => Some(e),
+            HttpRequestError::__Nonexhaustive(ref void) => match *void {}
+        }
+    }
+}
+
+impl fmt::Display for HttpRequestError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        use std::error::Error;
+        f.write_str(self.description())
+    }
+}
+
+impl From<io::Error> for HttpRequestError {
+    fn from(err: io::Error) -> HttpRequestError {
+        HttpRequestError::Io(err)
+    }
+}
+
+#[doc(hidden)]
+pub enum Void {}
+
+impl fmt::Debug for Void {
+    fn fmt(&self, _: &mut fmt::Formatter) -> fmt::Result {
+        match *self {}
     }
 }

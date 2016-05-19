@@ -18,16 +18,15 @@
 //! documentation](https://api.slack.com/methods).
 
 use std::collections::HashMap;
-use hyper;
 
-use super::ApiResult;
-use super::make_authed_api_call;
+use super::{ApiResult, SlackWebRequestSender, parse_slack_response};
 
 /// Checks authentication & identity.
 ///
 /// Wraps https://api.slack.com/methods/auth.test
-pub fn test(client: &hyper::Client, token: &str) -> ApiResult<TestResponse> {
-    make_authed_api_call(client, "auth.test", token, HashMap::new())
+pub fn test<R: SlackWebRequestSender>(client: &R, token: &str) -> ApiResult<TestResponse> {
+    let response = try!(client.send_authed("auth.test", token, HashMap::new()));
+    parse_slack_response(response, true)
 }
 
 #[derive(RustcDecodable)]
@@ -41,32 +40,27 @@ pub struct TestResponse {
 
 #[cfg(test)]
 mod tests {
-    use hyper;
     use super::*;
-
-    mock_slack_responder!(MockErrorResponder, r#"{"ok": false, "err": "some_error"}"#);
+    use super::super::test_helpers::*;
 
     #[test]
     fn general_api_error_response() {
-        let client = hyper::Client::with_connector(MockErrorResponder::default());
+        let client = MockSlackWebRequestSender::respond_with(r#"{"ok": false, "err": "some_error"}"#);
         let result = test(&client, "TEST_TOKEN");
         assert!(result.is_err());
     }
 
-    mock_slack_responder!(MockTestOkResponder,
-        r#"{
+    #[test]
+    fn test_ok_response() {
+        let client = MockSlackWebRequestSender::respond_with(r#"{
             "ok": true,
             "url": "https:\/\/example-team.slack.com\/",
             "team": "example team",
             "user": "testuser",
             "team_id": "T12345678",
             "user_id": "U12345678"
-        }"#
-    );
-
-    #[test]
-    fn test_ok_response() {
-        let client = hyper::Client::with_connector(MockTestOkResponder::default());
+        }"#);
+        
         let result = test(&client, "TEST_TOKEN");
         if let Err(err) = result {
             panic!(format!("{:?}", err));

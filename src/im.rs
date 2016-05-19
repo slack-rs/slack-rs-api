@@ -18,18 +18,17 @@
 //! documentation](https://api.slack.com/methods).
 
 use std::collections::HashMap;
-use hyper;
 
-use super::ApiResult;
-use super::make_authed_api_call;
+use super::{ApiResult, SlackWebRequestSender, parse_slack_response};
 
 /// Close a direct message channel.
 ///
 /// Wraps https://api.slack.com/methods/im.close
-pub fn close(client: &hyper::Client, token: &str, channel_id: &str) -> ApiResult<CloseResponse> {
+pub fn close<R: SlackWebRequestSender>(client: &R, token: &str, channel_id: &str) -> ApiResult<CloseResponse> {
     let mut params = HashMap::new();
     params.insert("channel", channel_id);
-    make_authed_api_call(client, "im.close", token, params)
+    let response = try!(client.send_authed("im.close", token, params));
+    parse_slack_response(response, true)
 }
 
 #[derive(Clone,Debug,RustcDecodable)]
@@ -41,7 +40,7 @@ pub struct CloseResponse {
 /// Fetches history of messages and events from direct message channel.
 ///
 /// Wraps https://api.slack.com/methods/im.history
-pub fn history(client: &hyper::Client,
+pub fn history<R: SlackWebRequestSender>(client: &R,
                token: &str,
                channel_id: &str,
                latest: Option<&str>,
@@ -69,7 +68,8 @@ pub fn history(client: &hyper::Client,
     if let Some(ref count) = count {
         params.insert("count", count);
     }
-    make_authed_api_call(client, "im.history", token, params)
+    let response = try!(client.send_authed("im.history", token, params));
+    parse_slack_response(response, true)
 }
 
 #[derive(Clone,Debug,RustcDecodable)]
@@ -82,8 +82,9 @@ pub struct HistoryResponse {
 /// Lists direct message channels for the calling user.
 ///
 /// Wraps https://api.slack.com/methods/im.list
-pub fn list(client: &hyper::Client, token: &str) -> ApiResult<ListResponse> {
-    make_authed_api_call(client, "im.list", token, HashMap::new())
+pub fn list<R: SlackWebRequestSender>(client: &R, token: &str) -> ApiResult<ListResponse> {
+    let response = try!(client.send_authed("im.list", token, HashMap::new()));
+    parse_slack_response(response, true)
 }
 
 #[derive(Clone,Debug,RustcDecodable)]
@@ -94,11 +95,12 @@ pub struct ListResponse {
 /// Sets the read cursor in a direct message channel.
 ///
 /// Wraps https://api.slack.com/methods/im.mark
-pub fn mark(client: &hyper::Client, token: &str, channel_id: &str, timestamp: &str) -> ApiResult<MarkResponse> {
+pub fn mark<R: SlackWebRequestSender>(client: &R, token: &str, channel_id: &str, timestamp: &str) -> ApiResult<MarkResponse> {
     let mut params = HashMap::new();
     params.insert("channel", channel_id);
     params.insert("timestamp", timestamp);
-    make_authed_api_call(client, "im.mark", token, params)
+    let response = try!(client.send_authed("im.mark", token, params));
+    parse_slack_response(response, true)
 }
 
 #[derive(Clone,Debug,RustcDecodable)]
@@ -107,10 +109,11 @@ pub struct MarkResponse;
 /// Opens a direct message channel.
 ///
 /// Wraps https://api.slack.com/methods/im.open
-pub fn open(client: &hyper::Client, token: &str, user_id: &str) -> ApiResult<OpenResponse> {
+pub fn open<R: SlackWebRequestSender>(client: &R, token: &str, user_id: &str) -> ApiResult<OpenResponse> {
     let mut params = HashMap::new();
     params.insert("user", user_id);
-    make_authed_api_call(client, "im.open", token, params)
+    let response = try!(client.send_authed("im.open", token, params));
+    parse_slack_response(response, true)
 }
 
 #[derive(Clone,Debug,RustcDecodable)]
@@ -127,41 +130,33 @@ pub struct OpenResponse {
 
 #[cfg(test)]
 mod tests {
-    use hyper;
     use super::*;
     use super::super::Message;
-
-    mock_slack_responder!(MockErrorResponder, r#"{"ok": false, "err": "some_error"}"#);
+    use super::super::test_helpers::*;
 
     #[test]
     fn general_api_error_response() {
-        let client = hyper::Client::with_connector(MockErrorResponder::default());
+        let client = MockSlackWebRequestSender::respond_with(r#"{"ok": false, "err": "some_error"}"#);
         let result = close(&client, "TEST_TOKEN", "D12345678");
         assert!(result.is_err());
     }
 
-    mock_slack_responder!(MockCloseOkResponder, r#"{"ok": true}"#);
-
     #[test]
     fn close_ok_response() {
-        let client = hyper::Client::with_connector(MockCloseOkResponder::default());
+        let client = MockSlackWebRequestSender::respond_with(r#"{"ok": true}"#);
         let result = close(&client, "TEST_TOKEN", "D12345678");
         if let Err(err) = result {
             panic!(format!("{:?}", err));
         }
     }
 
-    mock_slack_responder!(MockCloseAlreadyClosedOkResponder,
-        r#"{
+    #[test]
+    fn close_already_closed_ok_response() {
+        let client = MockSlackWebRequestSender::respond_with(r#"{
             "ok": true,
             "no_op": true,
             "already_closed": true
-        }"#
-    );
-
-    #[test]
-    fn close_already_closed_ok_response() {
-        let client = hyper::Client::with_connector(MockCloseAlreadyClosedOkResponder::default());
+        }"#);
         let result = close(&client, "TEST_TOKEN", "D12345678");
         if let Err(err) = result {
             panic!(format!("{:?}", err));
@@ -169,8 +164,9 @@ mod tests {
         assert_eq!(result.unwrap().already_closed.unwrap(), true);
     }
 
-    mock_slack_responder!(MockHistoryOkResponder,
-        r#"{
+    #[test]
+    fn history_ok_response() {
+        let client = MockSlackWebRequestSender::respond_with(r#"{
             "ok": true,
             "latest": "1358547726.000003",
             "messages": [
@@ -194,12 +190,7 @@ mod tests {
                 }
             ],
             "has_more": false
-        }"#
-    );
-
-    #[test]
-    fn history_ok_response() {
-        let client = hyper::Client::with_connector(MockHistoryOkResponder::default());
+        }"#);
         let result = history(&client, "TEST_TOKEN", "D12345678", None, None, None, None);
         if let Err(err) = result {
             panic!(format!("{:?}", err));
@@ -212,8 +203,9 @@ mod tests {
         }
     }
 
-    mock_slack_responder!(MockListOkResponder,
-        r#"{
+    #[test]
+    fn list_ok_response() {
+        let client = MockSlackWebRequestSender::respond_with(r#"{
             "ok": true,
             "ims": [
                 {
@@ -231,12 +223,7 @@ mod tests {
                    "is_user_deleted": false
                 }
             ]
-        }"#
-    );
-
-    #[test]
-    fn list_ok_response() {
-        let client = hyper::Client::with_connector(MockListOkResponder::default());
+        }"#);
         let result = list(&client, "TEST_TOKEN");
         if let Err(err) = result {
             panic!(format!("{:?}", err));
@@ -244,29 +231,23 @@ mod tests {
         assert!(result.unwrap().ims[1].id == "D024BE7RE");
     }
 
-    mock_slack_responder!(MockMarkOkResponder, r#"{"ok": true}"#);
-
     #[test]
     fn mark_ok_response() {
-        let client = hyper::Client::with_connector(MockMarkOkResponder::default());
+        let client = MockSlackWebRequestSender::respond_with(r#"{"ok": true}"#);
         let result = mark(&client, "TEST_TOKEN", "D12345678", "1234567890.123456");
         if let Err(err) = result {
             panic!(format!("{:?}", err));
         }
     }
 
-    mock_slack_responder!(MockOpenOkResponder,
-        r#"{
+    #[test]
+    fn open_ok_response() {
+        let client = MockSlackWebRequestSender::respond_with(r#"{
             "ok": true,
             "channel": {
                 "id": "D024BFF1M"
             }
-        }"#
-    );
-
-    #[test]
-    fn open_ok_response() {
-        let client = hyper::Client::with_connector(MockOpenOkResponder::default());
+        }"#);
         let result = open(&client, "TEST_TOKEN", "U12345678");
         if let Err(err) = result {
             panic!(format!("{:?}", err));
@@ -274,20 +255,16 @@ mod tests {
         assert_eq!(result.unwrap().channel.id, "D024BFF1M");
     }
 
-    mock_slack_responder!(MockOpenAlreadyOpenOkResponder,
-        r#"{
+    #[test]
+    fn open_already_open_ok_response() {
+        let client = MockSlackWebRequestSender::respond_with(r#"{
             "ok": true,
             "no_op": true,
             "already_open": true,
             "channel": {
                 "id": "D024BFF1M"
             }
-        }"#
-    );
-
-    #[test]
-    fn open_already_open_ok_response() {
-        let client = hyper::Client::with_connector(MockOpenAlreadyOpenOkResponder::default());
+        }"#);
         let result = open(&client, "TEST_TOKEN", "U12345678");
         if let Err(err) = result {
             panic!(format!("{:?}", err));

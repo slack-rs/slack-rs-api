@@ -16,15 +16,13 @@
 //! documentation](https://api.slack.com/methods).
 
 use std::collections::HashMap;
-use hyper;
 
-use super::ApiResult;
-use super::make_authed_api_call;
+use super::{ApiResult, SlackWebRequestSender, parse_slack_response};
 
 /// Adds a reaction to an item.
 ///
 /// Wraps https://api.slack.com/methods/reactions.add
-pub fn add(client: &hyper::Client,
+pub fn add<R: SlackWebRequestSender>(client: &R,
            token: &str,
            name: &str,
            file: Option<&str>,
@@ -46,7 +44,8 @@ pub fn add(client: &hyper::Client,
     if let Some(timestamp) = timestamp {
         params.insert("timestamp", timestamp);
     }
-    make_authed_api_call(client, "reactions.add", token, params)
+    let response = try!(client.send_authed("reactions.add", token, params));
+    parse_slack_response(response, true)
 }
 
 #[derive(Clone,Debug,RustcDecodable)]
@@ -55,7 +54,7 @@ pub struct AddResponse;
 /// Gets reactions for an item.
 ///
 /// Wraps https://api.slack.com/methods/reactions.get
-pub fn get(client: &hyper::Client,
+pub fn get<R: SlackWebRequestSender>(client: &R,
            token: &str,
            file: Option<&str>,
            file_comment: Option<&str>,
@@ -79,7 +78,8 @@ pub fn get(client: &hyper::Client,
     if let Some(full) = full {
         params.insert("full", full);
     }
-    make_authed_api_call(client, "reactions.get", token, params)
+    let response = try!(client.send_authed("reactions.get", token, params));
+    parse_slack_response(response, true)
 }
 
 // This is an Item as returned by `reactions.list`, but instead of being a
@@ -90,7 +90,7 @@ pub type GetResponse = super::Item;
 /// Lists reactions made by a user.
 ///
 /// Wraps https://api.slack.com/methods/reactions.list
-pub fn list(client: &hyper::Client, token: &str, user: Option<&str>, full: Option<&str>, count: Option<u32>, page: Option<u32>) -> ApiResult<ListResponse> {
+pub fn list<R: SlackWebRequestSender>(client: &R, token: &str, user: Option<&str>, full: Option<&str>, count: Option<u32>, page: Option<u32>) -> ApiResult<ListResponse> {
     let count = count.map(|c| c.to_string());
     let page = page.map(|p| p.to_string());
     let mut params = HashMap::new();
@@ -106,7 +106,8 @@ pub fn list(client: &hyper::Client, token: &str, user: Option<&str>, full: Optio
     if let Some(ref page) = page {
         params.insert("page", page);
     }
-    make_authed_api_call(client, "reactions.list", token, params)
+    let response = try!(client.send_authed("reactions.list", token, params));
+    parse_slack_response(response, true)
 }
 
 #[derive(Clone,Debug,RustcDecodable)]
@@ -118,7 +119,7 @@ pub struct ListResponse {
 /// Removes a reaction from an item.
 ///
 /// Wraps https://api.slack.com/methods/reactions.remove
-pub fn remove(client: &hyper::Client,
+pub fn remove<R: SlackWebRequestSender>(client: &R,
               token: &str,
               name: &str,
               file: Option<&str>,
@@ -140,7 +141,8 @@ pub fn remove(client: &hyper::Client,
     if let Some(timestamp) = timestamp {
         params.insert("timestamp", timestamp);
     }
-    make_authed_api_call(client, "reactions.remove", token, params)
+    let response = try!(client.send_authed("reactions.remove", token, params));
+    parse_slack_response(response, true)
 }
 
 #[derive(Clone,Debug,RustcDecodable)]
@@ -148,16 +150,14 @@ pub struct RemoveResponse;
 
 #[cfg(test)]
 mod tests {
-    use hyper;
     use super::*;
     use super::super::Item;
     use super::super::Message;
-
-    mock_slack_responder!(MockErrorResponder, r#"{"ok": false, "err": "some_error"}"#);
+    use super::super::test_helpers::*;
 
     #[test]
     fn general_api_error_response() {
-        let client = hyper::Client::with_connector(MockErrorResponder::default());
+        let client = MockSlackWebRequestSender::respond_with(r#"{"ok": false, "err": "some_error"}"#);
         let result = add(&client,
                          "TEST_TOKEN",
                          "thumbsup",
@@ -168,11 +168,9 @@ mod tests {
         assert!(result.is_err());
     }
 
-    mock_slack_responder!(MockAddOkResponder, r#"{"ok": true}"#);
-
     #[test]
     fn add_ok_response() {
-        let client = hyper::Client::with_connector(MockAddOkResponder::default());
+        let client = MockSlackWebRequestSender::respond_with(r#"{"ok": true}"#);
         let result = add(&client,
                          "TEST_TOKEN",
                          "thumbsup",
@@ -185,8 +183,9 @@ mod tests {
         }
     }
 
-    mock_slack_responder!(MockGetOkResponder,
-        r#"{
+    #[test]
+    fn get_ok_response() {
+        let client = MockSlackWebRequestSender::respond_with(r#"{
             "ok": true,
             "type": "message",
             "channel": "C1234567890",
@@ -209,12 +208,7 @@ mod tests {
                     }
                 ]
             }
-        }"#
-    );
-
-    #[test]
-    fn get_ok_response() {
-        let client = hyper::Client::with_connector(MockGetOkResponder::default());
+        }"#);
         let result = get(&client,
                          "TEST_TOKEN",
                          None,
@@ -241,8 +235,9 @@ mod tests {
         }
     }
 
-    mock_slack_responder!(MockListOkResponder,
-        r#"{
+    #[test]
+    fn list_ok_response() {
+        let client = MockSlackWebRequestSender::respond_with(r#"{
             "ok": true,
             "items": [
                 {
@@ -336,12 +331,7 @@ mod tests {
                 "page": 1,
                 "pages": 1
             }
-        }"#
-    );
-
-    #[test]
-    fn list_ok_response() {
-        let client = hyper::Client::with_connector(MockListOkResponder::default());
+        }"#);
         let result = list(&client, "TEST_TOKEN", None, None, None, None);
         if let Err(err) = result {
             panic!(format!("{:?}", err));
@@ -355,11 +345,9 @@ mod tests {
         }
     }
 
-    mock_slack_responder!(MockRemoveOkResponder, r#"{"ok": true}"#);
-
     #[test]
     fn remove_ok_response() {
-        let client = hyper::Client::with_connector(MockRemoveOkResponder::default());
+        let client = MockSlackWebRequestSender::respond_with(r#"{"ok": true}"#);
         let result = remove(&client,
                             "TEST_TOKEN",
                             "thumbsup",

@@ -18,10 +18,8 @@
 //! documentation](https://api.slack.com/methods).
 
 use std::collections::HashMap;
-use hyper;
 
-use super::ApiResult;
-use super::make_authed_api_call;
+use super::{ApiResult, SlackWebRequestSender, parse_slack_response};
 
 #[derive(Clone,Debug,RustcDecodable)]
 pub struct SearchMatches<T> {
@@ -61,7 +59,7 @@ pub struct SearchMessage {
 /// Searches for messages and files matching a query.
 ///
 /// Wraps https://api.slack.com/methods/search.all
-pub fn all(client: &hyper::Client,
+pub fn all<R: SlackWebRequestSender>(client: &R,
            token: &str,
            query: &str,
            sort: Option<&str>,
@@ -94,7 +92,8 @@ pub fn all(client: &hyper::Client,
     if let Some(ref page) = page {
         params.insert("page", page);
     }
-    make_authed_api_call(client, "search.all", token, params)
+    let response = try!(client.send_authed("search.all", token, params));
+    parse_slack_response(response, true)
 }
 
 #[derive(Clone,Debug,RustcDecodable)]
@@ -107,7 +106,7 @@ pub struct AllResponse {
 /// Searches for files matching a query.
 ///
 /// Wraps https://api.slack.com/methods/search.files
-pub fn files(client: &hyper::Client,
+pub fn files<R: SlackWebRequestSender>(client: &R,
              token: &str,
              query: &str,
              sort: Option<&str>,
@@ -140,7 +139,8 @@ pub fn files(client: &hyper::Client,
     if let Some(ref page) = page {
         params.insert("page", page);
     }
-    make_authed_api_call(client, "search.files", token, params)
+    let response = try!(client.send_authed("search.files", token, params));
+    parse_slack_response(response, true)
 }
 
 #[derive(Clone,Debug,RustcDecodable)]
@@ -152,7 +152,7 @@ pub struct FilesResponse {
 /// Searches for messages matching a query.
 ///
 /// Wraps https://api.slack.com/methods/search.messages
-pub fn messages(client: &hyper::Client,
+pub fn messages<R: SlackWebRequestSender>(client: &R,
                 token: &str,
                 query: &str,
                 sort: Option<&str>,
@@ -185,7 +185,8 @@ pub fn messages(client: &hyper::Client,
     if let Some(ref page) = page {
         params.insert("page", page);
     }
-    make_authed_api_call(client, "search.messages", token, params)
+    let response = try!(client.send_authed("search.messages", token, params));
+    parse_slack_response(response, true)
 }
 
 #[derive(Clone,Debug,RustcDecodable)]
@@ -196,14 +197,12 @@ pub struct MessagesResponse {
 
 #[cfg(test)]
 mod tests {
-    use hyper;
     use super::*;
-
-    mock_slack_responder!(MockErrorResponder, r#"{"ok": false, "err": "some_error"}"#);
+    use super::super::test_helpers::*;
 
     #[test]
     fn general_api_error_response() {
-        let client = hyper::Client::with_connector(MockErrorResponder::default());
+        let client = MockSlackWebRequestSender::respond_with(r#"{"ok": false, "err": "some_error"}"#);
         let result = all(&client,
                          "TEST_TOKEN",
                          "pickleface",
@@ -215,137 +214,135 @@ mod tests {
         assert!(result.is_err());
     }
 
-    mock_slack_responder!(MockAllOkResponder, r#"
-        {
-            "ok": true,
-            "query": "Best Pickles",
-            "messages": {
-                "total": 1,
-                "matches": [
-                    {
-                        "type": "message",
-                        "channel": {
-                            "id": "C2147483753",
-                            "name": "foo"
-                        },
-                        "user": "U2147483709",
-                        "username": "johnnytest",
-                        "ts": "1359414002.000003",
-                        "text": "mention test: johnnyrodgers",
-                        "permalink": "https:\/\/example.slack.com\/channels\/foo\/p1359414002000003",
-                        "previous_2": {
-                            "user": "U2147483709",
-                            "username": "johnnytest",
-                            "text": "This was said before before",
-                            "ts": "1359413987.000000",
-                            "type": "message"
-                        },
-                        "previous": {
-                            "user": "U2147483709",
-                            "username": "johnnytest",
-                            "text": "This was said before",
-                            "ts": "1359414001.000000",
-                            "type": "message"
-                        },
-                        "next": {
-                            "user": "U2147483709",
-                            "username": "johnnytest",
-                            "text": "This was said after",
-                            "ts": "1359414020.000000",
-                            "type": "message"
-                        },
-                        "next_2": {
-                            "user": "U2147483709",
-                            "username": "johnnytest",
-                            "text": "This was said after after",
-                            "ts": "1359414021.000000",
-                            "type": "message"
-                        }
-                    }
-                ],
-                "paging": {
-                    "count": 100,
-                    "total": 15,
-                    "page": 1,
-                    "pages": 1
-                }
-            },
-            "files": {
-                "total": 1,
-                "matches": [
-                    {
-                        "id" : "F2147483862",
-                        "created" : 1356032811,
-                        "timestamp" : 1356032811,
-
-                        "name" : "file.htm",
-                        "title" : "My HTML file",
-                        "mimetype" : "text\/plain",
-                        "filetype" : "text",
-                        "pretty_type": "Text",
-                        "user" : "U2147483697",
-
-                        "mode" : "hosted",
-                        "editable" : true,
-                        "is_external": false,
-                        "external_type": "",
-
-                        "size" : 12345,
-
-                        "url": "https:\/\/slack-files.com\/files-pub\/T024BE7LD-F024BERPE-09acb6\/1.png",
-                        "url_download": "https:\/\/slack-files.com\/files-pub\/T024BE7LD-F024BERPE-09acb6\/download\/1.png",
-                        "url_private": "https:\/\/slack.com\/files-pri\/T024BE7LD-F024BERPE\/1.png",
-                        "url_private_download": "https:\/\/slack.com\/files-pri\/T024BE7LD-F024BERPE\/download\/1.png",
-
-                        "thumb_64": "https:\/\/slack-files.com\/files-tmb\/T024BE7LD-F024BERPE-c66246\/1_64.png",
-                        "thumb_80": "https:\/\/slack-files.com\/files-tmb\/T024BE7LD-F024BERPE-c66246\/1_80.png",
-                        "thumb_360": "https:\/\/slack-files.com\/files-tmb\/T024BE7LD-F024BERPE-c66246\/1_360.png",
-                        "thumb_360_gif": "https:\/\/slack-files.com\/files-tmb\/T024BE7LD-F024BERPE-c66246\/1_360.gif",
-                        "thumb_360_w": 100,
-                        "thumb_360_h": 100,
-
-                        "permalink" : "https:\/\/tinyspeck.slack.com\/files\/cal\/F024BERPE\/1.png",
-                        "edit_link" : "https:\/\/tinyspeck.slack.com\/files\/cal\/F024BERPE\/1.png/edit",
-                        "preview" : "&lt;!DOCTYPE html&gt;\n&lt;html&gt;\n&lt;meta charset='utf-8'&gt;",
-                        "preview_highlight" : "&lt;div class=\"sssh-code\"&gt;&lt;div class=\"sssh-line\"&gt;&lt;pre&gt;&lt;!DOCTYPE html...",
-                        "lines" : 123,
-                        "lines_more": 118,
-
-                        "is_public": true,
-                        "public_url_shared": false,
-                        "channels": ["C024BE7LT"],
-                        "groups": ["G12345"],
-                        "ims": ["D12345"],
-                        "num_stars": 7,
-                        "is_starred": true,
-                        "pinned_to": ["C024BE7LT"],
-                        "reactions": [
-                            {
-                                "name": "astonished",
-                                "count": 3,
-                                "users": [ "U1", "U2", "U3" ]
-                            },
-                            {
-                                "name": "facepalm",
-                                "count": 1034,
-                                "users": [ "U1", "U2", "U3", "U4", "U5" ]
-                            }
-                        ]
-                    }
-                ],
-                "paging": {
-                    "count": 100,
-                    "total": 15,
-                    "page": 1,
-                    "pages": 1
-                }
-            }
-        }
-    "#);
-
     #[test]
     fn all_ok_response() {
-        let client = hyper::Client::with_connector(MockAllOkResponder::default());
+        let client = MockSlackWebRequestSender::respond_with(r#"
+            {
+                "ok": true,
+                "query": "Best Pickles",
+                "messages": {
+                    "total": 1,
+                    "matches": [
+                        {
+                            "type": "message",
+                            "channel": {
+                                "id": "C2147483753",
+                                "name": "foo"
+                            },
+                            "user": "U2147483709",
+                            "username": "johnnytest",
+                            "ts": "1359414002.000003",
+                            "text": "mention test: johnnyrodgers",
+                            "permalink": "https:\/\/example.slack.com\/channels\/foo\/p1359414002000003",
+                            "previous_2": {
+                                "user": "U2147483709",
+                                "username": "johnnytest",
+                                "text": "This was said before before",
+                                "ts": "1359413987.000000",
+                                "type": "message"
+                            },
+                            "previous": {
+                                "user": "U2147483709",
+                                "username": "johnnytest",
+                                "text": "This was said before",
+                                "ts": "1359414001.000000",
+                                "type": "message"
+                            },
+                            "next": {
+                                "user": "U2147483709",
+                                "username": "johnnytest",
+                                "text": "This was said after",
+                                "ts": "1359414020.000000",
+                                "type": "message"
+                            },
+                            "next_2": {
+                                "user": "U2147483709",
+                                "username": "johnnytest",
+                                "text": "This was said after after",
+                                "ts": "1359414021.000000",
+                                "type": "message"
+                            }
+                        }
+                    ],
+                    "paging": {
+                        "count": 100,
+                        "total": 15,
+                        "page": 1,
+                        "pages": 1
+                    }
+                },
+                "files": {
+                    "total": 1,
+                    "matches": [
+                        {
+                            "id" : "F2147483862",
+                            "created" : 1356032811,
+                            "timestamp" : 1356032811,
+
+                            "name" : "file.htm",
+                            "title" : "My HTML file",
+                            "mimetype" : "text\/plain",
+                            "filetype" : "text",
+                            "pretty_type": "Text",
+                            "user" : "U2147483697",
+
+                            "mode" : "hosted",
+                            "editable" : true,
+                            "is_external": false,
+                            "external_type": "",
+
+                            "size" : 12345,
+
+                            "url": "https:\/\/slack-files.com\/files-pub\/T024BE7LD-F024BERPE-09acb6\/1.png",
+                            "url_download": "https:\/\/slack-files.com\/files-pub\/T024BE7LD-F024BERPE-09acb6\/download\/1.png",
+                            "url_private": "https:\/\/slack.com\/files-pri\/T024BE7LD-F024BERPE\/1.png",
+                            "url_private_download": "https:\/\/slack.com\/files-pri\/T024BE7LD-F024BERPE\/download\/1.png",
+
+                            "thumb_64": "https:\/\/slack-files.com\/files-tmb\/T024BE7LD-F024BERPE-c66246\/1_64.png",
+                            "thumb_80": "https:\/\/slack-files.com\/files-tmb\/T024BE7LD-F024BERPE-c66246\/1_80.png",
+                            "thumb_360": "https:\/\/slack-files.com\/files-tmb\/T024BE7LD-F024BERPE-c66246\/1_360.png",
+                            "thumb_360_gif": "https:\/\/slack-files.com\/files-tmb\/T024BE7LD-F024BERPE-c66246\/1_360.gif",
+                            "thumb_360_w": 100,
+                            "thumb_360_h": 100,
+
+                            "permalink" : "https:\/\/tinyspeck.slack.com\/files\/cal\/F024BERPE\/1.png",
+                            "edit_link" : "https:\/\/tinyspeck.slack.com\/files\/cal\/F024BERPE\/1.png/edit",
+                            "preview" : "&lt;!DOCTYPE html&gt;\n&lt;html&gt;\n&lt;meta charset='utf-8'&gt;",
+                            "preview_highlight" : "&lt;div class=\"sssh-code\"&gt;&lt;div class=\"sssh-line\"&gt;&lt;pre&gt;&lt;!DOCTYPE html...",
+                            "lines" : 123,
+                            "lines_more": 118,
+
+                            "is_public": true,
+                            "public_url_shared": false,
+                            "channels": ["C024BE7LT"],
+                            "groups": ["G12345"],
+                            "ims": ["D12345"],
+                            "num_stars": 7,
+                            "is_starred": true,
+                            "pinned_to": ["C024BE7LT"],
+                            "reactions": [
+                                {
+                                    "name": "astonished",
+                                    "count": 3,
+                                    "users": [ "U1", "U2", "U3" ]
+                                },
+                                {
+                                    "name": "facepalm",
+                                    "count": 1034,
+                                    "users": [ "U1", "U2", "U3", "U4", "U5" ]
+                                }
+                            ]
+                        }
+                    ],
+                    "paging": {
+                        "count": 100,
+                        "total": 15,
+                        "page": 1,
+                        "pages": 1
+                    }
+                }
+            }
+        "#);
         let result = all(&client,
                          "TEST_TOKEN",
                          "pickleface",
@@ -362,86 +359,84 @@ mod tests {
         assert_eq!(result.files.matches[0].id, "F2147483862");
     }
 
-    mock_slack_responder!(MockFilesOkResponder, r#"
-        {
-            "ok": true,
-            "query": "Best Pickles",
-            "files": {
-                "total": 1,
-                "matches": [
-                    {
-                        "id" : "F2147483862",
-                        "created" : 1356032811,
-                        "timestamp" : 1356032811,
-
-                        "name" : "file.htm",
-                        "title" : "My HTML file",
-                        "mimetype" : "text\/plain",
-                        "filetype" : "text",
-                        "pretty_type": "Text",
-                        "user" : "U2147483697",
-
-                        "mode" : "hosted",
-                        "editable" : true,
-                        "is_external": false,
-                        "external_type": "",
-
-                        "size" : 12345,
-
-                        "url": "https:\/\/slack-files.com\/files-pub\/T024BE7LD-F024BERPE-09acb6\/1.png",
-                        "url_download": "https:\/\/slack-files.com\/files-pub\/T024BE7LD-F024BERPE-09acb6\/download\/1.png",
-                        "url_private": "https:\/\/slack.com\/files-pri\/T024BE7LD-F024BERPE\/1.png",
-                        "url_private_download": "https:\/\/slack.com\/files-pri\/T024BE7LD-F024BERPE\/download\/1.png",
-
-                        "thumb_64": "https:\/\/slack-files.com\/files-tmb\/T024BE7LD-F024BERPE-c66246\/1_64.png",
-                        "thumb_80": "https:\/\/slack-files.com\/files-tmb\/T024BE7LD-F024BERPE-c66246\/1_80.png",
-                        "thumb_360": "https:\/\/slack-files.com\/files-tmb\/T024BE7LD-F024BERPE-c66246\/1_360.png",
-                        "thumb_360_gif": "https:\/\/slack-files.com\/files-tmb\/T024BE7LD-F024BERPE-c66246\/1_360.gif",
-                        "thumb_360_w": 100,
-                        "thumb_360_h": 100,
-
-                        "permalink" : "https:\/\/tinyspeck.slack.com\/files\/cal\/F024BERPE\/1.png",
-                        "edit_link" : "https:\/\/tinyspeck.slack.com\/files\/cal\/F024BERPE\/1.png/edit",
-                        "preview" : "&lt;!DOCTYPE html&gt;\n&lt;html&gt;\n&lt;meta charset='utf-8'&gt;",
-                        "preview_highlight" : "&lt;div class=\"sssh-code\"&gt;&lt;div class=\"sssh-line\"&gt;&lt;pre&gt;&lt;!DOCTYPE html...",
-                        "lines" : 123,
-                        "lines_more": 118,
-
-                        "is_public": true,
-                        "public_url_shared": false,
-                        "channels": ["C024BE7LT"],
-                        "groups": ["G12345"],
-                        "ims": ["D12345"],
-                        "num_stars": 7,
-                        "is_starred": true,
-                        "pinned_to": ["C024BE7LT"],
-                        "reactions": [
-                            {
-                                "name": "astonished",
-                                "count": 3,
-                                "users": [ "U1", "U2", "U3" ]
-                            },
-                            {
-                                "name": "facepalm",
-                                "count": 1034,
-                                "users": [ "U1", "U2", "U3", "U4", "U5" ]
-                            }
-                        ]
-                    }
-                ],
-                "paging": {
-                    "count": 100,
-                    "total": 15,
-                    "page": 1,
-                    "pages": 1
-                }
-            }
-        }
-    "#);
-
     #[test]
     fn files_ok_response() {
-        let client = hyper::Client::with_connector(MockFilesOkResponder::default());
+        let client = MockSlackWebRequestSender::respond_with(r#"
+            {
+                "ok": true,
+                "query": "Best Pickles",
+                "files": {
+                    "total": 1,
+                    "matches": [
+                        {
+                            "id" : "F2147483862",
+                            "created" : 1356032811,
+                            "timestamp" : 1356032811,
+
+                            "name" : "file.htm",
+                            "title" : "My HTML file",
+                            "mimetype" : "text\/plain",
+                            "filetype" : "text",
+                            "pretty_type": "Text",
+                            "user" : "U2147483697",
+
+                            "mode" : "hosted",
+                            "editable" : true,
+                            "is_external": false,
+                            "external_type": "",
+
+                            "size" : 12345,
+
+                            "url": "https:\/\/slack-files.com\/files-pub\/T024BE7LD-F024BERPE-09acb6\/1.png",
+                            "url_download": "https:\/\/slack-files.com\/files-pub\/T024BE7LD-F024BERPE-09acb6\/download\/1.png",
+                            "url_private": "https:\/\/slack.com\/files-pri\/T024BE7LD-F024BERPE\/1.png",
+                            "url_private_download": "https:\/\/slack.com\/files-pri\/T024BE7LD-F024BERPE\/download\/1.png",
+
+                            "thumb_64": "https:\/\/slack-files.com\/files-tmb\/T024BE7LD-F024BERPE-c66246\/1_64.png",
+                            "thumb_80": "https:\/\/slack-files.com\/files-tmb\/T024BE7LD-F024BERPE-c66246\/1_80.png",
+                            "thumb_360": "https:\/\/slack-files.com\/files-tmb\/T024BE7LD-F024BERPE-c66246\/1_360.png",
+                            "thumb_360_gif": "https:\/\/slack-files.com\/files-tmb\/T024BE7LD-F024BERPE-c66246\/1_360.gif",
+                            "thumb_360_w": 100,
+                            "thumb_360_h": 100,
+
+                            "permalink" : "https:\/\/tinyspeck.slack.com\/files\/cal\/F024BERPE\/1.png",
+                            "edit_link" : "https:\/\/tinyspeck.slack.com\/files\/cal\/F024BERPE\/1.png/edit",
+                            "preview" : "&lt;!DOCTYPE html&gt;\n&lt;html&gt;\n&lt;meta charset='utf-8'&gt;",
+                            "preview_highlight" : "&lt;div class=\"sssh-code\"&gt;&lt;div class=\"sssh-line\"&gt;&lt;pre&gt;&lt;!DOCTYPE html...",
+                            "lines" : 123,
+                            "lines_more": 118,
+
+                            "is_public": true,
+                            "public_url_shared": false,
+                            "channels": ["C024BE7LT"],
+                            "groups": ["G12345"],
+                            "ims": ["D12345"],
+                            "num_stars": 7,
+                            "is_starred": true,
+                            "pinned_to": ["C024BE7LT"],
+                            "reactions": [
+                                {
+                                    "name": "astonished",
+                                    "count": 3,
+                                    "users": [ "U1", "U2", "U3" ]
+                                },
+                                {
+                                    "name": "facepalm",
+                                    "count": 1034,
+                                    "users": [ "U1", "U2", "U3", "U4", "U5" ]
+                                }
+                            ]
+                        }
+                    ],
+                    "paging": {
+                        "count": 100,
+                        "total": 15,
+                        "page": 1,
+                        "pages": 1
+                    }
+                }
+            }
+        "#);
         let result = files(&client,
                            "TEST_TOKEN",
                            "pickleface",
@@ -457,67 +452,65 @@ mod tests {
         assert_eq!(result.files.matches[0].id, "F2147483862");
     }
 
-    mock_slack_responder!(MockMessagesOkResponder, r#"
-        {
-            "ok": true,
-            "query": "Best Pickles",
-            "messages": {
-                "total": 1,
-                "matches": [
-                    {
-                        "type": "message",
-                        "channel": {
-                            "id": "C2147483753",
-                            "name": "foo"
-                        },
-                        "user": "U2147483709",
-                        "username": "johnnytest",
-                        "ts": "1359414002.000003",
-                        "text": "mention test: johnnyrodgers",
-                        "permalink": "https:\/\/example.slack.com\/channels\/foo\/p1359414002000003",
-                        "previous_2": {
-                            "user": "U2147483709",
-                            "username": "johnnytest",
-                            "text": "This was said before before",
-                            "ts": "1359413987.000000",
-                            "type": "message"
-                        },
-                        "previous": {
-                            "user": "U2147483709",
-                            "username": "johnnytest",
-                            "text": "This was said before",
-                            "ts": "1359414001.000000",
-                            "type": "message"
-                        },
-                        "next": {
-                            "user": "U2147483709",
-                            "username": "johnnytest",
-                            "text": "This was said after",
-                            "ts": "1359414020.000000",
-                            "type": "message"
-                        },
-                        "next_2": {
-                            "user": "U2147483709",
-                            "username": "johnnytest",
-                            "text": "This was said after after",
-                            "ts": "1359414021.000000",
-                            "type": "message"
-                        }
-                    }
-                ],
-                "paging": {
-                    "count": 100,
-                    "total": 15,
-                    "page": 1,
-                    "pages": 1
-                }
-            }
-        }
-    "#);
-
     #[test]
     fn messages_ok_response() {
-        let client = hyper::Client::with_connector(MockMessagesOkResponder::default());
+        let client = MockSlackWebRequestSender::respond_with(r#"
+            {
+                "ok": true,
+                "query": "Best Pickles",
+                "messages": {
+                    "total": 1,
+                    "matches": [
+                        {
+                            "type": "message",
+                            "channel": {
+                                "id": "C2147483753",
+                                "name": "foo"
+                            },
+                            "user": "U2147483709",
+                            "username": "johnnytest",
+                            "ts": "1359414002.000003",
+                            "text": "mention test: johnnyrodgers",
+                            "permalink": "https:\/\/example.slack.com\/channels\/foo\/p1359414002000003",
+                            "previous_2": {
+                                "user": "U2147483709",
+                                "username": "johnnytest",
+                                "text": "This was said before before",
+                                "ts": "1359413987.000000",
+                                "type": "message"
+                            },
+                            "previous": {
+                                "user": "U2147483709",
+                                "username": "johnnytest",
+                                "text": "This was said before",
+                                "ts": "1359414001.000000",
+                                "type": "message"
+                            },
+                            "next": {
+                                "user": "U2147483709",
+                                "username": "johnnytest",
+                                "text": "This was said after",
+                                "ts": "1359414020.000000",
+                                "type": "message"
+                            },
+                            "next_2": {
+                                "user": "U2147483709",
+                                "username": "johnnytest",
+                                "text": "This was said after after",
+                                "ts": "1359414021.000000",
+                                "type": "message"
+                            }
+                        }
+                    ],
+                    "paging": {
+                        "count": 100,
+                        "total": 15,
+                        "page": 1,
+                        "pages": 1
+                    }
+                }
+            }
+        "#);
         let result = messages(&client,
                               "TEST_TOKEN",
                               "pickleface",

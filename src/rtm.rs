@@ -16,15 +16,13 @@
 //! documentation](https://api.slack.com/methods).
 
 use std::collections::HashMap;
-use hyper;
 
-use super::ApiResult;
-use super::make_authed_api_call;
+use super::{ApiResult, SlackWebRequestSender, parse_slack_response};
 
 /// Starts a Real Time Messaging session.
 ///
 /// Wraps https://api.slack.com/methods/rtm.start
-pub fn start(client: &hyper::Client, token: &str, simple_latest: Option<bool>, no_unreads: Option<bool>) -> ApiResult<StartResponse> {
+pub fn start<R: SlackWebRequestSender>(client: &R, token: &str, simple_latest: Option<bool>, no_unreads: Option<bool>) -> ApiResult<StartResponse> {
     let mut params = HashMap::new();
     if let Some(simple_latest) = simple_latest {
         params.insert("simple_latest",
@@ -42,7 +40,8 @@ pub fn start(client: &hyper::Client, token: &str, simple_latest: Option<bool>, n
                           "0"
                       });
     }
-    make_authed_api_call(client, "rtm.start", token, params)
+    let response = try!(client.send_authed("rtm.start", token, params));
+    parse_slack_response(response, true)
 }
 
 #[derive(Clone,Debug,RustcDecodable)]
@@ -121,20 +120,19 @@ impl ::rustc_serialize::Decodable for StartResponse {
 
 #[cfg(test)]
 mod tests {
-    use hyper;
     use super::*;
-
-    mock_slack_responder!(MockErrorResponder, r#"{"ok": false, "err": "some_error"}"#);
+    use super::super::test_helpers::*;
 
     #[test]
     fn general_api_error_response() {
-        let client = hyper::Client::with_connector(MockErrorResponder::default());
+        let client = MockSlackWebRequestSender::respond_with(r#"{"ok": false, "err": "some_error"}"#);
         let result = start(&client, "TEST_TOKEN", None, None);
         assert!(result.is_err());
     }
 
-    mock_slack_responder!(MockStartOkResponder, r#"
-        {
+    #[test]
+    fn start_ok_response() {
+        let client = MockSlackWebRequestSender::respond_with(r#"{
             "ok": true,
             "url": "wss:\/\/ms9.slack-msgs.com\/websocket\/7I5yBpcvk",
             "self": {
@@ -263,12 +261,7 @@ mod tests {
                     }
                 }
             ]
-        }
-    "#);
-
-    #[test]
-    fn start_ok_response() {
-        let client = hyper::Client::with_connector(MockStartOkResponder::default());
+        }"#);
         let result = start(&client, "TEST_TOKEN", Some(true), None);
         if let Err(err) = result {
             panic!(format!("{:?}", err));
