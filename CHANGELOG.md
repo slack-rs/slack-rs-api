@@ -1,6 +1,6 @@
 # 0.15.0
 * `hyper` is now an optional (but default) feature that can be disabled to use a different HTTP client
-  * This does not require any changes to existing working code
+  * The only change this requires is in error handling. `Error::Internal` and `Error::Http` are gone, and `Error::HttpRequest` has been added. `Error` also no longer allows exhaustive checking to allow for future flexibility, though this limitation will be lifted before 1.0.
   * See [the pull request](https://github.com/slack-rs/slack-rs-api/pull/24) for more information
 * `hyper` dependency also bumped to version `0.9.4`, if it's being used (thanks to @jgulotta)
 * Fixed several changes in the schema from the Slack API that would cause erroneous deserialization errors (thanks to @kiyoto)
