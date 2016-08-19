@@ -42,6 +42,7 @@ pub mod im;
 pub mod oauth;
 pub mod pins;
 pub mod reactions;
+pub mod reminders;
 pub mod rtm;
 pub mod search;
 pub mod stars;
