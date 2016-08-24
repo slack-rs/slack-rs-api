@@ -100,6 +100,20 @@ pub struct Pagination {
     pub pages: u32,
 }
 
+/// The `Reminder` object, representing a reminder a user has set for themself or for another user.
+// `time` and `complete_ts` will only be provided if `recurring` is `false`
+// This type is not described directly, but an example can be seen [here](https://api.slack.com/methods/reminders.info).
+#[derive(Clone,Debug,RustcDecodable)]
+pub struct Reminder {
+    pub id: String,
+    pub creator: String,
+    pub user: String,
+    pub text: String,
+    pub recurring: bool,
+    pub time: Option<u64>,
+    pub complete_ts: Option<u64>,
+}
+
 /// The Slack [`Channel`](https://api.slack.com/types/channel) type.
 // Currently missing "latest" field
 #[derive(Clone,Debug,RustcDecodable)]
