@@ -189,7 +189,7 @@ mod tests {
             "channel": "C024BE91L",
             "ts": "1401383885.000061"
         }"#);
-        let result = delete(&client, "TEST_TOKEN", "TEST_CHANNEL", "1401383885.000061");
+        let result = delete(&client, "TEST_TOKEN", "1401383885.000061", "C024BE91L");
         if let Err(err) = result {
             panic!(format!("{:?}", err));
         }
