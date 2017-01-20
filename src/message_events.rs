@@ -23,6 +23,13 @@ pub struct EditedMessageData {
     pub ts: String,
 }
 
+/// The metadata of a reply [`Message`](https://api.slack.com/events/message).
+#[derive(Clone,Debug,Eq,PartialEq,RustcDecodable)]
+pub struct ReplyMessageData {
+    pub user: String,
+    pub ts: String,
+}
+
 /// Represents Slack [message event](https://api.slack.com/events/message) types.
 #[derive(Clone,Debug)]
 pub enum Message {
@@ -38,6 +45,10 @@ pub enum Message {
         reactions: Option<Vec<super::Reaction>>,
         edited: Option<EditedMessageData>,
         attachments: Option<Vec<super::Attachment>>,
+        thread_ts: Option<String>,
+        parent_user_id: Option<String>,
+        reply_count: Option<i64>,
+        replies: Option<Vec<ReplyMessageData>>,
     },
     /// Wraps the [`bot_message`](https://api.slack.com/events/message/bot_message) message event.
     BotMessage {
@@ -70,6 +81,15 @@ pub enum Message {
         channel: String,
         ts: String,
         deleted_ts: String,
+    },
+    /// Wraps the [`message_replied`](https://api.slack.com/events/message/message_replied) message
+    /// event.
+    MessageReplied {
+        hidden: bool,
+        channel: String,
+        ts: String,
+        event_ts: String,
+        message: Box<Message>,
     },
     /// Wraps the [`channel_join`](https://api.slack.com/events/message/channel_join) message
     /// event.
@@ -239,6 +259,10 @@ impl Decodable for Message {
                     reactions: try!(d.read_struct_field("reactions", 0, |d| Decodable::decode(d))),
                     edited: try!(d.read_struct_field("edited", 0, |d| Decodable::decode(d))),
                     attachments: try!(d.read_struct_field("attachments", 0, |d| Decodable::decode(d))),
+                    thread_ts: try!(d.read_struct_field("thread_ts", 0, |d| Decodable::decode(d))),
+                    parent_user_id: try!(d.read_struct_field("parent_user_id", 0, |d| Decodable::decode(d))),
+                    reply_count: try!(d.read_struct_field("reply_count", 0, |d| Decodable::decode(d))),
+                    replies: try!(d.read_struct_field("replies", 0, |d| Decodable::decode(d))),
                 });
             }
             let ty = ty.unwrap();
@@ -268,6 +292,13 @@ impl Decodable for Message {
                         channel: try!(d.read_struct_field("channel", 0, |d| Decodable::decode(d))),
                         ts: try!(d.read_struct_field("ts", 0, |d| Decodable::decode(d))),
                         deleted_ts: try!(d.read_struct_field("deleted_ts", 0, |d| Decodable::decode(d))),
+                    }),
+                "message_replied" => Ok(Message::MessageReplied {
+                        hidden: try!(d.read_struct_field("hidden", 0, |d| Decodable::decode(d))),
+                        channel: try!(d.read_struct_field("channel", 0, |d| Decodable::decode(d))),
+                        ts: try!(d.read_struct_field("ts", 0, |d| Decodable::decode(d))),
+                        event_ts: try!(d.read_struct_field("event_ts", 0, |d| Decodable::decode(d))),
+                        message: try!(d.read_struct_field("message", 0, |d| Decodable::decode(d))),
                     }),
                 "channel_join" => Ok(Message::ChannelJoin {
                         ts: try!(d.read_struct_field("ts", 0, |d| Decodable::decode(d))),
@@ -411,7 +442,7 @@ mod tests {
         }"#)
                                    .unwrap();
         match message {
-            Message::Standard { ts, channel: _, user, text, is_starred: _, pinned_to: _, reactions: _, edited: _, attachments: _ } => {
+            Message::Standard { ts, channel: _, user, text, is_starred: _, pinned_to: _, reactions: _, edited: _, attachments: _, .. } => {
                 assert_eq!(ts, "1234567890.218332");
                 assert_eq!(text.unwrap(), "Hello world");
                 assert_eq!(user.unwrap(), "U12345678");
@@ -465,7 +496,7 @@ mod tests {
         }"##)
                                    .unwrap();
         match message {
-            Message::Standard { ts: _, channel: _, user: _, text: _, is_starred, pinned_to: _, reactions: _, edited: _, attachments } => {
+            Message::Standard { ts: _, channel: _, user: _, text: _, is_starred, pinned_to: _, reactions: _, edited: _, attachments, .. } => {
                 assert_eq!(is_starred, Some(false));
                 let ref attachment = attachments.as_ref().unwrap()[0];
                 assert_eq!(attachment.color.as_ref().unwrap(), "#36a64f");
@@ -584,7 +615,7 @@ mod tests {
                 assert_eq!(ts, "1358878755.000001");
                 assert_eq!(channel, "C2147483705");
                 match *message.clone() {
-                    Message::Standard { ts: _, channel: _, user, text: _, is_starred: _, pinned_to: _, reactions: _, edited, attachments: _ } => {
+                    Message::Standard { ts: _, channel: _, user, text: _, is_starred: _, pinned_to: _, reactions: _, edited, attachments: _, .. } => {
                         assert_eq!(user.unwrap(), "U2147483697");
                         assert_eq!(edited.unwrap().user, "U2147483697")
                     }
@@ -1213,6 +1244,50 @@ mod tests {
             Message::PinnedItem { ts: _, user: _, item_type: _, text: _, item, channel: _, attachments } => {
                 assert!(item.is_none());
                 assert_eq!(attachments.unwrap()[0].color.as_ref().unwrap(), "D0D0D0");
+            }
+            _ => panic!("Message decoded into incorrect variant."),
+        }
+    }
+
+    #[test]
+    fn decode_replied_message() {
+        let message: Message = json::decode(r#"{
+            "type": "message",
+            "message": {
+                "type": "message",
+                "user": "U0EM70GQ4",
+                "text": "Two of you?",
+                "thread_ts": "1484911462.000008",
+                "reply_count": 1,
+                "replies": [
+                    {
+                        "user": "U0EM70GQ4",
+                        "ts": "1484911507.000009"
+                    }
+                ],
+                "ts": "1484911462.000008"
+            },
+            "subtype": "message_replied",
+            "hidden": true,
+            "channel": "D2XFYJMFZ",
+            "event_ts": "1484911507.314237",
+            "ts": "1484911507.000010"
+        }"#).unwrap();
+        match message {
+            Message::MessageReplied { message: inner_message, ..} => {
+                match *inner_message {
+                    Message::Standard { ref thread_ts, ref reply_count, ref replies, .. } => {
+                        assert_eq!(thread_ts, &Some("1484911462.000008".to_string()));
+                        assert_eq!(reply_count, &Some(1));
+                        assert_eq!(replies, &Some(vec![
+                            ReplyMessageData {
+                                user: "U0EM70GQ4".to_string(),
+                                ts: "1484911507.000009".to_string(),
+                            }
+                        ]));
+                    }
+                    _ => panic!("Inner message decoded into incorrect variant."),
+                }
             }
             _ => panic!("Message decoded into incorrect variant."),
         }
