@@ -6,10 +6,14 @@ repository = "https://github.com/slack-rs/slack-rs-api.git"
 documentation = "http://slack-rs.github.io/slack-rs-api/slack_api/"
 description = "Interface for the Slack Web API"
 license = "Apache-2.0"
+build = "build.rs"
 
 [dependencies]
-hyper = { version = "0.9.4", optional = true }
-rustc-serialize = "0.3.18"
+serde = "0.9.0-rc2"
+serde_derive = "0.9.0-rc2"
+serde_json = "0.9.0-rc1"
 
-[features]
-default = ["hyper"]
+[build-dependencies.slack_api_codegen]
+default-features = false
+path = "codegen"
+version = "*"

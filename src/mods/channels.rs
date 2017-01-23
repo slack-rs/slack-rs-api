@@ -12,4 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-include!(concat!(env!("OUT_DIR"), "/types.rs"));
+//! Get info on your team's Slack channels, create or archive channels, invite users, set the topic
+//! and purpose, and mark a channel as read.
+
+include!(concat!(env!("OUT_DIR"), "/channels.rs"));

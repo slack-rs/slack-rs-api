@@ -1,0 +1,14 @@
+[package]
+name = "slack_api_codegen"
+version = "0.1.0"
+authors = ["Matt Jones <mthjones@gmail.com>"]
+repository = "https://github.com/slack-rs/slack-rs-api"
+documentation = "http://slack-rs.github.io/slack-rs-api/slack_api/"
+description = "Code generation library for the Slack Web API"
+license = "Apache-2.0"
+
+[dependencies]
+serde = "0.9.0-rc2"
+serde_derive = "0.9.0-rc2"
+serde_json = "0.9.0-rc1"
+Inflector = "0.7"

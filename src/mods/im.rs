@@ -12,4 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-include!(concat!(env!("OUT_DIR"), "/types.rs"));
+//! Get info on your direct messages.
+
+include!(concat!(env!("OUT_DIR"), "/im.rs"));
