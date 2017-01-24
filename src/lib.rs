@@ -50,7 +50,7 @@ impl Error for ClientError {
 /// Trait to turn an object into a Result<T, E>.
 pub trait ToResult<T, E> {
     /// Turn self into a Result<T, E>
-    fn to_result(self) -> Result<T, E>;
+    fn to_result(&self) -> Result<T, E>;
 }
 
 /// Functionality for sending authenticated and unauthenticated requests to Slack via HTTP.

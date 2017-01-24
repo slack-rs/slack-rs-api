@@ -96,6 +96,88 @@ impl Method {
     }
 }
 
+pub trait Okable {
+    fn has_ok(&self) -> bool;
+}
+
+impl Okable for JsonObject {
+    fn has_ok(&self) -> bool {
+        self.fields.iter().find(|f| f.name == "ok").is_some()
+    }
+}
+
+impl Okable for JsonEnum {
+    fn has_ok(&self) -> bool {
+        self.variants.iter().all(|v| match &v.inner {
+            &PropType::Obj(ref o) => o.has_ok(),
+            &PropType::Enum(ref e) => e.has_ok(),
+            _ => false
+        })
+    }
+}
+
+fn generate_matches<F>(enm: &JsonEnum, var_name: &str, f: F) -> Vec<String>
+    where F: Fn(&JsonEnumVariant) -> String
+{
+    enm.variants
+        .iter()
+        .map(|v| {
+            format!(
+                "&{enum_name}::{variant}(ref {var_name}) => {body},",
+                enum_name = enm.name,
+                variant = v.name,
+                var_name = var_name,
+                body = f(&v)
+            )
+        })
+        .collect()
+}
+
+fn get_obj_to_response_impl(obj: &JsonObject, error_type: &str) -> String {
+    format!(
+        "impl ::ToResult<{name}, {error_ty}> for {name} {{
+            fn to_result(&self) -> Result<{name}, {error_ty}> {{
+                if self.ok {{
+                    Ok(self.clone())
+                }} else {{
+                    Err(self.error.as_ref()
+                        .map(|s| s[..].into())
+                        .unwrap_or({error_ty}::MalformedResponse))
+                }}
+            }}
+        }}",
+        error_ty = error_type,
+        name = obj.name
+    )
+}
+
+fn get_enum_to_response_impl(enm: &JsonEnum, error_type: &str) -> String {
+    format!(
+        "impl ::ToResult<{name}, {error_ty}> for {name} {{
+            fn to_result(&self) -> Result<{name}, {error_ty}> {{
+                match self {{
+                    {matches}
+                }}
+            }}
+        }}
+        
+        {inner_impls}",
+        error_ty = error_type,
+        name = enm.name,
+        matches = generate_matches(enm, "inner", |v| {
+            format!("inner.to_result().clone().map(|r| {}::{}(r))", enm.name, v.name)
+        }).join("\n"),
+        inner_impls = enm.variants.iter()
+            .map(|v| match &v.inner {
+                &PropType::Obj(ref o) => get_obj_to_response_impl(o, error_type),
+                &PropType::Enum(ref e) => get_enum_to_response_impl(e, error_type),
+                _ => panic!("shouldn't be here...")
+            })
+            .collect::<Vec<_>>()
+            .join("\n")
+    )
+}
+
 #[derive(Deserialize, Clone, Debug)]
 pub struct Response {
     pub sample: String,
@@ -105,39 +187,35 @@ pub struct Response {
 
 impl Response {
     pub fn generate(&self, ty_name: &str, error_ty: &str) -> String {
-        let (objs, okable) = match PropType::from_schema(&self.schema, ty_name) {
+        let (objs, to_result) = match PropType::from_schema(&self.schema, ty_name) {
             PropType::Obj(ref o) => {
-                (o.to_string(), o.fields.iter().skip_while(|f| f.name != "ok").next().is_some())
-            }
-            PropType::Enum(ref o) => (o.to_string(), false),
+                let to_result = if o.has_ok() { 
+                    get_obj_to_response_impl(o, error_ty)
+                } else {
+                    "".into()
+                };
+                (o.to_string(), to_result)
+            },
+            PropType::Enum(ref e) => {
+                let to_result = if e.has_ok() {
+                    get_enum_to_response_impl(e, error_ty)
+                } else {
+                    "".into()
+                };
+                (e.to_string(), to_result)
+            },
             _ => {
                 panic!("Top level response schema for {} is not an object or enum. {:?}",
                        ty_name,
                        self.schema)
             }
         };
-        // TODO: This does not work for reactions.get because the top-level object is an enum
-        let slack_result = format!(
-            "impl ::ToResult<{name}, {error_ty}> for {name} {{
-                fn to_result(self) -> Result<{name}, {error_ty}> {{
-                    if self.ok {{
-                        Ok(self)
-                    }} else {{
-                        Err(self.error.as_ref()
-                            .map(|s| s[..].into())
-                            .unwrap_or({error_ty}::MalformedResponse))
-                    }}
-                }}
-            }}",
-            error_ty = error_ty,
-            name = ty_name
-        );
         format!(
             "{objs}
             {slack_result}
             {errors}",
             objs = objs,
-            slack_result = if okable { &slack_result } else { "" },
+            slack_result = to_result,
             errors = self.get_error_enum(error_ty),
         )
     }
@@ -363,6 +441,7 @@ impl ToString for JsonEnum {
 
         format!(
             "
+            #[derive(Clone, Debug)]
             pub enum {name} {{
                 {variants}
             }}
@@ -456,7 +535,7 @@ impl ToString for JsonObject {
             .collect::<Vec<_>>();
 
         format!(
-            "#[derive(Deserialize)]
+            "#[derive(Clone, Debug, Deserialize)]
             pub struct {name} {{
                 {fields}
             }}
