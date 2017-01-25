@@ -59,7 +59,7 @@ impl Method {
                                     -> Result<{response_type}, {error_type}>
                    where R: SlackWebRequestSender
             {{
-                let mut params: HashMap<&str, String> = HashMap::new();
+                let mut params = HashMap::new();
                 {param_insertions}
                 client.send(\"{name}\", params).map_err(|err| err.into())
             }}
@@ -123,9 +123,8 @@ fn generate_matches<F>(enm: &JsonEnum, var_name: &str, f: F) -> Vec<String>
         .iter()
         .map(|v| {
             format!(
-                "&{enum_name}::{variant}(ref {var_name}) => {body},",
-                enum_name = enm.name,
-                variant = v.name,
+                "&{variant}(ref {var_name}) => {body},",
+                variant = v.qualified_name,
                 var_name = var_name,
                 body = f(&v)
             )
@@ -165,7 +164,7 @@ fn get_enum_to_response_impl(enm: &JsonEnum, error_type: &str) -> String {
         error_ty = error_type,
         name = enm.name,
         matches = generate_matches(enm, "inner", |v| {
-            format!("inner.to_result().clone().map(|r| {}::{}(r))", enm.name, v.name)
+            format!("inner.to_result().clone().map(|r| {}(r))", v.qualified_name)
         }).join("\n"),
         inner_impls = enm.variants.iter()
             .map(|v| match &v.inner {
@@ -334,47 +333,40 @@ impl Param {
             ("boolean", true) => {
                 format!(
                     "if let Some({name}) = request.{name} {{
-                        params.insert(\"{name}\", if {name} {{
-                            \"true\".to_string()
-                        }} else {{
-                            \"false\".to_string()
-                        }});
+                        params.insert(\"{name}\", if {name} {{ \"1\".to_owned() }} else {{ \"0\".to_owned() }});
                     }}",
                     name = self.name
                 )
-            }
+            },
             ("boolean", false) => {
                 format!(
-                    "params.insert(\"{name}\", if {name} {{
-                        \"true\".to_string()
-                    }} else {{
-                        \"false\".to_string()
-                    }});",
+                    "params.insert(\"{name}\", if request.{name} {{ \"1\".to_owned() }} else {{ \"0\".to_owned() }});",
                     name = self.name
                 )
-            }
+            },
             ("integer", true) => {
                 format!(
-                    "if let Some({name}) = request.{name} {{
-                        params.insert(\"{name}\", {name}.to_string());
+                    "
+                    if let Some({name}) = request.{name}.map(|n| n.to_string()) {{
+                        params.insert(\"{name}\", {name});
                     }}",
                     name = self.name
                 )
-            }
+            },
             ("integer", false) => {
                 format!(
                     "params.insert(\"{name}\", request.{name}.to_string());",
                     name = self.name
                 )
-            }
+            },
             (_, true) => {
                 format!(
-                    "if let Some({name}) = request.{name}.clone() {{
-                        params.insert(\"{name}\", {name});
+                    "if let Some(ref {name}) = request.{name} {{
+                        params.insert(\"{name}\", {name}.to_owned());
                     }}",
                     name = self.name
                 )
-            }
+            },
             (_, false) => {
                 format!(
                     "params.insert(\"{name}\", request.{name}.clone());",
@@ -400,12 +392,11 @@ impl Param {
 
 impl ToString for JsonObjectFieldInfo {
     fn to_string(&self) -> String {
-        let prefix = if self.name == "error" {
-            ""
-        } else if self.name == "ok" {
-            "#[serde(default)]"
-        } else {
-            "pub"
+        let mut prefix = String::new();
+        if self.name == "ok" {
+            prefix.push_str("#[serde(default)]");
+        } else if self.name != "error" && self.name != "ok" {
+            prefix.push_str("pub");
         };
         if let Some(ref rename) = self.rename {
             format!(
@@ -487,7 +478,7 @@ impl ToString for JsonEnum {
                 .map(|v| format!(
                     "\"{type_name}\" => {{
                         ::serde_json::from_value::<{variant_type}>(value.clone()).map(|obj| {{
-                            {enum_name}::{variant_name}(obj)
+                            {variant_name}(obj)
                         }}).map_err(|e| D::Error::custom(&format!(\"{{}}\", e)))
                     }}",
                     type_name = match &v.inner {
@@ -499,8 +490,7 @@ impl ToString for JsonEnum {
                         _ => panic!()
                     },
                     variant_type = v.inner.to_rs_type(),
-                    enum_name = self.name,
-                    variant_name = v.name
+                    variant_name = v.qualified_name
                 ))
                 .collect::<Vec<_>>()
                 .join("\n"),

@@ -59,6 +59,6 @@ pub trait ToResult<T, E> {
 pub trait SlackWebRequestSender {
     /// Make an API call to Slack. Takes a map of parameters that get appended to the request as query
     /// params.
-    fn send<'a, R>(&self, method: &str, params: HashMap<&str, String>) -> Result<R, ClientError>
+    fn send<R>(&self, method: &str, params: HashMap<&str, String>) -> Result<R, ClientError>
         where R: Deserialize;
 }

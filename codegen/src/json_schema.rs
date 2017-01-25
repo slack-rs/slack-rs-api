@@ -46,6 +46,7 @@ pub struct JsonEnum {
 #[derive(Clone, Debug)]
 pub struct JsonEnumVariant {
     pub name: String,
+    pub qualified_name: String,
     pub inner: PropType,
 }
 
@@ -79,11 +80,12 @@ impl PropType {
                 name: name.to_owned(),
                 variants: one_of.iter()
                     .map(|o| {
-                        let variant_name = name.to_owned() +
-                                           &o.id.as_ref().map(|s| s.to_pascal_case()).unwrap();
+                        let variant_name = o.id.as_ref().unwrap().to_pascal_case();
+                        let obj_name = name.to_owned() + &variant_name;
                         JsonEnumVariant {
                             name: variant_name.clone(),
-                            inner: Self::from_schema(o, &variant_name),
+                            qualified_name: format!("{}::{}", name.to_owned(), variant_name),
+                            inner: Self::from_schema(o, &obj_name),
                         }
                     })
                     .collect(),
@@ -98,12 +100,10 @@ impl PropType {
             Some("null") => PropType::Null,
             Some("array") => {
                 let item_name = &name.to_singular();
-                if let Some(ref item_schema) = schema.items {
-                    let subobj = Self::from_schema(&item_schema.clone(), &item_name);
-                    PropType::Arr(Box::new(subobj))
-                } else {
-                    panic!("{} is an array but no schema is set for items", &item_name);
-                }
+                let item_schema = schema.items.as_ref()
+                    .expect(&format!("{} is an array but no schema is set for items", item_name));
+                let subobj = Self::from_schema(&item_schema.clone(), &item_name);
+                PropType::Arr(Box::new(subobj))
             }
             Some("object") => {
                 if let Some(ref pp) = schema.pattern_properties {
@@ -161,13 +161,13 @@ impl PropType {
             PropType::Int => "i32".into(),
             PropType::Num => "f32".into(),
             PropType::Bool => "bool".into(),
+            PropType::Null => "()".into(),
             PropType::Obj(ref obj) => obj.name.clone(),
             PropType::Ref(ref name) => format!("::{}", name),
             PropType::Arr(ref prop) => format!("Vec<{}>", prop.to_rs_type()),
             PropType::Map(ref prop) => format!("HashMap<String, {}>", prop.to_rs_type()),
             PropType::Optional(ref prop) => format!("Option<{}>", prop.to_rs_type()),
             PropType::Enum(ref e) => e.name.clone(),
-            PropType::Null => "()".into(),
         }
     }
 }
