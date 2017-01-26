@@ -485,7 +485,7 @@ impl ToString for JsonEnum {
                         &PropType::Obj(ref o) => {
                             // awful hack to get the JSON enum type name back out
                             let snake_name = o.name.to_snake_case();
-                            snake_name.split('_').last().unwrap().to_owned()
+                            snake_name.splitn(2, '_').last().unwrap().to_owned()
                         },
                         _ => panic!()
                     },

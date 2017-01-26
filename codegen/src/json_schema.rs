@@ -1,10 +1,12 @@
 use std::collections::HashMap;
+use std::path::Path;
 
 use inflector::Inflector;
 
 #[derive(Deserialize, Clone, Debug)]
 pub struct JsonSchema {
     pub id: Option<String>,
+    pub title: Option<String>,
     #[serde(rename = "$schema")]
     pub schema_ref: Option<String>,
     pub description: Option<String>,
@@ -47,6 +49,7 @@ pub struct JsonEnum {
 pub struct JsonEnumVariant {
     pub name: String,
     pub qualified_name: String,
+    // TODO: this should be able to support non-containing variants
     pub inner: PropType,
 }
 
@@ -68,10 +71,12 @@ pub enum PropType {
 impl PropType {
     pub fn from_schema(schema: &JsonSchema, name: &str) -> Self {
         if let Some(ref def) = schema.definition_ref {
-            return PropType::Ref(def.split("#/")
-                .last()
-                .and_then(|x| x.split('.').next())
+            return PropType::Ref(Path::new(def)
+                .file_stem()
                 .unwrap()
+                .to_str()
+                .unwrap()
+                .to_owned()
                 .to_pascal_case());
         }
 
@@ -80,7 +85,9 @@ impl PropType {
                 name: name.to_owned(),
                 variants: one_of.iter()
                     .map(|o| {
-                        let variant_name = o.id.as_ref().unwrap().to_pascal_case();
+                        // TODO: Have this just check title. id is not reliable
+                        let variant_name =
+                            o.title.as_ref().or(o.id.as_ref()).unwrap().to_pascal_case();
                         let obj_name = name.to_owned() + &variant_name;
                         JsonEnumVariant {
                             name: variant_name.clone(),
@@ -100,7 +107,8 @@ impl PropType {
             Some("null") => PropType::Null,
             Some("array") => {
                 let item_name = &name.to_singular();
-                let item_schema = schema.items.as_ref()
+                let item_schema = schema.items
+                    .as_ref()
                     .expect(&format!("{} is an array but no schema is set for items", item_name));
                 let subobj = Self::from_schema(&item_schema.clone(), &item_name);
                 PropType::Arr(Box::new(subobj))
