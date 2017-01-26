@@ -46,7 +46,7 @@ pub fn generate_types(output_path: &Path) -> io::Result<()> {
 
                 let ty = match PropType::from_schema(&schema, &ty_name) {
                     PropType::Obj(ref o) => o.to_string(),
-                    PropType::Enum(ref e) => e.to_string(),
+                    PropType::Enum(ref e) => e.to_code(),
                     _ => panic!("Object schema is not an object."),
                 };
 

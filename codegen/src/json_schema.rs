@@ -71,6 +71,8 @@ pub enum PropType {
 impl PropType {
     pub fn from_schema(schema: &JsonSchema, name: &str) -> Self {
         if let Some(ref def) = schema.definition_ref {
+            // TODO: This ignores `#/` and assumes filenames refer to an existing struct with that
+            //       name.
             return PropType::Ref(Path::new(def)
                 .file_stem()
                 .unwrap()

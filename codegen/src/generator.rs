@@ -201,7 +201,7 @@ impl Response {
                 } else {
                     "".into()
                 };
-                (e.to_string(), to_result)
+                (e.to_code(), to_result)
             },
             _ => {
                 panic!("Top level response schema for {} is not an object or enum. {:?}",
@@ -422,8 +422,15 @@ impl ToString for JsonEnumVariant {
     }
 }
 
-impl ToString for JsonEnum {
-    fn to_string(&self) -> String {
+impl JsonEnum {
+    pub fn to_code(&self) -> String {
+        // Hack to work around message having a different identifier here
+        let variant_field = if self.name == "Message" {
+            "subtype"
+        } else {
+            "type"
+        };
+        
         let subobjs = self.variants
             .iter()
             .flat_map(|v| obj_recur(&v.inner))
@@ -446,7 +453,7 @@ impl ToString for JsonEnum {
                     const VARIANTS: &'static [&'static str] = &[{variant_names}];
 
                     let value = ::serde_json::Value::deserialize(deserializer)?;
-                    if let Some(ty_val) = value.get(\"type\") {{
+                    if let Some(ty_val) = value.get(\"{variant_field}\") {{
                         if let Some(ty) = ty_val.as_str() {{
                             match ty {{
                                 {variant_matches}
@@ -481,20 +488,14 @@ impl ToString for JsonEnum {
                             {variant_name}(obj)
                         }}).map_err(|e| D::Error::custom(&format!(\"{{}}\", e)))
                     }}",
-                    type_name = match &v.inner {
-                        &PropType::Obj(ref o) => {
-                            // awful hack to get the JSON enum type name back out
-                            let snake_name = o.name.to_snake_case();
-                            snake_name.splitn(2, '_').last().unwrap().to_owned()
-                        },
-                        _ => panic!()
-                    },
+                    type_name = v.name.to_snake_case(),
                     variant_type = v.inner.to_rs_type(),
                     variant_name = v.qualified_name
                 ))
                 .collect::<Vec<_>>()
                 .join("\n"),
-            subobjs = subobjs
+            subobjs = subobjs,
+            variant_field = variant_field
         )
     }
 }
@@ -505,7 +506,7 @@ fn obj_recur(prop: &PropType) -> Vec<String> {
         &PropType::Arr(ref prop) => obj_recur(prop),
         &PropType::Map(ref prop) => obj_recur(prop),
         &PropType::Optional(ref prop) => obj_recur(prop),
-        &PropType::Enum(ref e) => vec![e.to_string()],
+        &PropType::Enum(ref e) => vec![e.to_code()],
         _ => vec![],
     }
 }
