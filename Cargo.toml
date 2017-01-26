@@ -9,9 +9,9 @@ license = "Apache-2.0"
 build = "build.rs"
 
 [dependencies]
-serde = "0.9.0-rc2"
-serde_derive = "0.9.0-rc2"
-serde_json = "0.9.0-rc1"
+serde = "0.9.0"
+serde_derive = "0.9.0"
+serde_json = "0.9.0"
 
 [build-dependencies.slack_api_codegen]
 default-features = false

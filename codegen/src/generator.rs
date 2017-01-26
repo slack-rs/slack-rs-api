@@ -446,7 +446,7 @@ impl ToString for JsonEnum {
                     const VARIANTS: &'static [&'static str] = &[{variant_names}];
 
                     let value = ::serde_json::Value::deserialize(deserializer)?;
-                    if let Some(ty_val) = value.find(\"type\") {{
+                    if let Some(ty_val) = value.get(\"type\") {{
                         if let Some(ty) = ty_val.as_str() {{
                             match ty {{
                                 {variant_matches}

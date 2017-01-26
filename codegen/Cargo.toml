@@ -8,7 +8,7 @@ description = "Code generation library for the Slack Web API"
 license = "Apache-2.0"
 
 [dependencies]
-serde = "0.9.0-rc2"
-serde_derive = "0.9.0-rc2"
-serde_json = "0.9.0-rc1"
+serde = "0.9.0"
+serde_derive = "0.9.0"
+serde_json = "0.9.0"
 Inflector = "0.7"
