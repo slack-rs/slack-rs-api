@@ -20,11 +20,12 @@ extern crate serde;
 extern crate serde_derive;
 extern crate serde_json;
 
+#[cfg(feature = "reqwest")]
+extern crate reqwest;
+
 use std::collections::HashMap;
 use std::error::Error;
 use std::fmt;
-
-use serde::Deserialize;
 
 mod mods;
 pub use mods::*;
@@ -59,6 +60,32 @@ pub trait ToResult<T, E> {
 pub trait SlackWebRequestSender {
     /// Make an API call to Slack. Takes a map of parameters that get appended to the request as query
     /// params.
-    fn send<R>(&self, method: &str, params: HashMap<&str, String>) -> Result<R, ClientError>
-        where R: Deserialize;
+    fn send(&self, method: &str, params: HashMap<&str, String>) -> Result<String, ClientError>;
 }
+
+#[cfg(feature = "reqwest")]
+mod reqwest_support {
+    use reqwest;
+    use std::collections::HashMap;
+    use std::io::Read;
+
+    use super::{SlackWebRequestSender, ClientError};
+
+    impl SlackWebRequestSender for reqwest::Client {
+        fn send(&self, method: &str, params: HashMap<&str, String>) -> Result<String, ClientError> {
+            let url_string = format!("https://slack.com/api/{}", method);
+            let mut url = reqwest::Url::parse(&url_string).expect("Unable to parse url");
+
+            url.query_pairs_mut().extend_pairs(params.into_iter());
+
+            let mut response = self.get(url).send().map_err(|_| ClientError)?;
+            let mut res_str = String::new();
+            response.read_to_string(&mut res_str).map_err(|_| ClientError)?;
+
+            Ok(res_str)
+        }
+    }
+}
+
+#[cfg(feature = "reqwest")]
+pub use reqwest_support::*;

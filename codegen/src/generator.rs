@@ -17,7 +17,9 @@ impl Module {
             use std::error::Error;
             use std::fmt;
 
-            use ::{{ClientError, SlackWebRequestSender}};
+            use serde_json;
+
+            use ::{{ClientError, SlackWebRequestSender, ToResult}};
 
             {methods}",
             methods = self.methods
@@ -51,6 +53,28 @@ impl Method {
         let response_struct_name = type_prefix.clone() + "Response";
         let error_enum_name = type_prefix.clone() + "Error";
         let response = self.response.generate(&response_struct_name, &error_enum_name);
+        let response_type = self.response.get_response_type(&response_struct_name);
+
+        let send_call = {
+            let mut base_call = format!("client.send(\"{name}\", params)
+                .map_err(|err| err.into())
+                .and_then(|result| {{
+                    serde_json::from_str::<{response_type}>(&result)
+                        .map_err(|_| {error_type}::MalformedResponse)
+                }})",
+                name = self.name,
+                response_type = response_struct_name,
+                error_type = error_enum_name
+            );
+
+            match response_type {
+                PropType::Obj(ref o) => if o.has_ok() { base_call.push_str(".and_then(|o| o.to_result())") },
+                PropType::Enum(ref e) => if e.has_ok() { base_call.push_str(".and_then(|o| o.to_result())") },
+                _ => panic!("Top-level response for {} is not an object or enum.", fn_name)
+            }
+
+            base_call
+        };
 
         format!(
             "{documentation}
@@ -61,7 +85,7 @@ impl Method {
             {{
                 let mut params = HashMap::new();
                 {param_insertions}
-                client.send(\"{name}\", params).map_err(|err| err.into())
+                {send_call}
             }}
 
             {request}
@@ -73,7 +97,6 @@ impl Method {
                 "",
                 &format!("Wraps {}", self.documentation_url)
             ].join("\n")),
-            name = self.name,
             method_name = fn_name,
             request_type = request_struct_name,
             response_type = response_struct_name,
@@ -81,12 +104,13 @@ impl Method {
             response = response,
             request = self.get_request_struct(&request_struct_name),
             param_insertions = self.params.iter().map(Param::get_insertion).collect::<Vec<String>>().join("\n"),
+            send_call = send_call
         )
     }
 
     fn get_request_struct(&self, ty_name: &str) -> String {
         format!(
-            "#[derive(Clone, Debug)]
+            "#[derive(Clone, Default, Debug)]
             pub struct {request_type} {{
                 {request_params}
             }}",
@@ -132,49 +156,57 @@ fn generate_matches<F>(enm: &JsonEnum, var_name: &str, f: F) -> Vec<String>
         .collect()
 }
 
-fn get_obj_to_response_impl(obj: &JsonObject, error_type: &str) -> String {
-    format!(
-        "impl ::ToResult<{name}, {error_ty}> for {name} {{
-            fn to_result(&self) -> Result<{name}, {error_ty}> {{
-                if self.ok {{
-                    Ok(self.clone())
-                }} else {{
-                    Err(self.error.as_ref()
-                        .map(|s| s[..].into())
-                        .unwrap_or({error_ty}::MalformedResponse))
+fn get_obj_to_response_impl(obj: &JsonObject, error_type: &str) -> Option<String> {
+    if obj.has_ok() {
+        Some(format!(
+            "impl ToResult<{name}, {error_ty}> for {name} {{
+                fn to_result(&self) -> Result<{name}, {error_ty}> {{
+                    if self.ok {{
+                        Ok(self.clone())
+                    }} else {{
+                        Err(self.error.as_ref()
+                            .map(|s| s[..].into())
+                            .unwrap_or({error_ty}::MalformedResponse))
+                    }}
                 }}
-            }}
-        }}",
-        error_ty = error_type,
-        name = obj.name
-    )
+            }}",
+            error_ty = error_type,
+            name = obj.name
+        ))
+    } else {
+        None
+    }
 }
 
-fn get_enum_to_response_impl(enm: &JsonEnum, error_type: &str) -> String {
-    format!(
-        "impl ::ToResult<{name}, {error_ty}> for {name} {{
-            fn to_result(&self) -> Result<{name}, {error_ty}> {{
-                match self {{
-                    {matches}
+fn get_enum_to_response_impl(enm: &JsonEnum, error_type: &str) -> Option<String> {
+    if enm.has_ok() {
+        Some(format!(
+            "impl ToResult<{name}, {error_ty}> for {name} {{
+                fn to_result(&self) -> Result<{name}, {error_ty}> {{
+                    match self {{
+                        {matches}
+                    }}
                 }}
             }}
-        }}
-        
-        {inner_impls}",
-        error_ty = error_type,
-        name = enm.name,
-        matches = generate_matches(enm, "inner", |v| {
-            format!("inner.to_result().clone().map(|r| {}(r))", v.qualified_name)
-        }).join("\n"),
-        inner_impls = enm.variants.iter()
-            .map(|v| match &v.inner {
-                &PropType::Obj(ref o) => get_obj_to_response_impl(o, error_type),
-                &PropType::Enum(ref e) => get_enum_to_response_impl(e, error_type),
-                _ => panic!("shouldn't be here...")
-            })
-            .collect::<Vec<_>>()
-            .join("\n")
-    )
+            
+            {inner_impls}",
+            error_ty = error_type,
+            name = enm.name,
+            matches = generate_matches(enm, "inner", |v| {
+                format!("inner.to_result().clone().map(|r| {}(r))", v.qualified_name)
+            }).join("\n"),
+            inner_impls = enm.variants.iter()
+                .map(|v| match &v.inner {
+                    &PropType::Obj(ref o) => get_obj_to_response_impl(o, error_type).expect("Top-level enum inner object did not have \"ok\" field."),
+                    &PropType::Enum(ref e) => get_enum_to_response_impl(e, error_type).expect("Top-level enum inner variant did not have \"ok\" field."),
+                    _ => panic!("Top-level enum is does not contain a type that can have an \"ok\" field.")
+                })
+                .collect::<Vec<_>>()
+                .join("\n")
+        ))
+    } else {
+        None
+    }
 }
 
 #[derive(Deserialize, Clone, Debug)]
@@ -188,19 +220,11 @@ impl Response {
     pub fn generate(&self, ty_name: &str, error_ty: &str) -> String {
         let (objs, to_result) = match PropType::from_schema(&self.schema, ty_name) {
             PropType::Obj(ref o) => {
-                let to_result = if o.has_ok() { 
-                    get_obj_to_response_impl(o, error_ty)
-                } else {
-                    "".into()
-                };
+                let to_result = get_obj_to_response_impl(o, error_ty);
                 (o.to_string(), to_result)
             },
             PropType::Enum(ref e) => {
-                let to_result = if e.has_ok() {
-                    get_enum_to_response_impl(e, error_ty)
-                } else {
-                    "".into()
-                };
+                let to_result = get_enum_to_response_impl(e, error_ty);
                 (e.to_code(), to_result)
             },
             _ => {
@@ -214,9 +238,13 @@ impl Response {
             {slack_result}
             {errors}",
             objs = objs,
-            slack_result = to_result,
+            slack_result = to_result.unwrap_or("".into()),
             errors = self.get_error_enum(error_ty),
         )
+    }
+
+    pub fn get_response_type(&self, ty_name: &str) -> PropType {
+        PropType::from_schema(&self.schema, ty_name)
     }
 
     fn get_error_enum(&self, error_ty: &str) -> String {
