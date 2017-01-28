@@ -19,6 +19,7 @@ impl Module {
 
             use serde_json;
 
+            #[allow(unused_imports)]
             use ::{{ClientError, SlackWebRequestSender, ToResult}};
 
             {methods}",
@@ -453,10 +454,12 @@ impl ToString for JsonEnumVariant {
 impl JsonEnum {
     pub fn to_code(&self) -> String {
         // Hack to work around message having a different identifier here
-        let variant_field = if self.name == "Message" {
-            "subtype"
+        let (variant_field, on_missing_field) = if self.name == "Message" {
+            ("subtype", "::serde_json::from_value::<MessageStandard>(value.clone()).map(|obj| {{
+                Message::Standard(obj)
+            }}).map_err(|e| D::Error::custom(&format!(\"{}\", e)))")
         } else {
-            "type"
+            ("type", "Err(D::Error::missing_field(\"type\"))")
         };
         
         let subobjs = self.variants
@@ -491,7 +494,7 @@ impl JsonEnum {
                             Err(D::Error::invalid_type(::serde::de::Unexpected::Unit, &\"a string\"))
                         }}
                     }} else {{
-                        Err(D::Error::missing_field(\"type\"))
+                        {on_missing_field}
                     }}
                 }}
             }}
@@ -523,7 +526,8 @@ impl JsonEnum {
                 .collect::<Vec<_>>()
                 .join("\n"),
             subobjs = subobjs,
-            variant_field = variant_field
+            variant_field = variant_field,
+            on_missing_field = on_missing_field
         )
     }
 }
