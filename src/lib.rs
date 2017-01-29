@@ -29,7 +29,7 @@ mod types;
 pub use types::*;
 
 /// Trait to turn an object into a Result<T, E>.
-pub trait ToResult<T, E> {
+trait ToResult<T, E> {
     /// Turn self into a Result<T, E>
     fn to_result(&self) -> Result<T, E>;
 }
