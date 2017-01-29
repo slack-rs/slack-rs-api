@@ -20,33 +20,13 @@ extern crate serde;
 extern crate serde_derive;
 extern crate serde_json;
 
-#[cfg(feature = "reqwest")]
-extern crate reqwest;
-
 use std::collections::HashMap;
-use std::error::Error;
-use std::fmt;
 
 mod mods;
 pub use mods::*;
 
 mod types;
 pub use types::*;
-
-#[derive(Clone, Debug)]
-pub struct ClientError;
-
-impl fmt::Display for ClientError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "ClientError")
-    }
-}
-
-impl Error for ClientError {
-    fn description(&self) -> &str {
-        "Client error"
-    }
-}
 
 /// Trait to turn an object into a Result<T, E>.
 pub trait ToResult<T, E> {
@@ -58,29 +38,34 @@ pub trait ToResult<T, E> {
 ///
 /// Should be implemented for clients to send requests to Slack.
 pub trait SlackWebRequestSender {
+    type Error: std::error::Error;
+
     /// Make an API call to Slack. Takes a map of parameters that get appended to the request as query
     /// params.
-    fn send(&self, method: &str, params: HashMap<&str, String>) -> Result<String, ClientError>;
+    fn send(&self, method: &str, params: HashMap<&str, String>) -> Result<String, Self::Error>;
 }
 
 #[cfg(feature = "reqwest")]
 mod reqwest_support {
-    use reqwest;
+    extern crate reqwest;
+
     use std::collections::HashMap;
     use std::io::Read;
 
-    use super::{SlackWebRequestSender, ClientError};
+    use super::SlackWebRequestSender;
 
     impl SlackWebRequestSender for reqwest::Client {
-        fn send(&self, method: &str, params: HashMap<&str, String>) -> Result<String, ClientError> {
+        type Error = reqwest::Error;
+
+        fn send(&self, method: &str, params: HashMap<&str, String>) -> Result<String, Self::Error> {
             let url_string = format!("https://slack.com/api/{}", method);
             let mut url = reqwest::Url::parse(&url_string).expect("Unable to parse url");
 
             url.query_pairs_mut().extend_pairs(params.into_iter());
 
-            let mut response = self.get(url).send().map_err(|_| ClientError)?;
+            let mut response = self.get(url).send()?;
             let mut res_str = String::new();
-            response.read_to_string(&mut res_str).map_err(|_| ClientError)?;
+            response.read_to_string(&mut res_str).map_err(reqwest::HyperError::from)?;
 
             Ok(res_str)
         }

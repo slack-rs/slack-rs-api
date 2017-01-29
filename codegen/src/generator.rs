@@ -20,7 +20,7 @@ impl Module {
             use serde_json;
 
             #[allow(unused_imports)]
-            use ::{{ClientError, SlackWebRequestSender, ToResult}};
+            use ::{{SlackWebRequestSender, ToResult}};
 
             {methods}",
             methods = self.methods
@@ -58,7 +58,7 @@ impl Method {
 
         let send_call = {
             let mut base_call = format!("client.send(\"{name}\", params)
-                .map_err(|err| err.into())
+                .map_err(|err| {error_type}::Client(err))
                 .and_then(|result| {{
                     serde_json::from_str::<{response_type}>(&result)
                         .map_err(|_| {error_type}::MalformedResponse)
@@ -81,7 +81,7 @@ impl Method {
             "{documentation}
             pub fn {method_name}<R>(client: &R, 
                                     request: &{request_type}) 
-                                    -> Result<{response_type}, {error_type}>
+                                    -> Result<{response_type}, {error_type}<R::Error>>
                    where R: SlackWebRequestSender
             {{
                 let mut params = HashMap::new();
@@ -160,8 +160,8 @@ fn generate_matches<F>(enm: &JsonEnum, var_name: &str, f: F) -> Vec<String>
 fn get_obj_to_response_impl(obj: &JsonObject, error_type: &str) -> Option<String> {
     if obj.has_ok() {
         Some(format!(
-            "impl ToResult<{name}, {error_ty}> for {name} {{
-                fn to_result(&self) -> Result<{name}, {error_ty}> {{
+            "impl<E: Error> ToResult<{name}, {error_ty}<E>> for {name} {{
+                fn to_result(&self) -> Result<{name}, {error_ty}<E>> {{
                     if self.ok {{
                         Ok(self.clone())
                     }} else {{
@@ -182,8 +182,8 @@ fn get_obj_to_response_impl(obj: &JsonObject, error_type: &str) -> Option<String
 fn get_enum_to_response_impl(enm: &JsonEnum, error_type: &str) -> Option<String> {
     if enm.has_ok() {
         Some(format!(
-            "impl ToResult<{name}, {error_ty}> for {name} {{
-                fn to_result(&self) -> Result<{name}, {error_ty}> {{
+            "impl<E: Error> ToResult<{name}, {error_ty}<E>> for {name} {{
+                fn to_result(&self) -> Result<{name}, {error_ty}<E>> {{
                     match self {{
                         {matches}
                     }}
@@ -194,7 +194,7 @@ fn get_enum_to_response_impl(enm: &JsonEnum, error_type: &str) -> Option<String>
             error_ty = error_type,
             name = enm.name,
             matches = generate_matches(enm, "inner", |v| {
-                format!("inner.to_result().clone().map(|r| {}(r))", v.qualified_name)
+                format!("inner.to_result().map(|r| {}(r))", v.qualified_name)
             }).join("\n"),
             inner_impls = enm.variants.iter()
                 .map(|v| match &v.inner {
@@ -251,23 +251,17 @@ impl Response {
     fn get_error_enum(&self, error_ty: &str) -> String {
         format!(
             "#[derive(Clone, Debug)]
-            pub enum {error_type} {{
+            pub enum {error_type}<E: Error> {{
                 {variants}
                 /// The response was not \"ok\" but provided no error
                 MalformedResponse,
                 /// The response returned an error that was unknown to the library
                 Unknown(String),
                 /// The client had an error sending the request to Slack
-                Client(ClientError)
-            }}
-
-            impl From<ClientError> for {error_type} {{
-                fn from(err: ClientError) -> Self {{
-                    {error_type}::Client(err)
-                }}
+                Client(E)
             }}
             
-            impl<'a> From<&'a str> for {error_type} {{
+            impl<'a, E: Error> From<&'a str> for {error_type}<E> {{
                 fn from(s: &'a str) -> Self {{
                     match s {{
                         {matches}
@@ -276,13 +270,13 @@ impl Response {
                 }}
             }}
 
-            impl fmt::Display for {error_type} {{
+            impl<E: Error> fmt::Display for {error_type}<E> {{
                 fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {{
                      write!(f, \"{{}}\", self.description())
                 }}
             }}
             
-            impl Error for {error_type} {{
+            impl<E: Error> Error for {error_type}<E> {{
                 fn description(&self) -> &str {{
                     match self {{
                         {description_matches}
