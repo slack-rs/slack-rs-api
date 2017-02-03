@@ -220,7 +220,7 @@ impl Response {
         let (objs, to_result) = match PropType::from_schema(&self.schema, ty_name) {
             PropType::Obj(ref o) => {
                 let to_result = get_obj_to_response_impl(o, error_ty);
-                (o.to_string(), to_result)
+                (o.to_code(), to_result)
             },
             PropType::Enum(ref e) => {
                 let to_result = get_enum_to_response_impl(e, error_ty);
@@ -411,8 +411,8 @@ impl Param {
     }
 }
 
-impl ToString for JsonObjectFieldInfo {
-    fn to_string(&self) -> String {
+impl JsonObjectFieldInfo {
+    pub fn to_code(&self) -> String {
         let mut prefix = String::new();
         if self.name == "ok" {
             prefix.push_str("#[serde(default)]");
@@ -433,8 +433,8 @@ impl ToString for JsonObjectFieldInfo {
     }
 }
 
-impl ToString for JsonEnumVariant {
-    fn to_string(&self) -> String {
+impl JsonEnumVariant {
+    pub fn to_code(&self) -> String {
         format!(
             "{name}({inner}),",
             name = self.name,
@@ -495,7 +495,7 @@ impl JsonEnum {
             name = self.name,
             variants = self.variants
                 .iter()
-                .map(ToString::to_string)
+                .map(|v| v.to_code())
                 .collect::<Vec<_>>()
                 .join("\n"),
             variant_names = self.variants
@@ -526,7 +526,7 @@ impl JsonEnum {
 
 fn obj_recur(prop: &PropType) -> Vec<String> {
     match prop {
-        &PropType::Obj(ref o) => vec![o.to_string()],
+        &PropType::Obj(ref o) => vec![o.to_code()],
         &PropType::Arr(ref prop) => obj_recur(prop),
         &PropType::Map(ref prop) => obj_recur(prop),
         &PropType::Optional(ref prop) => obj_recur(prop),
@@ -535,8 +535,8 @@ fn obj_recur(prop: &PropType) -> Vec<String> {
     }
 }
 
-impl ToString for JsonObject {
-    fn to_string(&self) -> String {
+impl JsonObject {
+    pub fn to_code(&self) -> String {
         let subobjs = self.fields
             .iter()
             .flat_map(|f| obj_recur(&f.ty))
@@ -546,7 +546,7 @@ impl ToString for JsonObject {
         fields.sort_by_key(|f| f.name.clone());
 
         let fields = fields.iter()
-            .map(ToString::to_string)
+            .map(|f| f.to_code())
             .collect::<Vec<_>>();
 
         format!(
