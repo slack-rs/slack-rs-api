@@ -12,7 +12,9 @@ pub struct Module {
 impl Module {
     pub fn generate(&self) -> String {
         format!(
-            "use std::collections::HashMap;
+            "
+            #[allow(unused_imports)]
+            use std::collections::HashMap;
             use std::convert::From;
             use std::error::Error;
             use std::fmt;
@@ -57,7 +59,7 @@ impl Method {
         let response_type = self.response.get_response_type(&response_struct_name);
 
         let send_call = {
-            let mut base_call = format!("client.send(\"{name}\", params)
+            let mut base_call = format!("client.send(\"{name}\", &params[..])
                 .map_err(|err| {error_type}::Client(err))
                 .and_then(|result| {{
                     serde_json::from_str::<{response_type}>(&result)
@@ -84,8 +86,11 @@ impl Method {
                                     -> Result<{response_type}, {error_type}<R::Error>>
                    where R: SlackWebRequestSender
             {{
-                let mut params = HashMap::new();
-                {param_insertions}
+                {local_vars}
+                let params = vec![
+                    {param_pairs}
+                ];
+                let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
                 {send_call}
             }}
 
@@ -104,7 +109,8 @@ impl Method {
             error_type = error_enum_name,
             response = response,
             request = self.get_request_struct(&request_struct_name),
-            param_insertions = self.params.iter().map(Param::get_insertion).collect::<Vec<String>>().join("\n"),
+            local_vars = self.params.iter().filter_map(|p| p.lifted()).collect::<Vec<_>>().join("\n"),
+            param_pairs = self.params.iter().map(Param::get_pair).collect::<Vec<String>>().join(",\n"),
             send_call = send_call
         )
     }
@@ -349,50 +355,35 @@ impl Param {
         )
     }
 
-    pub fn get_insertion(&self) -> String {
+    pub fn lifted(&self) -> Option<String> {
+        match (&self.ty[..], self.optional) {
+            ("integer", true) => Some(format!("let {name} = request.{name}.map(|{name}| {name}.to_string());", name = self.name)),
+            ("integer", false) => Some(format!("let {name} = request.{name}.to_string();", name = self.name)),
+            _ => None
+        }
+    }
+
+    pub fn get_pair(&self) -> String {
         match (&self.ty[..], self.optional) {
             ("boolean", true) => {
-                format!(
-                    "if let Some({name}) = request.{name} {{
-                        params.insert(\"{name}\", if {name} {{ \"1\".to_owned() }} else {{ \"0\".to_owned() }});
-                    }}",
-                    name = self.name
-                )
+                format!("request.{name}.map(|{name}| (\"{name}\", if {name} {{ \"1\" }} else {{ \"0\" }}))", name = self.name)
             },
             ("boolean", false) => {
-                format!(
-                    "params.insert(\"{name}\", if request.{name} {{ \"1\".to_owned() }} else {{ \"0\".to_owned() }});",
-                    name = self.name
-                )
+                format!("Some((\"{name}\", if request.{name} {{ \"1\" }} else {{ \"0\" }}))", name = self.name)
             },
             ("integer", true) => {
-                format!(
-                    "
-                    if let Some({name}) = request.{name}.map(|n| n.to_string()) {{
-                        params.insert(\"{name}\", {name});
-                    }}",
-                    name = self.name
-                )
+                // lifted into local variable, using {name} instead of request.{name}
+                format!("{name}.as_ref().map(|{name}| (\"{name}\", &{name}[..]))", name = self.name)
             },
             ("integer", false) => {
-                format!(
-                    "params.insert(\"{name}\", request.{name}.to_string());",
-                    name = self.name
-                )
+                // lifted into local variable, using {name} instead of request.{name}
+                format!("Some((\"{name}\", &{name}[..]))", name = self.name)
             },
             (_, true) => {
-                format!(
-                    "if let Some(ref {name}) = request.{name} {{
-                        params.insert(\"{name}\", {name}.to_owned());
-                    }}",
-                    name = self.name
-                )
+                format!("request.{name}.as_ref().map(|{name}| (\"{name}\", &{name}[..]))", name = self.name)
             },
             (_, false) => {
-                format!(
-                    "params.insert(\"{name}\", request.{name}.clone());",
-                    name = self.name
-                )
+                format!("Some((\"{name}\", &request.{name}[..]))", name = self.name)
             }
         }
     }
