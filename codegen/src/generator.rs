@@ -22,7 +22,8 @@ impl Module {
             use serde_json;
 
             #[allow(unused_imports)]
-            use ::{{SlackWebRequestSender, ToResult}};
+            use ::ToResult;
+            use ::requests::SlackWebRequestSender;
 
             {methods}",
             methods = self.methods
