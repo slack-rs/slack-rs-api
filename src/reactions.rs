@@ -224,7 +224,7 @@ mod tests {
                 assert_eq!(c, "C1234567890");
                 match *m.clone() {
                     Message::Standard { ts: _, channel: _, user: _, text, is_starred: _,
-                         pinned_to: _, reactions, edited: _, attachments: _ } => {
+                         pinned_to: _, reactions, edited: _, attachments: _, .. } => {
                         assert_eq!(text.unwrap(), "Hello world");
                         assert_eq!(reactions.unwrap()[0].name, "astonished");
                     }

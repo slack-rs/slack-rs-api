@@ -366,7 +366,7 @@ mod tests {
             Item::Message { channel: c, message: m } => {
                 assert_eq!(c, "C2147483705");
                 match *m.clone() {
-                    Message::Standard { ts: _, channel: _, user, text: _, is_starred: _, pinned_to: _, reactions: _, edited: _, attachments: _ } => {
+                    Message::Standard { ts: _, channel: _, user, text: _, is_starred: _, pinned_to: _, reactions: _, edited: _, attachments: _, .. } => {
                         assert_eq!(user.unwrap(), "123")
                     }
                     _ => panic!("Message decoded into incorrect variant."),
@@ -598,7 +598,7 @@ mod tests {
             StarredItem::Message { channel: c, message: m } => {
                 assert_eq!(c, "C2147483705");
                 match m.clone() {
-                    Message::Standard { ts: _, channel: _, user, text: _, is_starred: _, pinned_to: _, reactions: _, edited: _, attachments: _ } => {
+                    Message::Standard { ts: _, channel: _, user, text: _, is_starred: _, pinned_to: _, reactions: _, edited: _, attachments: _, .. } => {
                         assert_eq!(user.unwrap(), "123");
                     }
                     _ => panic!("Message decoded into incorrect variant."),

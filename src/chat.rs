@@ -53,7 +53,9 @@ pub fn post_message<R: SlackWebRequestSender>(client: &R,
                     unfurl_links: Option<bool>,
                     unfurl_media: Option<bool>,
                     icon_url: Option<&str>,
-                    icon_emoji: Option<&str>)
+                    icon_emoji: Option<&str>,
+                    thread_ts: Option<&str>,
+                    reply_broadcast: Option<bool>,)
                     -> ApiResult<PostMessageResponse> {
     let mut params = HashMap::new();
     params.insert("channel", channel);
@@ -104,6 +106,12 @@ pub fn post_message<R: SlackWebRequestSender>(client: &R,
     }
     if let Some(icon_emoji) = icon_emoji {
         params.insert("icon_emoji", icon_emoji);
+    }
+    if let Some(thread_ts) = thread_ts {
+        params.insert("thread_ts", thread_ts);
+    }
+    if let Some(reply_broadcast) = reply_broadcast {
+        params.insert("reply_broadcast", if reply_broadcast { "true" } else { "false" });
     }
     let response = try!(client.send_authed("chat.postMessage", token, params));
     parse_slack_response(response, true)
@@ -178,6 +186,8 @@ mod tests {
                                   None,
                                   None,
                                   None,
+                                  None,
+                                  None,
                                   None);
         assert!(result.is_err());
     }
@@ -221,12 +231,14 @@ mod tests {
                                   None,
                                   None,
                                   None,
+                                  None,
+                                  None,
                                   None);
         if let Err(err) = result {
             panic!(format!("{:?}", err));
         }
         match result.unwrap().message {
-            Message::Standard { ts: _, channel: _, user: _, text, is_starred: _, pinned_to: _, reactions: _, edited: _, attachments: _ } => {
+            Message::Standard { ts: _, channel: _, user: _, text, is_starred: _, pinned_to: _, reactions: _, edited: _, attachments: _, .. } => {
                 assert_eq!(text.unwrap(), "Test message");
             }
             _ => panic!("Message decoded into incorrect variant."),
@@ -257,12 +269,14 @@ mod tests {
                                   None,
                                   None,
                                   None,
+                                  None,
+                                  None,
                                   None);
         if let Err(err) = result {
             panic!(format!("{:?}", err));
         }
         match result.unwrap().message.clone() {
-            Message::Standard { ts: _, channel: _, user: _, text, is_starred: _, pinned_to: _, reactions: _, edited: _, attachments: _ } => {
+            Message::Standard { ts: _, channel: _, user: _, text, is_starred: _, pinned_to: _, reactions: _, edited: _, attachments: _, .. } => {
                 assert_eq!(text.unwrap(), "Test message")
             }
             _ => panic!("Message decoded into incorrect variant."),
