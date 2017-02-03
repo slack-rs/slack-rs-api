@@ -4,7 +4,7 @@
 
 [![Build Status][ci-img]][ci-url] [![Crates.io][crates-img]][crates-url] [![License][license-img]][license-url]
 
-[Documentation](https://slack-rs.github.io/slack-rs-api/slack_api/)
+[Documentation][docs]
 
 # Usage
 
@@ -23,6 +23,7 @@ extern crate slack_api;
 # License
 `slack-api` is distributed under the [Apache-2.0 License](./LICENSE).
 
+[docs]: https://docs.rs/slack_api
 [ci-img]: https://travis-ci.org/slack-rs/slack-rs-api.svg?branch=master
 [ci-url]: https://travis-ci.org/slack-rs/slack-rs-api
 [crates-img]: https://img.shields.io/crates/v/slack_api.svg
