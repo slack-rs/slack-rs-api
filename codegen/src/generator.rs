@@ -148,7 +148,7 @@ fn generate_matches<F>(enm: &JsonEnum, var_name: &str, f: F) -> Vec<String>
         .iter()
         .map(|v| {
             format!(
-                "&{variant}(ref {var_name}) => {body},",
+                "{variant}({var_name}) => {body},",
                 variant = v.qualified_name,
                 var_name = var_name,
                 body = f(&v)
@@ -161,13 +161,11 @@ fn get_obj_to_response_impl(obj: &JsonObject, error_type: &str) -> Option<String
     if obj.has_ok() {
         Some(format!(
             "impl<E: Error> ToResult<{name}, {error_ty}<E>> for {name} {{
-                fn to_result(&self) -> Result<{name}, {error_ty}<E>> {{
+                fn to_result(self) -> Result<{name}, {error_ty}<E>> {{
                     if self.ok {{
-                        Ok(self.clone())
+                        Ok(self)
                     }} else {{
-                        Err(self.error.as_ref()
-                            .map(|s| s[..].into())
-                            .unwrap_or({error_ty}::MalformedResponse))
+                        Err(self.error.as_ref().map(String::as_ref).unwrap_or(\"\").into())
                     }}
                 }}
             }}",
@@ -183,7 +181,7 @@ fn get_enum_to_response_impl(enm: &JsonEnum, error_type: &str) -> Option<String>
     if enm.has_ok() {
         Some(format!(
             "impl<E: Error> ToResult<{name}, {error_ty}<E>> for {name} {{
-                fn to_result(&self) -> Result<{name}, {error_ty}<E>> {{
+                fn to_result(self) -> Result<{name}, {error_ty}<E>> {{
                     match self {{
                         {matches}
                     }}
@@ -253,7 +251,7 @@ impl Response {
             "#[derive(Clone, Debug)]
             pub enum {error_type}<E: Error> {{
                 {variants}
-                /// The response was not \"ok\" but provided no error
+                /// The response was not parseable as the expected object
                 MalformedResponse,
                 /// The response returned an error that was unknown to the library
                 Unknown(String),
