@@ -24,8 +24,7 @@ pub fn generate_types(output_path: &Path) -> io::Result<()> {
     let mut types_file = OpenOptions::new()
         .write(true)
         .create(true)
-        .open(&codegen_filepath)
-        .unwrap();
+        .open(&codegen_filepath)?;
 
     types_file.write_all(b"use std::collections::HashMap;\n\n")?;
 
@@ -50,7 +49,7 @@ pub fn generate_types(output_path: &Path) -> io::Result<()> {
                     _ => panic!("Object schema is not an object."),
                 };
 
-                types_file.write_all(ty.as_bytes()).ok();
+                types_file.write_all(ty.as_bytes())?;
             }
         }
     }
@@ -58,31 +57,34 @@ pub fn generate_types(output_path: &Path) -> io::Result<()> {
     Ok(())
 }
 
-pub fn run(output_path: &Path) {
+pub fn generate_modules(output_path: &Path) -> io::Result<()> {
     let mut mods = vec![];
 
     let schema_path = Path::new(SCHEMA_DIR);
 
-    for entry in fs::read_dir(schema_path.join("web")).unwrap() {
-        let path = entry.unwrap().path();
-        if path.is_file() {
-            let mut schema_file = File::open(&path).unwrap();
-            let mut schema_contents = String::new();
-            schema_file.read_to_string(&mut schema_contents).unwrap();
+    for entry in fs::read_dir(schema_path.join("web"))? {
+        if let Ok(e) = entry {
+            let path = e.path();
+            if path.is_file() {
+                let mut schema_file = File::open(&path)?;
+                let mut schema_contents = String::new();
+                schema_file.read_to_string(&mut schema_contents)?;
 
-            let module = serde_json::from_str::<Module>(&schema_contents)
-                .expect(&format!("Could not parse module schema for {}", path.display()));
-            mods.push(module.get_safe_name());
+                let module = serde_json::from_str::<Module>(&schema_contents)
+                    .expect(&format!("Could not parse module schema for {}", path.display()));
+                mods.push(module.get_safe_name());
 
-            let out_filepath = output_path.join(format!("{}.rs", module.get_safe_name()));
+                let out_filepath = output_path.join(format!("{}.rs", module.get_safe_name()));
 
-            let mut out_file = OpenOptions::new()
-                .write(true)
-                .create(true)
-                .open(&out_filepath)
-                .unwrap();
+                let mut out_file = OpenOptions::new()
+                    .write(true)
+                    .create(true)
+                    .open(&out_filepath)?;
 
-            out_file.write_all(module.generate().as_bytes()).unwrap();
+                out_file.write_all(module.generate().as_bytes())?;
+            }
         }
     }
+
+    Ok(())
 }

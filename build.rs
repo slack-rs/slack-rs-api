@@ -8,7 +8,7 @@ fn main() {
     let out_path = Path::new(&out_dir).to_owned();
 
     slack_api_codegen::generate_types(&out_path).expect("Failed to generate Slack API types");
-    slack_api_codegen::run(&out_path);
+    slack_api_codegen::generate_modules(&out_path).expect("Failed to generate Slack API modules");
 
     let codegen_dir = Path::new("codegen");
 
