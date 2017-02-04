@@ -9,7 +9,7 @@ fn main() {
     let client = reqwest::Client::new().unwrap();
 
     {
-        let request = slack::rtm::StartRequest { token: token.clone(), ..Default::default() };
+        let request = slack::rtm::StartRequest { token: &token, ..Default::default() };
         let response = slack::rtm::start(&client, &request);
 
         if let Ok(response) = response {

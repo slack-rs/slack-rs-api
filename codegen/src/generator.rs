@@ -119,7 +119,7 @@ impl Method {
     fn get_request_struct(&self, ty_name: &str) -> String {
         format!(
             "#[derive(Clone, Default, Debug)]
-            pub struct {request_type} {{
+            pub struct {request_type}<'a> {{
                 {request_params}
             }}",
             request_type = ty_name,
@@ -381,10 +381,10 @@ impl Param {
                 format!("Some((\"{name}\", &{name}[..]))", name = self.name)
             },
             (_, true) => {
-                format!("request.{name}.as_ref().map(|{name}| (\"{name}\", &{name}[..]))", name = self.name)
+                format!("request.{name}.map(|{name}| (\"{name}\", {name}))", name = self.name)
             },
             (_, false) => {
-                format!("Some((\"{name}\", &request.{name}[..]))", name = self.name)
+                format!("Some((\"{name}\", request.{name}))", name = self.name)
             }
         }
     }
@@ -393,7 +393,7 @@ impl Param {
         let ty = match &self.ty[..] {
             "boolean" => "bool",
             "integer" => "u32",
-            _ => "String",
+            _ => "&'a str",
         };
         if self.optional {
             return format!("Option<{}>", ty);
