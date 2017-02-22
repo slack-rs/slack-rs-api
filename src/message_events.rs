@@ -207,7 +207,7 @@ pub enum Message {
         item_type: String,
         text: String,
         item: Option<super::Item>,
-        channel: String,
+        channel: Option<String>,
         ts: String,
         attachments: Option<Vec<super::Attachment>>,
     },
