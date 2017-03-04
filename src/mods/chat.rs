@@ -324,13 +324,10 @@ pub fn post_message<R>(client: &R,
                       Some(("channel", request.channel)),
                       Some(("text", request.text)),
                       request.parse.map(|parse| ("parse", parse)),
-                      request.link_names
-                          .map(|link_names| ("link_names", if link_names { "1" } else { "0" })),
+                      request.link_names.map(|link_names| ("link_names", if link_names { "1" } else { "0" })),
                       request.attachments.map(|attachments| ("attachments", attachments)),
-                      request.unfurl_links
-                          .map(|unfurl_links| ("unfurl_links", if unfurl_links { "1" } else { "0" })),
-                      request.unfurl_media
-                          .map(|unfurl_media| ("unfurl_media", if unfurl_media { "1" } else { "0" })),
+                      request.unfurl_links.map(|unfurl_links| ("unfurl_links", if unfurl_links { "1" } else { "0" })),
+                      request.unfurl_media.map(|unfurl_media| ("unfurl_media", if unfurl_media { "1" } else { "0" })),
                       request.username.map(|username| ("username", username)),
                       request.as_user.map(|as_user| ("as_user", if as_user { "1" } else { "0" })),
                       request.icon_url.map(|icon_url| ("icon_url", icon_url)),
@@ -523,8 +520,7 @@ pub fn update<R>(client: &R, request: &UpdateRequest) -> Result<UpdateResponse, 
                       Some(("text", request.text)),
                       request.attachments.map(|attachments| ("attachments", attachments)),
                       request.parse.map(|parse| ("parse", parse)),
-                      request.link_names
-                          .map(|link_names| ("link_names", if link_names { "1" } else { "0" })),
+                      request.link_names.map(|link_names| ("link_names", if link_names { "1" } else { "0" })),
                       request.as_user.map(|as_user| ("as_user", if as_user { "1" } else { "0" }))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("chat.update", &params[..])

@@ -20,12 +20,11 @@ pub fn archive<R>(client: &R, request: &ArchiveRequest) -> Result<ArchiveRespons
     let params = vec![Some(("token", request.token)), Some(("channel", request.channel))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("groups.archive", &params[..])
-        .map_err(|err| ArchiveError::Client(err))
-        .and_then(|result| {
-            serde_json::from_str::<ArchiveResponse>(&result)
-                .map_err(|_| ArchiveError::MalformedResponse)
-        })
-        .and_then(|o| o.into())
+                .map_err(|err| ArchiveError::Client(err))
+                .and_then(|result| {
+                    serde_json::from_str::<ArchiveResponse>(&result)
+                        .map_err(|_| ArchiveError::MalformedResponse)
+                }).and_then(|o| o.into())
 }
 
 #[derive(Clone, Default, Debug)]
@@ -594,18 +593,16 @@ pub fn history<R>(client: &R, request: &HistoryRequest) -> Result<HistoryRespons
                       Some(("channel", request.channel)),
                       request.latest.map(|latest| ("latest", latest)),
                       request.oldest.map(|oldest| ("oldest", oldest)),
-                      request.inclusive
-                          .map(|inclusive| ("inclusive", if inclusive { "1" } else { "0" })),
+                      request.inclusive.map(|inclusive| ("inclusive", if inclusive { "1" } else { "0" })),
                       count.as_ref().map(|count| ("count", &count[..])),
                       request.unreads.map(|unreads| ("unreads", if unreads { "1" } else { "0" }))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("groups.history", &params[..])
-        .map_err(|err| HistoryError::Client(err))
-        .and_then(|result| {
-            serde_json::from_str::<HistoryResponse>(&result)
-                .map_err(|_| HistoryError::MalformedResponse)
-        })
-        .and_then(|o| o.into())
+                .map_err(|err| HistoryError::Client(err))
+                .and_then(|result| {
+                    serde_json::from_str::<HistoryResponse>(&result)
+                        .map_err(|_| HistoryError::MalformedResponse)
+                }).and_then(|o| o.into())
 }
 
 #[derive(Clone, Default, Debug)]
@@ -1875,12 +1872,11 @@ pub fn replies<R>(client: &R, request: &RepliesRequest) -> Result<RepliesRespons
                       Some(("thread_ts", request.thread_ts))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("groups.replies", &params[..])
-        .map_err(|err| RepliesError::Client(err))
-        .and_then(|result| {
-            serde_json::from_str::<RepliesResponse>(&result)
-                .map_err(|_| RepliesError::MalformedResponse)
-        })
-        .and_then(|o| o.into())
+                .map_err(|err| RepliesError::Client(err))
+                .and_then(|result| {
+                    serde_json::from_str::<RepliesResponse>(&result)
+                        .map_err(|_| RepliesError::MalformedResponse)
+                }).and_then(|o| o.into())
 }
 
 #[derive(Clone, Default, Debug)]

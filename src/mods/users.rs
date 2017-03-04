@@ -536,8 +536,7 @@ pub fn list<R>(client: &R, request: &ListRequest) -> Result<ListResponse, ListEr
 {
 
     let params = vec![Some(("token", request.token)),
-                      request.presence
-                          .map(|presence| ("presence", if presence { "1" } else { "0" }))];
+                      request.presence.map(|presence| ("presence", if presence { "1" } else { "0" }))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("users.list", &params[..])
         .map_err(|err| ListError::Client(err))

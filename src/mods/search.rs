@@ -22,8 +22,7 @@ pub fn all<R>(client: &R, request: &AllRequest) -> Result<AllResponse, AllError<
                       Some(("query", request.query)),
                       request.sort.map(|sort| ("sort", sort)),
                       request.sort_dir.map(|sort_dir| ("sort_dir", sort_dir)),
-                      request.highlight
-                          .map(|highlight| ("highlight", if highlight { "1" } else { "0" })),
+                      request.highlight.map(|highlight| ("highlight", if highlight { "1" } else { "0" })),
                       count.as_ref().map(|count| ("count", &count[..])),
                       page.as_ref().map(|page| ("page", &page[..]))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
@@ -63,15 +62,15 @@ pub struct AllResponse {
 }
 
 #[derive(Clone, Debug, Deserialize)]
-pub struct AllResponseMessages {
-    pub matches: Vec<::Message>,
+pub struct AllResponseFiles {
+    pub matches: Vec<::File>,
     pub paging: ::Paging,
 }
 
 
 #[derive(Clone, Debug, Deserialize)]
-pub struct AllResponseFiles {
-    pub matches: Vec<::File>,
+pub struct AllResponseMessages {
+    pub matches: Vec<::Message>,
     pub paging: ::Paging,
 }
 
@@ -183,8 +182,7 @@ pub fn files<R>(client: &R, request: &FilesRequest) -> Result<FilesResponse, Fil
                       Some(("query", request.query)),
                       request.sort.map(|sort| ("sort", sort)),
                       request.sort_dir.map(|sort_dir| ("sort_dir", sort_dir)),
-                      request.highlight
-                          .map(|highlight| ("highlight", if highlight { "1" } else { "0" })),
+                      request.highlight.map(|highlight| ("highlight", if highlight { "1" } else { "0" })),
                       count.as_ref().map(|count| ("count", &count[..])),
                       page.as_ref().map(|page| ("page", &page[..]))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
@@ -337,8 +335,7 @@ pub fn messages<R>(client: &R, request: &MessagesRequest) -> Result<MessagesResp
                       Some(("query", request.query)),
                       request.sort.map(|sort| ("sort", sort)),
                       request.sort_dir.map(|sort_dir| ("sort_dir", sort_dir)),
-                      request.highlight
-                          .map(|highlight| ("highlight", if highlight { "1" } else { "0" })),
+                      request.highlight.map(|highlight| ("highlight", if highlight { "1" } else { "0" })),
                       count.as_ref().map(|count| ("count", &count[..])),
                       page.as_ref().map(|page| ("page", &page[..]))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();

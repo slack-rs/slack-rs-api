@@ -49,6 +49,11 @@ pub struct Method {
 
 impl Method {
     pub fn generate(&self) -> String {
+        // HACK: files.upload requires multipart support, which is not yet supported by this library
+        if self.name == "files.upload" {
+            return String::new();
+        }
+
         let fn_name = self.name.split('.').last().unwrap().to_snake_case();
         let type_prefix = self.name.split('.').last().unwrap().to_pascal_case();
         let request_struct_name = type_prefix.clone() + "Request";

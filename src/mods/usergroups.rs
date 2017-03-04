@@ -169,12 +169,11 @@ pub fn disable<R>(client: &R, request: &DisableRequest) -> Result<DisableRespons
                           .map(|include_count| ("include_count", if include_count { "1" } else { "0" }))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("usergroups.disable", &params[..])
-        .map_err(|err| DisableError::Client(err))
-        .and_then(|result| {
-            serde_json::from_str::<DisableResponse>(&result)
-                .map_err(|_| DisableError::MalformedResponse)
-        })
-        .and_then(|o| o.into())
+                .map_err(|err| DisableError::Client(err))
+                .and_then(|result| {
+                    serde_json::from_str::<DisableResponse>(&result)
+                        .map_err(|_| DisableError::MalformedResponse)
+                }).and_then(|o| o.into())
 }
 
 #[derive(Clone, Default, Debug)]
@@ -440,13 +439,12 @@ pub fn list<R>(client: &R, request: &ListRequest) -> Result<ListResponse, ListEr
     where R: SlackWebRequestSender
 {
 
-    let params = vec![Some(("token", request.token)),
-                      request.include_disabled
-                          .map(|include_disabled| ("include_disabled", if include_disabled { "1" } else { "0" })),
-                      request.include_count
-                          .map(|include_count| ("include_count", if include_count { "1" } else { "0" })),
-                      request.include_users
-                          .map(|include_users| ("include_users", if include_users { "1" } else { "0" }))];
+    let params =
+        vec![Some(("token", request.token)),
+             request.include_disabled
+                 .map(|include_disabled| ("include_disabled", if include_disabled { "1" } else { "0" })),
+             request.include_count.map(|include_count| ("include_count", if include_count { "1" } else { "0" })),
+             request.include_users.map(|include_users| ("include_users", if include_users { "1" } else { "0" }))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("usergroups.list", &params[..])
         .map_err(|err| ListError::Client(err))
