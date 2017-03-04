@@ -1,0 +1,605 @@
+
+#[allow(unused_imports)]
+use std::collections::HashMap;
+use std::convert::From;
+use std::error::Error;
+use std::fmt;
+
+use serde_json;
+
+#[allow(unused_imports)]
+use ToResult;
+use requests::SlackWebRequestSender;
+
+/// Gets the access logs for the current team.
+///
+/// Wraps https://api.slack.com/methods/team.accessLogs
+
+pub fn access_logs<R>(client: &R,
+                      request: &AccessLogsRequest)
+                      -> Result<AccessLogsResponse, AccessLogsError<R::Error>>
+    where R: SlackWebRequestSender
+{
+    let count = request.count.map(|count| count.to_string());
+    let page = request.page.map(|page| page.to_string());
+    let before = request.before.map(|before| before.to_string());
+    let params = vec![Some(("token", request.token)),
+                      count.as_ref().map(|count| ("count", &count[..])),
+                      page.as_ref().map(|page| ("page", &page[..])),
+                      before.as_ref().map(|before| ("before", &before[..]))];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    client.send("team.accessLogs", &params[..])
+        .map_err(|err| AccessLogsError::Client(err))
+        .and_then(|result| {
+            serde_json::from_str::<AccessLogsResponse>(&result)
+                .map_err(|_| AccessLogsError::MalformedResponse)
+        })
+        .and_then(|o| o.to_result())
+}
+
+#[derive(Clone, Default, Debug)]
+pub struct AccessLogsRequest<'a> {
+    /// Authentication token.
+    /// Requires scope: admin
+    pub token: &'a str,
+    /// Number of items to return per page.
+    pub count: Option<u32>,
+    /// Page number of results to return.
+    pub page: Option<u32>,
+    /// End of time range of logs to include in results (inclusive).
+    pub before: Option<u32>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct AccessLogsResponse {
+    error: Option<String>,
+    pub logins: Option<Vec<AccessLogsResponseLogin>>,
+    #[serde(default)]
+    ok: bool,
+    pub paging: Option<::Paging>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct AccessLogsResponseLogin {
+    pub count: Option<i32>,
+    pub country: Option<String>,
+    pub date_first: Option<f32>,
+    pub date_last: Option<f32>,
+    pub ip: Option<String>,
+    pub isp: Option<String>,
+    pub region: Option<String>,
+    pub user_agent: Option<String>,
+    pub user_id: Option<String>,
+    pub username: Option<String>,
+}
+
+
+impl<E: Error> ToResult<AccessLogsResponse, AccessLogsError<E>> for AccessLogsResponse {
+    fn to_result(self) -> Result<AccessLogsResponse, AccessLogsError<E>> {
+        if self.ok {
+            Ok(self)
+        } else {
+            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+        }
+    }
+}
+#[derive(Clone, Debug)]
+pub enum AccessLogsError<E: Error> {
+    /// This is only available to paid teams.
+    PaidOnly,
+    /// It is not possible to request more than 1000 items per page or more than 100 pages.
+    OverPaginationLimit,
+    /// No authentication token provided.
+    NotAuthed,
+    /// Invalid authentication token.
+    InvalidAuth,
+    /// Authentication token is for a deleted user or team.
+    AccountInactive,
+    /// This method cannot be called by a bot user.
+    UserIsBot,
+    /// The method was passed an argument whose name falls outside the bounds of common decency. This includes very long names and names with non-alphanumeric characters other than _. If you get this error, it is typically an indication that you have made a very malformed API call.
+    InvalidArgName,
+    /// The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API.
+    InvalidArrayArg,
+    /// The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1.
+    InvalidCharset,
+    /// The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid.
+    InvalidFormData,
+    /// The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/json application/x-www-form-urlencoded multipart/form-data text/plain.
+    InvalidPostType,
+    /// The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.
+    MissingPostType,
+    /// The method was called via a POST request, but the POST data was either missing or truncated.
+    RequestTimeout,
+    /// The response was not parseable as the expected object
+    MalformedResponse,
+    /// The response returned an error that was unknown to the library
+    Unknown(String),
+    /// The client had an error sending the request to Slack
+    Client(E),
+}
+
+impl<'a, E: Error> From<&'a str> for AccessLogsError<E> {
+    fn from(s: &'a str) -> Self {
+        match s {
+            "paid_only" => AccessLogsError::PaidOnly,
+            "over_pagination_limit" => AccessLogsError::OverPaginationLimit,
+            "not_authed" => AccessLogsError::NotAuthed,
+            "invalid_auth" => AccessLogsError::InvalidAuth,
+            "account_inactive" => AccessLogsError::AccountInactive,
+            "user_is_bot" => AccessLogsError::UserIsBot,
+            "invalid_arg_name" => AccessLogsError::InvalidArgName,
+            "invalid_array_arg" => AccessLogsError::InvalidArrayArg,
+            "invalid_charset" => AccessLogsError::InvalidCharset,
+            "invalid_form_data" => AccessLogsError::InvalidFormData,
+            "invalid_post_type" => AccessLogsError::InvalidPostType,
+            "missing_post_type" => AccessLogsError::MissingPostType,
+            "request_timeout" => AccessLogsError::RequestTimeout,
+            _ => AccessLogsError::Unknown(s.to_owned()),
+        }
+    }
+}
+
+impl<E: Error> fmt::Display for AccessLogsError<E> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.description())
+    }
+}
+
+impl<E: Error> Error for AccessLogsError<E> {
+    fn description(&self) -> &str {
+        match self {
+            &AccessLogsError::PaidOnly => "paid_only",
+            &AccessLogsError::OverPaginationLimit => "over_pagination_limit",
+            &AccessLogsError::NotAuthed => "not_authed",
+            &AccessLogsError::InvalidAuth => "invalid_auth",
+            &AccessLogsError::AccountInactive => "account_inactive",
+            &AccessLogsError::UserIsBot => "user_is_bot",
+            &AccessLogsError::InvalidArgName => "invalid_arg_name",
+            &AccessLogsError::InvalidArrayArg => "invalid_array_arg",
+            &AccessLogsError::InvalidCharset => "invalid_charset",
+            &AccessLogsError::InvalidFormData => "invalid_form_data",
+            &AccessLogsError::InvalidPostType => "invalid_post_type",
+            &AccessLogsError::MissingPostType => "missing_post_type",
+            &AccessLogsError::RequestTimeout => "request_timeout",
+            &AccessLogsError::MalformedResponse => "Malformed response data from Slack.",
+            &AccessLogsError::Unknown(ref s) => s,
+            &AccessLogsError::Client(ref inner) => inner.description(),
+        }
+    }
+
+    fn cause(&self) -> Option<&Error> {
+        match self {
+            &AccessLogsError::Client(ref inner) => Some(inner),
+            _ => None,
+        }
+    }
+}
+
+/// Gets billable users information for the current team.
+///
+/// Wraps https://api.slack.com/methods/team.billableInfo
+
+pub fn billable_info<R>(client: &R,
+                        request: &BillableInfoRequest)
+                        -> Result<BillableInfoResponse, BillableInfoError<R::Error>>
+    where R: SlackWebRequestSender
+{
+
+    let params = vec![Some(("token", request.token)), request.user.map(|user| ("user", user))];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    client.send("team.billableInfo", &params[..])
+        .map_err(|err| BillableInfoError::Client(err))
+        .and_then(|result| {
+            serde_json::from_str::<BillableInfoResponse>(&result)
+                .map_err(|_| BillableInfoError::MalformedResponse)
+        })
+        .and_then(|o| o.to_result())
+}
+
+#[derive(Clone, Default, Debug)]
+pub struct BillableInfoRequest<'a> {
+    /// Authentication token.
+    /// Requires scope: admin
+    pub token: &'a str,
+    /// A user to retrieve the billable information for. Defaults to all users.
+    pub user: Option<&'a str>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct BillableInfoResponse {
+    pub billable_info: Option<HashMap<String, bool>>,
+    error: Option<String>,
+    #[serde(default)]
+    ok: bool,
+}
+
+
+impl<E: Error> ToResult<BillableInfoResponse, BillableInfoError<E>> for BillableInfoResponse {
+    fn to_result(self) -> Result<BillableInfoResponse, BillableInfoError<E>> {
+        if self.ok {
+            Ok(self)
+        } else {
+            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+        }
+    }
+}
+#[derive(Clone, Debug)]
+pub enum BillableInfoError<E: Error> {
+    /// Unable to find the requested user.
+    UserNotFound,
+    /// No authentication token provided.
+    NotAuthed,
+    /// Invalid authentication token.
+    InvalidAuth,
+    /// Authentication token is for a deleted user or team.
+    AccountInactive,
+    /// This method cannot be called by a bot user.
+    UserIsBot,
+    /// The method was passed an argument whose name falls outside the bounds of common decency. This includes very long names and names with non-alphanumeric characters other than _. If you get this error, it is typically an indication that you have made a very malformed API call.
+    InvalidArgName,
+    /// The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API.
+    InvalidArrayArg,
+    /// The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1.
+    InvalidCharset,
+    /// The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid.
+    InvalidFormData,
+    /// The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/json application/x-www-form-urlencoded multipart/form-data text/plain.
+    InvalidPostType,
+    /// The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.
+    MissingPostType,
+    /// The method was called via a POST request, but the POST data was either missing or truncated.
+    RequestTimeout,
+    /// The response was not parseable as the expected object
+    MalformedResponse,
+    /// The response returned an error that was unknown to the library
+    Unknown(String),
+    /// The client had an error sending the request to Slack
+    Client(E),
+}
+
+impl<'a, E: Error> From<&'a str> for BillableInfoError<E> {
+    fn from(s: &'a str) -> Self {
+        match s {
+            "user_not_found" => BillableInfoError::UserNotFound,
+            "not_authed" => BillableInfoError::NotAuthed,
+            "invalid_auth" => BillableInfoError::InvalidAuth,
+            "account_inactive" => BillableInfoError::AccountInactive,
+            "user_is_bot" => BillableInfoError::UserIsBot,
+            "invalid_arg_name" => BillableInfoError::InvalidArgName,
+            "invalid_array_arg" => BillableInfoError::InvalidArrayArg,
+            "invalid_charset" => BillableInfoError::InvalidCharset,
+            "invalid_form_data" => BillableInfoError::InvalidFormData,
+            "invalid_post_type" => BillableInfoError::InvalidPostType,
+            "missing_post_type" => BillableInfoError::MissingPostType,
+            "request_timeout" => BillableInfoError::RequestTimeout,
+            _ => BillableInfoError::Unknown(s.to_owned()),
+        }
+    }
+}
+
+impl<E: Error> fmt::Display for BillableInfoError<E> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.description())
+    }
+}
+
+impl<E: Error> Error for BillableInfoError<E> {
+    fn description(&self) -> &str {
+        match self {
+            &BillableInfoError::UserNotFound => "user_not_found",
+            &BillableInfoError::NotAuthed => "not_authed",
+            &BillableInfoError::InvalidAuth => "invalid_auth",
+            &BillableInfoError::AccountInactive => "account_inactive",
+            &BillableInfoError::UserIsBot => "user_is_bot",
+            &BillableInfoError::InvalidArgName => "invalid_arg_name",
+            &BillableInfoError::InvalidArrayArg => "invalid_array_arg",
+            &BillableInfoError::InvalidCharset => "invalid_charset",
+            &BillableInfoError::InvalidFormData => "invalid_form_data",
+            &BillableInfoError::InvalidPostType => "invalid_post_type",
+            &BillableInfoError::MissingPostType => "missing_post_type",
+            &BillableInfoError::RequestTimeout => "request_timeout",
+            &BillableInfoError::MalformedResponse => "Malformed response data from Slack.",
+            &BillableInfoError::Unknown(ref s) => s,
+            &BillableInfoError::Client(ref inner) => inner.description(),
+        }
+    }
+
+    fn cause(&self) -> Option<&Error> {
+        match self {
+            &BillableInfoError::Client(ref inner) => Some(inner),
+            _ => None,
+        }
+    }
+}
+
+/// Gets information about the current team.
+///
+/// Wraps https://api.slack.com/methods/team.info
+
+pub fn info<R>(client: &R, request: &InfoRequest) -> Result<InfoResponse, InfoError<R::Error>>
+    where R: SlackWebRequestSender
+{
+
+    let params = vec![Some(("token", request.token))];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    client.send("team.info", &params[..])
+        .map_err(|err| InfoError::Client(err))
+        .and_then(|result| {
+            serde_json::from_str::<InfoResponse>(&result).map_err(|_| InfoError::MalformedResponse)
+        })
+        .and_then(|o| o.to_result())
+}
+
+#[derive(Clone, Default, Debug)]
+pub struct InfoRequest<'a> {
+    /// Authentication token.
+    /// Requires scope: team:read
+    pub token: &'a str,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct InfoResponse {
+    error: Option<String>,
+    #[serde(default)]
+    ok: bool,
+    pub team: Option<::Team>,
+}
+
+
+impl<E: Error> ToResult<InfoResponse, InfoError<E>> for InfoResponse {
+    fn to_result(self) -> Result<InfoResponse, InfoError<E>> {
+        if self.ok {
+            Ok(self)
+        } else {
+            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+        }
+    }
+}
+#[derive(Clone, Debug)]
+pub enum InfoError<E: Error> {
+    /// No authentication token provided.
+    NotAuthed,
+    /// Invalid authentication token.
+    InvalidAuth,
+    /// Authentication token is for a deleted user or team.
+    AccountInactive,
+    /// The method was passed an argument whose name falls outside the bounds of common decency. This includes very long names and names with non-alphanumeric characters other than _. If you get this error, it is typically an indication that you have made a very malformed API call.
+    InvalidArgName,
+    /// The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API.
+    InvalidArrayArg,
+    /// The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1.
+    InvalidCharset,
+    /// The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid.
+    InvalidFormData,
+    /// The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/json application/x-www-form-urlencoded multipart/form-data text/plain.
+    InvalidPostType,
+    /// The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.
+    MissingPostType,
+    /// The method was called via a POST request, but the POST data was either missing or truncated.
+    RequestTimeout,
+    /// The response was not parseable as the expected object
+    MalformedResponse,
+    /// The response returned an error that was unknown to the library
+    Unknown(String),
+    /// The client had an error sending the request to Slack
+    Client(E),
+}
+
+impl<'a, E: Error> From<&'a str> for InfoError<E> {
+    fn from(s: &'a str) -> Self {
+        match s {
+            "not_authed" => InfoError::NotAuthed,
+            "invalid_auth" => InfoError::InvalidAuth,
+            "account_inactive" => InfoError::AccountInactive,
+            "invalid_arg_name" => InfoError::InvalidArgName,
+            "invalid_array_arg" => InfoError::InvalidArrayArg,
+            "invalid_charset" => InfoError::InvalidCharset,
+            "invalid_form_data" => InfoError::InvalidFormData,
+            "invalid_post_type" => InfoError::InvalidPostType,
+            "missing_post_type" => InfoError::MissingPostType,
+            "request_timeout" => InfoError::RequestTimeout,
+            _ => InfoError::Unknown(s.to_owned()),
+        }
+    }
+}
+
+impl<E: Error> fmt::Display for InfoError<E> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.description())
+    }
+}
+
+impl<E: Error> Error for InfoError<E> {
+    fn description(&self) -> &str {
+        match self {
+            &InfoError::NotAuthed => "not_authed",
+            &InfoError::InvalidAuth => "invalid_auth",
+            &InfoError::AccountInactive => "account_inactive",
+            &InfoError::InvalidArgName => "invalid_arg_name",
+            &InfoError::InvalidArrayArg => "invalid_array_arg",
+            &InfoError::InvalidCharset => "invalid_charset",
+            &InfoError::InvalidFormData => "invalid_form_data",
+            &InfoError::InvalidPostType => "invalid_post_type",
+            &InfoError::MissingPostType => "missing_post_type",
+            &InfoError::RequestTimeout => "request_timeout",
+            &InfoError::MalformedResponse => "Malformed response data from Slack.",
+            &InfoError::Unknown(ref s) => s,
+            &InfoError::Client(ref inner) => inner.description(),
+        }
+    }
+
+    fn cause(&self) -> Option<&Error> {
+        match self {
+            &InfoError::Client(ref inner) => Some(inner),
+            _ => None,
+        }
+    }
+}
+
+/// Gets the integration logs for the current team.
+///
+/// Wraps https://api.slack.com/methods/team.integrationLogs
+
+pub fn integration_logs<R>(client: &R,
+                           request: &IntegrationLogsRequest)
+                           -> Result<IntegrationLogsResponse, IntegrationLogsError<R::Error>>
+    where R: SlackWebRequestSender
+{
+    let count = request.count.map(|count| count.to_string());
+    let page = request.page.map(|page| page.to_string());
+    let params = vec![Some(("token", request.token)),
+                      request.service_id.map(|service_id| ("service_id", service_id)),
+                      request.app_id.map(|app_id| ("app_id", app_id)),
+                      request.user.map(|user| ("user", user)),
+                      request.change_type.map(|change_type| ("change_type", change_type)),
+                      count.as_ref().map(|count| ("count", &count[..])),
+                      page.as_ref().map(|page| ("page", &page[..]))];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    client.send("team.integrationLogs", &params[..])
+        .map_err(|err| IntegrationLogsError::Client(err))
+        .and_then(|result| {
+            serde_json::from_str::<IntegrationLogsResponse>(&result)
+                .map_err(|_| IntegrationLogsError::MalformedResponse)
+        })
+        .and_then(|o| o.to_result())
+}
+
+#[derive(Clone, Default, Debug)]
+pub struct IntegrationLogsRequest<'a> {
+    /// Authentication token.
+    /// Requires scope: admin
+    pub token: &'a str,
+    /// Filter logs to this service. Defaults to all logs.
+    pub service_id: Option<&'a str>,
+    /// Filter logs to this Slack app. Defaults to all logs.
+    pub app_id: Option<&'a str>,
+    /// Filter logs generated by this user’s actions. Defaults to all logs.
+    pub user: Option<&'a str>,
+    /// Filter logs with this change type. Defaults to all logs.
+    pub change_type: Option<&'a str>,
+    /// Number of items to return per page.
+    pub count: Option<u32>,
+    /// Page number of results to return.
+    pub page: Option<u32>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct IntegrationLogsResponse {
+    error: Option<String>,
+    pub logs: Option<Vec<IntegrationLogsResponseLog>>,
+    #[serde(default)]
+    ok: bool,
+    pub paging: Option<::Paging>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct IntegrationLogsResponseLog {
+    pub app_id: Option<String>,
+    pub app_type: Option<String>,
+    pub change_type: Option<String>,
+    pub channel: Option<String>,
+    pub date: Option<String>,
+    pub reason: Option<String>,
+    pub scope: Option<String>,
+    pub service_id: Option<String>,
+    pub service_type: Option<String>,
+    pub user_id: Option<String>,
+    pub user_name: Option<String>,
+}
+
+
+impl<E: Error> ToResult<IntegrationLogsResponse, IntegrationLogsError<E>>
+    for IntegrationLogsResponse {
+    fn to_result(self) -> Result<IntegrationLogsResponse, IntegrationLogsError<E>> {
+        if self.ok {
+            Ok(self)
+        } else {
+            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+        }
+    }
+}
+#[derive(Clone, Debug)]
+pub enum IntegrationLogsError<E: Error> {
+    /// No authentication token provided.
+    NotAuthed,
+    /// Invalid authentication token.
+    InvalidAuth,
+    /// Authentication token is for a deleted user or team.
+    AccountInactive,
+    /// This method cannot be called by a bot user.
+    UserIsBot,
+    /// The method was passed an argument whose name falls outside the bounds of common decency. This includes very long names and names with non-alphanumeric characters other than _. If you get this error, it is typically an indication that you have made a very malformed API call.
+    InvalidArgName,
+    /// The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API.
+    InvalidArrayArg,
+    /// The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1.
+    InvalidCharset,
+    /// The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid.
+    InvalidFormData,
+    /// The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/json application/x-www-form-urlencoded multipart/form-data text/plain.
+    InvalidPostType,
+    /// The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.
+    MissingPostType,
+    /// The method was called via a POST request, but the POST data was either missing or truncated.
+    RequestTimeout,
+    /// The response was not parseable as the expected object
+    MalformedResponse,
+    /// The response returned an error that was unknown to the library
+    Unknown(String),
+    /// The client had an error sending the request to Slack
+    Client(E),
+}
+
+impl<'a, E: Error> From<&'a str> for IntegrationLogsError<E> {
+    fn from(s: &'a str) -> Self {
+        match s {
+            "not_authed" => IntegrationLogsError::NotAuthed,
+            "invalid_auth" => IntegrationLogsError::InvalidAuth,
+            "account_inactive" => IntegrationLogsError::AccountInactive,
+            "user_is_bot" => IntegrationLogsError::UserIsBot,
+            "invalid_arg_name" => IntegrationLogsError::InvalidArgName,
+            "invalid_array_arg" => IntegrationLogsError::InvalidArrayArg,
+            "invalid_charset" => IntegrationLogsError::InvalidCharset,
+            "invalid_form_data" => IntegrationLogsError::InvalidFormData,
+            "invalid_post_type" => IntegrationLogsError::InvalidPostType,
+            "missing_post_type" => IntegrationLogsError::MissingPostType,
+            "request_timeout" => IntegrationLogsError::RequestTimeout,
+            _ => IntegrationLogsError::Unknown(s.to_owned()),
+        }
+    }
+}
+
+impl<E: Error> fmt::Display for IntegrationLogsError<E> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.description())
+    }
+}
+
+impl<E: Error> Error for IntegrationLogsError<E> {
+    fn description(&self) -> &str {
+        match self {
+            &IntegrationLogsError::NotAuthed => "not_authed",
+            &IntegrationLogsError::InvalidAuth => "invalid_auth",
+            &IntegrationLogsError::AccountInactive => "account_inactive",
+            &IntegrationLogsError::UserIsBot => "user_is_bot",
+            &IntegrationLogsError::InvalidArgName => "invalid_arg_name",
+            &IntegrationLogsError::InvalidArrayArg => "invalid_array_arg",
+            &IntegrationLogsError::InvalidCharset => "invalid_charset",
+            &IntegrationLogsError::InvalidFormData => "invalid_form_data",
+            &IntegrationLogsError::InvalidPostType => "invalid_post_type",
+            &IntegrationLogsError::MissingPostType => "missing_post_type",
+            &IntegrationLogsError::RequestTimeout => "request_timeout",
+            &IntegrationLogsError::MalformedResponse => "Malformed response data from Slack.",
+            &IntegrationLogsError::Unknown(ref s) => s,
+            &IntegrationLogsError::Client(ref inner) => inner.description(),
+        }
+    }
+
+    fn cause(&self) -> Option<&Error> {
+        match self {
+            &IntegrationLogsError::Client(ref inner) => Some(inner),
+            _ => None,
+        }
+    }
+}

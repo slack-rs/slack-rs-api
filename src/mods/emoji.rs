@@ -1,0 +1,136 @@
+
+#[allow(unused_imports)]
+use std::collections::HashMap;
+use std::convert::From;
+use std::error::Error;
+use std::fmt;
+
+use serde_json;
+
+#[allow(unused_imports)]
+use ToResult;
+use requests::SlackWebRequestSender;
+
+/// Lists custom emoji for a team.
+///
+/// Wraps https://api.slack.com/methods/emoji.list
+
+pub fn list<R>(client: &R, request: &ListRequest) -> Result<ListResponse, ListError<R::Error>>
+    where R: SlackWebRequestSender
+{
+
+    let params = vec![Some(("token", request.token))];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    client.send("emoji.list", &params[..])
+        .map_err(|err| ListError::Client(err))
+        .and_then(|result| {
+            serde_json::from_str::<ListResponse>(&result).map_err(|_| ListError::MalformedResponse)
+        })
+        .and_then(|o| o.to_result())
+}
+
+#[derive(Clone, Default, Debug)]
+pub struct ListRequest<'a> {
+    /// Authentication token.
+    /// Requires scope: emoji:read
+    pub token: &'a str,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct ListResponse {
+    pub emoji: Option<HashMap<String, bool>>,
+    error: Option<String>,
+    #[serde(default)]
+    ok: bool,
+}
+
+
+impl<E: Error> ToResult<ListResponse, ListError<E>> for ListResponse {
+    fn to_result(self) -> Result<ListResponse, ListError<E>> {
+        if self.ok {
+            Ok(self)
+        } else {
+            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+        }
+    }
+}
+#[derive(Clone, Debug)]
+pub enum ListError<E: Error> {
+    /// No authentication token provided.
+    NotAuthed,
+    /// Invalid authentication token.
+    InvalidAuth,
+    /// Authentication token is for a deleted user or team.
+    AccountInactive,
+    /// The method was passed an argument whose name falls outside the bounds of common decency. This includes very long names and names with non-alphanumeric characters other than _. If you get this error, it is typically an indication that you have made a very malformed API call.
+    InvalidArgName,
+    /// The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API.
+    InvalidArrayArg,
+    /// The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1.
+    InvalidCharset,
+    /// The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid.
+    InvalidFormData,
+    /// The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/json application/x-www-form-urlencoded multipart/form-data text/plain.
+    InvalidPostType,
+    /// The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.
+    MissingPostType,
+    /// The method was called via a POST request, but the POST data was either missing or truncated.
+    RequestTimeout,
+    /// The response was not parseable as the expected object
+    MalformedResponse,
+    /// The response returned an error that was unknown to the library
+    Unknown(String),
+    /// The client had an error sending the request to Slack
+    Client(E),
+}
+
+impl<'a, E: Error> From<&'a str> for ListError<E> {
+    fn from(s: &'a str) -> Self {
+        match s {
+            "not_authed" => ListError::NotAuthed,
+            "invalid_auth" => ListError::InvalidAuth,
+            "account_inactive" => ListError::AccountInactive,
+            "invalid_arg_name" => ListError::InvalidArgName,
+            "invalid_array_arg" => ListError::InvalidArrayArg,
+            "invalid_charset" => ListError::InvalidCharset,
+            "invalid_form_data" => ListError::InvalidFormData,
+            "invalid_post_type" => ListError::InvalidPostType,
+            "missing_post_type" => ListError::MissingPostType,
+            "request_timeout" => ListError::RequestTimeout,
+            _ => ListError::Unknown(s.to_owned()),
+        }
+    }
+}
+
+impl<E: Error> fmt::Display for ListError<E> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.description())
+    }
+}
+
+impl<E: Error> Error for ListError<E> {
+    fn description(&self) -> &str {
+        match self {
+            &ListError::NotAuthed => "not_authed",
+            &ListError::InvalidAuth => "invalid_auth",
+            &ListError::AccountInactive => "account_inactive",
+            &ListError::InvalidArgName => "invalid_arg_name",
+            &ListError::InvalidArrayArg => "invalid_array_arg",
+            &ListError::InvalidCharset => "invalid_charset",
+            &ListError::InvalidFormData => "invalid_form_data",
+            &ListError::InvalidPostType => "invalid_post_type",
+            &ListError::MissingPostType => "missing_post_type",
+            &ListError::RequestTimeout => "request_timeout",
+            &ListError::MalformedResponse => "Malformed response data from Slack.",
+            &ListError::Unknown(ref s) => s,
+            &ListError::Client(ref inner) => inner.description(),
+        }
+    }
+
+    fn cause(&self) -> Option<&Error> {
+        match self {
+            &ListError::Client(ref inner) => Some(inner),
+            _ => None,
+        }
+    }
+}

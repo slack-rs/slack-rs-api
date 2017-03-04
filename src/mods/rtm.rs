@@ -1,0 +1,159 @@
+
+#[allow(unused_imports)]
+use std::collections::HashMap;
+use std::convert::From;
+use std::error::Error;
+use std::fmt;
+
+use serde_json;
+
+#[allow(unused_imports)]
+use ToResult;
+use requests::SlackWebRequestSender;
+
+/// Starts a Real Time Messaging session.
+///
+/// Wraps https://api.slack.com/methods/rtm.start
+
+pub fn start<R>(client: &R, request: &StartRequest) -> Result<StartResponse, StartError<R::Error>>
+    where R: SlackWebRequestSender
+{
+
+    let params = vec![Some(("token", request.token)),
+                      request.simple_latest.map(|simple_latest| ("simple_latest", simple_latest)),
+                      request.no_unreads.map(|no_unreads| ("no_unreads", no_unreads)),
+                      request.mpim_aware.map(|mpim_aware| ("mpim_aware", mpim_aware))];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    client.send("rtm.start", &params[..])
+        .map_err(|err| StartError::Client(err))
+        .and_then(|result| {
+            serde_json::from_str::<StartResponse>(&result)
+                .map_err(|_| StartError::MalformedResponse)
+        })
+        .and_then(|o| o.to_result())
+}
+
+#[derive(Clone, Default, Debug)]
+pub struct StartRequest<'a> {
+    /// Authentication token.
+    /// Requires scope: client
+    pub token: &'a str,
+    /// Return timestamp only for latest message object of each channel (improves performance).
+    pub simple_latest: Option<&'a str>,
+    /// Skip unread counts for each channel (improves performance).
+    pub no_unreads: Option<&'a str>,
+    /// Returns MPIMs to the client in the API response.
+    pub mpim_aware: Option<&'a str>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct StartResponse {
+    pub bots: Option<Vec<::Bot>>,
+    pub channels: Option<Vec<::Channel>>,
+    error: Option<String>,
+    pub groups: Option<Vec<::Group>>,
+    pub ims: Option<Vec<::Im>>,
+    pub mpims: Option<Vec<::Mpim>>,
+    #[serde(default)]
+    ok: bool,
+    #[serde(rename = "self")]
+    pub slf: Option<::User>,
+    pub team: Option<::Team>,
+    pub url: Option<String>,
+    pub users: Option<Vec<::User>>,
+}
+
+
+impl<E: Error> ToResult<StartResponse, StartError<E>> for StartResponse {
+    fn to_result(self) -> Result<StartResponse, StartError<E>> {
+        if self.ok {
+            Ok(self)
+        } else {
+            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+        }
+    }
+}
+#[derive(Clone, Debug)]
+pub enum StartError<E: Error> {
+    /// Team is being migrated between servers. See the team_migration_started event documentation for details.
+    MigrationInProgress,
+    /// No authentication token provided.
+    NotAuthed,
+    /// Invalid authentication token.
+    InvalidAuth,
+    /// Authentication token is for a deleted user or team.
+    AccountInactive,
+    /// The method was passed an argument whose name falls outside the bounds of common decency. This includes very long names and names with non-alphanumeric characters other than _. If you get this error, it is typically an indication that you have made a very malformed API call.
+    InvalidArgName,
+    /// The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API.
+    InvalidArrayArg,
+    /// The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1.
+    InvalidCharset,
+    /// The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid.
+    InvalidFormData,
+    /// The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/json application/x-www-form-urlencoded multipart/form-data text/plain.
+    InvalidPostType,
+    /// The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.
+    MissingPostType,
+    /// The method was called via a POST request, but the POST data was either missing or truncated.
+    RequestTimeout,
+    /// The response was not parseable as the expected object
+    MalformedResponse,
+    /// The response returned an error that was unknown to the library
+    Unknown(String),
+    /// The client had an error sending the request to Slack
+    Client(E),
+}
+
+impl<'a, E: Error> From<&'a str> for StartError<E> {
+    fn from(s: &'a str) -> Self {
+        match s {
+            "migration_in_progress" => StartError::MigrationInProgress,
+            "not_authed" => StartError::NotAuthed,
+            "invalid_auth" => StartError::InvalidAuth,
+            "account_inactive" => StartError::AccountInactive,
+            "invalid_arg_name" => StartError::InvalidArgName,
+            "invalid_array_arg" => StartError::InvalidArrayArg,
+            "invalid_charset" => StartError::InvalidCharset,
+            "invalid_form_data" => StartError::InvalidFormData,
+            "invalid_post_type" => StartError::InvalidPostType,
+            "missing_post_type" => StartError::MissingPostType,
+            "request_timeout" => StartError::RequestTimeout,
+            _ => StartError::Unknown(s.to_owned()),
+        }
+    }
+}
+
+impl<E: Error> fmt::Display for StartError<E> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.description())
+    }
+}
+
+impl<E: Error> Error for StartError<E> {
+    fn description(&self) -> &str {
+        match self {
+            &StartError::MigrationInProgress => "migration_in_progress",
+            &StartError::NotAuthed => "not_authed",
+            &StartError::InvalidAuth => "invalid_auth",
+            &StartError::AccountInactive => "account_inactive",
+            &StartError::InvalidArgName => "invalid_arg_name",
+            &StartError::InvalidArrayArg => "invalid_array_arg",
+            &StartError::InvalidCharset => "invalid_charset",
+            &StartError::InvalidFormData => "invalid_form_data",
+            &StartError::InvalidPostType => "invalid_post_type",
+            &StartError::MissingPostType => "missing_post_type",
+            &StartError::RequestTimeout => "request_timeout",
+            &StartError::MalformedResponse => "Malformed response data from Slack.",
+            &StartError::Unknown(ref s) => s,
+            &StartError::Client(ref inner) => inner.description(),
+        }
+    }
+
+    fn cause(&self) -> Option<&Error> {
+        match self {
+            &StartError::Client(ref inner) => Some(inner),
+            _ => None,
+        }
+    }
+}

@@ -19,6 +19,7 @@ mod generator;
 use generator::*;
 
 const SCHEMA_DIR: &'static str = concat!(env!("CARGO_MANIFEST_DIR"), "/slack-api-schemas");
+const DEFAULT_OUT_DIR: &'static str = concat!(env!("CARGO_MANIFEST_DIR"), "/../src");
 
 fn generate_types(output_path: &Path) -> io::Result<()> {
     let codegen_filepath = output_path.join("types.rs");
@@ -108,7 +109,7 @@ fn main() {
             .long("outdir")
             .value_name("DIR")
             .help("Sets the output directory for the generated code.")
-            .required(true)
+            .default_value(DEFAULT_OUT_DIR)
             .validator_os(|dir| {
                 let outdir = Path::new(dir);
                 if outdir.exists() && !outdir.is_dir() {

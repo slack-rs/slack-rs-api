@@ -1,0 +1,695 @@
+
+#[allow(unused_imports)]
+use std::collections::HashMap;
+use std::convert::From;
+use std::error::Error;
+use std::fmt;
+
+use serde_json;
+
+#[allow(unused_imports)]
+use ToResult;
+use requests::SlackWebRequestSender;
+
+/// Ends the current user's Do Not Disturb session immediately.
+///
+/// Wraps https://api.slack.com/methods/dnd.endDnd
+
+pub fn end_dnd<R>(client: &R,
+                  request: &EndDndRequest)
+                  -> Result<EndDndResponse, EndDndError<R::Error>>
+    where R: SlackWebRequestSender
+{
+
+    let params = vec![Some(("token", request.token))];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    client.send("dnd.endDnd", &params[..])
+        .map_err(|err| EndDndError::Client(err))
+        .and_then(|result| {
+            serde_json::from_str::<EndDndResponse>(&result)
+                .map_err(|_| EndDndError::MalformedResponse)
+        })
+        .and_then(|o| o.to_result())
+}
+
+#[derive(Clone, Default, Debug)]
+pub struct EndDndRequest<'a> {
+    /// Authentication token.
+    /// Requires scope: dnd:write
+    pub token: &'a str,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct EndDndResponse {
+    error: Option<String>,
+    #[serde(default)]
+    ok: bool,
+}
+
+
+impl<E: Error> ToResult<EndDndResponse, EndDndError<E>> for EndDndResponse {
+    fn to_result(self) -> Result<EndDndResponse, EndDndError<E>> {
+        if self.ok {
+            Ok(self)
+        } else {
+            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+        }
+    }
+}
+#[derive(Clone, Debug)]
+pub enum EndDndError<E: Error> {
+    /// There was a mysterious problem ending the user's Do Not Disturb session
+    UnknownError,
+    /// No authentication token provided.
+    NotAuthed,
+    /// Invalid authentication token.
+    InvalidAuth,
+    /// Authentication token is for a deleted user or team.
+    AccountInactive,
+    /// This method cannot be called by a bot user.
+    UserIsBot,
+    /// The method was passed an argument whose name falls outside the bounds of common decency. This includes very long names and names with non-alphanumeric characters other than _. If you get this error, it is typically an indication that you have made a very malformed API call.
+    InvalidArgName,
+    /// The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API.
+    InvalidArrayArg,
+    /// The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1.
+    InvalidCharset,
+    /// The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid.
+    InvalidFormData,
+    /// The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/json application/x-www-form-urlencoded multipart/form-data text/plain.
+    InvalidPostType,
+    /// The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.
+    MissingPostType,
+    /// The method was called via a POST request, but the POST data was either missing or truncated.
+    RequestTimeout,
+    /// The response was not parseable as the expected object
+    MalformedResponse,
+    /// The response returned an error that was unknown to the library
+    Unknown(String),
+    /// The client had an error sending the request to Slack
+    Client(E),
+}
+
+impl<'a, E: Error> From<&'a str> for EndDndError<E> {
+    fn from(s: &'a str) -> Self {
+        match s {
+            "unknown_error" => EndDndError::UnknownError,
+            "not_authed" => EndDndError::NotAuthed,
+            "invalid_auth" => EndDndError::InvalidAuth,
+            "account_inactive" => EndDndError::AccountInactive,
+            "user_is_bot" => EndDndError::UserIsBot,
+            "invalid_arg_name" => EndDndError::InvalidArgName,
+            "invalid_array_arg" => EndDndError::InvalidArrayArg,
+            "invalid_charset" => EndDndError::InvalidCharset,
+            "invalid_form_data" => EndDndError::InvalidFormData,
+            "invalid_post_type" => EndDndError::InvalidPostType,
+            "missing_post_type" => EndDndError::MissingPostType,
+            "request_timeout" => EndDndError::RequestTimeout,
+            _ => EndDndError::Unknown(s.to_owned()),
+        }
+    }
+}
+
+impl<E: Error> fmt::Display for EndDndError<E> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.description())
+    }
+}
+
+impl<E: Error> Error for EndDndError<E> {
+    fn description(&self) -> &str {
+        match self {
+            &EndDndError::UnknownError => "unknown_error",
+            &EndDndError::NotAuthed => "not_authed",
+            &EndDndError::InvalidAuth => "invalid_auth",
+            &EndDndError::AccountInactive => "account_inactive",
+            &EndDndError::UserIsBot => "user_is_bot",
+            &EndDndError::InvalidArgName => "invalid_arg_name",
+            &EndDndError::InvalidArrayArg => "invalid_array_arg",
+            &EndDndError::InvalidCharset => "invalid_charset",
+            &EndDndError::InvalidFormData => "invalid_form_data",
+            &EndDndError::InvalidPostType => "invalid_post_type",
+            &EndDndError::MissingPostType => "missing_post_type",
+            &EndDndError::RequestTimeout => "request_timeout",
+            &EndDndError::MalformedResponse => "Malformed response data from Slack.",
+            &EndDndError::Unknown(ref s) => s,
+            &EndDndError::Client(ref inner) => inner.description(),
+        }
+    }
+
+    fn cause(&self) -> Option<&Error> {
+        match self {
+            &EndDndError::Client(ref inner) => Some(inner),
+            _ => None,
+        }
+    }
+}
+
+/// Ends the current user's snooze mode immediately.
+///
+/// Wraps https://api.slack.com/methods/dnd.endSnooze
+
+pub fn end_snooze<R>(client: &R,
+                     request: &EndSnoozeRequest)
+                     -> Result<EndSnoozeResponse, EndSnoozeError<R::Error>>
+    where R: SlackWebRequestSender
+{
+
+    let params = vec![Some(("token", request.token))];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    client.send("dnd.endSnooze", &params[..])
+        .map_err(|err| EndSnoozeError::Client(err))
+        .and_then(|result| {
+            serde_json::from_str::<EndSnoozeResponse>(&result)
+                .map_err(|_| EndSnoozeError::MalformedResponse)
+        })
+        .and_then(|o| o.to_result())
+}
+
+#[derive(Clone, Default, Debug)]
+pub struct EndSnoozeRequest<'a> {
+    /// Authentication token.
+    /// Requires scope: dnd:write
+    pub token: &'a str,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct EndSnoozeResponse {
+    pub dnd_enabled: Option<bool>,
+    error: Option<String>,
+    pub next_dnd_end_ts: Option<f32>,
+    pub next_dnd_start_ts: Option<f32>,
+    #[serde(default)]
+    ok: bool,
+    pub snooze_enabled: Option<bool>,
+}
+
+
+impl<E: Error> ToResult<EndSnoozeResponse, EndSnoozeError<E>> for EndSnoozeResponse {
+    fn to_result(self) -> Result<EndSnoozeResponse, EndSnoozeError<E>> {
+        if self.ok {
+            Ok(self)
+        } else {
+            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+        }
+    }
+}
+#[derive(Clone, Debug)]
+pub enum EndSnoozeError<E: Error> {
+    /// Snooze is not active for this user and cannot be ended
+    SnoozeNotActive,
+    /// There was a problem setting the user's Do Not Disturb status
+    SnoozeEndFailed,
+    /// No authentication token provided.
+    NotAuthed,
+    /// Invalid authentication token.
+    InvalidAuth,
+    /// Authentication token is for a deleted user or team.
+    AccountInactive,
+    /// This method cannot be called by a bot user.
+    UserIsBot,
+    /// The method was passed an argument whose name falls outside the bounds of common decency. This includes very long names and names with non-alphanumeric characters other than _. If you get this error, it is typically an indication that you have made a very malformed API call.
+    InvalidArgName,
+    /// The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API.
+    InvalidArrayArg,
+    /// The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1.
+    InvalidCharset,
+    /// The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid.
+    InvalidFormData,
+    /// The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/json application/x-www-form-urlencoded multipart/form-data text/plain.
+    InvalidPostType,
+    /// The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.
+    MissingPostType,
+    /// The method was called via a POST request, but the POST data was either missing or truncated.
+    RequestTimeout,
+    /// The response was not parseable as the expected object
+    MalformedResponse,
+    /// The response returned an error that was unknown to the library
+    Unknown(String),
+    /// The client had an error sending the request to Slack
+    Client(E),
+}
+
+impl<'a, E: Error> From<&'a str> for EndSnoozeError<E> {
+    fn from(s: &'a str) -> Self {
+        match s {
+            "snooze_not_active" => EndSnoozeError::SnoozeNotActive,
+            "snooze_end_failed" => EndSnoozeError::SnoozeEndFailed,
+            "not_authed" => EndSnoozeError::NotAuthed,
+            "invalid_auth" => EndSnoozeError::InvalidAuth,
+            "account_inactive" => EndSnoozeError::AccountInactive,
+            "user_is_bot" => EndSnoozeError::UserIsBot,
+            "invalid_arg_name" => EndSnoozeError::InvalidArgName,
+            "invalid_array_arg" => EndSnoozeError::InvalidArrayArg,
+            "invalid_charset" => EndSnoozeError::InvalidCharset,
+            "invalid_form_data" => EndSnoozeError::InvalidFormData,
+            "invalid_post_type" => EndSnoozeError::InvalidPostType,
+            "missing_post_type" => EndSnoozeError::MissingPostType,
+            "request_timeout" => EndSnoozeError::RequestTimeout,
+            _ => EndSnoozeError::Unknown(s.to_owned()),
+        }
+    }
+}
+
+impl<E: Error> fmt::Display for EndSnoozeError<E> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.description())
+    }
+}
+
+impl<E: Error> Error for EndSnoozeError<E> {
+    fn description(&self) -> &str {
+        match self {
+            &EndSnoozeError::SnoozeNotActive => "snooze_not_active",
+            &EndSnoozeError::SnoozeEndFailed => "snooze_end_failed",
+            &EndSnoozeError::NotAuthed => "not_authed",
+            &EndSnoozeError::InvalidAuth => "invalid_auth",
+            &EndSnoozeError::AccountInactive => "account_inactive",
+            &EndSnoozeError::UserIsBot => "user_is_bot",
+            &EndSnoozeError::InvalidArgName => "invalid_arg_name",
+            &EndSnoozeError::InvalidArrayArg => "invalid_array_arg",
+            &EndSnoozeError::InvalidCharset => "invalid_charset",
+            &EndSnoozeError::InvalidFormData => "invalid_form_data",
+            &EndSnoozeError::InvalidPostType => "invalid_post_type",
+            &EndSnoozeError::MissingPostType => "missing_post_type",
+            &EndSnoozeError::RequestTimeout => "request_timeout",
+            &EndSnoozeError::MalformedResponse => "Malformed response data from Slack.",
+            &EndSnoozeError::Unknown(ref s) => s,
+            &EndSnoozeError::Client(ref inner) => inner.description(),
+        }
+    }
+
+    fn cause(&self) -> Option<&Error> {
+        match self {
+            &EndSnoozeError::Client(ref inner) => Some(inner),
+            _ => None,
+        }
+    }
+}
+
+/// Retrieves a user's current Do Not Disturb status.
+///
+/// Wraps https://api.slack.com/methods/dnd.info
+
+pub fn info<R>(client: &R, request: &InfoRequest) -> Result<InfoResponse, InfoError<R::Error>>
+    where R: SlackWebRequestSender
+{
+
+    let params = vec![Some(("token", request.token)), request.user.map(|user| ("user", user))];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    client.send("dnd.info", &params[..])
+        .map_err(|err| InfoError::Client(err))
+        .and_then(|result| {
+            serde_json::from_str::<InfoResponse>(&result).map_err(|_| InfoError::MalformedResponse)
+        })
+        .and_then(|o| o.to_result())
+}
+
+#[derive(Clone, Default, Debug)]
+pub struct InfoRequest<'a> {
+    /// Authentication token.
+    /// Requires scope: dnd:read
+    pub token: &'a str,
+    /// User to fetch status for (defaults to current user)
+    pub user: Option<&'a str>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct InfoResponse {
+    pub dnd_enabled: Option<bool>,
+    error: Option<String>,
+    pub next_dnd_end_ts: Option<f32>,
+    pub next_dnd_start_ts: Option<f32>,
+    #[serde(default)]
+    ok: bool,
+    pub snooze_enabled: Option<bool>,
+    pub snooze_endtime: Option<f32>,
+    pub snooze_remaining: Option<f32>,
+}
+
+
+impl<E: Error> ToResult<InfoResponse, InfoError<E>> for InfoResponse {
+    fn to_result(self) -> Result<InfoResponse, InfoError<E>> {
+        if self.ok {
+            Ok(self)
+        } else {
+            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+        }
+    }
+}
+#[derive(Clone, Debug)]
+pub enum InfoError<E: Error> {
+    /// Value passed for user was invalid.
+    UserNotFound,
+    /// No authentication token provided.
+    NotAuthed,
+    /// Invalid authentication token.
+    InvalidAuth,
+    /// Authentication token is for a deleted user or team.
+    AccountInactive,
+    /// The method was passed an argument whose name falls outside the bounds of common decency. This includes very long names and names with non-alphanumeric characters other than _. If you get this error, it is typically an indication that you have made a very malformed API call.
+    InvalidArgName,
+    /// The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API.
+    InvalidArrayArg,
+    /// The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1.
+    InvalidCharset,
+    /// The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid.
+    InvalidFormData,
+    /// The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/json application/x-www-form-urlencoded multipart/form-data text/plain.
+    InvalidPostType,
+    /// The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.
+    MissingPostType,
+    /// The method was called via a POST request, but the POST data was either missing or truncated.
+    RequestTimeout,
+    /// The response was not parseable as the expected object
+    MalformedResponse,
+    /// The response returned an error that was unknown to the library
+    Unknown(String),
+    /// The client had an error sending the request to Slack
+    Client(E),
+}
+
+impl<'a, E: Error> From<&'a str> for InfoError<E> {
+    fn from(s: &'a str) -> Self {
+        match s {
+            "user_not_found" => InfoError::UserNotFound,
+            "not_authed" => InfoError::NotAuthed,
+            "invalid_auth" => InfoError::InvalidAuth,
+            "account_inactive" => InfoError::AccountInactive,
+            "invalid_arg_name" => InfoError::InvalidArgName,
+            "invalid_array_arg" => InfoError::InvalidArrayArg,
+            "invalid_charset" => InfoError::InvalidCharset,
+            "invalid_form_data" => InfoError::InvalidFormData,
+            "invalid_post_type" => InfoError::InvalidPostType,
+            "missing_post_type" => InfoError::MissingPostType,
+            "request_timeout" => InfoError::RequestTimeout,
+            _ => InfoError::Unknown(s.to_owned()),
+        }
+    }
+}
+
+impl<E: Error> fmt::Display for InfoError<E> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.description())
+    }
+}
+
+impl<E: Error> Error for InfoError<E> {
+    fn description(&self) -> &str {
+        match self {
+            &InfoError::UserNotFound => "user_not_found",
+            &InfoError::NotAuthed => "not_authed",
+            &InfoError::InvalidAuth => "invalid_auth",
+            &InfoError::AccountInactive => "account_inactive",
+            &InfoError::InvalidArgName => "invalid_arg_name",
+            &InfoError::InvalidArrayArg => "invalid_array_arg",
+            &InfoError::InvalidCharset => "invalid_charset",
+            &InfoError::InvalidFormData => "invalid_form_data",
+            &InfoError::InvalidPostType => "invalid_post_type",
+            &InfoError::MissingPostType => "missing_post_type",
+            &InfoError::RequestTimeout => "request_timeout",
+            &InfoError::MalformedResponse => "Malformed response data from Slack.",
+            &InfoError::Unknown(ref s) => s,
+            &InfoError::Client(ref inner) => inner.description(),
+        }
+    }
+
+    fn cause(&self) -> Option<&Error> {
+        match self {
+            &InfoError::Client(ref inner) => Some(inner),
+            _ => None,
+        }
+    }
+}
+
+/// Turns on Do Not Disturb mode for the current user, or changes its duration.
+///
+/// Wraps https://api.slack.com/methods/dnd.setSnooze
+
+pub fn set_snooze<R>(client: &R,
+                     request: &SetSnoozeRequest)
+                     -> Result<SetSnoozeResponse, SetSnoozeError<R::Error>>
+    where R: SlackWebRequestSender
+{
+    let num_minutes = request.num_minutes.to_string();
+    let params = vec![Some(("token", request.token)), Some(("num_minutes", &num_minutes[..]))];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    client.send("dnd.setSnooze", &params[..])
+        .map_err(|err| SetSnoozeError::Client(err))
+        .and_then(|result| {
+            serde_json::from_str::<SetSnoozeResponse>(&result)
+                .map_err(|_| SetSnoozeError::MalformedResponse)
+        })
+        .and_then(|o| o.to_result())
+}
+
+#[derive(Clone, Default, Debug)]
+pub struct SetSnoozeRequest<'a> {
+    /// Authentication token.
+    /// Requires scope: dnd:write
+    pub token: &'a str,
+    /// Number of minutes, from now, to snooze until.
+    pub num_minutes: u32,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct SetSnoozeResponse {
+    error: Option<String>,
+    #[serde(default)]
+    ok: bool,
+    pub snooze_enabled: Option<bool>,
+    pub snooze_endtime: Option<f32>,
+    pub snooze_remaining: Option<f32>,
+}
+
+
+impl<E: Error> ToResult<SetSnoozeResponse, SetSnoozeError<E>> for SetSnoozeResponse {
+    fn to_result(self) -> Result<SetSnoozeResponse, SetSnoozeError<E>> {
+        if self.ok {
+            Ok(self)
+        } else {
+            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+        }
+    }
+}
+#[derive(Clone, Debug)]
+pub enum SetSnoozeError<E: Error> {
+    /// No value provided for num_minutes
+    MissingDuration,
+    /// There was a problem setting the user's Do Not Disturb status
+    SnoozeFailed,
+    /// No authentication token provided.
+    NotAuthed,
+    /// Invalid authentication token.
+    InvalidAuth,
+    /// Authentication token is for a deleted user or team.
+    AccountInactive,
+    /// This method cannot be called by a bot user.
+    UserIsBot,
+    /// The method was passed an argument whose name falls outside the bounds of common decency. This includes very long names and names with non-alphanumeric characters other than _. If you get this error, it is typically an indication that you have made a very malformed API call.
+    InvalidArgName,
+    /// The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API.
+    InvalidArrayArg,
+    /// The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1.
+    InvalidCharset,
+    /// The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid.
+    InvalidFormData,
+    /// The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/json application/x-www-form-urlencoded multipart/form-data text/plain.
+    InvalidPostType,
+    /// The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.
+    MissingPostType,
+    /// The method was called via a POST request, but the POST data was either missing or truncated.
+    RequestTimeout,
+    /// The response was not parseable as the expected object
+    MalformedResponse,
+    /// The response returned an error that was unknown to the library
+    Unknown(String),
+    /// The client had an error sending the request to Slack
+    Client(E),
+}
+
+impl<'a, E: Error> From<&'a str> for SetSnoozeError<E> {
+    fn from(s: &'a str) -> Self {
+        match s {
+            "missing_duration" => SetSnoozeError::MissingDuration,
+            "snooze_failed" => SetSnoozeError::SnoozeFailed,
+            "not_authed" => SetSnoozeError::NotAuthed,
+            "invalid_auth" => SetSnoozeError::InvalidAuth,
+            "account_inactive" => SetSnoozeError::AccountInactive,
+            "user_is_bot" => SetSnoozeError::UserIsBot,
+            "invalid_arg_name" => SetSnoozeError::InvalidArgName,
+            "invalid_array_arg" => SetSnoozeError::InvalidArrayArg,
+            "invalid_charset" => SetSnoozeError::InvalidCharset,
+            "invalid_form_data" => SetSnoozeError::InvalidFormData,
+            "invalid_post_type" => SetSnoozeError::InvalidPostType,
+            "missing_post_type" => SetSnoozeError::MissingPostType,
+            "request_timeout" => SetSnoozeError::RequestTimeout,
+            _ => SetSnoozeError::Unknown(s.to_owned()),
+        }
+    }
+}
+
+impl<E: Error> fmt::Display for SetSnoozeError<E> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.description())
+    }
+}
+
+impl<E: Error> Error for SetSnoozeError<E> {
+    fn description(&self) -> &str {
+        match self {
+            &SetSnoozeError::MissingDuration => "missing_duration",
+            &SetSnoozeError::SnoozeFailed => "snooze_failed",
+            &SetSnoozeError::NotAuthed => "not_authed",
+            &SetSnoozeError::InvalidAuth => "invalid_auth",
+            &SetSnoozeError::AccountInactive => "account_inactive",
+            &SetSnoozeError::UserIsBot => "user_is_bot",
+            &SetSnoozeError::InvalidArgName => "invalid_arg_name",
+            &SetSnoozeError::InvalidArrayArg => "invalid_array_arg",
+            &SetSnoozeError::InvalidCharset => "invalid_charset",
+            &SetSnoozeError::InvalidFormData => "invalid_form_data",
+            &SetSnoozeError::InvalidPostType => "invalid_post_type",
+            &SetSnoozeError::MissingPostType => "missing_post_type",
+            &SetSnoozeError::RequestTimeout => "request_timeout",
+            &SetSnoozeError::MalformedResponse => "Malformed response data from Slack.",
+            &SetSnoozeError::Unknown(ref s) => s,
+            &SetSnoozeError::Client(ref inner) => inner.description(),
+        }
+    }
+
+    fn cause(&self) -> Option<&Error> {
+        match self {
+            &SetSnoozeError::Client(ref inner) => Some(inner),
+            _ => None,
+        }
+    }
+}
+
+/// Retrieves the Do Not Disturb status for users on a team.
+///
+/// Wraps https://api.slack.com/methods/dnd.teamInfo
+
+pub fn team_info<R>(client: &R,
+                    request: &TeamInfoRequest)
+                    -> Result<TeamInfoResponse, TeamInfoError<R::Error>>
+    where R: SlackWebRequestSender
+{
+
+    let params = vec![Some(("token", request.token)), request.users.map(|users| ("users", users))];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    client.send("dnd.teamInfo", &params[..])
+        .map_err(|err| TeamInfoError::Client(err))
+        .and_then(|result| {
+            serde_json::from_str::<TeamInfoResponse>(&result)
+                .map_err(|_| TeamInfoError::MalformedResponse)
+        })
+        .and_then(|o| o.to_result())
+}
+
+#[derive(Clone, Default, Debug)]
+pub struct TeamInfoRequest<'a> {
+    /// Authentication token.
+    /// Requires scope: dnd:read
+    pub token: &'a str,
+    /// Comma-separated list of users to fetch Do Not Disturb status for
+    pub users: Option<&'a str>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct TeamInfoResponse {
+    error: Option<String>,
+    #[serde(default)]
+    ok: bool,
+    pub users: Option<HashMap<String, bool>>,
+}
+
+
+impl<E: Error> ToResult<TeamInfoResponse, TeamInfoError<E>> for TeamInfoResponse {
+    fn to_result(self) -> Result<TeamInfoResponse, TeamInfoError<E>> {
+        if self.ok {
+            Ok(self)
+        } else {
+            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+        }
+    }
+}
+#[derive(Clone, Debug)]
+pub enum TeamInfoError<E: Error> {
+    /// No authentication token provided.
+    NotAuthed,
+    /// Invalid authentication token.
+    InvalidAuth,
+    /// Authentication token is for a deleted user or team.
+    AccountInactive,
+    /// The method was passed an argument whose name falls outside the bounds of common decency. This includes very long names and names with non-alphanumeric characters other than _. If you get this error, it is typically an indication that you have made a very malformed API call.
+    InvalidArgName,
+    /// The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API.
+    InvalidArrayArg,
+    /// The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1.
+    InvalidCharset,
+    /// The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid.
+    InvalidFormData,
+    /// The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/json application/x-www-form-urlencoded multipart/form-data text/plain.
+    InvalidPostType,
+    /// The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.
+    MissingPostType,
+    /// The method was called via a POST request, but the POST data was either missing or truncated.
+    RequestTimeout,
+    /// The response was not parseable as the expected object
+    MalformedResponse,
+    /// The response returned an error that was unknown to the library
+    Unknown(String),
+    /// The client had an error sending the request to Slack
+    Client(E),
+}
+
+impl<'a, E: Error> From<&'a str> for TeamInfoError<E> {
+    fn from(s: &'a str) -> Self {
+        match s {
+            "not_authed" => TeamInfoError::NotAuthed,
+            "invalid_auth" => TeamInfoError::InvalidAuth,
+            "account_inactive" => TeamInfoError::AccountInactive,
+            "invalid_arg_name" => TeamInfoError::InvalidArgName,
+            "invalid_array_arg" => TeamInfoError::InvalidArrayArg,
+            "invalid_charset" => TeamInfoError::InvalidCharset,
+            "invalid_form_data" => TeamInfoError::InvalidFormData,
+            "invalid_post_type" => TeamInfoError::InvalidPostType,
+            "missing_post_type" => TeamInfoError::MissingPostType,
+            "request_timeout" => TeamInfoError::RequestTimeout,
+            _ => TeamInfoError::Unknown(s.to_owned()),
+        }
+    }
+}
+
+impl<E: Error> fmt::Display for TeamInfoError<E> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.description())
+    }
+}
+
+impl<E: Error> Error for TeamInfoError<E> {
+    fn description(&self) -> &str {
+        match self {
+            &TeamInfoError::NotAuthed => "not_authed",
+            &TeamInfoError::InvalidAuth => "invalid_auth",
+            &TeamInfoError::AccountInactive => "account_inactive",
+            &TeamInfoError::InvalidArgName => "invalid_arg_name",
+            &TeamInfoError::InvalidArrayArg => "invalid_array_arg",
+            &TeamInfoError::InvalidCharset => "invalid_charset",
+            &TeamInfoError::InvalidFormData => "invalid_form_data",
+            &TeamInfoError::InvalidPostType => "invalid_post_type",
+            &TeamInfoError::MissingPostType => "missing_post_type",
+            &TeamInfoError::RequestTimeout => "request_timeout",
+            &TeamInfoError::MalformedResponse => "Malformed response data from Slack.",
+            &TeamInfoError::Unknown(ref s) => s,
+            &TeamInfoError::Client(ref inner) => inner.description(),
+        }
+    }
+
+    fn cause(&self) -> Option<&Error> {
+        match self {
+            &TeamInfoError::Client(ref inner) => Some(inner),
+            _ => None,
+        }
+    }
+}

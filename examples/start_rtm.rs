@@ -17,7 +17,7 @@ fn main() {
                 let channels = channels.iter()
                     .filter_map(|c| c.name.clone())
                     .collect::<Vec<_>>();
-                
+
                 println!("Got channels: {}", channels.join(", "));
             }
 
@@ -25,7 +25,7 @@ fn main() {
                 let users = users.iter()
                     .filter_map(|u| u.name.clone())
                     .collect::<Vec<_>>();
-                
+
                 println!("Got users: {}", users.join(", "));
             }
         } else {
