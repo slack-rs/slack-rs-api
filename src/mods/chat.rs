@@ -7,8 +7,6 @@ use std::fmt;
 
 use serde_json;
 
-#[allow(unused_imports)]
-use ToResult;
 use requests::SlackWebRequestSender;
 
 /// Deletes a message.
@@ -32,7 +30,7 @@ pub fn delete<R>(client: &R,
             serde_json::from_str::<DeleteResponse>(&result)
                 .map_err(|_| DeleteError::MalformedResponse)
         })
-        .and_then(|o| o.to_result())
+        .and_then(|o| o.into())
 }
 
 #[derive(Clone, Default, Debug)]
@@ -58,8 +56,8 @@ pub struct DeleteResponse {
 }
 
 
-impl<E: Error> ToResult<DeleteResponse, DeleteError<E>> for DeleteResponse {
-    fn to_result(self) -> Result<DeleteResponse, DeleteError<E>> {
+impl<E: Error> Into<Result<DeleteResponse, DeleteError<E>>> for DeleteResponse {
+    fn into(self) -> Result<DeleteResponse, DeleteError<E>> {
         if self.ok {
             Ok(self)
         } else {
@@ -184,7 +182,7 @@ pub fn me_message<R>(client: &R,
             serde_json::from_str::<MeMessageResponse>(&result)
                 .map_err(|_| MeMessageError::MalformedResponse)
         })
-        .and_then(|o| o.to_result())
+        .and_then(|o| o.into())
 }
 
 #[derive(Clone, Default, Debug)]
@@ -208,8 +206,8 @@ pub struct MeMessageResponse {
 }
 
 
-impl<E: Error> ToResult<MeMessageResponse, MeMessageError<E>> for MeMessageResponse {
-    fn to_result(self) -> Result<MeMessageResponse, MeMessageError<E>> {
+impl<E: Error> Into<Result<MeMessageResponse, MeMessageError<E>>> for MeMessageResponse {
+    fn into(self) -> Result<MeMessageResponse, MeMessageError<E>> {
         if self.ok {
             Ok(self)
         } else {
@@ -359,7 +357,7 @@ pub fn post_message<R>(client: &R,
             serde_json::from_str::<PostMessageResponse>(&result)
                 .map_err(|_| PostMessageError::MalformedResponse)
         })
-        .and_then(|o| o.to_result())
+        .and_then(|o| o.into())
 }
 
 #[derive(Clone, Default, Debug)]
@@ -406,8 +404,8 @@ pub struct PostMessageResponse {
 }
 
 
-impl<E: Error> ToResult<PostMessageResponse, PostMessageError<E>> for PostMessageResponse {
-    fn to_result(self) -> Result<PostMessageResponse, PostMessageError<E>> {
+impl<E: Error> Into<Result<PostMessageResponse, PostMessageError<E>>> for PostMessageResponse {
+    fn into(self) -> Result<PostMessageResponse, PostMessageError<E>> {
         if self.ok {
             Ok(self)
         } else {
@@ -550,7 +548,7 @@ pub fn update<R>(client: &R,
             serde_json::from_str::<UpdateResponse>(&result)
                 .map_err(|_| UpdateError::MalformedResponse)
         })
-        .and_then(|o| o.to_result())
+        .and_then(|o| o.into())
 }
 
 #[derive(Clone, Default, Debug)]
@@ -585,8 +583,8 @@ pub struct UpdateResponse {
 }
 
 
-impl<E: Error> ToResult<UpdateResponse, UpdateError<E>> for UpdateResponse {
-    fn to_result(self) -> Result<UpdateResponse, UpdateError<E>> {
+impl<E: Error> Into<Result<UpdateResponse, UpdateError<E>>> for UpdateResponse {
+    fn into(self) -> Result<UpdateResponse, UpdateError<E>> {
         if self.ok {
             Ok(self)
         } else {

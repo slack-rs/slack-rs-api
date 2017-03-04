@@ -7,8 +7,6 @@ use std::fmt;
 
 use serde_json;
 
-#[allow(unused_imports)]
-use ToResult;
 use requests::SlackWebRequestSender;
 
 /// Add a comment to an existing file.
@@ -29,7 +27,7 @@ pub fn add<R>(client: &R, request: &AddRequest) -> Result<AddResponse, AddError<
         .and_then(|result| {
             serde_json::from_str::<AddResponse>(&result).map_err(|_| AddError::MalformedResponse)
         })
-        .and_then(|o| o.to_result())
+        .and_then(|o| o.into())
 }
 
 #[derive(Clone, Default, Debug)]
@@ -54,8 +52,8 @@ pub struct AddResponse {
 }
 
 
-impl<E: Error> ToResult<AddResponse, AddError<E>> for AddResponse {
-    fn to_result(self) -> Result<AddResponse, AddError<E>> {
+impl<E: Error> Into<Result<AddResponse, AddError<E>>> for AddResponse {
+    fn into(self) -> Result<AddResponse, AddError<E>> {
         if self.ok {
             Ok(self)
         } else {
@@ -176,7 +174,7 @@ pub fn delete<R>(client: &R,
             serde_json::from_str::<DeleteResponse>(&result)
                 .map_err(|_| DeleteError::MalformedResponse)
         })
-        .and_then(|o| o.to_result())
+        .and_then(|o| o.into())
 }
 
 #[derive(Clone, Default, Debug)]
@@ -198,8 +196,8 @@ pub struct DeleteResponse {
 }
 
 
-impl<E: Error> ToResult<DeleteResponse, DeleteError<E>> for DeleteResponse {
-    fn to_result(self) -> Result<DeleteResponse, DeleteError<E>> {
+impl<E: Error> Into<Result<DeleteResponse, DeleteError<E>>> for DeleteResponse {
+    fn into(self) -> Result<DeleteResponse, DeleteError<E>> {
         if self.ok {
             Ok(self)
         } else {
@@ -318,7 +316,7 @@ pub fn edit<R>(client: &R, request: &EditRequest) -> Result<EditResponse, EditEr
         .and_then(|result| {
             serde_json::from_str::<EditResponse>(&result).map_err(|_| EditError::MalformedResponse)
         })
-        .and_then(|o| o.to_result())
+        .and_then(|o| o.into())
 }
 
 #[derive(Clone, Default, Debug)]
@@ -343,8 +341,8 @@ pub struct EditResponse {
 }
 
 
-impl<E: Error> ToResult<EditResponse, EditError<E>> for EditResponse {
-    fn to_result(self) -> Result<EditResponse, EditError<E>> {
+impl<E: Error> Into<Result<EditResponse, EditError<E>>> for EditResponse {
+    fn into(self) -> Result<EditResponse, EditError<E>> {
         if self.ok {
             Ok(self)
         } else {

@@ -21,8 +21,6 @@ impl Module {
 
             use serde_json;
 
-            #[allow(unused_imports)]
-            use ::ToResult;
             use ::requests::SlackWebRequestSender;
 
             {methods}",
@@ -72,8 +70,8 @@ impl Method {
             );
 
             match response_type {
-                PropType::Obj(ref o) => if o.has_ok() { base_call.push_str(".and_then(|o| o.to_result())") },
-                PropType::Enum(ref e) => if e.has_ok() { base_call.push_str(".and_then(|o| o.to_result())") },
+                PropType::Obj(ref o) => if o.has_ok() { base_call.push_str(".and_then(|o| o.into())") },
+                PropType::Enum(ref e) => if e.has_ok() { base_call.push_str(".and_then(|o| o.into())") },
                 _ => panic!("Top-level response for {} is not an object or enum.", fn_name)
             }
 
@@ -167,8 +165,8 @@ fn generate_matches<F>(enm: &JsonEnum, var_name: &str, f: F) -> Vec<String>
 fn get_obj_to_response_impl(obj: &JsonObject, error_type: &str) -> Option<String> {
     if obj.has_ok() {
         Some(format!(
-            "impl<E: Error> ToResult<{name}, {error_ty}<E>> for {name} {{
-                fn to_result(self) -> Result<{name}, {error_ty}<E>> {{
+            "impl<E: Error> Into<Result<{name}, {error_ty}<E>>> for {name} {{
+                fn into(self) -> Result<{name}, {error_ty}<E>> {{
                     if self.ok {{
                         Ok(self)
                     }} else {{
@@ -187,8 +185,8 @@ fn get_obj_to_response_impl(obj: &JsonObject, error_type: &str) -> Option<String
 fn get_enum_to_response_impl(enm: &JsonEnum, error_type: &str) -> Option<String> {
     if enm.has_ok() {
         Some(format!(
-            "impl<E: Error> ToResult<{name}, {error_ty}<E>> for {name} {{
-                fn to_result(self) -> Result<{name}, {error_ty}<E>> {{
+            "impl<E: Error> Into<Result<{name}, {error_ty}<E>>> for {name} {{
+                fn into(self) -> Result<{name}, {error_ty}<E>> {{
                     match self {{
                         {matches}
                     }}
@@ -199,7 +197,7 @@ fn get_enum_to_response_impl(enm: &JsonEnum, error_type: &str) -> Option<String>
             error_ty = error_type,
             name = enm.name,
             matches = generate_matches(enm, "inner", |v| {
-                format!("inner.to_result().map(|r| {}(r))", v.qualified_name)
+                format!("{{ let x: Result<{}, {}<E>> = inner.into(); x.map(|r| {}(r)) }}", enm.name.clone() + &v.name, error_type, v.qualified_name)
             }).join("\n"),
             inner_impls = enm.variants.iter()
                 .map(|v| match &v.inner {

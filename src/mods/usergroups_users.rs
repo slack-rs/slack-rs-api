@@ -7,8 +7,6 @@ use std::fmt;
 
 use serde_json;
 
-#[allow(unused_imports)]
-use ToResult;
 use requests::SlackWebRequestSender;
 
 /// List all users in a User Group
@@ -30,7 +28,7 @@ pub fn list<R>(client: &R, request: &ListRequest) -> Result<ListResponse, ListEr
         .and_then(|result| {
             serde_json::from_str::<ListResponse>(&result).map_err(|_| ListError::MalformedResponse)
         })
-        .and_then(|o| o.to_result())
+        .and_then(|o| o.into())
 }
 
 #[derive(Clone, Default, Debug)]
@@ -53,8 +51,8 @@ pub struct ListResponse {
 }
 
 
-impl<E: Error> ToResult<ListResponse, ListError<E>> for ListResponse {
-    fn to_result(self) -> Result<ListResponse, ListError<E>> {
+impl<E: Error> Into<Result<ListResponse, ListError<E>>> for ListResponse {
+    fn into(self) -> Result<ListResponse, ListError<E>> {
         if self.ok {
             Ok(self)
         } else {
@@ -174,7 +172,7 @@ pub fn update<R>(client: &R,
             serde_json::from_str::<UpdateResponse>(&result)
                 .map_err(|_| UpdateError::MalformedResponse)
         })
-        .and_then(|o| o.to_result())
+        .and_then(|o| o.into())
 }
 
 #[derive(Clone, Default, Debug)]
@@ -199,8 +197,8 @@ pub struct UpdateResponse {
 }
 
 
-impl<E: Error> ToResult<UpdateResponse, UpdateError<E>> for UpdateResponse {
-    fn to_result(self) -> Result<UpdateResponse, UpdateError<E>> {
+impl<E: Error> Into<Result<UpdateResponse, UpdateError<E>>> for UpdateResponse {
+    fn into(self) -> Result<UpdateResponse, UpdateError<E>> {
         if self.ok {
             Ok(self)
         } else {

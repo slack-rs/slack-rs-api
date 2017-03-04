@@ -7,8 +7,6 @@ use std::fmt;
 
 use serde_json;
 
-#[allow(unused_imports)]
-use ToResult;
 use requests::SlackWebRequestSender;
 
 /// Delete the user profile photo
@@ -29,7 +27,7 @@ pub fn delete_photo<R>(client: &R,
             serde_json::from_str::<DeletePhotoResponse>(&result)
                 .map_err(|_| DeletePhotoError::MalformedResponse)
         })
-        .and_then(|o| o.to_result())
+        .and_then(|o| o.into())
 }
 
 #[derive(Clone, Default, Debug)]
@@ -47,8 +45,8 @@ pub struct DeletePhotoResponse {
 }
 
 
-impl<E: Error> ToResult<DeletePhotoResponse, DeletePhotoError<E>> for DeletePhotoResponse {
-    fn to_result(self) -> Result<DeletePhotoResponse, DeletePhotoError<E>> {
+impl<E: Error> Into<Result<DeletePhotoResponse, DeletePhotoError<E>>> for DeletePhotoResponse {
+    fn into(self) -> Result<DeletePhotoResponse, DeletePhotoError<E>> {
         if self.ok {
             Ok(self)
         } else {
@@ -159,7 +157,7 @@ pub fn get_presence<R>(client: &R,
             serde_json::from_str::<GetPresenceResponse>(&result)
                 .map_err(|_| GetPresenceError::MalformedResponse)
         })
-        .and_then(|o| o.to_result())
+        .and_then(|o| o.into())
 }
 
 #[derive(Clone, Default, Debug)]
@@ -180,8 +178,8 @@ pub struct GetPresenceResponse {
 }
 
 
-impl<E: Error> ToResult<GetPresenceResponse, GetPresenceError<E>> for GetPresenceResponse {
-    fn to_result(self) -> Result<GetPresenceResponse, GetPresenceError<E>> {
+impl<E: Error> Into<Result<GetPresenceResponse, GetPresenceError<E>>> for GetPresenceResponse {
+    fn into(self) -> Result<GetPresenceResponse, GetPresenceError<E>> {
         if self.ok {
             Ok(self)
         } else {
@@ -288,7 +286,7 @@ pub fn identity<R>(client: &R,
             serde_json::from_str::<IdentityResponse>(&result)
                 .map_err(|_| IdentityError::MalformedResponse)
         })
-        .and_then(|o| o.to_result())
+        .and_then(|o| o.into())
 }
 
 #[derive(Clone, Default, Debug)]
@@ -308,8 +306,8 @@ pub struct IdentityResponse {
 }
 
 
-impl<E: Error> ToResult<IdentityResponse, IdentityError<E>> for IdentityResponse {
-    fn to_result(self) -> Result<IdentityResponse, IdentityError<E>> {
+impl<E: Error> Into<Result<IdentityResponse, IdentityError<E>>> for IdentityResponse {
+    fn into(self) -> Result<IdentityResponse, IdentityError<E>> {
         if self.ok {
             Ok(self)
         } else {
@@ -417,7 +415,7 @@ pub fn info<R>(client: &R, request: &InfoRequest) -> Result<InfoResponse, InfoEr
         .and_then(|result| {
             serde_json::from_str::<InfoResponse>(&result).map_err(|_| InfoError::MalformedResponse)
         })
-        .and_then(|o| o.to_result())
+        .and_then(|o| o.into())
 }
 
 #[derive(Clone, Default, Debug)]
@@ -438,8 +436,8 @@ pub struct InfoResponse {
 }
 
 
-impl<E: Error> ToResult<InfoResponse, InfoError<E>> for InfoResponse {
-    fn to_result(self) -> Result<InfoResponse, InfoError<E>> {
+impl<E: Error> Into<Result<InfoResponse, InfoError<E>>> for InfoResponse {
+    fn into(self) -> Result<InfoResponse, InfoError<E>> {
         if self.ok {
             Ok(self)
         } else {
@@ -553,7 +551,7 @@ pub fn list<R>(client: &R, request: &ListRequest) -> Result<ListResponse, ListEr
         .and_then(|result| {
             serde_json::from_str::<ListResponse>(&result).map_err(|_| ListError::MalformedResponse)
         })
-        .and_then(|o| o.to_result())
+        .and_then(|o| o.into())
 }
 
 #[derive(Clone, Default, Debug)]
@@ -574,8 +572,8 @@ pub struct ListResponse {
 }
 
 
-impl<E: Error> ToResult<ListResponse, ListError<E>> for ListResponse {
-    fn to_result(self) -> Result<ListResponse, ListError<E>> {
+impl<E: Error> Into<Result<ListResponse, ListError<E>>> for ListResponse {
+    fn into(self) -> Result<ListResponse, ListError<E>> {
         if self.ok {
             Ok(self)
         } else {
@@ -682,7 +680,7 @@ pub fn set_active<R>(client: &R,
             serde_json::from_str::<SetActiveResponse>(&result)
                 .map_err(|_| SetActiveError::MalformedResponse)
         })
-        .and_then(|o| o.to_result())
+        .and_then(|o| o.into())
 }
 
 #[derive(Clone, Default, Debug)]
@@ -700,8 +698,8 @@ pub struct SetActiveResponse {
 }
 
 
-impl<E: Error> ToResult<SetActiveResponse, SetActiveError<E>> for SetActiveResponse {
-    fn to_result(self) -> Result<SetActiveResponse, SetActiveError<E>> {
+impl<E: Error> Into<Result<SetActiveResponse, SetActiveError<E>>> for SetActiveResponse {
+    fn into(self) -> Result<SetActiveResponse, SetActiveError<E>> {
         if self.ok {
             Ok(self)
         } else {
@@ -814,7 +812,7 @@ pub fn set_photo<R>(client: &R,
             serde_json::from_str::<SetPhotoResponse>(&result)
                 .map_err(|_| SetPhotoError::MalformedResponse)
         })
-        .and_then(|o| o.to_result())
+        .and_then(|o| o.into())
 }
 
 #[derive(Clone, Default, Debug)]
@@ -840,8 +838,8 @@ pub struct SetPhotoResponse {
 }
 
 
-impl<E: Error> ToResult<SetPhotoResponse, SetPhotoError<E>> for SetPhotoResponse {
-    fn to_result(self) -> Result<SetPhotoResponse, SetPhotoError<E>> {
+impl<E: Error> Into<Result<SetPhotoResponse, SetPhotoError<E>>> for SetPhotoResponse {
+    fn into(self) -> Result<SetPhotoResponse, SetPhotoError<E>> {
         if self.ok {
             Ok(self)
         } else {
@@ -964,7 +962,7 @@ pub fn set_presence<R>(client: &R,
             serde_json::from_str::<SetPresenceResponse>(&result)
                 .map_err(|_| SetPresenceError::MalformedResponse)
         })
-        .and_then(|o| o.to_result())
+        .and_then(|o| o.into())
 }
 
 #[derive(Clone, Default, Debug)]
@@ -984,8 +982,8 @@ pub struct SetPresenceResponse {
 }
 
 
-impl<E: Error> ToResult<SetPresenceResponse, SetPresenceError<E>> for SetPresenceResponse {
-    fn to_result(self) -> Result<SetPresenceResponse, SetPresenceError<E>> {
+impl<E: Error> Into<Result<SetPresenceResponse, SetPresenceError<E>>> for SetPresenceResponse {
+    fn into(self) -> Result<SetPresenceResponse, SetPresenceError<E>> {
         if self.ok {
             Ok(self)
         } else {

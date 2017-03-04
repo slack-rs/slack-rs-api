@@ -7,8 +7,6 @@ use std::fmt;
 
 use serde_json;
 
-#[allow(unused_imports)]
-use ToResult;
 use requests::SlackWebRequestSender;
 
 /// Exchanges a temporary OAuth code for an API token.

@@ -7,8 +7,6 @@ use std::fmt;
 
 use serde_json;
 
-#[allow(unused_imports)]
-use ToResult;
 use requests::SlackWebRequestSender;
 
 /// Closes a multiparty direct message channel.
@@ -27,7 +25,7 @@ pub fn close<R>(client: &R, request: &CloseRequest) -> Result<CloseResponse, Clo
             serde_json::from_str::<CloseResponse>(&result)
                 .map_err(|_| CloseError::MalformedResponse)
         })
-        .and_then(|o| o.to_result())
+        .and_then(|o| o.into())
 }
 
 #[derive(Clone, Default, Debug)]
@@ -47,8 +45,8 @@ pub struct CloseResponse {
 }
 
 
-impl<E: Error> ToResult<CloseResponse, CloseError<E>> for CloseResponse {
-    fn to_result(self) -> Result<CloseResponse, CloseError<E>> {
+impl<E: Error> Into<Result<CloseResponse, CloseError<E>>> for CloseResponse {
+    fn into(self) -> Result<CloseResponse, CloseError<E>> {
         if self.ok {
             Ok(self)
         } else {
@@ -166,7 +164,7 @@ pub fn history<R>(client: &R,
             serde_json::from_str::<HistoryResponse>(&result)
                 .map_err(|_| HistoryError::MalformedResponse)
         })
-        .and_then(|o| o.to_result())
+        .and_then(|o| o.into())
 }
 
 #[derive(Clone, Default, Debug)]
@@ -199,8 +197,8 @@ pub struct HistoryResponse {
 }
 
 
-impl<E: Error> ToResult<HistoryResponse, HistoryError<E>> for HistoryResponse {
-    fn to_result(self) -> Result<HistoryResponse, HistoryError<E>> {
+impl<E: Error> Into<Result<HistoryResponse, HistoryError<E>>> for HistoryResponse {
+    fn into(self) -> Result<HistoryResponse, HistoryError<E>> {
         if self.ok {
             Ok(self)
         } else {
@@ -316,7 +314,7 @@ pub fn list<R>(client: &R, request: &ListRequest) -> Result<ListResponse, ListEr
         .and_then(|result| {
             serde_json::from_str::<ListResponse>(&result).map_err(|_| ListError::MalformedResponse)
         })
-        .and_then(|o| o.to_result())
+        .and_then(|o| o.into())
 }
 
 #[derive(Clone, Default, Debug)]
@@ -335,8 +333,8 @@ pub struct ListResponse {
 }
 
 
-impl<E: Error> ToResult<ListResponse, ListError<E>> for ListResponse {
-    fn to_result(self) -> Result<ListResponse, ListError<E>> {
+impl<E: Error> Into<Result<ListResponse, ListError<E>>> for ListResponse {
+    fn into(self) -> Result<ListResponse, ListError<E>> {
         if self.ok {
             Ok(self)
         } else {
@@ -442,7 +440,7 @@ pub fn mark<R>(client: &R, request: &MarkRequest) -> Result<MarkResponse, MarkEr
         .and_then(|result| {
             serde_json::from_str::<MarkResponse>(&result).map_err(|_| MarkError::MalformedResponse)
         })
-        .and_then(|o| o.to_result())
+        .and_then(|o| o.into())
 }
 
 #[derive(Clone, Default, Debug)]
@@ -464,8 +462,8 @@ pub struct MarkResponse {
 }
 
 
-impl<E: Error> ToResult<MarkResponse, MarkError<E>> for MarkResponse {
-    fn to_result(self) -> Result<MarkResponse, MarkError<E>> {
+impl<E: Error> Into<Result<MarkResponse, MarkError<E>>> for MarkResponse {
+    fn into(self) -> Result<MarkResponse, MarkError<E>> {
         if self.ok {
             Ok(self)
         } else {
@@ -577,7 +575,7 @@ pub fn open<R>(client: &R, request: &OpenRequest) -> Result<OpenResponse, OpenEr
         .and_then(|result| {
             serde_json::from_str::<OpenResponse>(&result).map_err(|_| OpenError::MalformedResponse)
         })
-        .and_then(|o| o.to_result())
+        .and_then(|o| o.into())
 }
 
 #[derive(Clone, Default, Debug)]
@@ -598,8 +596,8 @@ pub struct OpenResponse {
 }
 
 
-impl<E: Error> ToResult<OpenResponse, OpenError<E>> for OpenResponse {
-    fn to_result(self) -> Result<OpenResponse, OpenError<E>> {
+impl<E: Error> Into<Result<OpenResponse, OpenError<E>>> for OpenResponse {
+    fn into(self) -> Result<OpenResponse, OpenError<E>> {
         if self.ok {
             Ok(self)
         } else {
@@ -720,7 +718,7 @@ pub fn replies<R>(client: &R,
             serde_json::from_str::<RepliesResponse>(&result)
                 .map_err(|_| RepliesError::MalformedResponse)
         })
-        .and_then(|o| o.to_result())
+        .and_then(|o| o.into())
 }
 
 #[derive(Clone, Default, Debug)]
@@ -744,8 +742,8 @@ pub struct RepliesResponse {
 }
 
 
-impl<E: Error> ToResult<RepliesResponse, RepliesError<E>> for RepliesResponse {
-    fn to_result(self) -> Result<RepliesResponse, RepliesError<E>> {
+impl<E: Error> Into<Result<RepliesResponse, RepliesError<E>>> for RepliesResponse {
+    fn into(self) -> Result<RepliesResponse, RepliesError<E>> {
         if self.ok {
             Ok(self)
         } else {

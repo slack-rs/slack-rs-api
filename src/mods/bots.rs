@@ -7,8 +7,6 @@ use std::fmt;
 
 use serde_json;
 
-#[allow(unused_imports)]
-use ToResult;
 use requests::SlackWebRequestSender;
 
 /// Gets information about a bot user.
@@ -26,7 +24,7 @@ pub fn info<R>(client: &R, request: &InfoRequest) -> Result<InfoResponse, InfoEr
         .and_then(|result| {
             serde_json::from_str::<InfoResponse>(&result).map_err(|_| InfoError::MalformedResponse)
         })
-        .and_then(|o| o.to_result())
+        .and_then(|o| o.into())
 }
 
 #[derive(Clone, Default, Debug)]
@@ -63,8 +61,8 @@ pub struct InfoResponseBotIcons {
 }
 
 
-impl<E: Error> ToResult<InfoResponse, InfoError<E>> for InfoResponse {
-    fn to_result(self) -> Result<InfoResponse, InfoError<E>> {
+impl<E: Error> Into<Result<InfoResponse, InfoError<E>>> for InfoResponse {
+    fn into(self) -> Result<InfoResponse, InfoError<E>> {
         if self.ok {
             Ok(self)
         } else {

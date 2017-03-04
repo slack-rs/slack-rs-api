@@ -7,8 +7,6 @@ use std::fmt;
 
 use serde_json;
 
-#[allow(unused_imports)]
-use ToResult;
 use requests::SlackWebRequestSender;
 
 /// Adds a reaction to an item.
@@ -31,7 +29,7 @@ pub fn add<R>(client: &R, request: &AddRequest) -> Result<AddResponse, AddError<
         .and_then(|result| {
             serde_json::from_str::<AddResponse>(&result).map_err(|_| AddError::MalformedResponse)
         })
-        .and_then(|o| o.to_result())
+        .and_then(|o| o.into())
 }
 
 #[derive(Clone, Default, Debug)]
@@ -59,8 +57,8 @@ pub struct AddResponse {
 }
 
 
-impl<E: Error> ToResult<AddResponse, AddError<E>> for AddResponse {
-    fn to_result(self) -> Result<AddResponse, AddError<E>> {
+impl<E: Error> Into<Result<AddResponse, AddError<E>>> for AddResponse {
+    fn into(self) -> Result<AddResponse, AddError<E>> {
         if self.ok {
             Ok(self)
         } else {
@@ -205,7 +203,7 @@ pub fn get<R>(client: &R, request: &GetRequest) -> Result<GetResponse, GetError<
         .and_then(|result| {
             serde_json::from_str::<GetResponse>(&result).map_err(|_| GetError::MalformedResponse)
         })
-        .and_then(|o| o.to_result())
+        .and_then(|o| o.into())
 }
 
 #[derive(Clone, Default, Debug)]
@@ -306,20 +304,27 @@ pub struct GetResponseFileComment {
 }
 
 
-impl<E: Error> ToResult<GetResponse, GetError<E>> for GetResponse {
-    fn to_result(self) -> Result<GetResponse, GetError<E>> {
+impl<E: Error> Into<Result<GetResponse, GetError<E>>> for GetResponse {
+    fn into(self) -> Result<GetResponse, GetError<E>> {
         match self {
-            GetResponse::Message(inner) => inner.to_result().map(|r| GetResponse::Message(r)),
-            GetResponse::File(inner) => inner.to_result().map(|r| GetResponse::File(r)),
+            GetResponse::Message(inner) => {
+                let x: Result<GetResponseMessage, GetError<E>> = inner.into();
+                x.map(|r| GetResponse::Message(r))
+            }
+            GetResponse::File(inner) => {
+                let x: Result<GetResponseFile, GetError<E>> = inner.into();
+                x.map(|r| GetResponse::File(r))
+            }
             GetResponse::FileComment(inner) => {
-                inner.to_result().map(|r| GetResponse::FileComment(r))
+                let x: Result<GetResponseFileComment, GetError<E>> = inner.into();
+                x.map(|r| GetResponse::FileComment(r))
             }
         }
     }
 }
 
-impl<E: Error> ToResult<GetResponseMessage, GetError<E>> for GetResponseMessage {
-    fn to_result(self) -> Result<GetResponseMessage, GetError<E>> {
+impl<E: Error> Into<Result<GetResponseMessage, GetError<E>>> for GetResponseMessage {
+    fn into(self) -> Result<GetResponseMessage, GetError<E>> {
         if self.ok {
             Ok(self)
         } else {
@@ -327,8 +332,8 @@ impl<E: Error> ToResult<GetResponseMessage, GetError<E>> for GetResponseMessage 
         }
     }
 }
-impl<E: Error> ToResult<GetResponseFile, GetError<E>> for GetResponseFile {
-    fn to_result(self) -> Result<GetResponseFile, GetError<E>> {
+impl<E: Error> Into<Result<GetResponseFile, GetError<E>>> for GetResponseFile {
+    fn into(self) -> Result<GetResponseFile, GetError<E>> {
         if self.ok {
             Ok(self)
         } else {
@@ -336,8 +341,8 @@ impl<E: Error> ToResult<GetResponseFile, GetError<E>> for GetResponseFile {
         }
     }
 }
-impl<E: Error> ToResult<GetResponseFileComment, GetError<E>> for GetResponseFileComment {
-    fn to_result(self) -> Result<GetResponseFileComment, GetError<E>> {
+impl<E: Error> Into<Result<GetResponseFileComment, GetError<E>>> for GetResponseFileComment {
+    fn into(self) -> Result<GetResponseFileComment, GetError<E>> {
         if self.ok {
             Ok(self)
         } else {
@@ -466,7 +471,7 @@ pub fn list<R>(client: &R, request: &ListRequest) -> Result<ListResponse, ListEr
         .and_then(|result| {
             serde_json::from_str::<ListResponse>(&result).map_err(|_| ListError::MalformedResponse)
         })
-        .and_then(|o| o.to_result())
+        .and_then(|o| o.into())
 }
 
 #[derive(Clone, Default, Debug)]
@@ -565,8 +570,8 @@ pub struct ListResponseItemFileComment {
 }
 
 
-impl<E: Error> ToResult<ListResponse, ListError<E>> for ListResponse {
-    fn to_result(self) -> Result<ListResponse, ListError<E>> {
+impl<E: Error> Into<Result<ListResponse, ListError<E>>> for ListResponse {
+    fn into(self) -> Result<ListResponse, ListError<E>> {
         if self.ok {
             Ok(self)
         } else {
@@ -682,7 +687,7 @@ pub fn remove<R>(client: &R,
             serde_json::from_str::<RemoveResponse>(&result)
                 .map_err(|_| RemoveError::MalformedResponse)
         })
-        .and_then(|o| o.to_result())
+        .and_then(|o| o.into())
 }
 
 #[derive(Clone, Default, Debug)]
@@ -710,8 +715,8 @@ pub struct RemoveResponse {
 }
 
 
-impl<E: Error> ToResult<RemoveResponse, RemoveError<E>> for RemoveResponse {
-    fn to_result(self) -> Result<RemoveResponse, RemoveError<E>> {
+impl<E: Error> Into<Result<RemoveResponse, RemoveError<E>>> for RemoveResponse {
+    fn into(self) -> Result<RemoveResponse, RemoveError<E>> {
         if self.ok {
             Ok(self)
         } else {

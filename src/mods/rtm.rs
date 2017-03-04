@@ -7,8 +7,6 @@ use std::fmt;
 
 use serde_json;
 
-#[allow(unused_imports)]
-use ToResult;
 use requests::SlackWebRequestSender;
 
 /// Starts a Real Time Messaging session.
@@ -30,7 +28,7 @@ pub fn start<R>(client: &R, request: &StartRequest) -> Result<StartResponse, Sta
             serde_json::from_str::<StartResponse>(&result)
                 .map_err(|_| StartError::MalformedResponse)
         })
-        .and_then(|o| o.to_result())
+        .and_then(|o| o.into())
 }
 
 #[derive(Clone, Default, Debug)]
@@ -64,8 +62,8 @@ pub struct StartResponse {
 }
 
 
-impl<E: Error> ToResult<StartResponse, StartError<E>> for StartResponse {
-    fn to_result(self) -> Result<StartResponse, StartError<E>> {
+impl<E: Error> Into<Result<StartResponse, StartError<E>>> for StartResponse {
+    fn into(self) -> Result<StartResponse, StartError<E>> {
         if self.ok {
             Ok(self)
         } else {

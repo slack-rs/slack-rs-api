@@ -7,8 +7,6 @@ use std::fmt;
 
 use serde_json;
 
-#[allow(unused_imports)]
-use ToResult;
 use requests::SlackWebRequestSender;
 
 /// Deletes a file.
@@ -29,7 +27,7 @@ pub fn delete<R>(client: &R,
             serde_json::from_str::<DeleteResponse>(&result)
                 .map_err(|_| DeleteError::MalformedResponse)
         })
-        .and_then(|o| o.to_result())
+        .and_then(|o| o.into())
 }
 
 #[derive(Clone, Default, Debug)]
@@ -49,8 +47,8 @@ pub struct DeleteResponse {
 }
 
 
-impl<E: Error> ToResult<DeleteResponse, DeleteError<E>> for DeleteResponse {
-    fn to_result(self) -> Result<DeleteResponse, DeleteError<E>> {
+impl<E: Error> Into<Result<DeleteResponse, DeleteError<E>>> for DeleteResponse {
+    fn into(self) -> Result<DeleteResponse, DeleteError<E>> {
         if self.ok {
             Ok(self)
         } else {
@@ -170,7 +168,7 @@ pub fn info<R>(client: &R, request: &InfoRequest) -> Result<InfoResponse, InfoEr
         .and_then(|result| {
             serde_json::from_str::<InfoResponse>(&result).map_err(|_| InfoError::MalformedResponse)
         })
-        .and_then(|o| o.to_result())
+        .and_then(|o| o.into())
 }
 
 #[derive(Clone, Default, Debug)]
@@ -197,8 +195,8 @@ pub struct InfoResponse {
 }
 
 
-impl<E: Error> ToResult<InfoResponse, InfoError<E>> for InfoResponse {
-    fn to_result(self) -> Result<InfoResponse, InfoError<E>> {
+impl<E: Error> Into<Result<InfoResponse, InfoError<E>>> for InfoResponse {
+    fn into(self) -> Result<InfoResponse, InfoError<E>> {
         if self.ok {
             Ok(self)
         } else {
@@ -320,7 +318,7 @@ pub fn list<R>(client: &R, request: &ListRequest) -> Result<ListResponse, ListEr
         .and_then(|result| {
             serde_json::from_str::<ListResponse>(&result).map_err(|_| ListError::MalformedResponse)
         })
-        .and_then(|o| o.to_result())
+        .and_then(|o| o.into())
 }
 
 #[derive(Clone, Default, Debug)]
@@ -366,8 +364,8 @@ pub struct ListResponse {
 }
 
 
-impl<E: Error> ToResult<ListResponse, ListError<E>> for ListResponse {
-    fn to_result(self) -> Result<ListResponse, ListError<E>> {
+impl<E: Error> Into<Result<ListResponse, ListError<E>>> for ListResponse {
+    fn into(self) -> Result<ListResponse, ListError<E>> {
         if self.ok {
             Ok(self)
         } else {
@@ -486,7 +484,7 @@ pub fn revoke_public_url<R>(client: &R,
             serde_json::from_str::<RevokePublicURLResponse>(&result)
                 .map_err(|_| RevokePublicURLError::MalformedResponse)
         })
-        .and_then(|o| o.to_result())
+        .and_then(|o| o.into())
 }
 
 #[derive(Clone, Default, Debug)]
@@ -507,9 +505,9 @@ pub struct RevokePublicURLResponse {
 }
 
 
-impl<E: Error> ToResult<RevokePublicURLResponse, RevokePublicURLError<E>>
+impl<E: Error> Into<Result<RevokePublicURLResponse, RevokePublicURLError<E>>>
     for RevokePublicURLResponse {
-    fn to_result(self) -> Result<RevokePublicURLResponse, RevokePublicURLError<E>> {
+    fn into(self) -> Result<RevokePublicURLResponse, RevokePublicURLError<E>> {
         if self.ok {
             Ok(self)
         } else {
@@ -628,7 +626,7 @@ pub fn shared_public_url<R>(client: &R,
             serde_json::from_str::<SharedPublicURLResponse>(&result)
                 .map_err(|_| SharedPublicURLError::MalformedResponse)
         })
-        .and_then(|o| o.to_result())
+        .and_then(|o| o.into())
 }
 
 #[derive(Clone, Default, Debug)]
@@ -649,9 +647,9 @@ pub struct SharedPublicURLResponse {
 }
 
 
-impl<E: Error> ToResult<SharedPublicURLResponse, SharedPublicURLError<E>>
+impl<E: Error> Into<Result<SharedPublicURLResponse, SharedPublicURLError<E>>>
     for SharedPublicURLResponse {
-    fn to_result(self) -> Result<SharedPublicURLResponse, SharedPublicURLError<E>> {
+    fn into(self) -> Result<SharedPublicURLResponse, SharedPublicURLError<E>> {
         if self.ok {
             Ok(self)
         } else {
@@ -782,7 +780,7 @@ pub fn upload<R>(client: &R,
             serde_json::from_str::<UploadResponse>(&result)
                 .map_err(|_| UploadError::MalformedResponse)
         })
-        .and_then(|o| o.to_result())
+        .and_then(|o| o.into())
 }
 
 #[derive(Clone, Default, Debug)]
@@ -815,8 +813,8 @@ pub struct UploadResponse {
 }
 
 
-impl<E: Error> ToResult<UploadResponse, UploadError<E>> for UploadResponse {
-    fn to_result(self) -> Result<UploadResponse, UploadError<E>> {
+impl<E: Error> Into<Result<UploadResponse, UploadError<E>>> for UploadResponse {
+    fn into(self) -> Result<UploadResponse, UploadError<E>> {
         if self.ok {
             Ok(self)
         } else {

@@ -7,8 +7,6 @@ use std::fmt;
 
 use serde_json;
 
-#[allow(unused_imports)]
-use ToResult;
 use requests::SlackWebRequestSender;
 
 /// Revokes a token.
@@ -30,7 +28,7 @@ pub fn revoke<R>(client: &R,
             serde_json::from_str::<RevokeResponse>(&result)
                 .map_err(|_| RevokeError::MalformedResponse)
         })
-        .and_then(|o| o.to_result())
+        .and_then(|o| o.into())
 }
 
 #[derive(Clone, Default, Debug)]
@@ -50,8 +48,8 @@ pub struct RevokeResponse {
 }
 
 
-impl<E: Error> ToResult<RevokeResponse, RevokeError<E>> for RevokeResponse {
-    fn to_result(self) -> Result<RevokeResponse, RevokeError<E>> {
+impl<E: Error> Into<Result<RevokeResponse, RevokeError<E>>> for RevokeResponse {
+    fn into(self) -> Result<RevokeResponse, RevokeError<E>> {
         if self.ok {
             Ok(self)
         } else {
@@ -155,7 +153,7 @@ pub fn test<R>(client: &R, request: &TestRequest) -> Result<TestResponse, TestEr
         .and_then(|result| {
             serde_json::from_str::<TestResponse>(&result).map_err(|_| TestError::MalformedResponse)
         })
-        .and_then(|o| o.to_result())
+        .and_then(|o| o.into())
 }
 
 #[derive(Clone, Default, Debug)]
@@ -178,8 +176,8 @@ pub struct TestResponse {
 }
 
 
-impl<E: Error> ToResult<TestResponse, TestError<E>> for TestResponse {
-    fn to_result(self) -> Result<TestResponse, TestError<E>> {
+impl<E: Error> Into<Result<TestResponse, TestError<E>>> for TestResponse {
+    fn into(self) -> Result<TestResponse, TestError<E>> {
         if self.ok {
             Ok(self)
         } else {

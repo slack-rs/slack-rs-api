@@ -7,8 +7,6 @@ use std::fmt;
 
 use serde_json;
 
-#[allow(unused_imports)]
-use ToResult;
 use requests::SlackWebRequestSender;
 
 /// Creates a reminder.
@@ -29,7 +27,7 @@ pub fn add<R>(client: &R, request: &AddRequest) -> Result<AddResponse, AddError<
         .and_then(|result| {
             serde_json::from_str::<AddResponse>(&result).map_err(|_| AddError::MalformedResponse)
         })
-        .and_then(|o| o.to_result())
+        .and_then(|o| o.into())
 }
 
 #[derive(Clone, Default, Debug)]
@@ -54,8 +52,8 @@ pub struct AddResponse {
 }
 
 
-impl<E: Error> ToResult<AddResponse, AddError<E>> for AddResponse {
-    fn to_result(self) -> Result<AddResponse, AddError<E>> {
+impl<E: Error> Into<Result<AddResponse, AddError<E>>> for AddResponse {
+    fn into(self) -> Result<AddResponse, AddError<E>> {
         if self.ok {
             Ok(self)
         } else {
@@ -190,7 +188,7 @@ pub fn complete<R>(client: &R,
             serde_json::from_str::<CompleteResponse>(&result)
                 .map_err(|_| CompleteError::MalformedResponse)
         })
-        .and_then(|o| o.to_result())
+        .and_then(|o| o.into())
 }
 
 #[derive(Clone, Default, Debug)]
@@ -210,8 +208,8 @@ pub struct CompleteResponse {
 }
 
 
-impl<E: Error> ToResult<CompleteResponse, CompleteError<E>> for CompleteResponse {
-    fn to_result(self) -> Result<CompleteResponse, CompleteError<E>> {
+impl<E: Error> Into<Result<CompleteResponse, CompleteError<E>>> for CompleteResponse {
+    fn into(self) -> Result<CompleteResponse, CompleteError<E>> {
         if self.ok {
             Ok(self)
         } else {
@@ -334,7 +332,7 @@ pub fn delete<R>(client: &R,
             serde_json::from_str::<DeleteResponse>(&result)
                 .map_err(|_| DeleteError::MalformedResponse)
         })
-        .and_then(|o| o.to_result())
+        .and_then(|o| o.into())
 }
 
 #[derive(Clone, Default, Debug)]
@@ -354,8 +352,8 @@ pub struct DeleteResponse {
 }
 
 
-impl<E: Error> ToResult<DeleteResponse, DeleteError<E>> for DeleteResponse {
-    fn to_result(self) -> Result<DeleteResponse, DeleteError<E>> {
+impl<E: Error> Into<Result<DeleteResponse, DeleteError<E>>> for DeleteResponse {
+    fn into(self) -> Result<DeleteResponse, DeleteError<E>> {
         if self.ok {
             Ok(self)
         } else {
@@ -467,7 +465,7 @@ pub fn info<R>(client: &R, request: &InfoRequest) -> Result<InfoResponse, InfoEr
         .and_then(|result| {
             serde_json::from_str::<InfoResponse>(&result).map_err(|_| InfoError::MalformedResponse)
         })
-        .and_then(|o| o.to_result())
+        .and_then(|o| o.into())
 }
 
 #[derive(Clone, Default, Debug)]
@@ -488,8 +486,8 @@ pub struct InfoResponse {
 }
 
 
-impl<E: Error> ToResult<InfoResponse, InfoError<E>> for InfoResponse {
-    fn to_result(self) -> Result<InfoResponse, InfoError<E>> {
+impl<E: Error> Into<Result<InfoResponse, InfoError<E>>> for InfoResponse {
+    fn into(self) -> Result<InfoResponse, InfoError<E>> {
         if self.ok {
             Ok(self)
         } else {
@@ -601,7 +599,7 @@ pub fn list<R>(client: &R, request: &ListRequest) -> Result<ListResponse, ListEr
         .and_then(|result| {
             serde_json::from_str::<ListResponse>(&result).map_err(|_| ListError::MalformedResponse)
         })
-        .and_then(|o| o.to_result())
+        .and_then(|o| o.into())
 }
 
 #[derive(Clone, Default, Debug)]
@@ -620,8 +618,8 @@ pub struct ListResponse {
 }
 
 
-impl<E: Error> ToResult<ListResponse, ListError<E>> for ListResponse {
-    fn to_result(self) -> Result<ListResponse, ListError<E>> {
+impl<E: Error> Into<Result<ListResponse, ListError<E>>> for ListResponse {
+    fn into(self) -> Result<ListResponse, ListError<E>> {
         if self.ok {
             Ok(self)
         } else {

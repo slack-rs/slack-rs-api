@@ -27,9 +27,3 @@ mod types;
 pub use types::*;
 
 pub mod requests;
-
-/// Trait to turn an object into a Result<T, E>.
-trait ToResult<T, E> {
-    /// Turn self into a Result<T, E>
-    fn to_result(self) -> Result<T, E>;
-}

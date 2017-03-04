@@ -7,8 +7,6 @@ use std::fmt;
 
 use serde_json;
 
-#[allow(unused_imports)]
-use ToResult;
 use requests::SlackWebRequestSender;
 
 /// Checks API calling code.
@@ -27,7 +25,7 @@ pub fn test<R>(client: &R, request: &TestRequest) -> Result<TestResponse, TestEr
         .and_then(|result| {
             serde_json::from_str::<TestResponse>(&result).map_err(|_| TestError::MalformedResponse)
         })
-        .and_then(|o| o.to_result())
+        .and_then(|o| o.into())
 }
 
 #[derive(Clone, Default, Debug)]
@@ -47,8 +45,8 @@ pub struct TestResponse {
 }
 
 
-impl<E: Error> ToResult<TestResponse, TestError<E>> for TestResponse {
-    fn to_result(self) -> Result<TestResponse, TestError<E>> {
+impl<E: Error> Into<Result<TestResponse, TestError<E>>> for TestResponse {
+    fn into(self) -> Result<TestResponse, TestError<E>> {
         if self.ok {
             Ok(self)
         } else {

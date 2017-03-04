@@ -7,8 +7,6 @@ use std::fmt;
 
 use serde_json;
 
-#[allow(unused_imports)]
-use ToResult;
 use requests::SlackWebRequestSender;
 
 /// Retrieve a team's profile.
@@ -27,7 +25,7 @@ pub fn get<R>(client: &R, request: &GetRequest) -> Result<GetResponse, GetError<
         .and_then(|result| {
             serde_json::from_str::<GetResponse>(&result).map_err(|_| GetError::MalformedResponse)
         })
-        .and_then(|o| o.to_result())
+        .and_then(|o| o.into())
 }
 
 #[derive(Clone, Default, Debug)]
@@ -66,8 +64,8 @@ pub struct GetResponseProfileField {
 }
 
 
-impl<E: Error> ToResult<GetResponse, GetError<E>> for GetResponse {
-    fn to_result(self) -> Result<GetResponse, GetError<E>> {
+impl<E: Error> Into<Result<GetResponse, GetError<E>>> for GetResponse {
+    fn into(self) -> Result<GetResponse, GetError<E>> {
         if self.ok {
             Ok(self)
         } else {

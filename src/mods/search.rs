@@ -7,8 +7,6 @@ use std::fmt;
 
 use serde_json;
 
-#[allow(unused_imports)]
-use ToResult;
 use requests::SlackWebRequestSender;
 
 /// Searches for messages and files matching a query.
@@ -34,7 +32,7 @@ pub fn all<R>(client: &R, request: &AllRequest) -> Result<AllResponse, AllError<
         .and_then(|result| {
             serde_json::from_str::<AllResponse>(&result).map_err(|_| AllError::MalformedResponse)
         })
-        .and_then(|o| o.to_result())
+        .and_then(|o| o.into())
 }
 
 #[derive(Clone, Default, Debug)]
@@ -80,8 +78,8 @@ pub struct AllResponseFiles {
 }
 
 
-impl<E: Error> ToResult<AllResponse, AllError<E>> for AllResponse {
-    fn to_result(self) -> Result<AllResponse, AllError<E>> {
+impl<E: Error> Into<Result<AllResponse, AllError<E>>> for AllResponse {
+    fn into(self) -> Result<AllResponse, AllError<E>> {
         if self.ok {
             Ok(self)
         } else {
@@ -198,7 +196,7 @@ pub fn files<R>(client: &R, request: &FilesRequest) -> Result<FilesResponse, Fil
             serde_json::from_str::<FilesResponse>(&result)
                 .map_err(|_| FilesError::MalformedResponse)
         })
-        .and_then(|o| o.to_result())
+        .and_then(|o| o.into())
 }
 
 #[derive(Clone, Default, Debug)]
@@ -237,8 +235,8 @@ pub struct FilesResponseFiles {
 }
 
 
-impl<E: Error> ToResult<FilesResponse, FilesError<E>> for FilesResponse {
-    fn to_result(self) -> Result<FilesResponse, FilesError<E>> {
+impl<E: Error> Into<Result<FilesResponse, FilesError<E>>> for FilesResponse {
+    fn into(self) -> Result<FilesResponse, FilesError<E>> {
         if self.ok {
             Ok(self)
         } else {
@@ -357,7 +355,7 @@ pub fn messages<R>(client: &R,
             serde_json::from_str::<MessagesResponse>(&result)
                 .map_err(|_| MessagesError::MalformedResponse)
         })
-        .and_then(|o| o.to_result())
+        .and_then(|o| o.into())
 }
 
 #[derive(Clone, Default, Debug)]
@@ -396,8 +394,8 @@ pub struct MessagesResponseMessages {
 }
 
 
-impl<E: Error> ToResult<MessagesResponse, MessagesError<E>> for MessagesResponse {
-    fn to_result(self) -> Result<MessagesResponse, MessagesError<E>> {
+impl<E: Error> Into<Result<MessagesResponse, MessagesError<E>>> for MessagesResponse {
+    fn into(self) -> Result<MessagesResponse, MessagesError<E>> {
         if self.ok {
             Ok(self)
         } else {

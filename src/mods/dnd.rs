@@ -7,8 +7,6 @@ use std::fmt;
 
 use serde_json;
 
-#[allow(unused_imports)]
-use ToResult;
 use requests::SlackWebRequestSender;
 
 /// Ends the current user's Do Not Disturb session immediately.
@@ -29,7 +27,7 @@ pub fn end_dnd<R>(client: &R,
             serde_json::from_str::<EndDndResponse>(&result)
                 .map_err(|_| EndDndError::MalformedResponse)
         })
-        .and_then(|o| o.to_result())
+        .and_then(|o| o.into())
 }
 
 #[derive(Clone, Default, Debug)]
@@ -47,8 +45,8 @@ pub struct EndDndResponse {
 }
 
 
-impl<E: Error> ToResult<EndDndResponse, EndDndError<E>> for EndDndResponse {
-    fn to_result(self) -> Result<EndDndResponse, EndDndError<E>> {
+impl<E: Error> Into<Result<EndDndResponse, EndDndError<E>>> for EndDndResponse {
+    fn into(self) -> Result<EndDndResponse, EndDndError<E>> {
         if self.ok {
             Ok(self)
         } else {
@@ -163,7 +161,7 @@ pub fn end_snooze<R>(client: &R,
             serde_json::from_str::<EndSnoozeResponse>(&result)
                 .map_err(|_| EndSnoozeError::MalformedResponse)
         })
-        .and_then(|o| o.to_result())
+        .and_then(|o| o.into())
 }
 
 #[derive(Clone, Default, Debug)]
@@ -185,8 +183,8 @@ pub struct EndSnoozeResponse {
 }
 
 
-impl<E: Error> ToResult<EndSnoozeResponse, EndSnoozeError<E>> for EndSnoozeResponse {
-    fn to_result(self) -> Result<EndSnoozeResponse, EndSnoozeError<E>> {
+impl<E: Error> Into<Result<EndSnoozeResponse, EndSnoozeError<E>>> for EndSnoozeResponse {
+    fn into(self) -> Result<EndSnoozeResponse, EndSnoozeError<E>> {
         if self.ok {
             Ok(self)
         } else {
@@ -302,7 +300,7 @@ pub fn info<R>(client: &R, request: &InfoRequest) -> Result<InfoResponse, InfoEr
         .and_then(|result| {
             serde_json::from_str::<InfoResponse>(&result).map_err(|_| InfoError::MalformedResponse)
         })
-        .and_then(|o| o.to_result())
+        .and_then(|o| o.into())
 }
 
 #[derive(Clone, Default, Debug)]
@@ -328,8 +326,8 @@ pub struct InfoResponse {
 }
 
 
-impl<E: Error> ToResult<InfoResponse, InfoError<E>> for InfoResponse {
-    fn to_result(self) -> Result<InfoResponse, InfoError<E>> {
+impl<E: Error> Into<Result<InfoResponse, InfoError<E>>> for InfoResponse {
+    fn into(self) -> Result<InfoResponse, InfoError<E>> {
         if self.ok {
             Ok(self)
         } else {
@@ -440,7 +438,7 @@ pub fn set_snooze<R>(client: &R,
             serde_json::from_str::<SetSnoozeResponse>(&result)
                 .map_err(|_| SetSnoozeError::MalformedResponse)
         })
-        .and_then(|o| o.to_result())
+        .and_then(|o| o.into())
 }
 
 #[derive(Clone, Default, Debug)]
@@ -463,8 +461,8 @@ pub struct SetSnoozeResponse {
 }
 
 
-impl<E: Error> ToResult<SetSnoozeResponse, SetSnoozeError<E>> for SetSnoozeResponse {
-    fn to_result(self) -> Result<SetSnoozeResponse, SetSnoozeError<E>> {
+impl<E: Error> Into<Result<SetSnoozeResponse, SetSnoozeError<E>>> for SetSnoozeResponse {
+    fn into(self) -> Result<SetSnoozeResponse, SetSnoozeError<E>> {
         if self.ok {
             Ok(self)
         } else {
@@ -583,7 +581,7 @@ pub fn team_info<R>(client: &R,
             serde_json::from_str::<TeamInfoResponse>(&result)
                 .map_err(|_| TeamInfoError::MalformedResponse)
         })
-        .and_then(|o| o.to_result())
+        .and_then(|o| o.into())
 }
 
 #[derive(Clone, Default, Debug)]
@@ -604,8 +602,8 @@ pub struct TeamInfoResponse {
 }
 
 
-impl<E: Error> ToResult<TeamInfoResponse, TeamInfoError<E>> for TeamInfoResponse {
-    fn to_result(self) -> Result<TeamInfoResponse, TeamInfoError<E>> {
+impl<E: Error> Into<Result<TeamInfoResponse, TeamInfoError<E>>> for TeamInfoResponse {
+    fn into(self) -> Result<TeamInfoResponse, TeamInfoError<E>> {
         if self.ok {
             Ok(self)
         } else {

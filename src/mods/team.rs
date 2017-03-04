@@ -7,8 +7,6 @@ use std::fmt;
 
 use serde_json;
 
-#[allow(unused_imports)]
-use ToResult;
 use requests::SlackWebRequestSender;
 
 /// Gets the access logs for the current team.
@@ -34,7 +32,7 @@ pub fn access_logs<R>(client: &R,
             serde_json::from_str::<AccessLogsResponse>(&result)
                 .map_err(|_| AccessLogsError::MalformedResponse)
         })
-        .and_then(|o| o.to_result())
+        .and_then(|o| o.into())
 }
 
 #[derive(Clone, Default, Debug)]
@@ -74,8 +72,8 @@ pub struct AccessLogsResponseLogin {
 }
 
 
-impl<E: Error> ToResult<AccessLogsResponse, AccessLogsError<E>> for AccessLogsResponse {
-    fn to_result(self) -> Result<AccessLogsResponse, AccessLogsError<E>> {
+impl<E: Error> Into<Result<AccessLogsResponse, AccessLogsError<E>>> for AccessLogsResponse {
+    fn into(self) -> Result<AccessLogsResponse, AccessLogsError<E>> {
         if self.ok {
             Ok(self)
         } else {
@@ -194,7 +192,7 @@ pub fn billable_info<R>(client: &R,
             serde_json::from_str::<BillableInfoResponse>(&result)
                 .map_err(|_| BillableInfoError::MalformedResponse)
         })
-        .and_then(|o| o.to_result())
+        .and_then(|o| o.into())
 }
 
 #[derive(Clone, Default, Debug)]
@@ -215,8 +213,8 @@ pub struct BillableInfoResponse {
 }
 
 
-impl<E: Error> ToResult<BillableInfoResponse, BillableInfoError<E>> for BillableInfoResponse {
-    fn to_result(self) -> Result<BillableInfoResponse, BillableInfoError<E>> {
+impl<E: Error> Into<Result<BillableInfoResponse, BillableInfoError<E>>> for BillableInfoResponse {
+    fn into(self) -> Result<BillableInfoResponse, BillableInfoError<E>> {
         if self.ok {
             Ok(self)
         } else {
@@ -328,7 +326,7 @@ pub fn info<R>(client: &R, request: &InfoRequest) -> Result<InfoResponse, InfoEr
         .and_then(|result| {
             serde_json::from_str::<InfoResponse>(&result).map_err(|_| InfoError::MalformedResponse)
         })
-        .and_then(|o| o.to_result())
+        .and_then(|o| o.into())
 }
 
 #[derive(Clone, Default, Debug)]
@@ -347,8 +345,8 @@ pub struct InfoResponse {
 }
 
 
-impl<E: Error> ToResult<InfoResponse, InfoError<E>> for InfoResponse {
-    fn to_result(self) -> Result<InfoResponse, InfoError<E>> {
+impl<E: Error> Into<Result<InfoResponse, InfoError<E>>> for InfoResponse {
+    fn into(self) -> Result<InfoResponse, InfoError<E>> {
         if self.ok {
             Ok(self)
         } else {
@@ -462,7 +460,7 @@ pub fn integration_logs<R>(client: &R,
             serde_json::from_str::<IntegrationLogsResponse>(&result)
                 .map_err(|_| IntegrationLogsError::MalformedResponse)
         })
-        .and_then(|o| o.to_result())
+        .and_then(|o| o.into())
 }
 
 #[derive(Clone, Default, Debug)]
@@ -509,9 +507,9 @@ pub struct IntegrationLogsResponseLog {
 }
 
 
-impl<E: Error> ToResult<IntegrationLogsResponse, IntegrationLogsError<E>>
+impl<E: Error> Into<Result<IntegrationLogsResponse, IntegrationLogsError<E>>>
     for IntegrationLogsResponse {
-    fn to_result(self) -> Result<IntegrationLogsResponse, IntegrationLogsError<E>> {
+    fn into(self) -> Result<IntegrationLogsResponse, IntegrationLogsError<E>> {
         if self.ok {
             Ok(self)
         } else {

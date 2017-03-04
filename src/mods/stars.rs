@@ -7,8 +7,6 @@ use std::fmt;
 
 use serde_json;
 
-#[allow(unused_imports)]
-use ToResult;
 use requests::SlackWebRequestSender;
 
 /// Adds a star to an item.
@@ -30,7 +28,7 @@ pub fn add<R>(client: &R, request: &AddRequest) -> Result<AddResponse, AddError<
         .and_then(|result| {
             serde_json::from_str::<AddResponse>(&result).map_err(|_| AddError::MalformedResponse)
         })
-        .and_then(|o| o.to_result())
+        .and_then(|o| o.into())
 }
 
 #[derive(Clone, Default, Debug)]
@@ -56,8 +54,8 @@ pub struct AddResponse {
 }
 
 
-impl<E: Error> ToResult<AddResponse, AddError<E>> for AddResponse {
-    fn to_result(self) -> Result<AddResponse, AddError<E>> {
+impl<E: Error> Into<Result<AddResponse, AddError<E>>> for AddResponse {
+    fn into(self) -> Result<AddResponse, AddError<E>> {
         if self.ok {
             Ok(self)
         } else {
@@ -192,7 +190,7 @@ pub fn list<R>(client: &R, request: &ListRequest) -> Result<ListResponse, ListEr
         .and_then(|result| {
             serde_json::from_str::<ListResponse>(&result).map_err(|_| ListError::MalformedResponse)
         })
-        .and_then(|o| o.to_result())
+        .and_then(|o| o.into())
 }
 
 #[derive(Clone, Default, Debug)]
@@ -330,8 +328,8 @@ pub struct ListResponseItemGroup {
 }
 
 
-impl<E: Error> ToResult<ListResponse, ListError<E>> for ListResponse {
-    fn to_result(self) -> Result<ListResponse, ListError<E>> {
+impl<E: Error> Into<Result<ListResponse, ListError<E>>> for ListResponse {
+    fn into(self) -> Result<ListResponse, ListError<E>> {
         if self.ok {
             Ok(self)
         } else {
@@ -454,7 +452,7 @@ pub fn remove<R>(client: &R,
             serde_json::from_str::<RemoveResponse>(&result)
                 .map_err(|_| RemoveError::MalformedResponse)
         })
-        .and_then(|o| o.to_result())
+        .and_then(|o| o.into())
 }
 
 #[derive(Clone, Default, Debug)]
@@ -480,8 +478,8 @@ pub struct RemoveResponse {
 }
 
 
-impl<E: Error> ToResult<RemoveResponse, RemoveError<E>> for RemoveResponse {
-    fn to_result(self) -> Result<RemoveResponse, RemoveError<E>> {
+impl<E: Error> Into<Result<RemoveResponse, RemoveError<E>>> for RemoveResponse {
+    fn into(self) -> Result<RemoveResponse, RemoveError<E>> {
         if self.ok {
             Ok(self)
         } else {
