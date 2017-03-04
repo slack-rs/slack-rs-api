@@ -90,6 +90,14 @@ fn generate_modules(output_path: &Path) -> io::Result<()> {
         }
     }
 
+    let mut mod_file = OpenOptions::new()
+        .write(true)
+        .truncate(true)
+        .create(true)
+        .open(output_path.join("mod.rs"))?;
+    
+    mod_file.write_all(mods.iter().map(|modname| format!("pub mod {};", modname)).collect::<Vec<_>>().join("\n").as_bytes())?;
+
     Ok(())
 }
 
