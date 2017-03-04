@@ -3,12 +3,14 @@ extern crate serde_derive;
 extern crate serde;
 extern crate serde_json;
 extern crate inflector;
+extern crate clap;
 
 use std::fs::{self, File, OpenOptions};
 use std::io::{self, Read, Write};
 use std::path::Path;
 
 use inflector::Inflector;
+use clap::{Arg, App};
 
 mod json_schema;
 use json_schema::{JsonSchema, PropType};
@@ -18,11 +20,12 @@ use generator::*;
 
 const SCHEMA_DIR: &'static str = concat!(env!("CARGO_MANIFEST_DIR"), "/slack-api-schemas");
 
-pub fn generate_types(output_path: &Path) -> io::Result<()> {
+fn generate_types(output_path: &Path) -> io::Result<()> {
     let codegen_filepath = output_path.join("types.rs");
 
     let mut types_file = OpenOptions::new()
         .write(true)
+        .truncate(true)
         .create(true)
         .open(&codegen_filepath)?;
 
@@ -57,7 +60,7 @@ pub fn generate_types(output_path: &Path) -> io::Result<()> {
     Ok(())
 }
 
-pub fn generate_modules(output_path: &Path) -> io::Result<()> {
+fn generate_modules(output_path: &Path) -> io::Result<()> {
     let mut mods = vec![];
 
     let schema_path = Path::new(SCHEMA_DIR);
@@ -78,6 +81,7 @@ pub fn generate_modules(output_path: &Path) -> io::Result<()> {
 
                 let mut out_file = OpenOptions::new()
                     .write(true)
+                    .truncate(true)
                     .create(true)
                     .open(&out_filepath)?;
 
@@ -87,4 +91,35 @@ pub fn generate_modules(output_path: &Path) -> io::Result<()> {
     }
 
     Ok(())
+}
+
+fn main() {
+    let matches = App::new("slack-rs API Code Generator")
+        .arg(Arg::with_name("out_dir")
+            .short("o")
+            .long("outdir")
+            .value_name("DIR")
+            .help("Sets the output directory for the generated code.")
+            .required(true)
+            .validator_os(|dir| {
+                let outdir = Path::new(dir);
+                if outdir.exists() && !outdir.is_dir() {
+                    return Err("must be a directory".into());
+                }
+                Ok(())
+            }))
+        .get_matches();
+
+    let outdir = Path::new(matches.value_of_os("out_dir").unwrap());
+    if !outdir.exists() {
+        let _ = fs::create_dir(outdir);
+    }
+
+    let moddir = outdir.join("mods");
+    if !moddir.exists() {
+        let _ = fs::create_dir(&moddir);
+    }
+
+    generate_modules(&moddir).unwrap();
+    generate_types(&outdir).unwrap();
 }
