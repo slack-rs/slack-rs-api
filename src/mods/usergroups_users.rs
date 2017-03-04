@@ -19,15 +19,12 @@ pub fn list<R>(client: &R, request: &ListRequest) -> Result<ListResponse, ListEr
 
     let params = vec![Some(("token", request.token)),
                       Some(("usergroup", request.usergroup)),
-                      request.include_disabled.map(|include_disabled| {
-                          ("include_disabled", if include_disabled { "1" } else { "0" })
-                      })];
+                      request.include_disabled
+                          .map(|include_disabled| ("include_disabled", if include_disabled { "1" } else { "0" }))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("usergroups.users.list", &params[..])
         .map_err(|err| ListError::Client(err))
-        .and_then(|result| {
-            serde_json::from_str::<ListResponse>(&result).map_err(|_| ListError::MalformedResponse)
-        })
+        .and_then(|result| serde_json::from_str::<ListResponse>(&result).map_err(|_| ListError::MalformedResponse))
         .and_then(|o| o.into())
 }
 
@@ -153,25 +150,19 @@ impl<E: Error> Error for ListError<E> {
 ///
 /// Wraps https://api.slack.com/methods/usergroups.users.update
 
-pub fn update<R>(client: &R,
-                 request: &UpdateRequest)
-                 -> Result<UpdateResponse, UpdateError<R::Error>>
+pub fn update<R>(client: &R, request: &UpdateRequest) -> Result<UpdateResponse, UpdateError<R::Error>>
     where R: SlackWebRequestSender
 {
 
     let params = vec![Some(("token", request.token)),
                       Some(("usergroup", request.usergroup)),
                       Some(("users", request.users)),
-                      request.include_count.map(|include_count| {
-                          ("include_count", if include_count { "1" } else { "0" })
-                      })];
+                      request.include_count
+                          .map(|include_count| ("include_count", if include_count { "1" } else { "0" }))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("usergroups.users.update", &params[..])
         .map_err(|err| UpdateError::Client(err))
-        .and_then(|result| {
-            serde_json::from_str::<UpdateResponse>(&result)
-                .map_err(|_| UpdateError::MalformedResponse)
-        })
+        .and_then(|result| serde_json::from_str::<UpdateResponse>(&result).map_err(|_| UpdateError::MalformedResponse))
         .and_then(|o| o.into())
 }
 

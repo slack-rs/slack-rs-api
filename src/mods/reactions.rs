@@ -26,9 +26,7 @@ pub fn add<R>(client: &R, request: &AddRequest) -> Result<AddResponse, AddError<
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("reactions.add", &params[..])
         .map_err(|err| AddError::Client(err))
-        .and_then(|result| {
-            serde_json::from_str::<AddResponse>(&result).map_err(|_| AddError::MalformedResponse)
-        })
+        .and_then(|result| serde_json::from_str::<AddResponse>(&result).map_err(|_| AddError::MalformedResponse))
         .and_then(|o| o.into())
 }
 
@@ -200,9 +198,7 @@ pub fn get<R>(client: &R, request: &GetRequest) -> Result<GetResponse, GetError<
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("reactions.get", &params[..])
         .map_err(|err| GetError::Client(err))
-        .and_then(|result| {
-            serde_json::from_str::<GetResponse>(&result).map_err(|_| GetError::MalformedResponse)
-        })
+        .and_then(|result| serde_json::from_str::<GetResponse>(&result).map_err(|_| GetError::MalformedResponse))
         .and_then(|o| o.into())
 }
 
@@ -468,9 +464,7 @@ pub fn list<R>(client: &R, request: &ListRequest) -> Result<ListResponse, ListEr
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("reactions.list", &params[..])
         .map_err(|err| ListError::Client(err))
-        .and_then(|result| {
-            serde_json::from_str::<ListResponse>(&result).map_err(|_| ListError::MalformedResponse)
-        })
+        .and_then(|result| serde_json::from_str::<ListResponse>(&result).map_err(|_| ListError::MalformedResponse))
         .and_then(|o| o.into())
 }
 
@@ -668,9 +662,7 @@ impl<E: Error> Error for ListError<E> {
 ///
 /// Wraps https://api.slack.com/methods/reactions.remove
 
-pub fn remove<R>(client: &R,
-                 request: &RemoveRequest)
-                 -> Result<RemoveResponse, RemoveError<R::Error>>
+pub fn remove<R>(client: &R, request: &RemoveRequest) -> Result<RemoveResponse, RemoveError<R::Error>>
     where R: SlackWebRequestSender
 {
 
@@ -683,10 +675,7 @@ pub fn remove<R>(client: &R,
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("reactions.remove", &params[..])
         .map_err(|err| RemoveError::Client(err))
-        .and_then(|result| {
-            serde_json::from_str::<RemoveResponse>(&result)
-                .map_err(|_| RemoveError::MalformedResponse)
-        })
+        .and_then(|result| serde_json::from_str::<RemoveResponse>(&result).map_err(|_| RemoveError::MalformedResponse))
         .and_then(|o| o.into())
 }
 

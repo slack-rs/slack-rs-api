@@ -356,9 +356,7 @@ impl ::serde::Deserialize for Message {
             }
         } else {
             ::serde_json::from_value::<MessageStandard>(value.clone())
-                .map(|obj| {
-                    Message::Standard(obj)
-                })
+                .map(|obj| Message::Standard(obj))
                 .map_err(|e| D::Error::custom(&format!("{}", e)))
         }
     }

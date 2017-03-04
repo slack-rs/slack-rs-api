@@ -13,9 +13,7 @@ use requests::SlackWebRequestSender;
 ///
 /// Wraps https://api.slack.com/methods/team.accessLogs
 
-pub fn access_logs<R>(client: &R,
-                      request: &AccessLogsRequest)
-                      -> Result<AccessLogsResponse, AccessLogsError<R::Error>>
+pub fn access_logs<R>(client: &R, request: &AccessLogsRequest) -> Result<AccessLogsResponse, AccessLogsError<R::Error>>
     where R: SlackWebRequestSender
 {
     let count = request.count.map(|count| count.to_string());
@@ -29,8 +27,7 @@ pub fn access_logs<R>(client: &R,
     client.send("team.accessLogs", &params[..])
         .map_err(|err| AccessLogsError::Client(err))
         .and_then(|result| {
-            serde_json::from_str::<AccessLogsResponse>(&result)
-                .map_err(|_| AccessLogsError::MalformedResponse)
+            serde_json::from_str::<AccessLogsResponse>(&result).map_err(|_| AccessLogsError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }
@@ -189,8 +186,7 @@ pub fn billable_info<R>(client: &R,
     client.send("team.billableInfo", &params[..])
         .map_err(|err| BillableInfoError::Client(err))
         .and_then(|result| {
-            serde_json::from_str::<BillableInfoResponse>(&result)
-                .map_err(|_| BillableInfoError::MalformedResponse)
+            serde_json::from_str::<BillableInfoResponse>(&result).map_err(|_| BillableInfoError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }
@@ -323,9 +319,7 @@ pub fn info<R>(client: &R, request: &InfoRequest) -> Result<InfoResponse, InfoEr
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("team.info", &params[..])
         .map_err(|err| InfoError::Client(err))
-        .and_then(|result| {
-            serde_json::from_str::<InfoResponse>(&result).map_err(|_| InfoError::MalformedResponse)
-        })
+        .and_then(|result| serde_json::from_str::<InfoResponse>(&result).map_err(|_| InfoError::MalformedResponse))
         .and_then(|o| o.into())
 }
 
@@ -507,8 +501,7 @@ pub struct IntegrationLogsResponseLog {
 }
 
 
-impl<E: Error> Into<Result<IntegrationLogsResponse, IntegrationLogsError<E>>>
-    for IntegrationLogsResponse {
+impl<E: Error> Into<Result<IntegrationLogsResponse, IntegrationLogsError<E>>> for IntegrationLogsResponse {
     fn into(self) -> Result<IntegrationLogsResponse, IntegrationLogsError<E>> {
         if self.ok {
             Ok(self)

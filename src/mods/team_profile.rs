@@ -17,14 +17,11 @@ pub fn get<R>(client: &R, request: &GetRequest) -> Result<GetResponse, GetError<
     where R: SlackWebRequestSender
 {
 
-    let params = vec![Some(("token", request.token)),
-                      request.visibility.map(|visibility| ("visibility", visibility))];
+    let params = vec![Some(("token", request.token)), request.visibility.map(|visibility| ("visibility", visibility))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("team.profile.get", &params[..])
         .map_err(|err| GetError::Client(err))
-        .and_then(|result| {
-            serde_json::from_str::<GetResponse>(&result).map_err(|_| GetError::MalformedResponse)
-        })
+        .and_then(|result| serde_json::from_str::<GetResponse>(&result).map_err(|_| GetError::MalformedResponse))
         .and_then(|o| o.into())
 }
 

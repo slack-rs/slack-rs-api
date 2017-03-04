@@ -24,9 +24,7 @@ pub fn add<R>(client: &R, request: &AddRequest) -> Result<AddResponse, AddError<
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("files.comments.add", &params[..])
         .map_err(|err| AddError::Client(err))
-        .and_then(|result| {
-            serde_json::from_str::<AddResponse>(&result).map_err(|_| AddError::MalformedResponse)
-        })
+        .and_then(|result| serde_json::from_str::<AddResponse>(&result).map_err(|_| AddError::MalformedResponse))
         .and_then(|o| o.into())
 }
 
@@ -158,22 +156,15 @@ impl<E: Error> Error for AddError<E> {
 ///
 /// Wraps https://api.slack.com/methods/files.comments.delete
 
-pub fn delete<R>(client: &R,
-                 request: &DeleteRequest)
-                 -> Result<DeleteResponse, DeleteError<R::Error>>
+pub fn delete<R>(client: &R, request: &DeleteRequest) -> Result<DeleteResponse, DeleteError<R::Error>>
     where R: SlackWebRequestSender
 {
 
-    let params = vec![Some(("token", request.token)),
-                      Some(("file", request.file)),
-                      Some(("id", request.id))];
+    let params = vec![Some(("token", request.token)), Some(("file", request.file)), Some(("id", request.id))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("files.comments.delete", &params[..])
         .map_err(|err| DeleteError::Client(err))
-        .and_then(|result| {
-            serde_json::from_str::<DeleteResponse>(&result)
-                .map_err(|_| DeleteError::MalformedResponse)
-        })
+        .and_then(|result| serde_json::from_str::<DeleteResponse>(&result).map_err(|_| DeleteError::MalformedResponse))
         .and_then(|o| o.into())
 }
 
@@ -313,9 +304,7 @@ pub fn edit<R>(client: &R, request: &EditRequest) -> Result<EditResponse, EditEr
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("files.comments.edit", &params[..])
         .map_err(|err| EditError::Client(err))
-        .and_then(|result| {
-            serde_json::from_str::<EditResponse>(&result).map_err(|_| EditError::MalformedResponse)
-        })
+        .and_then(|result| serde_json::from_str::<EditResponse>(&result).map_err(|_| EditError::MalformedResponse))
         .and_then(|o| o.into())
 }
 

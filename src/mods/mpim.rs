@@ -21,10 +21,7 @@ pub fn close<R>(client: &R, request: &CloseRequest) -> Result<CloseResponse, Clo
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("mpim.close", &params[..])
         .map_err(|err| CloseError::Client(err))
-        .and_then(|result| {
-            serde_json::from_str::<CloseResponse>(&result)
-                .map_err(|_| CloseError::MalformedResponse)
-        })
+        .and_then(|result| serde_json::from_str::<CloseResponse>(&result).map_err(|_| CloseError::MalformedResponse))
         .and_then(|o| o.into())
 }
 
@@ -143,9 +140,7 @@ impl<E: Error> Error for CloseError<E> {
 ///
 /// Wraps https://api.slack.com/methods/mpim.history
 
-pub fn history<R>(client: &R,
-                  request: &HistoryRequest)
-                  -> Result<HistoryResponse, HistoryError<R::Error>>
+pub fn history<R>(client: &R, request: &HistoryRequest) -> Result<HistoryResponse, HistoryError<R::Error>>
     where R: SlackWebRequestSender
 {
     let count = request.count.map(|count| count.to_string());
@@ -311,9 +306,7 @@ pub fn list<R>(client: &R, request: &ListRequest) -> Result<ListResponse, ListEr
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("mpim.list", &params[..])
         .map_err(|err| ListError::Client(err))
-        .and_then(|result| {
-            serde_json::from_str::<ListResponse>(&result).map_err(|_| ListError::MalformedResponse)
-        })
+        .and_then(|result| serde_json::from_str::<ListResponse>(&result).map_err(|_| ListError::MalformedResponse))
         .and_then(|o| o.into())
 }
 
@@ -431,15 +424,11 @@ pub fn mark<R>(client: &R, request: &MarkRequest) -> Result<MarkResponse, MarkEr
     where R: SlackWebRequestSender
 {
 
-    let params = vec![Some(("token", request.token)),
-                      Some(("channel", request.channel)),
-                      Some(("ts", request.ts))];
+    let params = vec![Some(("token", request.token)), Some(("channel", request.channel)), Some(("ts", request.ts))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("mpim.mark", &params[..])
         .map_err(|err| MarkError::Client(err))
-        .and_then(|result| {
-            serde_json::from_str::<MarkResponse>(&result).map_err(|_| MarkError::MalformedResponse)
-        })
+        .and_then(|result| serde_json::from_str::<MarkResponse>(&result).map_err(|_| MarkError::MalformedResponse))
         .and_then(|o| o.into())
 }
 
@@ -572,9 +561,7 @@ pub fn open<R>(client: &R, request: &OpenRequest) -> Result<OpenResponse, OpenEr
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("mpim.open", &params[..])
         .map_err(|err| OpenError::Client(err))
-        .and_then(|result| {
-            serde_json::from_str::<OpenResponse>(&result).map_err(|_| OpenError::MalformedResponse)
-        })
+        .and_then(|result| serde_json::from_str::<OpenResponse>(&result).map_err(|_| OpenError::MalformedResponse))
         .and_then(|o| o.into())
 }
 
@@ -702,9 +689,7 @@ impl<E: Error> Error for OpenError<E> {
 ///
 /// Wraps https://api.slack.com/methods/mpim.replies
 
-pub fn replies<R>(client: &R,
-                  request: &RepliesRequest)
-                  -> Result<RepliesResponse, RepliesError<R::Error>>
+pub fn replies<R>(client: &R, request: &RepliesRequest) -> Result<RepliesResponse, RepliesError<R::Error>>
     where R: SlackWebRequestSender
 {
 

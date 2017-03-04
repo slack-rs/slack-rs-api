@@ -19,15 +19,12 @@ pub fn get<R>(client: &R, request: &GetRequest) -> Result<GetResponse, GetError<
 
     let params = vec![Some(("token", request.token)),
                       request.user.map(|user| ("user", user)),
-                      request.include_labels.map(|include_labels| {
-                          ("include_labels", if include_labels { "1" } else { "0" })
-                      })];
+                      request.include_labels
+                          .map(|include_labels| ("include_labels", if include_labels { "1" } else { "0" }))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("users.profile.get", &params[..])
         .map_err(|err| GetError::Client(err))
-        .and_then(|result| {
-            serde_json::from_str::<GetResponse>(&result).map_err(|_| GetError::MalformedResponse)
-        })
+        .and_then(|result| serde_json::from_str::<GetResponse>(&result).map_err(|_| GetError::MalformedResponse))
         .and_then(|o| o.into())
 }
 
@@ -165,9 +162,7 @@ pub fn set<R>(client: &R, request: &SetRequest) -> Result<SetResponse, SetError<
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("users.profile.set", &params[..])
         .map_err(|err| SetError::Client(err))
-        .and_then(|result| {
-            serde_json::from_str::<SetResponse>(&result).map_err(|_| SetError::MalformedResponse)
-        })
+        .and_then(|result| serde_json::from_str::<SetResponse>(&result).map_err(|_| SetError::MalformedResponse))
         .and_then(|o| o.into())
 }
 

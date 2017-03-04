@@ -13,9 +13,7 @@ use requests::SlackWebRequestSender;
 ///
 /// Wraps https://api.slack.com/methods/chat.delete
 
-pub fn delete<R>(client: &R,
-                 request: &DeleteRequest)
-                 -> Result<DeleteResponse, DeleteError<R::Error>>
+pub fn delete<R>(client: &R, request: &DeleteRequest) -> Result<DeleteResponse, DeleteError<R::Error>>
     where R: SlackWebRequestSender
 {
 
@@ -26,10 +24,7 @@ pub fn delete<R>(client: &R,
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("chat.delete", &params[..])
         .map_err(|err| DeleteError::Client(err))
-        .and_then(|result| {
-            serde_json::from_str::<DeleteResponse>(&result)
-                .map_err(|_| DeleteError::MalformedResponse)
-        })
+        .and_then(|result| serde_json::from_str::<DeleteResponse>(&result).map_err(|_| DeleteError::MalformedResponse))
         .and_then(|o| o.into())
 }
 
@@ -166,21 +161,16 @@ impl<E: Error> Error for DeleteError<E> {
 ///
 /// Wraps https://api.slack.com/methods/chat.meMessage
 
-pub fn me_message<R>(client: &R,
-                     request: &MeMessageRequest)
-                     -> Result<MeMessageResponse, MeMessageError<R::Error>>
+pub fn me_message<R>(client: &R, request: &MeMessageRequest) -> Result<MeMessageResponse, MeMessageError<R::Error>>
     where R: SlackWebRequestSender
 {
 
-    let params = vec![Some(("token", request.token)),
-                      Some(("channel", request.channel)),
-                      Some(("text", request.text))];
+    let params = vec![Some(("token", request.token)), Some(("channel", request.channel)), Some(("text", request.text))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("chat.meMessage", &params[..])
         .map_err(|err| MeMessageError::Client(err))
         .and_then(|result| {
-            serde_json::from_str::<MeMessageResponse>(&result)
-                .map_err(|_| MeMessageError::MalformedResponse)
+            serde_json::from_str::<MeMessageResponse>(&result).map_err(|_| MeMessageError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }
@@ -330,32 +320,29 @@ pub fn post_message<R>(client: &R,
     where R: SlackWebRequestSender
 {
 
-    let params =
-        vec![Some(("token", request.token)),
-             Some(("channel", request.channel)),
-             Some(("text", request.text)),
-             request.parse.map(|parse| ("parse", parse)),
-             request.link_names
-                 .map(|link_names| ("link_names", if link_names { "1" } else { "0" })),
-             request.attachments.map(|attachments| ("attachments", attachments)),
-             request.unfurl_links
-                 .map(|unfurl_links| ("unfurl_links", if unfurl_links { "1" } else { "0" })),
-             request.unfurl_media
-                 .map(|unfurl_media| ("unfurl_media", if unfurl_media { "1" } else { "0" })),
-             request.username.map(|username| ("username", username)),
-             request.as_user.map(|as_user| ("as_user", if as_user { "1" } else { "0" })),
-             request.icon_url.map(|icon_url| ("icon_url", icon_url)),
-             request.icon_emoji.map(|icon_emoji| ("icon_emoji", icon_emoji)),
-             request.thread_ts.map(|thread_ts| ("thread_ts", thread_ts)),
-             request.reply_broadcast.map(|reply_broadcast| {
-                 ("reply_broadcast", if reply_broadcast { "1" } else { "0" })
-             })];
+    let params = vec![Some(("token", request.token)),
+                      Some(("channel", request.channel)),
+                      Some(("text", request.text)),
+                      request.parse.map(|parse| ("parse", parse)),
+                      request.link_names
+                          .map(|link_names| ("link_names", if link_names { "1" } else { "0" })),
+                      request.attachments.map(|attachments| ("attachments", attachments)),
+                      request.unfurl_links
+                          .map(|unfurl_links| ("unfurl_links", if unfurl_links { "1" } else { "0" })),
+                      request.unfurl_media
+                          .map(|unfurl_media| ("unfurl_media", if unfurl_media { "1" } else { "0" })),
+                      request.username.map(|username| ("username", username)),
+                      request.as_user.map(|as_user| ("as_user", if as_user { "1" } else { "0" })),
+                      request.icon_url.map(|icon_url| ("icon_url", icon_url)),
+                      request.icon_emoji.map(|icon_emoji| ("icon_emoji", icon_emoji)),
+                      request.thread_ts.map(|thread_ts| ("thread_ts", thread_ts)),
+                      request.reply_broadcast
+                          .map(|reply_broadcast| ("reply_broadcast", if reply_broadcast { "1" } else { "0" }))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("chat.postMessage", &params[..])
         .map_err(|err| PostMessageError::Client(err))
         .and_then(|result| {
-            serde_json::from_str::<PostMessageResponse>(&result)
-                .map_err(|_| PostMessageError::MalformedResponse)
+            serde_json::from_str::<PostMessageResponse>(&result).map_err(|_| PostMessageError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }
@@ -526,9 +513,7 @@ impl<E: Error> Error for PostMessageError<E> {
 ///
 /// Wraps https://api.slack.com/methods/chat.update
 
-pub fn update<R>(client: &R,
-                 request: &UpdateRequest)
-                 -> Result<UpdateResponse, UpdateError<R::Error>>
+pub fn update<R>(client: &R, request: &UpdateRequest) -> Result<UpdateResponse, UpdateError<R::Error>>
     where R: SlackWebRequestSender
 {
 
@@ -544,10 +529,7 @@ pub fn update<R>(client: &R,
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("chat.update", &params[..])
         .map_err(|err| UpdateError::Client(err))
-        .and_then(|result| {
-            serde_json::from_str::<UpdateResponse>(&result)
-                .map_err(|_| UpdateError::MalformedResponse)
-        })
+        .and_then(|result| serde_json::from_str::<UpdateResponse>(&result).map_err(|_| UpdateError::MalformedResponse))
         .and_then(|o| o.into())
 }
 

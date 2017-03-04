@@ -13,9 +13,7 @@ use requests::SlackWebRequestSender;
 ///
 /// Wraps https://api.slack.com/methods/usergroups.create
 
-pub fn create<R>(client: &R,
-                 request: &CreateRequest)
-                 -> Result<CreateResponse, CreateError<R::Error>>
+pub fn create<R>(client: &R, request: &CreateRequest) -> Result<CreateResponse, CreateError<R::Error>>
     where R: SlackWebRequestSender
 {
 
@@ -24,16 +22,12 @@ pub fn create<R>(client: &R,
                       request.handle.map(|handle| ("handle", handle)),
                       request.description.map(|description| ("description", description)),
                       request.channels.map(|channels| ("channels", channels)),
-                      request.include_count.map(|include_count| {
-                          ("include_count", if include_count { "1" } else { "0" })
-                      })];
+                      request.include_count
+                          .map(|include_count| ("include_count", if include_count { "1" } else { "0" }))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("usergroups.create", &params[..])
         .map_err(|err| CreateError::Client(err))
-        .and_then(|result| {
-            serde_json::from_str::<CreateResponse>(&result)
-                .map_err(|_| CreateError::MalformedResponse)
-        })
+        .and_then(|result| serde_json::from_str::<CreateResponse>(&result).map_err(|_| CreateError::MalformedResponse))
         .and_then(|o| o.into())
 }
 
@@ -165,17 +159,14 @@ impl<E: Error> Error for CreateError<E> {
 ///
 /// Wraps https://api.slack.com/methods/usergroups.disable
 
-pub fn disable<R>(client: &R,
-                  request: &DisableRequest)
-                  -> Result<DisableResponse, DisableError<R::Error>>
+pub fn disable<R>(client: &R, request: &DisableRequest) -> Result<DisableResponse, DisableError<R::Error>>
     where R: SlackWebRequestSender
 {
 
     let params = vec![Some(("token", request.token)),
                       Some(("usergroup", request.usergroup)),
-                      request.include_count.map(|include_count| {
-                          ("include_count", if include_count { "1" } else { "0" })
-                      })];
+                      request.include_count
+                          .map(|include_count| ("include_count", if include_count { "1" } else { "0" }))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("usergroups.disable", &params[..])
         .map_err(|err| DisableError::Client(err))
@@ -308,24 +299,18 @@ impl<E: Error> Error for DisableError<E> {
 ///
 /// Wraps https://api.slack.com/methods/usergroups.enable
 
-pub fn enable<R>(client: &R,
-                 request: &EnableRequest)
-                 -> Result<EnableResponse, EnableError<R::Error>>
+pub fn enable<R>(client: &R, request: &EnableRequest) -> Result<EnableResponse, EnableError<R::Error>>
     where R: SlackWebRequestSender
 {
 
     let params = vec![Some(("token", request.token)),
                       Some(("usergroup", request.usergroup)),
-                      request.include_count.map(|include_count| {
-                          ("include_count", if include_count { "1" } else { "0" })
-                      })];
+                      request.include_count
+                          .map(|include_count| ("include_count", if include_count { "1" } else { "0" }))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("usergroups.enable", &params[..])
         .map_err(|err| EnableError::Client(err))
-        .and_then(|result| {
-            serde_json::from_str::<EnableResponse>(&result)
-                .map_err(|_| EnableError::MalformedResponse)
-        })
+        .and_then(|result| serde_json::from_str::<EnableResponse>(&result).map_err(|_| EnableError::MalformedResponse))
         .and_then(|o| o.into())
 }
 
@@ -455,21 +440,17 @@ pub fn list<R>(client: &R, request: &ListRequest) -> Result<ListResponse, ListEr
     where R: SlackWebRequestSender
 {
 
-    let params =
-        vec![Some(("token", request.token)),
-             request.include_disabled.map(|include_disabled| {
-                 ("include_disabled", if include_disabled { "1" } else { "0" })
-             }),
-             request.include_count
-                 .map(|include_count| ("include_count", if include_count { "1" } else { "0" })),
-             request.include_users
-                 .map(|include_users| ("include_users", if include_users { "1" } else { "0" }))];
+    let params = vec![Some(("token", request.token)),
+                      request.include_disabled
+                          .map(|include_disabled| ("include_disabled", if include_disabled { "1" } else { "0" })),
+                      request.include_count
+                          .map(|include_count| ("include_count", if include_count { "1" } else { "0" })),
+                      request.include_users
+                          .map(|include_users| ("include_users", if include_users { "1" } else { "0" }))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("usergroups.list", &params[..])
         .map_err(|err| ListError::Client(err))
-        .and_then(|result| {
-            serde_json::from_str::<ListResponse>(&result).map_err(|_| ListError::MalformedResponse)
-        })
+        .and_then(|result| serde_json::from_str::<ListResponse>(&result).map_err(|_| ListError::MalformedResponse))
         .and_then(|o| o.into())
 }
 
@@ -597,9 +578,7 @@ impl<E: Error> Error for ListError<E> {
 ///
 /// Wraps https://api.slack.com/methods/usergroups.update
 
-pub fn update<R>(client: &R,
-                 request: &UpdateRequest)
-                 -> Result<UpdateResponse, UpdateError<R::Error>>
+pub fn update<R>(client: &R, request: &UpdateRequest) -> Result<UpdateResponse, UpdateError<R::Error>>
     where R: SlackWebRequestSender
 {
 
@@ -609,16 +588,12 @@ pub fn update<R>(client: &R,
                       request.handle.map(|handle| ("handle", handle)),
                       request.description.map(|description| ("description", description)),
                       request.channels.map(|channels| ("channels", channels)),
-                      request.include_count.map(|include_count| {
-                          ("include_count", if include_count { "1" } else { "0" })
-                      })];
+                      request.include_count
+                          .map(|include_count| ("include_count", if include_count { "1" } else { "0" }))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("usergroups.update", &params[..])
         .map_err(|err| UpdateError::Client(err))
-        .and_then(|result| {
-            serde_json::from_str::<UpdateResponse>(&result)
-                .map_err(|_| UpdateError::MalformedResponse)
-        })
+        .and_then(|result| serde_json::from_str::<UpdateResponse>(&result).map_err(|_| UpdateError::MalformedResponse))
         .and_then(|o| o.into())
 }
 

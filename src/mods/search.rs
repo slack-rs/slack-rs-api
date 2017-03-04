@@ -29,9 +29,7 @@ pub fn all<R>(client: &R, request: &AllRequest) -> Result<AllResponse, AllError<
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("search.all", &params[..])
         .map_err(|err| AllError::Client(err))
-        .and_then(|result| {
-            serde_json::from_str::<AllResponse>(&result).map_err(|_| AllError::MalformedResponse)
-        })
+        .and_then(|result| serde_json::from_str::<AllResponse>(&result).map_err(|_| AllError::MalformedResponse))
         .and_then(|o| o.into())
 }
 
@@ -192,10 +190,7 @@ pub fn files<R>(client: &R, request: &FilesRequest) -> Result<FilesResponse, Fil
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("search.files", &params[..])
         .map_err(|err| FilesError::Client(err))
-        .and_then(|result| {
-            serde_json::from_str::<FilesResponse>(&result)
-                .map_err(|_| FilesError::MalformedResponse)
-        })
+        .and_then(|result| serde_json::from_str::<FilesResponse>(&result).map_err(|_| FilesError::MalformedResponse))
         .and_then(|o| o.into())
 }
 
@@ -333,9 +328,7 @@ impl<E: Error> Error for FilesError<E> {
 ///
 /// Wraps https://api.slack.com/methods/search.messages
 
-pub fn messages<R>(client: &R,
-                   request: &MessagesRequest)
-                   -> Result<MessagesResponse, MessagesError<R::Error>>
+pub fn messages<R>(client: &R, request: &MessagesRequest) -> Result<MessagesResponse, MessagesError<R::Error>>
     where R: SlackWebRequestSender
 {
     let count = request.count.map(|count| count.to_string());
@@ -352,8 +345,7 @@ pub fn messages<R>(client: &R,
     client.send("search.messages", &params[..])
         .map_err(|err| MessagesError::Client(err))
         .and_then(|result| {
-            serde_json::from_str::<MessagesResponse>(&result)
-                .map_err(|_| MessagesError::MalformedResponse)
+            serde_json::from_str::<MessagesResponse>(&result).map_err(|_| MessagesError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }

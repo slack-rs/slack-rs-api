@@ -21,9 +21,7 @@ pub fn info<R>(client: &R, request: &InfoRequest) -> Result<InfoResponse, InfoEr
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("bots.info", &params[..])
         .map_err(|err| InfoError::Client(err))
-        .and_then(|result| {
-            serde_json::from_str::<InfoResponse>(&result).map_err(|_| InfoError::MalformedResponse)
-        })
+        .and_then(|result| serde_json::from_str::<InfoResponse>(&result).map_err(|_| InfoError::MalformedResponse))
         .and_then(|o| o.into())
 }
 

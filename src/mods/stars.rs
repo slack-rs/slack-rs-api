@@ -25,9 +25,7 @@ pub fn add<R>(client: &R, request: &AddRequest) -> Result<AddResponse, AddError<
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("stars.add", &params[..])
         .map_err(|err| AddError::Client(err))
-        .and_then(|result| {
-            serde_json::from_str::<AddResponse>(&result).map_err(|_| AddError::MalformedResponse)
-        })
+        .and_then(|result| serde_json::from_str::<AddResponse>(&result).map_err(|_| AddError::MalformedResponse))
         .and_then(|o| o.into())
 }
 
@@ -187,9 +185,7 @@ pub fn list<R>(client: &R, request: &ListRequest) -> Result<ListResponse, ListEr
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("stars.list", &params[..])
         .map_err(|err| ListError::Client(err))
-        .and_then(|result| {
-            serde_json::from_str::<ListResponse>(&result).map_err(|_| ListError::MalformedResponse)
-        })
+        .and_then(|result| serde_json::from_str::<ListResponse>(&result).map_err(|_| ListError::MalformedResponse))
         .and_then(|o| o.into())
 }
 
@@ -230,8 +226,7 @@ impl ::serde::Deserialize for ListResponseItem {
     {
         use serde::de::Error as SerdeError;
 
-        const VARIANTS: &'static [&'static str] =
-            &["message", "file", "file_comment", "channel", "im", "group"];
+        const VARIANTS: &'static [&'static str] = &["message", "file", "file_comment", "channel", "im", "group"];
 
         let value = ::serde_json::Value::deserialize(deserializer)?;
         if let Some(ty_val) = value.get("type") {
@@ -434,9 +429,7 @@ impl<E: Error> Error for ListError<E> {
 ///
 /// Wraps https://api.slack.com/methods/stars.remove
 
-pub fn remove<R>(client: &R,
-                 request: &RemoveRequest)
-                 -> Result<RemoveResponse, RemoveError<R::Error>>
+pub fn remove<R>(client: &R, request: &RemoveRequest) -> Result<RemoveResponse, RemoveError<R::Error>>
     where R: SlackWebRequestSender
 {
 
@@ -448,10 +441,7 @@ pub fn remove<R>(client: &R,
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("stars.remove", &params[..])
         .map_err(|err| RemoveError::Client(err))
-        .and_then(|result| {
-            serde_json::from_str::<RemoveResponse>(&result)
-                .map_err(|_| RemoveError::MalformedResponse)
-        })
+        .and_then(|result| serde_json::from_str::<RemoveResponse>(&result).map_err(|_| RemoveError::MalformedResponse))
         .and_then(|o| o.into())
 }
 

@@ -17,14 +17,11 @@ pub fn test<R>(client: &R, request: &TestRequest) -> Result<TestResponse, TestEr
     where R: SlackWebRequestSender
 {
 
-    let params = vec![request.error.map(|error| ("error", error)),
-                      request.foo.map(|foo| ("foo", foo))];
+    let params = vec![request.error.map(|error| ("error", error)), request.foo.map(|foo| ("foo", foo))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("api.test", &params[..])
         .map_err(|err| TestError::Client(err))
-        .and_then(|result| {
-            serde_json::from_str::<TestResponse>(&result).map_err(|_| TestError::MalformedResponse)
-        })
+        .and_then(|result| serde_json::from_str::<TestResponse>(&result).map_err(|_| TestError::MalformedResponse))
         .and_then(|o| o.into())
 }
 

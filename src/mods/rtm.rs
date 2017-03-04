@@ -24,10 +24,7 @@ pub fn start<R>(client: &R, request: &StartRequest) -> Result<StartResponse, Sta
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("rtm.start", &params[..])
         .map_err(|err| StartError::Client(err))
-        .and_then(|result| {
-            serde_json::from_str::<StartResponse>(&result)
-                .map_err(|_| StartError::MalformedResponse)
-        })
+        .and_then(|result| serde_json::from_str::<StartResponse>(&result).map_err(|_| StartError::MalformedResponse))
         .and_then(|o| o.into())
 }
 

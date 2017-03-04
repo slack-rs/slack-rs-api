@@ -13,9 +13,7 @@ use requests::SlackWebRequestSender;
 ///
 /// Wraps https://api.slack.com/methods/dnd.endDnd
 
-pub fn end_dnd<R>(client: &R,
-                  request: &EndDndRequest)
-                  -> Result<EndDndResponse, EndDndError<R::Error>>
+pub fn end_dnd<R>(client: &R, request: &EndDndRequest) -> Result<EndDndResponse, EndDndError<R::Error>>
     where R: SlackWebRequestSender
 {
 
@@ -23,10 +21,7 @@ pub fn end_dnd<R>(client: &R,
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("dnd.endDnd", &params[..])
         .map_err(|err| EndDndError::Client(err))
-        .and_then(|result| {
-            serde_json::from_str::<EndDndResponse>(&result)
-                .map_err(|_| EndDndError::MalformedResponse)
-        })
+        .and_then(|result| serde_json::from_str::<EndDndResponse>(&result).map_err(|_| EndDndError::MalformedResponse))
         .and_then(|o| o.into())
 }
 
@@ -147,9 +142,7 @@ impl<E: Error> Error for EndDndError<E> {
 ///
 /// Wraps https://api.slack.com/methods/dnd.endSnooze
 
-pub fn end_snooze<R>(client: &R,
-                     request: &EndSnoozeRequest)
-                     -> Result<EndSnoozeResponse, EndSnoozeError<R::Error>>
+pub fn end_snooze<R>(client: &R, request: &EndSnoozeRequest) -> Result<EndSnoozeResponse, EndSnoozeError<R::Error>>
     where R: SlackWebRequestSender
 {
 
@@ -158,8 +151,7 @@ pub fn end_snooze<R>(client: &R,
     client.send("dnd.endSnooze", &params[..])
         .map_err(|err| EndSnoozeError::Client(err))
         .and_then(|result| {
-            serde_json::from_str::<EndSnoozeResponse>(&result)
-                .map_err(|_| EndSnoozeError::MalformedResponse)
+            serde_json::from_str::<EndSnoozeResponse>(&result).map_err(|_| EndSnoozeError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }
@@ -297,9 +289,7 @@ pub fn info<R>(client: &R, request: &InfoRequest) -> Result<InfoResponse, InfoEr
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("dnd.info", &params[..])
         .map_err(|err| InfoError::Client(err))
-        .and_then(|result| {
-            serde_json::from_str::<InfoResponse>(&result).map_err(|_| InfoError::MalformedResponse)
-        })
+        .and_then(|result| serde_json::from_str::<InfoResponse>(&result).map_err(|_| InfoError::MalformedResponse))
         .and_then(|o| o.into())
 }
 
@@ -424,9 +414,7 @@ impl<E: Error> Error for InfoError<E> {
 ///
 /// Wraps https://api.slack.com/methods/dnd.setSnooze
 
-pub fn set_snooze<R>(client: &R,
-                     request: &SetSnoozeRequest)
-                     -> Result<SetSnoozeResponse, SetSnoozeError<R::Error>>
+pub fn set_snooze<R>(client: &R, request: &SetSnoozeRequest) -> Result<SetSnoozeResponse, SetSnoozeError<R::Error>>
     where R: SlackWebRequestSender
 {
     let num_minutes = request.num_minutes.to_string();
@@ -435,8 +423,7 @@ pub fn set_snooze<R>(client: &R,
     client.send("dnd.setSnooze", &params[..])
         .map_err(|err| SetSnoozeError::Client(err))
         .and_then(|result| {
-            serde_json::from_str::<SetSnoozeResponse>(&result)
-                .map_err(|_| SetSnoozeError::MalformedResponse)
+            serde_json::from_str::<SetSnoozeResponse>(&result).map_err(|_| SetSnoozeError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }
@@ -567,9 +554,7 @@ impl<E: Error> Error for SetSnoozeError<E> {
 ///
 /// Wraps https://api.slack.com/methods/dnd.teamInfo
 
-pub fn team_info<R>(client: &R,
-                    request: &TeamInfoRequest)
-                    -> Result<TeamInfoResponse, TeamInfoError<R::Error>>
+pub fn team_info<R>(client: &R, request: &TeamInfoRequest) -> Result<TeamInfoResponse, TeamInfoError<R::Error>>
     where R: SlackWebRequestSender
 {
 
@@ -578,8 +563,7 @@ pub fn team_info<R>(client: &R,
     client.send("dnd.teamInfo", &params[..])
         .map_err(|err| TeamInfoError::Client(err))
         .and_then(|result| {
-            serde_json::from_str::<TeamInfoResponse>(&result)
-                .map_err(|_| TeamInfoError::MalformedResponse)
+            serde_json::from_str::<TeamInfoResponse>(&result).map_err(|_| TeamInfoError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }

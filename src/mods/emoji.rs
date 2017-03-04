@@ -21,9 +21,7 @@ pub fn list<R>(client: &R, request: &ListRequest) -> Result<ListResponse, ListEr
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("emoji.list", &params[..])
         .map_err(|err| ListError::Client(err))
-        .and_then(|result| {
-            serde_json::from_str::<ListResponse>(&result).map_err(|_| ListError::MalformedResponse)
-        })
+        .and_then(|result| serde_json::from_str::<ListResponse>(&result).map_err(|_| ListError::MalformedResponse))
         .and_then(|o| o.into())
 }
 

@@ -24,8 +24,7 @@ pub fn delete_photo<R>(client: &R,
     client.send("users.deletePhoto", &params[..])
         .map_err(|err| DeletePhotoError::Client(err))
         .and_then(|result| {
-            serde_json::from_str::<DeletePhotoResponse>(&result)
-                .map_err(|_| DeletePhotoError::MalformedResponse)
+            serde_json::from_str::<DeletePhotoResponse>(&result).map_err(|_| DeletePhotoError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }
@@ -154,8 +153,7 @@ pub fn get_presence<R>(client: &R,
     client.send("users.getPresence", &params[..])
         .map_err(|err| GetPresenceError::Client(err))
         .and_then(|result| {
-            serde_json::from_str::<GetPresenceResponse>(&result)
-                .map_err(|_| GetPresenceError::MalformedResponse)
+            serde_json::from_str::<GetPresenceResponse>(&result).map_err(|_| GetPresenceError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }
@@ -272,9 +270,7 @@ impl<E: Error> Error for GetPresenceError<E> {
 ///
 /// Wraps https://api.slack.com/methods/users.identity
 
-pub fn identity<R>(client: &R,
-                   request: &IdentityRequest)
-                   -> Result<IdentityResponse, IdentityError<R::Error>>
+pub fn identity<R>(client: &R, request: &IdentityRequest) -> Result<IdentityResponse, IdentityError<R::Error>>
     where R: SlackWebRequestSender
 {
 
@@ -283,8 +279,7 @@ pub fn identity<R>(client: &R,
     client.send("users.identity", &params[..])
         .map_err(|err| IdentityError::Client(err))
         .and_then(|result| {
-            serde_json::from_str::<IdentityResponse>(&result)
-                .map_err(|_| IdentityError::MalformedResponse)
+            serde_json::from_str::<IdentityResponse>(&result).map_err(|_| IdentityError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }
@@ -412,9 +407,7 @@ pub fn info<R>(client: &R, request: &InfoRequest) -> Result<InfoResponse, InfoEr
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("users.info", &params[..])
         .map_err(|err| InfoError::Client(err))
-        .and_then(|result| {
-            serde_json::from_str::<InfoResponse>(&result).map_err(|_| InfoError::MalformedResponse)
-        })
+        .and_then(|result| serde_json::from_str::<InfoResponse>(&result).map_err(|_| InfoError::MalformedResponse))
         .and_then(|o| o.into())
 }
 
@@ -548,9 +541,7 @@ pub fn list<R>(client: &R, request: &ListRequest) -> Result<ListResponse, ListEr
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("users.list", &params[..])
         .map_err(|err| ListError::Client(err))
-        .and_then(|result| {
-            serde_json::from_str::<ListResponse>(&result).map_err(|_| ListError::MalformedResponse)
-        })
+        .and_then(|result| serde_json::from_str::<ListResponse>(&result).map_err(|_| ListError::MalformedResponse))
         .and_then(|o| o.into())
 }
 
@@ -666,9 +657,7 @@ impl<E: Error> Error for ListError<E> {
 ///
 /// Wraps https://api.slack.com/methods/users.setActive
 
-pub fn set_active<R>(client: &R,
-                     request: &SetActiveRequest)
-                     -> Result<SetActiveResponse, SetActiveError<R::Error>>
+pub fn set_active<R>(client: &R, request: &SetActiveRequest) -> Result<SetActiveResponse, SetActiveError<R::Error>>
     where R: SlackWebRequestSender
 {
 
@@ -677,8 +666,7 @@ pub fn set_active<R>(client: &R,
     client.send("users.setActive", &params[..])
         .map_err(|err| SetActiveError::Client(err))
         .and_then(|result| {
-            serde_json::from_str::<SetActiveResponse>(&result)
-                .map_err(|_| SetActiveError::MalformedResponse)
+            serde_json::from_str::<SetActiveResponse>(&result).map_err(|_| SetActiveError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }
@@ -792,9 +780,7 @@ impl<E: Error> Error for SetActiveError<E> {
 ///
 /// Wraps https://api.slack.com/methods/users.setPhoto
 
-pub fn set_photo<R>(client: &R,
-                    request: &SetPhotoRequest)
-                    -> Result<SetPhotoResponse, SetPhotoError<R::Error>>
+pub fn set_photo<R>(client: &R, request: &SetPhotoRequest) -> Result<SetPhotoResponse, SetPhotoError<R::Error>>
     where R: SlackWebRequestSender
 {
     let crop_x = request.crop_x.map(|crop_x| crop_x.to_string());
@@ -809,8 +795,7 @@ pub fn set_photo<R>(client: &R,
     client.send("users.setPhoto", &params[..])
         .map_err(|err| SetPhotoError::Client(err))
         .and_then(|result| {
-            serde_json::from_str::<SetPhotoResponse>(&result)
-                .map_err(|_| SetPhotoError::MalformedResponse)
+            serde_json::from_str::<SetPhotoResponse>(&result).map_err(|_| SetPhotoError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }
@@ -959,8 +944,7 @@ pub fn set_presence<R>(client: &R,
     client.send("users.setPresence", &params[..])
         .map_err(|err| SetPresenceError::Client(err))
         .and_then(|result| {
-            serde_json::from_str::<SetPresenceResponse>(&result)
-                .map_err(|_| SetPresenceError::MalformedResponse)
+            serde_json::from_str::<SetPresenceResponse>(&result).map_err(|_| SetPresenceError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }

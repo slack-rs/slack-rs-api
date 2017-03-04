@@ -13,9 +13,7 @@ use requests::SlackWebRequestSender;
 ///
 /// Wraps https://api.slack.com/methods/oauth.access
 
-pub fn access<R>(client: &R,
-                 request: &AccessRequest)
-                 -> Result<AccessResponse, AccessError<R::Error>>
+pub fn access<R>(client: &R, request: &AccessRequest) -> Result<AccessResponse, AccessError<R::Error>>
     where R: SlackWebRequestSender
 {
 
@@ -26,10 +24,7 @@ pub fn access<R>(client: &R,
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("oauth.access", &params[..])
         .map_err(|err| AccessError::Client(err))
-        .and_then(|result| {
-            serde_json::from_str::<AccessResponse>(&result)
-                .map_err(|_| AccessError::MalformedResponse)
-        })
+        .and_then(|result| serde_json::from_str::<AccessResponse>(&result).map_err(|_| AccessError::MalformedResponse))
 }
 
 #[derive(Clone, Default, Debug)]
