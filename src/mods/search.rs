@@ -62,15 +62,15 @@ pub struct AllResponse {
 }
 
 #[derive(Clone, Debug, Deserialize)]
-pub struct AllResponseFiles {
-    pub matches: Vec<::File>,
+pub struct AllResponseMessages {
+    pub matches: Vec<::Message>,
     pub paging: ::Paging,
 }
 
 
 #[derive(Clone, Debug, Deserialize)]
-pub struct AllResponseMessages {
-    pub matches: Vec<::Message>,
+pub struct AllResponseFiles {
+    pub matches: Vec<::File>,
     pub paging: ::Paging,
 }
 
@@ -144,17 +144,41 @@ impl<E: Error> fmt::Display for AllError<E> {
 impl<E: Error> Error for AllError<E> {
     fn description(&self) -> &str {
         match self {
-            &AllError::NotAuthed => "not_authed",
-            &AllError::InvalidAuth => "invalid_auth",
-            &AllError::AccountInactive => "account_inactive",
-            &AllError::UserIsBot => "user_is_bot",
-            &AllError::InvalidArgName => "invalid_arg_name",
-            &AllError::InvalidArrayArg => "invalid_array_arg",
-            &AllError::InvalidCharset => "invalid_charset",
-            &AllError::InvalidFormData => "invalid_form_data",
-            &AllError::InvalidPostType => "invalid_post_type",
-            &AllError::MissingPostType => "missing_post_type",
-            &AllError::RequestTimeout => "request_timeout",
+            &AllError::NotAuthed => "not_authed: No authentication token provided.",
+            &AllError::InvalidAuth => "invalid_auth: Invalid authentication token.",
+            &AllError::AccountInactive => "account_inactive: Authentication token is for a deleted user or team.",
+            &AllError::UserIsBot => "user_is_bot: This method cannot be called by a bot user.",
+            &AllError::InvalidArgName => {
+                "invalid_arg_name: The method was passed an argument whose name falls outside the bounds of common \
+                 decency. This includes very long names and names with non-alphanumeric characters other than _. If \
+                 you get this error, it is typically an indication that you have made a very malformed API call."
+            }
+            &AllError::InvalidArrayArg => {
+                "invalid_array_arg: The method was passed a PHP-style array argument (e.g. with a name like foo[7]). \
+                 These are never valid with the Slack API."
+            }
+            &AllError::InvalidCharset => {
+                "invalid_charset: The method was called via a POST request, but the charset specified in the \
+                 Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1."
+            }
+            &AllError::InvalidFormData => {
+                "invalid_form_data: The method was called via a POST request with Content-Type \
+                 application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or \
+                 syntactically invalid."
+            }
+            &AllError::InvalidPostType => {
+                "invalid_post_type: The method was called via a POST request, but the specified Content-Type was \
+                 invalid. Valid types are: application/json application/x-www-form-urlencoded multipart/form-data \
+                 text/plain."
+            }
+            &AllError::MissingPostType => {
+                "missing_post_type: The method was called via a POST request and included a data payload, but the \
+                 request did not include a Content-Type header."
+            }
+            &AllError::RequestTimeout => {
+                "request_timeout: The method was called via a POST request, but the POST data was either missing or \
+                 truncated."
+            }
             &AllError::MalformedResponse => "Malformed response data from Slack.",
             &AllError::Unknown(ref s) => s,
             &AllError::Client(ref inner) => inner.description(),
@@ -297,17 +321,41 @@ impl<E: Error> fmt::Display for FilesError<E> {
 impl<E: Error> Error for FilesError<E> {
     fn description(&self) -> &str {
         match self {
-            &FilesError::NotAuthed => "not_authed",
-            &FilesError::InvalidAuth => "invalid_auth",
-            &FilesError::AccountInactive => "account_inactive",
-            &FilesError::UserIsBot => "user_is_bot",
-            &FilesError::InvalidArgName => "invalid_arg_name",
-            &FilesError::InvalidArrayArg => "invalid_array_arg",
-            &FilesError::InvalidCharset => "invalid_charset",
-            &FilesError::InvalidFormData => "invalid_form_data",
-            &FilesError::InvalidPostType => "invalid_post_type",
-            &FilesError::MissingPostType => "missing_post_type",
-            &FilesError::RequestTimeout => "request_timeout",
+            &FilesError::NotAuthed => "not_authed: No authentication token provided.",
+            &FilesError::InvalidAuth => "invalid_auth: Invalid authentication token.",
+            &FilesError::AccountInactive => "account_inactive: Authentication token is for a deleted user or team.",
+            &FilesError::UserIsBot => "user_is_bot: This method cannot be called by a bot user.",
+            &FilesError::InvalidArgName => {
+                "invalid_arg_name: The method was passed an argument whose name falls outside the bounds of common \
+                 decency. This includes very long names and names with non-alphanumeric characters other than _. If \
+                 you get this error, it is typically an indication that you have made a very malformed API call."
+            }
+            &FilesError::InvalidArrayArg => {
+                "invalid_array_arg: The method was passed a PHP-style array argument (e.g. with a name like foo[7]). \
+                 These are never valid with the Slack API."
+            }
+            &FilesError::InvalidCharset => {
+                "invalid_charset: The method was called via a POST request, but the charset specified in the \
+                 Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1."
+            }
+            &FilesError::InvalidFormData => {
+                "invalid_form_data: The method was called via a POST request with Content-Type \
+                 application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or \
+                 syntactically invalid."
+            }
+            &FilesError::InvalidPostType => {
+                "invalid_post_type: The method was called via a POST request, but the specified Content-Type was \
+                 invalid. Valid types are: application/json application/x-www-form-urlencoded multipart/form-data \
+                 text/plain."
+            }
+            &FilesError::MissingPostType => {
+                "missing_post_type: The method was called via a POST request and included a data payload, but the \
+                 request did not include a Content-Type header."
+            }
+            &FilesError::RequestTimeout => {
+                "request_timeout: The method was called via a POST request, but the POST data was either missing or \
+                 truncated."
+            }
             &FilesError::MalformedResponse => "Malformed response data from Slack.",
             &FilesError::Unknown(ref s) => s,
             &FilesError::Client(ref inner) => inner.description(),
@@ -452,17 +500,41 @@ impl<E: Error> fmt::Display for MessagesError<E> {
 impl<E: Error> Error for MessagesError<E> {
     fn description(&self) -> &str {
         match self {
-            &MessagesError::NotAuthed => "not_authed",
-            &MessagesError::InvalidAuth => "invalid_auth",
-            &MessagesError::AccountInactive => "account_inactive",
-            &MessagesError::UserIsBot => "user_is_bot",
-            &MessagesError::InvalidArgName => "invalid_arg_name",
-            &MessagesError::InvalidArrayArg => "invalid_array_arg",
-            &MessagesError::InvalidCharset => "invalid_charset",
-            &MessagesError::InvalidFormData => "invalid_form_data",
-            &MessagesError::InvalidPostType => "invalid_post_type",
-            &MessagesError::MissingPostType => "missing_post_type",
-            &MessagesError::RequestTimeout => "request_timeout",
+            &MessagesError::NotAuthed => "not_authed: No authentication token provided.",
+            &MessagesError::InvalidAuth => "invalid_auth: Invalid authentication token.",
+            &MessagesError::AccountInactive => "account_inactive: Authentication token is for a deleted user or team.",
+            &MessagesError::UserIsBot => "user_is_bot: This method cannot be called by a bot user.",
+            &MessagesError::InvalidArgName => {
+                "invalid_arg_name: The method was passed an argument whose name falls outside the bounds of common \
+                 decency. This includes very long names and names with non-alphanumeric characters other than _. If \
+                 you get this error, it is typically an indication that you have made a very malformed API call."
+            }
+            &MessagesError::InvalidArrayArg => {
+                "invalid_array_arg: The method was passed a PHP-style array argument (e.g. with a name like foo[7]). \
+                 These are never valid with the Slack API."
+            }
+            &MessagesError::InvalidCharset => {
+                "invalid_charset: The method was called via a POST request, but the charset specified in the \
+                 Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1."
+            }
+            &MessagesError::InvalidFormData => {
+                "invalid_form_data: The method was called via a POST request with Content-Type \
+                 application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or \
+                 syntactically invalid."
+            }
+            &MessagesError::InvalidPostType => {
+                "invalid_post_type: The method was called via a POST request, but the specified Content-Type was \
+                 invalid. Valid types are: application/json application/x-www-form-urlencoded multipart/form-data \
+                 text/plain."
+            }
+            &MessagesError::MissingPostType => {
+                "missing_post_type: The method was called via a POST request and included a data payload, but the \
+                 request did not include a Content-Type header."
+            }
+            &MessagesError::RequestTimeout => {
+                "request_timeout: The method was called via a POST request, but the POST data was either missing or \
+                 truncated."
+            }
             &MessagesError::MalformedResponse => "Malformed response data from Slack.",
             &MessagesError::Unknown(ref s) => s,
             &MessagesError::Client(ref inner) => inner.description(),

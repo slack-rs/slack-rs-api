@@ -139,23 +139,57 @@ impl<E: Error> fmt::Display for AddError<E> {
 impl<E: Error> Error for AddError<E> {
     fn description(&self) -> &str {
         match self {
-            &AddError::BadTimestamp => "bad_timestamp",
-            &AddError::MessageNotFound => "message_not_found",
-            &AddError::FileNotFound => "file_not_found",
-            &AddError::FileCommentNotFound => "file_comment_not_found",
-            &AddError::ChannelNotFound => "channel_not_found",
-            &AddError::NoItemSpecified => "no_item_specified",
-            &AddError::AlreadyStarred => "already_starred",
-            &AddError::NotAuthed => "not_authed",
-            &AddError::InvalidAuth => "invalid_auth",
-            &AddError::AccountInactive => "account_inactive",
-            &AddError::InvalidArgName => "invalid_arg_name",
-            &AddError::InvalidArrayArg => "invalid_array_arg",
-            &AddError::InvalidCharset => "invalid_charset",
-            &AddError::InvalidFormData => "invalid_form_data",
-            &AddError::InvalidPostType => "invalid_post_type",
-            &AddError::MissingPostType => "missing_post_type",
-            &AddError::RequestTimeout => "request_timeout",
+            &AddError::BadTimestamp => "bad_timestamp: Value passed for timestamp was invalid.",
+            &AddError::MessageNotFound => {
+                "message_not_found: Message specified by channel and timestamp does not exist."
+            }
+            &AddError::FileNotFound => "file_not_found: File specified by file does not exist.",
+            &AddError::FileCommentNotFound => {
+                "file_comment_not_found: File comment specified by file_comment does not exist."
+            }
+            &AddError::ChannelNotFound => {
+                "channel_not_found: Channel, private group, or DM specified by channel does not exist"
+            }
+            &AddError::NoItemSpecified => {
+                "no_item_specified: file, file_comment, channel and timestamp was not specified."
+            }
+            &AddError::AlreadyStarred => {
+                "already_starred: The specified item has already been starred by the authenticated user."
+            }
+            &AddError::NotAuthed => "not_authed: No authentication token provided.",
+            &AddError::InvalidAuth => "invalid_auth: Invalid authentication token.",
+            &AddError::AccountInactive => "account_inactive: Authentication token is for a deleted user or team.",
+            &AddError::InvalidArgName => {
+                "invalid_arg_name: The method was passed an argument whose name falls outside the bounds of common \
+                 decency. This includes very long names and names with non-alphanumeric characters other than _. If \
+                 you get this error, it is typically an indication that you have made a very malformed API call."
+            }
+            &AddError::InvalidArrayArg => {
+                "invalid_array_arg: The method was passed a PHP-style array argument (e.g. with a name like foo[7]). \
+                 These are never valid with the Slack API."
+            }
+            &AddError::InvalidCharset => {
+                "invalid_charset: The method was called via a POST request, but the charset specified in the \
+                 Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1."
+            }
+            &AddError::InvalidFormData => {
+                "invalid_form_data: The method was called via a POST request with Content-Type \
+                 application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or \
+                 syntactically invalid."
+            }
+            &AddError::InvalidPostType => {
+                "invalid_post_type: The method was called via a POST request, but the specified Content-Type was \
+                 invalid. Valid types are: application/json application/x-www-form-urlencoded multipart/form-data \
+                 text/plain."
+            }
+            &AddError::MissingPostType => {
+                "missing_post_type: The method was called via a POST request and included a data payload, but the \
+                 request did not include a Content-Type header."
+            }
+            &AddError::RequestTimeout => {
+                "request_timeout: The method was called via a POST request, but the POST data was either missing or \
+                 truncated."
+            }
             &AddError::MalformedResponse => "Malformed response data from Slack.",
             &AddError::Unknown(ref s) => s,
             &AddError::Client(ref inner) => inner.description(),
@@ -398,19 +432,43 @@ impl<E: Error> fmt::Display for ListError<E> {
 impl<E: Error> Error for ListError<E> {
     fn description(&self) -> &str {
         match self {
-            &ListError::UserNotFound => "user_not_found",
-            &ListError::UserNotVisible => "user_not_visible",
-            &ListError::NotAuthed => "not_authed",
-            &ListError::InvalidAuth => "invalid_auth",
-            &ListError::AccountInactive => "account_inactive",
-            &ListError::UserIsBot => "user_is_bot",
-            &ListError::InvalidArgName => "invalid_arg_name",
-            &ListError::InvalidArrayArg => "invalid_array_arg",
-            &ListError::InvalidCharset => "invalid_charset",
-            &ListError::InvalidFormData => "invalid_form_data",
-            &ListError::InvalidPostType => "invalid_post_type",
-            &ListError::MissingPostType => "missing_post_type",
-            &ListError::RequestTimeout => "request_timeout",
+            &ListError::UserNotFound => "user_not_found: Value passed for user was invalid",
+            &ListError::UserNotVisible => "user_not_visible: The requested user is not visible to the calling user",
+            &ListError::NotAuthed => "not_authed: No authentication token provided.",
+            &ListError::InvalidAuth => "invalid_auth: Invalid authentication token.",
+            &ListError::AccountInactive => "account_inactive: Authentication token is for a deleted user or team.",
+            &ListError::UserIsBot => "user_is_bot: This method cannot be called by a bot user.",
+            &ListError::InvalidArgName => {
+                "invalid_arg_name: The method was passed an argument whose name falls outside the bounds of common \
+                 decency. This includes very long names and names with non-alphanumeric characters other than _. If \
+                 you get this error, it is typically an indication that you have made a very malformed API call."
+            }
+            &ListError::InvalidArrayArg => {
+                "invalid_array_arg: The method was passed a PHP-style array argument (e.g. with a name like foo[7]). \
+                 These are never valid with the Slack API."
+            }
+            &ListError::InvalidCharset => {
+                "invalid_charset: The method was called via a POST request, but the charset specified in the \
+                 Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1."
+            }
+            &ListError::InvalidFormData => {
+                "invalid_form_data: The method was called via a POST request with Content-Type \
+                 application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or \
+                 syntactically invalid."
+            }
+            &ListError::InvalidPostType => {
+                "invalid_post_type: The method was called via a POST request, but the specified Content-Type was \
+                 invalid. Valid types are: application/json application/x-www-form-urlencoded multipart/form-data \
+                 text/plain."
+            }
+            &ListError::MissingPostType => {
+                "missing_post_type: The method was called via a POST request and included a data payload, but the \
+                 request did not include a Content-Type header."
+            }
+            &ListError::RequestTimeout => {
+                "request_timeout: The method was called via a POST request, but the POST data was either missing or \
+                 truncated."
+            }
             &ListError::MalformedResponse => "Malformed response data from Slack.",
             &ListError::Unknown(ref s) => s,
             &ListError::Client(ref inner) => inner.description(),
@@ -555,23 +613,57 @@ impl<E: Error> fmt::Display for RemoveError<E> {
 impl<E: Error> Error for RemoveError<E> {
     fn description(&self) -> &str {
         match self {
-            &RemoveError::BadTimestamp => "bad_timestamp",
-            &RemoveError::MessageNotFound => "message_not_found",
-            &RemoveError::FileNotFound => "file_not_found",
-            &RemoveError::FileCommentNotFound => "file_comment_not_found",
-            &RemoveError::ChannelNotFound => "channel_not_found",
-            &RemoveError::NoItemSpecified => "no_item_specified",
-            &RemoveError::NotStarred => "not_starred",
-            &RemoveError::NotAuthed => "not_authed",
-            &RemoveError::InvalidAuth => "invalid_auth",
-            &RemoveError::AccountInactive => "account_inactive",
-            &RemoveError::InvalidArgName => "invalid_arg_name",
-            &RemoveError::InvalidArrayArg => "invalid_array_arg",
-            &RemoveError::InvalidCharset => "invalid_charset",
-            &RemoveError::InvalidFormData => "invalid_form_data",
-            &RemoveError::InvalidPostType => "invalid_post_type",
-            &RemoveError::MissingPostType => "missing_post_type",
-            &RemoveError::RequestTimeout => "request_timeout",
+            &RemoveError::BadTimestamp => "bad_timestamp: Value passed for timestamp was invalid.",
+            &RemoveError::MessageNotFound => {
+                "message_not_found: Message specified by channel and timestamp does not exist."
+            }
+            &RemoveError::FileNotFound => "file_not_found: File specified by file does not exist.",
+            &RemoveError::FileCommentNotFound => {
+                "file_comment_not_found: File comment specified by file_comment does not exist."
+            }
+            &RemoveError::ChannelNotFound => {
+                "channel_not_found: Channel, private group, or DM specified by channel does not exist"
+            }
+            &RemoveError::NoItemSpecified => {
+                "no_item_specified: file, file_comment, channel and timestamp was not specified."
+            }
+            &RemoveError::NotStarred => {
+                "not_starred: The specified item is not currently starred by the authenticated user."
+            }
+            &RemoveError::NotAuthed => "not_authed: No authentication token provided.",
+            &RemoveError::InvalidAuth => "invalid_auth: Invalid authentication token.",
+            &RemoveError::AccountInactive => "account_inactive: Authentication token is for a deleted user or team.",
+            &RemoveError::InvalidArgName => {
+                "invalid_arg_name: The method was passed an argument whose name falls outside the bounds of common \
+                 decency. This includes very long names and names with non-alphanumeric characters other than _. If \
+                 you get this error, it is typically an indication that you have made a very malformed API call."
+            }
+            &RemoveError::InvalidArrayArg => {
+                "invalid_array_arg: The method was passed a PHP-style array argument (e.g. with a name like foo[7]). \
+                 These are never valid with the Slack API."
+            }
+            &RemoveError::InvalidCharset => {
+                "invalid_charset: The method was called via a POST request, but the charset specified in the \
+                 Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1."
+            }
+            &RemoveError::InvalidFormData => {
+                "invalid_form_data: The method was called via a POST request with Content-Type \
+                 application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or \
+                 syntactically invalid."
+            }
+            &RemoveError::InvalidPostType => {
+                "invalid_post_type: The method was called via a POST request, but the specified Content-Type was \
+                 invalid. Valid types are: application/json application/x-www-form-urlencoded multipart/form-data \
+                 text/plain."
+            }
+            &RemoveError::MissingPostType => {
+                "missing_post_type: The method was called via a POST request and included a data payload, but the \
+                 request did not include a Content-Type header."
+            }
+            &RemoveError::RequestTimeout => {
+                "request_timeout: The method was called via a POST request, but the POST data was either missing or \
+                 truncated."
+            }
             &RemoveError::MalformedResponse => "Malformed response data from Slack.",
             &RemoveError::Unknown(ref s) => s,
             &RemoveError::Client(ref inner) => inner.description(),

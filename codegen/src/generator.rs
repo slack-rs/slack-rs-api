@@ -329,9 +329,10 @@ impl Response {
                 .iter()
                 .map(|e| {
                     format!(
-                        "&{error_ty}::{ty_name} => \"{str_name}\",",
+                        "&{error_ty}::{ty_name} => \"{str_name}: {description}\",",
                         error_ty = error_ty,
                         str_name = e.name,
+                        description = e.description,
                         ty_name = e.name.to_pascal_case()
                     )
                 })
