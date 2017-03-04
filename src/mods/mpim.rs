@@ -1,3 +1,5 @@
+//! Get info on your multiparty direct messages.
+
 
 #[allow(unused_imports)]
 use std::collections::HashMap;

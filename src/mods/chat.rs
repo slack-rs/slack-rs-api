@@ -1,3 +1,5 @@
+//! Post chat messages to Slack.
+
 
 #[allow(unused_imports)]
 use std::collections::HashMap;

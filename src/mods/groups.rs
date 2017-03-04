@@ -1,3 +1,5 @@
+//! Get info on your team's private channels.
+
 
 #[allow(unused_imports)]
 use std::collections::HashMap;

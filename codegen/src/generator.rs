@@ -12,7 +12,8 @@ pub struct Module {
 impl Module {
     pub fn generate(&self) -> String {
         format!(
-            "
+            "{docs}
+
             #[allow(unused_imports)]
             use std::collections::HashMap;
             use std::convert::From;
@@ -24,6 +25,7 @@ impl Module {
             use ::requests::SlackWebRequestSender;
 
             {methods}",
+            docs = self.description.as_ref().map(|d| format_docs("//!", &d)).unwrap_or(String::new()),
             methods = self.methods
                 .iter()
                 .map(Method::generate)

@@ -1,3 +1,5 @@
+//! Get info on your team's Slack channels, create or archive channels, invite users, set the topic and purpose, and mark a channel as read.
+
 
 #[allow(unused_imports)]
 use std::collections::HashMap;

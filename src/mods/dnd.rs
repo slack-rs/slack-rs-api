@@ -1,3 +1,5 @@
+//! Adjust and view Do Not Disturb settings for team members.
+
 
 #[allow(unused_imports)]
 use std::collections::HashMap;

@@ -1,3 +1,5 @@
+//! Get info on files uploaded to Slack, upload new files to Slack.
+
 
 #[allow(unused_imports)]
 use std::collections::HashMap;

@@ -1,3 +1,5 @@
+//! Search your team's files and messages.
+
 
 #[allow(unused_imports)]
 use std::collections::HashMap;

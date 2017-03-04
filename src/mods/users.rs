@@ -1,3 +1,5 @@
+//! Get info on members of your Slack team.
+
 
 #[allow(unused_imports)]
 use std::collections::HashMap;
