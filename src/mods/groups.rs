@@ -21,7 +21,8 @@ pub fn archive<R>(client: &R, token: &str, request: &ArchiveRequest) -> Result<A
 
     let params = vec![Some(("token", token)), Some(("channel", request.channel))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    client.send("groups.archive", &params[..])
+    let url = ::get_slack_url_for_method("groups.archive");
+    client.send(&url, &params[..])
         .map_err(|err| ArchiveError::Client(err))
         .and_then(|result| {
             serde_json::from_str::<ArchiveResponse>(&result).map_err(|e| ArchiveError::MalformedResponse(e))
@@ -204,7 +205,8 @@ pub fn close<R>(client: &R, token: &str, request: &CloseRequest) -> Result<Close
 
     let params = vec![Some(("token", token)), Some(("channel", request.channel))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    client.send("groups.close", &params[..])
+    let url = ::get_slack_url_for_method("groups.close");
+    client.send(&url, &params[..])
         .map_err(|err| CloseError::Client(err))
         .and_then(|result| serde_json::from_str::<CloseResponse>(&result).map_err(|e| CloseError::MalformedResponse(e)))
         .and_then(|o| o.into())
@@ -353,7 +355,8 @@ pub fn create<R>(client: &R, token: &str, request: &CreateRequest) -> Result<Cre
 
     let params = vec![Some(("token", token)), Some(("name", request.name))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    client.send("groups.create", &params[..])
+    let url = ::get_slack_url_for_method("groups.create");
+    client.send(&url, &params[..])
         .map_err(|err| CreateError::Client(err))
         .and_then(|result| {
             serde_json::from_str::<CreateResponse>(&result).map_err(|e| CreateError::MalformedResponse(e))
@@ -528,7 +531,8 @@ pub fn create_child<R>(client: &R,
 
     let params = vec![Some(("token", token)), Some(("channel", request.channel))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    client.send("groups.createChild", &params[..])
+    let url = ::get_slack_url_for_method("groups.createChild");
+    client.send(&url, &params[..])
         .map_err(|err| CreateChildError::Client(err))
         .and_then(|result| {
             serde_json::from_str::<CreateChildResponse>(&result).map_err(|e| CreateChildError::MalformedResponse(e))
@@ -708,7 +712,8 @@ pub fn history<R>(client: &R, token: &str, request: &HistoryRequest) -> Result<H
                       count.as_ref().map(|count| ("count", &count[..])),
                       request.unreads.map(|unreads| ("unreads", if unreads { "1" } else { "0" }))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    client.send("groups.history", &params[..])
+    let url = ::get_slack_url_for_method("groups.history");
+    client.send(&url, &params[..])
         .map_err(|err| HistoryError::Client(err))
         .and_then(|result| {
             serde_json::from_str::<HistoryResponse>(&result).map_err(|e| HistoryError::MalformedResponse(e))
@@ -880,7 +885,8 @@ pub fn info<R>(client: &R, token: &str, request: &InfoRequest) -> Result<InfoRes
 
     let params = vec![Some(("token", token)), Some(("channel", request.channel))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    client.send("groups.info", &params[..])
+    let url = ::get_slack_url_for_method("groups.info");
+    client.send(&url, &params[..])
         .map_err(|err| InfoError::Client(err))
         .and_then(|result| serde_json::from_str::<InfoResponse>(&result).map_err(|e| InfoError::MalformedResponse(e)))
         .and_then(|o| o.into())
@@ -1030,7 +1036,8 @@ pub fn invite<R>(client: &R, token: &str, request: &InviteRequest) -> Result<Inv
 
     let params = vec![Some(("token", token)), Some(("channel", request.channel)), Some(("user", request.user))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    client.send("groups.invite", &params[..])
+    let url = ::get_slack_url_for_method("groups.invite");
+    client.send(&url, &params[..])
         .map_err(|err| InviteError::Client(err))
         .and_then(|result| {
             serde_json::from_str::<InviteResponse>(&result).map_err(|e| InviteError::MalformedResponse(e))
@@ -1210,7 +1217,8 @@ pub fn kick<R>(client: &R, token: &str, request: &KickRequest) -> Result<KickRes
 
     let params = vec![Some(("token", token)), Some(("channel", request.channel)), Some(("user", request.user))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    client.send("groups.kick", &params[..])
+    let url = ::get_slack_url_for_method("groups.kick");
+    client.send(&url, &params[..])
         .map_err(|err| KickError::Client(err))
         .and_then(|result| serde_json::from_str::<KickResponse>(&result).map_err(|e| KickError::MalformedResponse(e)))
         .and_then(|o| o.into())
@@ -1389,7 +1397,8 @@ pub fn leave<R>(client: &R, token: &str, request: &LeaveRequest) -> Result<Leave
 
     let params = vec![Some(("token", token)), Some(("channel", request.channel))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    client.send("groups.leave", &params[..])
+    let url = ::get_slack_url_for_method("groups.leave");
+    client.send(&url, &params[..])
         .map_err(|err| LeaveError::Client(err))
         .and_then(|result| serde_json::from_str::<LeaveResponse>(&result).map_err(|e| LeaveError::MalformedResponse(e)))
         .and_then(|o| o.into())
@@ -1566,7 +1575,8 @@ pub fn list<R>(client: &R, token: &str, request: &ListRequest) -> Result<ListRes
                       request.exclude_archived
                           .map(|exclude_archived| ("exclude_archived", if exclude_archived { "1" } else { "0" }))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    client.send("groups.list", &params[..])
+    let url = ::get_slack_url_for_method("groups.list");
+    client.send(&url, &params[..])
         .map_err(|err| ListError::Client(err))
         .and_then(|result| serde_json::from_str::<ListResponse>(&result).map_err(|e| ListError::MalformedResponse(e)))
         .and_then(|o| o.into())
@@ -1712,7 +1722,8 @@ pub fn mark<R>(client: &R, token: &str, request: &MarkRequest) -> Result<MarkRes
 
     let params = vec![Some(("token", token)), Some(("channel", request.channel)), Some(("ts", request.ts))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    client.send("groups.mark", &params[..])
+    let url = ::get_slack_url_for_method("groups.mark");
+    client.send(&url, &params[..])
         .map_err(|err| MarkError::Client(err))
         .and_then(|result| serde_json::from_str::<MarkResponse>(&result).map_err(|e| MarkError::MalformedResponse(e)))
         .and_then(|o| o.into())
@@ -1867,7 +1878,8 @@ pub fn open<R>(client: &R, token: &str, request: &OpenRequest) -> Result<OpenRes
 
     let params = vec![Some(("token", token)), Some(("channel", request.channel))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    client.send("groups.open", &params[..])
+    let url = ::get_slack_url_for_method("groups.open");
+    client.send(&url, &params[..])
         .map_err(|err| OpenError::Client(err))
         .and_then(|result| serde_json::from_str::<OpenResponse>(&result).map_err(|e| OpenError::MalformedResponse(e)))
         .and_then(|o| o.into())
@@ -2016,7 +2028,8 @@ pub fn rename<R>(client: &R, token: &str, request: &RenameRequest) -> Result<Ren
 
     let params = vec![Some(("token", token)), Some(("channel", request.channel)), Some(("name", request.name))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    client.send("groups.rename", &params[..])
+    let url = ::get_slack_url_for_method("groups.rename");
+    client.send(&url, &params[..])
         .map_err(|err| RenameError::Client(err))
         .and_then(|result| {
             serde_json::from_str::<RenameResponse>(&result).map_err(|e| RenameError::MalformedResponse(e))
@@ -2197,7 +2210,8 @@ pub fn replies<R>(client: &R, token: &str, request: &RepliesRequest) -> Result<R
     let params =
         vec![Some(("token", token)), Some(("channel", request.channel)), Some(("thread_ts", request.thread_ts))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    client.send("groups.replies", &params[..])
+    let url = ::get_slack_url_for_method("groups.replies");
+    client.send(&url, &params[..])
         .map_err(|err| RepliesError::Client(err))
         .and_then(|result| {
             serde_json::from_str::<RepliesResponse>(&result).map_err(|e| RepliesError::MalformedResponse(e))
@@ -2363,7 +2377,8 @@ pub fn set_purpose<R>(client: &R,
 
     let params = vec![Some(("token", token)), Some(("channel", request.channel)), Some(("purpose", request.purpose))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    client.send("groups.setPurpose", &params[..])
+    let url = ::get_slack_url_for_method("groups.setPurpose");
+    client.send(&url, &params[..])
         .map_err(|err| SetPurposeError::Client(err))
         .and_then(|result| {
             serde_json::from_str::<SetPurposeResponse>(&result).map_err(|e| SetPurposeError::MalformedResponse(e))
@@ -2536,7 +2551,8 @@ pub fn set_topic<R>(client: &R,
 
     let params = vec![Some(("token", token)), Some(("channel", request.channel)), Some(("topic", request.topic))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    client.send("groups.setTopic", &params[..])
+    let url = ::get_slack_url_for_method("groups.setTopic");
+    client.send(&url, &params[..])
         .map_err(|err| SetTopicError::Client(err))
         .and_then(|result| {
             serde_json::from_str::<SetTopicResponse>(&result).map_err(|e| SetTopicError::MalformedResponse(e))
@@ -2707,7 +2723,8 @@ pub fn unarchive<R>(client: &R,
 
     let params = vec![Some(("token", token)), Some(("channel", request.channel))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    client.send("groups.unarchive", &params[..])
+    let url = ::get_slack_url_for_method("groups.unarchive");
+    client.send(&url, &params[..])
         .map_err(|err| UnarchiveError::Client(err))
         .and_then(|result| {
             serde_json::from_str::<UnarchiveResponse>(&result).map_err(|e| UnarchiveError::MalformedResponse(e))

@@ -20,7 +20,8 @@ pub fn get<R>(client: &R, token: &str, request: &GetRequest) -> Result<GetRespon
 
     let params = vec![Some(("token", token)), request.visibility.map(|visibility| ("visibility", visibility))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    client.send("team.profile.get", &params[..])
+    let url = ::get_slack_url_for_method("team.profile.get");
+    client.send(&url, &params[..])
         .map_err(|err| GetError::Client(err))
         .and_then(|result| serde_json::from_str::<GetResponse>(&result).map_err(|e| GetError::MalformedResponse(e)))
         .and_then(|o| o.into())

@@ -21,7 +21,8 @@ pub fn delete<R>(client: &R, token: &str, request: &DeleteRequest) -> Result<Del
 
     let params = vec![Some(("token", token)), Some(("file", request.file))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    client.send("files.delete", &params[..])
+    let url = ::get_slack_url_for_method("files.delete");
+    client.send(&url, &params[..])
         .map_err(|err| DeleteError::Client(err))
         .and_then(|result| {
             serde_json::from_str::<DeleteResponse>(&result).map_err(|e| DeleteError::MalformedResponse(e))
@@ -188,7 +189,8 @@ pub fn info<R>(client: &R, token: &str, request: &InfoRequest) -> Result<InfoRes
                       count.as_ref().map(|count| ("count", &count[..])),
                       page.as_ref().map(|page| ("page", &page[..]))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    client.send("files.info", &params[..])
+    let url = ::get_slack_url_for_method("files.info");
+    client.send(&url, &params[..])
         .map_err(|err| InfoError::Client(err))
         .and_then(|result| serde_json::from_str::<InfoResponse>(&result).map_err(|e| InfoError::MalformedResponse(e)))
         .and_then(|o| o.into())
@@ -358,7 +360,8 @@ pub fn list<R>(client: &R, token: &str, request: &ListRequest) -> Result<ListRes
                       count.as_ref().map(|count| ("count", &count[..])),
                       page.as_ref().map(|page| ("page", &page[..]))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    client.send("files.list", &params[..])
+    let url = ::get_slack_url_for_method("files.list");
+    client.send(&url, &params[..])
         .map_err(|err| ListError::Client(err))
         .and_then(|result| serde_json::from_str::<ListResponse>(&result).map_err(|e| ListError::MalformedResponse(e)))
         .and_then(|o| o.into())
@@ -544,7 +547,8 @@ pub fn revoke_public_url<R>(client: &R,
 
     let params = vec![Some(("token", token)), Some(("file", request.file))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    client.send("files.revokePublicURL", &params[..])
+    let url = ::get_slack_url_for_method("files.revokePublicURL");
+    client.send(&url, &params[..])
         .map_err(|err| RevokePublicURLError::Client(err))
         .and_then(|result| {
             serde_json::from_str::<RevokePublicURLResponse>(&result)
@@ -712,7 +716,8 @@ pub fn shared_public_url<R>(client: &R,
 
     let params = vec![Some(("token", token)), Some(("file", request.file))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    client.send("files.sharedPublicURL", &params[..])
+    let url = ::get_slack_url_for_method("files.sharedPublicURL");
+    client.send(&url, &params[..])
         .map_err(|err| SharedPublicURLError::Client(err))
         .and_then(|result| {
             serde_json::from_str::<SharedPublicURLResponse>(&result)

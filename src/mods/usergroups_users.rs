@@ -23,7 +23,8 @@ pub fn list<R>(client: &R, token: &str, request: &ListRequest) -> Result<ListRes
                       request.include_disabled
                           .map(|include_disabled| ("include_disabled", if include_disabled { "1" } else { "0" }))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    client.send("usergroups.users.list", &params[..])
+    let url = ::get_slack_url_for_method("usergroups.users.list");
+    client.send(&url, &params[..])
         .map_err(|err| ListError::Client(err))
         .and_then(|result| serde_json::from_str::<ListResponse>(&result).map_err(|e| ListError::MalformedResponse(e)))
         .and_then(|o| o.into())
@@ -185,7 +186,8 @@ pub fn update<R>(client: &R, token: &str, request: &UpdateRequest) -> Result<Upd
                       request.include_count
                           .map(|include_count| ("include_count", if include_count { "1" } else { "0" }))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    client.send("usergroups.users.update", &params[..])
+    let url = ::get_slack_url_for_method("usergroups.users.update");
+    client.send(&url, &params[..])
         .map_err(|err| UpdateError::Client(err))
         .and_then(|result| {
             serde_json::from_str::<UpdateResponse>(&result).map_err(|e| UpdateError::MalformedResponse(e))

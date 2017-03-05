@@ -20,7 +20,8 @@ pub fn test<R>(client: &R, request: &TestRequest) -> Result<TestResponse, TestEr
 
     let params = vec![request.error.map(|error| ("error", error)), request.foo.map(|foo| ("foo", foo))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    client.send("api.test", &params[..])
+    let url = ::get_slack_url_for_method("api.test");
+    client.send(&url, &params[..])
         .map_err(|err| TestError::Client(err))
         .and_then(|result| serde_json::from_str::<TestResponse>(&result).map_err(|e| TestError::MalformedResponse(e)))
         .and_then(|o| o.into())

@@ -22,7 +22,8 @@ pub fn start<R>(client: &R, token: &str, request: &StartRequest) -> Result<Start
                       request.no_unreads.map(|no_unreads| ("no_unreads", no_unreads)),
                       request.mpim_aware.map(|mpim_aware| ("mpim_aware", mpim_aware))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    client.send("rtm.start", &params[..])
+    let url = ::get_slack_url_for_method("rtm.start");
+    client.send(&url, &params[..])
         .map_err(|err| StartError::Client(err))
         .and_then(|result| serde_json::from_str::<StartResponse>(&result).map_err(|e| StartError::MalformedResponse(e)))
         .and_then(|o| o.into())

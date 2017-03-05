@@ -19,7 +19,8 @@ pub fn delete_photo<R>(client: &R, token: &str) -> Result<DeletePhotoResponse, D
     where R: SlackWebRequestSender
 {
     let params = &[("token", token)];
-    client.send("users.deletePhoto", &params[..])
+    let url = ::get_slack_url_for_method("users.deletePhoto");
+    client.send(&url, &params[..])
         .map_err(|err| DeletePhotoError::Client(err))
         .and_then(|result| {
             serde_json::from_str::<DeletePhotoResponse>(&result).map_err(|e| DeletePhotoError::MalformedResponse(e))
@@ -169,7 +170,8 @@ pub fn get_presence<R>(client: &R,
 
     let params = vec![Some(("token", token)), Some(("user", request.user))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    client.send("users.getPresence", &params[..])
+    let url = ::get_slack_url_for_method("users.getPresence");
+    client.send(&url, &params[..])
         .map_err(|err| GetPresenceError::Client(err))
         .and_then(|result| {
             serde_json::from_str::<GetPresenceResponse>(&result).map_err(|e| GetPresenceError::MalformedResponse(e))
@@ -317,7 +319,8 @@ pub fn identity<R>(client: &R, token: &str) -> Result<IdentityResponse, Identity
     where R: SlackWebRequestSender
 {
     let params = &[("token", token)];
-    client.send("users.identity", &params[..])
+    let url = ::get_slack_url_for_method("users.identity");
+    client.send(&url, &params[..])
         .map_err(|err| IdentityError::Client(err))
         .and_then(|result| {
             serde_json::from_str::<IdentityResponse>(&result).map_err(|e| IdentityError::MalformedResponse(e))
@@ -464,7 +467,8 @@ pub fn info<R>(client: &R, token: &str, request: &InfoRequest) -> Result<InfoRes
 
     let params = vec![Some(("token", token)), Some(("user", request.user))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    client.send("users.info", &params[..])
+    let url = ::get_slack_url_for_method("users.info");
+    client.send(&url, &params[..])
         .map_err(|err| InfoError::Client(err))
         .and_then(|result| serde_json::from_str::<InfoResponse>(&result).map_err(|e| InfoError::MalformedResponse(e)))
         .and_then(|o| o.into())
@@ -619,7 +623,8 @@ pub fn list<R>(client: &R, token: &str, request: &ListRequest) -> Result<ListRes
     let params = vec![Some(("token", token)),
                       request.presence.map(|presence| ("presence", if presence { "1" } else { "0" }))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    client.send("users.list", &params[..])
+    let url = ::get_slack_url_for_method("users.list");
+    client.send(&url, &params[..])
         .map_err(|err| ListError::Client(err))
         .and_then(|result| serde_json::from_str::<ListResponse>(&result).map_err(|e| ListError::MalformedResponse(e)))
         .and_then(|o| o.into())
@@ -763,7 +768,8 @@ pub fn set_active<R>(client: &R, token: &str) -> Result<SetActiveResponse, SetAc
     where R: SlackWebRequestSender
 {
     let params = &[("token", token)];
-    client.send("users.setActive", &params[..])
+    let url = ::get_slack_url_for_method("users.setActive");
+    client.send(&url, &params[..])
         .map_err(|err| SetActiveError::Client(err))
         .and_then(|result| {
             serde_json::from_str::<SetActiveResponse>(&result).map_err(|e| SetActiveError::MalformedResponse(e))
@@ -913,7 +919,8 @@ pub fn set_photo<R>(client: &R,
                       crop_y.as_ref().map(|crop_y| ("crop_y", &crop_y[..])),
                       crop_w.as_ref().map(|crop_w| ("crop_w", &crop_w[..]))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    client.send("users.setPhoto", &params[..])
+    let url = ::get_slack_url_for_method("users.setPhoto");
+    client.send(&url, &params[..])
         .map_err(|err| SetPhotoError::Client(err))
         .and_then(|result| {
             serde_json::from_str::<SetPhotoResponse>(&result).map_err(|e| SetPhotoError::MalformedResponse(e))
@@ -1087,7 +1094,8 @@ pub fn set_presence<R>(client: &R,
 
     let params = vec![Some(("token", token)), Some(("presence", request.presence))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    client.send("users.setPresence", &params[..])
+    let url = ::get_slack_url_for_method("users.setPresence");
+    client.send(&url, &params[..])
         .map_err(|err| SetPresenceError::Client(err))
         .and_then(|result| {
             serde_json::from_str::<SetPresenceResponse>(&result).map_err(|e| SetPresenceError::MalformedResponse(e))

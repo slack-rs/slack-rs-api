@@ -20,7 +20,8 @@ pub fn info<R>(client: &R, token: &str, request: &InfoRequest) -> Result<InfoRes
 
     let params = vec![Some(("token", token)), request.bot.map(|bot| ("bot", bot))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    client.send("bots.info", &params[..])
+    let url = ::get_slack_url_for_method("bots.info");
+    client.send(&url, &params[..])
         .map_err(|err| InfoError::Client(err))
         .and_then(|result| serde_json::from_str::<InfoResponse>(&result).map_err(|e| InfoError::MalformedResponse(e)))
         .and_then(|o| o.into())

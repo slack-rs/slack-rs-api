@@ -24,7 +24,8 @@ pub fn delete<R>(client: &R, token: &str, request: &DeleteRequest) -> Result<Del
                       Some(("channel", request.channel)),
                       request.as_user.map(|as_user| ("as_user", if as_user { "1" } else { "0" }))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    client.send("chat.delete", &params[..])
+    let url = ::get_slack_url_for_method("chat.delete");
+    client.send(&url, &params[..])
         .map_err(|err| DeleteError::Client(err))
         .and_then(|result| {
             serde_json::from_str::<DeleteResponse>(&result).map_err(|e| DeleteError::MalformedResponse(e))
@@ -200,7 +201,8 @@ pub fn me_message<R>(client: &R,
 
     let params = vec![Some(("token", token)), Some(("channel", request.channel)), Some(("text", request.text))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    client.send("chat.meMessage", &params[..])
+    let url = ::get_slack_url_for_method("chat.meMessage");
+    client.send(&url, &params[..])
         .map_err(|err| MeMessageError::Client(err))
         .and_then(|result| {
             serde_json::from_str::<MeMessageResponse>(&result).map_err(|e| MeMessageError::MalformedResponse(e))
@@ -395,7 +397,8 @@ pub fn post_message<R>(client: &R,
                       request.reply_broadcast
                           .map(|reply_broadcast| ("reply_broadcast", if reply_broadcast { "1" } else { "0" }))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    client.send("chat.postMessage", &params[..])
+    let url = ::get_slack_url_for_method("chat.postMessage");
+    client.send(&url, &params[..])
         .map_err(|err| PostMessageError::Client(err))
         .and_then(|result| {
             serde_json::from_str::<PostMessageResponse>(&result).map_err(|e| PostMessageError::MalformedResponse(e))
@@ -614,7 +617,8 @@ pub fn update<R>(client: &R, token: &str, request: &UpdateRequest) -> Result<Upd
                       request.link_names.map(|link_names| ("link_names", if link_names { "1" } else { "0" })),
                       request.as_user.map(|as_user| ("as_user", if as_user { "1" } else { "0" }))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    client.send("chat.update", &params[..])
+    let url = ::get_slack_url_for_method("chat.update");
+    client.send(&url, &params[..])
         .map_err(|err| UpdateError::Client(err))
         .and_then(|result| {
             serde_json::from_str::<UpdateResponse>(&result).map_err(|e| UpdateError::MalformedResponse(e))

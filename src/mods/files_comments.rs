@@ -23,7 +23,8 @@ pub fn add<R>(client: &R, token: &str, request: &AddRequest) -> Result<AddRespon
                       Some(("comment", request.comment)),
                       request.channel.map(|channel| ("channel", channel))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    client.send("files.comments.add", &params[..])
+    let url = ::get_slack_url_for_method("files.comments.add");
+    client.send(&url, &params[..])
         .map_err(|err| AddError::Client(err))
         .and_then(|result| serde_json::from_str::<AddResponse>(&result).map_err(|e| AddError::MalformedResponse(e)))
         .and_then(|o| o.into())
@@ -185,7 +186,8 @@ pub fn delete<R>(client: &R, token: &str, request: &DeleteRequest) -> Result<Del
 
     let params = vec![Some(("token", token)), Some(("file", request.file)), Some(("id", request.id))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    client.send("files.comments.delete", &params[..])
+    let url = ::get_slack_url_for_method("files.comments.delete");
+    client.send(&url, &params[..])
         .map_err(|err| DeleteError::Client(err))
         .and_then(|result| {
             serde_json::from_str::<DeleteResponse>(&result).map_err(|e| DeleteError::MalformedResponse(e))
@@ -349,7 +351,8 @@ pub fn edit<R>(client: &R, token: &str, request: &EditRequest) -> Result<EditRes
                       Some(("id", request.id)),
                       Some(("comment", request.comment))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    client.send("files.comments.edit", &params[..])
+    let url = ::get_slack_url_for_method("files.comments.edit");
+    client.send(&url, &params[..])
         .map_err(|err| EditError::Client(err))
         .and_then(|result| serde_json::from_str::<EditResponse>(&result).map_err(|e| EditError::MalformedResponse(e)))
         .and_then(|o| o.into())

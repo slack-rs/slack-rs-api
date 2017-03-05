@@ -11,24 +11,19 @@ pub trait SlackWebRequestSender {
     fn send(&self, method: &str, params: &[(&str, &str)]) -> Result<String, Self::Error>;
 }
 
-pub fn get_slack_url_for_method(method: &str) -> String {
-    format!("https://slack.com/api/{}", method)
-}
-
 #[cfg(feature = "reqwest")]
 mod reqwest_support {
     extern crate reqwest;
 
     use std::io::Read;
 
-    use super::{SlackWebRequestSender, get_slack_url_for_method};
+    use super::SlackWebRequestSender;
 
     impl SlackWebRequestSender for reqwest::Client {
         type Error = reqwest::Error;
 
-        fn send(&self, method: &str, params: &[(&str, &str)]) -> Result<String, Self::Error> {
-            let url_string = get_slack_url_for_method(method);
-            let mut url = reqwest::Url::parse(&url_string).expect("Unable to parse url");
+        fn send(&self, method_url: &str, params: &[(&str, &str)]) -> Result<String, Self::Error> {
+            let mut url = reqwest::Url::parse(&method_url).expect("Unable to parse url");
 
             url.query_pairs_mut().extend_pairs(params);
 

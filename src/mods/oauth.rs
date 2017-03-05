@@ -23,7 +23,8 @@ pub fn access<R>(client: &R, request: &AccessRequest) -> Result<AccessResponse, 
                       Some(("code", request.code)),
                       request.redirect_uri.map(|redirect_uri| ("redirect_uri", redirect_uri))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    client.send("oauth.access", &params[..])
+    let url = ::get_slack_url_for_method("oauth.access");
+    client.send(&url, &params[..])
         .map_err(|err| AccessError::Client(err))
         .and_then(|result| {
             serde_json::from_str::<AccessResponse>(&result).map_err(|e| AccessError::MalformedResponse(e))

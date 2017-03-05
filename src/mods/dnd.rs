@@ -19,7 +19,8 @@ pub fn end_dnd<R>(client: &R, token: &str) -> Result<EndDndResponse, EndDndError
     where R: SlackWebRequestSender
 {
     let params = &[("token", token)];
-    client.send("dnd.endDnd", &params[..])
+    let url = ::get_slack_url_for_method("dnd.endDnd");
+    client.send(&url, &params[..])
         .map_err(|err| EndDndError::Client(err))
         .and_then(|result| {
             serde_json::from_str::<EndDndResponse>(&result).map_err(|e| EndDndError::MalformedResponse(e))
@@ -168,7 +169,8 @@ pub fn end_snooze<R>(client: &R, token: &str) -> Result<EndSnoozeResponse, EndSn
     where R: SlackWebRequestSender
 {
     let params = &[("token", token)];
-    client.send("dnd.endSnooze", &params[..])
+    let url = ::get_slack_url_for_method("dnd.endSnooze");
+    client.send(&url, &params[..])
         .map_err(|err| EndSnoozeError::Client(err))
         .and_then(|result| {
             serde_json::from_str::<EndSnoozeResponse>(&result).map_err(|e| EndSnoozeError::MalformedResponse(e))
@@ -329,7 +331,8 @@ pub fn info<R>(client: &R, token: &str, request: &InfoRequest) -> Result<InfoRes
 
     let params = vec![Some(("token", token)), request.user.map(|user| ("user", user))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    client.send("dnd.info", &params[..])
+    let url = ::get_slack_url_for_method("dnd.info");
+    client.send(&url, &params[..])
         .map_err(|err| InfoError::Client(err))
         .and_then(|result| serde_json::from_str::<InfoResponse>(&result).map_err(|e| InfoError::MalformedResponse(e)))
         .and_then(|o| o.into())
@@ -487,7 +490,8 @@ pub fn set_snooze<R>(client: &R,
     let num_minutes = request.num_minutes.to_string();
     let params = vec![Some(("token", token)), Some(("num_minutes", &num_minutes[..]))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    client.send("dnd.setSnooze", &params[..])
+    let url = ::get_slack_url_for_method("dnd.setSnooze");
+    client.send(&url, &params[..])
         .map_err(|err| SetSnoozeError::Client(err))
         .and_then(|result| {
             serde_json::from_str::<SetSnoozeResponse>(&result).map_err(|e| SetSnoozeError::MalformedResponse(e))
@@ -654,7 +658,8 @@ pub fn team_info<R>(client: &R,
 
     let params = vec![Some(("token", token)), request.users.map(|users| ("users", users))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    client.send("dnd.teamInfo", &params[..])
+    let url = ::get_slack_url_for_method("dnd.teamInfo");
+    client.send(&url, &params[..])
         .map_err(|err| TeamInfoError::Client(err))
         .and_then(|result| {
             serde_json::from_str::<TeamInfoResponse>(&result).map_err(|e| TeamInfoError::MalformedResponse(e))

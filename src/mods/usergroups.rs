@@ -27,7 +27,8 @@ pub fn create<R>(client: &R, token: &str, request: &CreateRequest) -> Result<Cre
                       request.include_count
                           .map(|include_count| ("include_count", if include_count { "1" } else { "0" }))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    client.send("usergroups.create", &params[..])
+    let url = ::get_slack_url_for_method("usergroups.create");
+    client.send(&url, &params[..])
         .map_err(|err| CreateError::Client(err))
         .and_then(|result| {
             serde_json::from_str::<CreateResponse>(&result).map_err(|e| CreateError::MalformedResponse(e))
@@ -196,7 +197,8 @@ pub fn disable<R>(client: &R, token: &str, request: &DisableRequest) -> Result<D
                       request.include_count
                           .map(|include_count| ("include_count", if include_count { "1" } else { "0" }))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    client.send("usergroups.disable", &params[..])
+    let url = ::get_slack_url_for_method("usergroups.disable");
+    client.send(&url, &params[..])
         .map_err(|err| DisableError::Client(err))
         .and_then(|result| {
             serde_json::from_str::<DisableResponse>(&result).map_err(|e| DisableError::MalformedResponse(e))
@@ -359,7 +361,8 @@ pub fn enable<R>(client: &R, token: &str, request: &EnableRequest) -> Result<Ena
                       request.include_count
                           .map(|include_count| ("include_count", if include_count { "1" } else { "0" }))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    client.send("usergroups.enable", &params[..])
+    let url = ::get_slack_url_for_method("usergroups.enable");
+    client.send(&url, &params[..])
         .map_err(|err| EnableError::Client(err))
         .and_then(|result| {
             serde_json::from_str::<EnableResponse>(&result).map_err(|e| EnableError::MalformedResponse(e))
@@ -524,7 +527,8 @@ pub fn list<R>(client: &R, token: &str, request: &ListRequest) -> Result<ListRes
              request.include_count.map(|include_count| ("include_count", if include_count { "1" } else { "0" })),
              request.include_users.map(|include_users| ("include_users", if include_users { "1" } else { "0" }))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    client.send("usergroups.list", &params[..])
+    let url = ::get_slack_url_for_method("usergroups.list");
+    client.send(&url, &params[..])
         .map_err(|err| ListError::Client(err))
         .and_then(|result| serde_json::from_str::<ListResponse>(&result).map_err(|e| ListError::MalformedResponse(e)))
         .and_then(|o| o.into())
@@ -691,7 +695,8 @@ pub fn update<R>(client: &R, token: &str, request: &UpdateRequest) -> Result<Upd
                       request.include_count
                           .map(|include_count| ("include_count", if include_count { "1" } else { "0" }))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    client.send("usergroups.update", &params[..])
+    let url = ::get_slack_url_for_method("usergroups.update");
+    client.send(&url, &params[..])
         .map_err(|err| UpdateError::Client(err))
         .and_then(|result| {
             serde_json::from_str::<UpdateResponse>(&result).map_err(|e| UpdateError::MalformedResponse(e))

@@ -23,7 +23,8 @@ pub fn add<R>(client: &R, token: &str, request: &AddRequest) -> Result<AddRespon
                       Some(("time", &time[..])),
                       request.user.map(|user| ("user", user))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    client.send("reminders.add", &params[..])
+    let url = ::get_slack_url_for_method("reminders.add");
+    client.send(&url, &params[..])
         .map_err(|err| AddError::Client(err))
         .and_then(|result| serde_json::from_str::<AddResponse>(&result).map_err(|e| AddError::MalformedResponse(e)))
         .and_then(|o| o.into())
@@ -210,7 +211,8 @@ pub fn complete<R>(client: &R,
 
     let params = vec![Some(("token", token)), Some(("reminder", request.reminder))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    client.send("reminders.complete", &params[..])
+    let url = ::get_slack_url_for_method("reminders.complete");
+    client.send(&url, &params[..])
         .map_err(|err| CompleteError::Client(err))
         .and_then(|result| {
             serde_json::from_str::<CompleteResponse>(&result).map_err(|e| CompleteError::MalformedResponse(e))
@@ -377,7 +379,8 @@ pub fn delete<R>(client: &R, token: &str, request: &DeleteRequest) -> Result<Del
 
     let params = vec![Some(("token", token)), Some(("reminder", request.reminder))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    client.send("reminders.delete", &params[..])
+    let url = ::get_slack_url_for_method("reminders.delete");
+    client.send(&url, &params[..])
         .map_err(|err| DeleteError::Client(err))
         .and_then(|result| {
             serde_json::from_str::<DeleteResponse>(&result).map_err(|e| DeleteError::MalformedResponse(e))
@@ -532,7 +535,8 @@ pub fn info<R>(client: &R, token: &str, request: &InfoRequest) -> Result<InfoRes
 
     let params = vec![Some(("token", token)), Some(("reminder", request.reminder))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    client.send("reminders.info", &params[..])
+    let url = ::get_slack_url_for_method("reminders.info");
+    client.send(&url, &params[..])
         .map_err(|err| InfoError::Client(err))
         .and_then(|result| serde_json::from_str::<InfoResponse>(&result).map_err(|e| InfoError::MalformedResponse(e)))
         .and_then(|o| o.into())
@@ -684,7 +688,8 @@ pub fn list<R>(client: &R, token: &str) -> Result<ListResponse, ListError<R::Err
     where R: SlackWebRequestSender
 {
     let params = &[("token", token)];
-    client.send("reminders.list", &params[..])
+    let url = ::get_slack_url_for_method("reminders.list");
+    client.send(&url, &params[..])
         .map_err(|err| ListError::Client(err))
         .and_then(|result| serde_json::from_str::<ListResponse>(&result).map_err(|e| ListError::MalformedResponse(e)))
         .and_then(|o| o.into())

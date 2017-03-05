@@ -20,7 +20,8 @@ pub fn revoke<R>(client: &R, token: &str, request: &RevokeRequest) -> Result<Rev
 
     let params = vec![Some(("token", token)), request.test.map(|test| ("test", if test { "1" } else { "0" }))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    client.send("auth.revoke", &params[..])
+    let url = ::get_slack_url_for_method("auth.revoke");
+    client.send(&url, &params[..])
         .map_err(|err| RevokeError::Client(err))
         .and_then(|result| {
             serde_json::from_str::<RevokeResponse>(&result).map_err(|e| RevokeError::MalformedResponse(e))
@@ -166,7 +167,8 @@ pub fn test<R>(client: &R, token: &str) -> Result<TestResponse, TestError<R::Err
     where R: SlackWebRequestSender
 {
     let params = &[("token", token)];
-    client.send("auth.test", &params[..])
+    let url = ::get_slack_url_for_method("auth.test");
+    client.send(&url, &params[..])
         .map_err(|err| TestError::Client(err))
         .and_then(|result| serde_json::from_str::<TestResponse>(&result).map_err(|e| TestError::MalformedResponse(e)))
         .and_then(|o| o.into())

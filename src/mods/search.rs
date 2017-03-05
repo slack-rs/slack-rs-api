@@ -28,7 +28,8 @@ pub fn all<R>(client: &R, token: &str, request: &AllRequest) -> Result<AllRespon
                       count.as_ref().map(|count| ("count", &count[..])),
                       page.as_ref().map(|page| ("page", &page[..]))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    client.send("search.all", &params[..])
+    let url = ::get_slack_url_for_method("search.all");
+    client.send(&url, &params[..])
         .map_err(|err| AllError::Client(err))
         .and_then(|result| serde_json::from_str::<AllResponse>(&result).map_err(|e| AllError::MalformedResponse(e)))
         .and_then(|o| o.into())
@@ -210,7 +211,8 @@ pub fn files<R>(client: &R, token: &str, request: &FilesRequest) -> Result<Files
                       count.as_ref().map(|count| ("count", &count[..])),
                       page.as_ref().map(|page| ("page", &page[..]))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    client.send("search.files", &params[..])
+    let url = ::get_slack_url_for_method("search.files");
+    client.send(&url, &params[..])
         .map_err(|err| FilesError::Client(err))
         .and_then(|result| serde_json::from_str::<FilesResponse>(&result).map_err(|e| FilesError::MalformedResponse(e)))
         .and_then(|o| o.into())
@@ -388,7 +390,8 @@ pub fn messages<R>(client: &R,
                       count.as_ref().map(|count| ("count", &count[..])),
                       page.as_ref().map(|page| ("page", &page[..]))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    client.send("search.messages", &params[..])
+    let url = ::get_slack_url_for_method("search.messages");
+    client.send(&url, &params[..])
         .map_err(|err| MessagesError::Client(err))
         .and_then(|result| {
             serde_json::from_str::<MessagesResponse>(&result).map_err(|e| MessagesError::MalformedResponse(e))

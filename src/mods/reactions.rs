@@ -25,7 +25,8 @@ pub fn add<R>(client: &R, token: &str, request: &AddRequest) -> Result<AddRespon
                       request.channel.map(|channel| ("channel", channel)),
                       request.timestamp.map(|timestamp| ("timestamp", timestamp))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    client.send("reactions.add", &params[..])
+    let url = ::get_slack_url_for_method("reactions.add");
+    client.send(&url, &params[..])
         .map_err(|err| AddError::Client(err))
         .and_then(|result| serde_json::from_str::<AddResponse>(&result).map_err(|e| AddError::MalformedResponse(e)))
         .and_then(|o| o.into())
@@ -231,7 +232,8 @@ pub fn get<R>(client: &R, token: &str, request: &GetRequest) -> Result<GetRespon
                       request.timestamp.map(|timestamp| ("timestamp", timestamp)),
                       request.full.map(|full| ("full", if full { "1" } else { "0" }))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    client.send("reactions.get", &params[..])
+    let url = ::get_slack_url_for_method("reactions.get");
+    client.send(&url, &params[..])
         .map_err(|err| GetError::Client(err))
         .and_then(|result| serde_json::from_str::<GetResponse>(&result).map_err(|e| GetError::MalformedResponse(e)))
         .and_then(|o| o.into())
@@ -250,7 +252,6 @@ pub struct GetRequest<'a> {
     /// If true always return the complete reaction list.
     pub full: Option<bool>,
 }
-
 
 #[derive(Clone, Debug)]
 pub enum GetResponse {
@@ -525,7 +526,8 @@ pub fn list<R>(client: &R, token: &str, request: &ListRequest) -> Result<ListRes
                       count.as_ref().map(|count| ("count", &count[..])),
                       page.as_ref().map(|page| ("page", &page[..]))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    client.send("reactions.list", &params[..])
+    let url = ::get_slack_url_for_method("reactions.list");
+    client.send(&url, &params[..])
         .map_err(|err| ListError::Client(err))
         .and_then(|result| serde_json::from_str::<ListResponse>(&result).map_err(|e| ListError::MalformedResponse(e)))
         .and_then(|o| o.into())
@@ -551,7 +553,6 @@ pub struct ListResponse {
     ok: bool,
     pub paging: Option<::Paging>,
 }
-
 
 #[derive(Clone, Debug)]
 pub enum ListResponseItem {
@@ -758,7 +759,8 @@ pub fn remove<R>(client: &R, token: &str, request: &RemoveRequest) -> Result<Rem
                       request.channel.map(|channel| ("channel", channel)),
                       request.timestamp.map(|timestamp| ("timestamp", timestamp))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    client.send("reactions.remove", &params[..])
+    let url = ::get_slack_url_for_method("reactions.remove");
+    client.send(&url, &params[..])
         .map_err(|err| RemoveError::Client(err))
         .and_then(|result| {
             serde_json::from_str::<RemoveResponse>(&result).map_err(|e| RemoveError::MalformedResponse(e))

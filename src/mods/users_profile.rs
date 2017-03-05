@@ -23,7 +23,8 @@ pub fn get<R>(client: &R, token: &str, request: &GetRequest) -> Result<GetRespon
                       request.include_labels
                           .map(|include_labels| ("include_labels", if include_labels { "1" } else { "0" }))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    client.send("users.profile.get", &params[..])
+    let url = ::get_slack_url_for_method("users.profile.get");
+    client.send(&url, &params[..])
         .map_err(|err| GetError::Client(err))
         .and_then(|result| serde_json::from_str::<GetResponse>(&result).map_err(|e| GetError::MalformedResponse(e)))
         .and_then(|o| o.into())
@@ -183,7 +184,8 @@ pub fn set<R>(client: &R, token: &str, request: &SetRequest) -> Result<SetRespon
                       request.name.map(|name| ("name", name)),
                       request.value.map(|value| ("value", value))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    client.send("users.profile.set", &params[..])
+    let url = ::get_slack_url_for_method("users.profile.set");
+    client.send(&url, &params[..])
         .map_err(|err| SetError::Client(err))
         .and_then(|result| serde_json::from_str::<SetResponse>(&result).map_err(|e| SetError::MalformedResponse(e)))
         .and_then(|o| o.into())

@@ -28,7 +28,8 @@ pub fn access_logs<R>(client: &R,
                       page.as_ref().map(|page| ("page", &page[..])),
                       before.as_ref().map(|before| ("before", &before[..]))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    client.send("team.accessLogs", &params[..])
+    let url = ::get_slack_url_for_method("team.accessLogs");
+    client.send(&url, &params[..])
         .map_err(|err| AccessLogsError::Client(err))
         .and_then(|result| {
             serde_json::from_str::<AccessLogsResponse>(&result).map_err(|e| AccessLogsError::MalformedResponse(e))
@@ -215,7 +216,8 @@ pub fn billable_info<R>(client: &R,
 
     let params = vec![Some(("token", token)), request.user.map(|user| ("user", user))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    client.send("team.billableInfo", &params[..])
+    let url = ::get_slack_url_for_method("team.billableInfo");
+    client.send(&url, &params[..])
         .map_err(|err| BillableInfoError::Client(err))
         .and_then(|result| {
             serde_json::from_str::<BillableInfoResponse>(&result).map_err(|e| BillableInfoError::MalformedResponse(e))
@@ -371,7 +373,8 @@ pub fn info<R>(client: &R, token: &str) -> Result<InfoResponse, InfoError<R::Err
     where R: SlackWebRequestSender
 {
     let params = &[("token", token)];
-    client.send("team.info", &params[..])
+    let url = ::get_slack_url_for_method("team.info");
+    client.send(&url, &params[..])
         .map_err(|err| InfoError::Client(err))
         .and_then(|result| serde_json::from_str::<InfoResponse>(&result).map_err(|e| InfoError::MalformedResponse(e)))
         .and_then(|o| o.into())
@@ -521,7 +524,8 @@ pub fn integration_logs<R>(client: &R,
                       count.as_ref().map(|count| ("count", &count[..])),
                       page.as_ref().map(|page| ("page", &page[..]))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    client.send("team.integrationLogs", &params[..])
+    let url = ::get_slack_url_for_method("team.integrationLogs");
+    client.send(&url, &params[..])
         .map_err(|err| IntegrationLogsError::Client(err))
         .and_then(|result| {
             serde_json::from_str::<IntegrationLogsResponse>(&result)

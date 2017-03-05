@@ -24,7 +24,8 @@ pub fn add<R>(client: &R, token: &str, request: &AddRequest) -> Result<AddRespon
                       request.channel.map(|channel| ("channel", channel)),
                       request.timestamp.map(|timestamp| ("timestamp", timestamp))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    client.send("stars.add", &params[..])
+    let url = ::get_slack_url_for_method("stars.add");
+    client.send(&url, &params[..])
         .map_err(|err| AddError::Client(err))
         .and_then(|result| serde_json::from_str::<AddResponse>(&result).map_err(|e| AddError::MalformedResponse(e)))
         .and_then(|o| o.into())
@@ -216,7 +217,8 @@ pub fn list<R>(client: &R, token: &str, request: &ListRequest) -> Result<ListRes
                       count.as_ref().map(|count| ("count", &count[..])),
                       page.as_ref().map(|page| ("page", &page[..]))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    client.send("stars.list", &params[..])
+    let url = ::get_slack_url_for_method("stars.list");
+    client.send(&url, &params[..])
         .map_err(|err| ListError::Client(err))
         .and_then(|result| serde_json::from_str::<ListResponse>(&result).map_err(|e| ListError::MalformedResponse(e)))
         .and_then(|o| o.into())
@@ -238,7 +240,6 @@ pub struct ListResponse {
     ok: bool,
     pub paging: Option<::Paging>,
 }
-
 
 #[derive(Clone, Debug)]
 pub enum ListResponseItem {
@@ -494,7 +495,8 @@ pub fn remove<R>(client: &R, token: &str, request: &RemoveRequest) -> Result<Rem
                       request.channel.map(|channel| ("channel", channel)),
                       request.timestamp.map(|timestamp| ("timestamp", timestamp))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    client.send("stars.remove", &params[..])
+    let url = ::get_slack_url_for_method("stars.remove");
+    client.send(&url, &params[..])
         .map_err(|err| RemoveError::Client(err))
         .and_then(|result| {
             serde_json::from_str::<RemoveResponse>(&result).map_err(|e| RemoveError::MalformedResponse(e))

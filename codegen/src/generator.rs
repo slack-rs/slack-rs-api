@@ -65,12 +65,14 @@ impl Method {
         let response_type = self.response.get_response_type(&response_struct_name);
 
         let send_call = {
-            let mut base_call = format!("client.send(\"{name}\", &params[..])
-                .map_err(|err| {error_type}::Client(err))
-                .and_then(|result| {{
-                    serde_json::from_str::<{response_type}>(&result)
-                        .map_err(|e| {error_type}::MalformedResponse(e))
-                }})",
+            let mut base_call = format!("\
+                let url = ::get_slack_url_for_method(\"{name}\");
+                client.send(&url, &params[..])
+                    .map_err(|err| {error_type}::Client(err))
+                    .and_then(|result| {{
+                        serde_json::from_str::<{response_type}>(&result)
+                            .map_err(|e| {error_type}::MalformedResponse(e))
+                    }})",
                 name = self.name,
                 response_type = response_struct_name,
                 error_type = error_enum_name
@@ -86,8 +88,8 @@ impl Method {
         };
 
         if self.params.is_empty() {
-            format!(
-                "{documentation}
+            format!("\
+                {documentation}
                 pub fn {method_name}<R>(client: &R) -> Result<{response_type}, {error_type}<R::Error>>
                     where R: SlackWebRequestSender
                 {{
@@ -109,8 +111,8 @@ impl Method {
                 send_call = send_call
             )
         } else if self.params.len() == 1 && self.params[0].ty == "auth_token" {
-            format!(
-                "{documentation}
+            format!("\
+                {documentation}
                 pub fn {method_name}<R>(client: &R, token: &str) -> Result<{response_type}, {error_type}<R::Error>>
                     where R: SlackWebRequestSender
                 {{
@@ -138,8 +140,8 @@ impl Method {
             } else {
                 format!("client: &R, request: &{}", request_struct_name)
             };
-            format!(
-                "{documentation}
+            format!("\
+                {documentation}
                 pub fn {method_name}<R>({method_params}) -> Result<{response_type}, {error_type}<R::Error>>
                     where R: SlackWebRequestSender
                 {{
@@ -186,8 +188,8 @@ impl Method {
     }
 
     fn get_request_struct(&self, ty_name: &str) -> String {
-        format!(
-            "#[derive(Clone, Default, Debug)]
+        format!("\
+            #[derive(Clone, Default, Debug)]
             pub struct {request_type}{lifetime} {{
                 {request_params}
             }}",
@@ -241,8 +243,8 @@ fn generate_matches<F>(enm: &JsonEnum, var_name: &str, f: F) -> Vec<String>
 
 fn get_obj_to_response_impl(obj: &JsonObject, error_type: &str) -> Option<String> {
     if obj.has_ok() {
-        Some(format!(
-            "impl<E: Error> Into<Result<{name}, {error_ty}<E>>> for {name} {{
+        Some(format!("\
+            impl<E: Error> Into<Result<{name}, {error_ty}<E>>> for {name} {{
                 fn into(self) -> Result<{name}, {error_ty}<E>> {{
                     if self.ok {{
                         Ok(self)
@@ -261,8 +263,8 @@ fn get_obj_to_response_impl(obj: &JsonObject, error_type: &str) -> Option<String
 
 fn get_enum_to_response_impl(enm: &JsonEnum, error_type: &str) -> Option<String> {
     if enm.has_ok() {
-        Some(format!(
-            "impl<E: Error> Into<Result<{name}, {error_ty}<E>>> for {name} {{
+        Some(format!("\
+            impl<E: Error> Into<Result<{name}, {error_ty}<E>>> for {name} {{
                 fn into(self) -> Result<{name}, {error_ty}<E>> {{
                     match self {{
                         {matches}
@@ -314,8 +316,8 @@ impl Response {
                        self.schema)
             }
         };
-        format!(
-            "{objs}
+        format!("\
+            {objs}
             {slack_result}
             {errors}",
             objs = objs,
@@ -329,8 +331,8 @@ impl Response {
     }
 
     fn get_error_enum(&self, error_ty: &str) -> String {
-        format!(
-            "#[derive(Debug)]
+        format!("\
+            #[derive(Debug)]
             pub enum {error_type}<E: Error> {{
                 {variants}
                 /// The response was not parseable as the expected object
@@ -532,8 +534,7 @@ impl JsonEnum {
             .collect::<Vec<_>>()
             .join("\n");
 
-        format!(
-            "
+        format!("\
             #[derive(Clone, Debug)]
             pub enum {name} {{
                 {variants}
@@ -577,8 +578,8 @@ impl JsonEnum {
                 .join(","),
             variant_matches = self.variants
                 .iter()
-                .map(|v| format!(
-                    "\"{type_name}\" => {{
+                .map(|v| format!("\
+                    \"{type_name}\" => {{
                         ::serde_json::from_value::<{variant_type}>(value.clone()).map(|obj| {{
                             {variant_name}(obj)
                         }}).map_err(|e| D::Error::custom(&format!(\"{{}}\", e)))
@@ -621,8 +622,8 @@ impl JsonObject {
             .map(|f| f.to_code())
             .collect::<Vec<_>>();
 
-        format!(
-            "#[derive(Clone, Debug, Deserialize)]
+        format!("\
+            #[derive(Clone, Debug, Deserialize)]
             pub struct {name} {{
                 {fields}
             }}

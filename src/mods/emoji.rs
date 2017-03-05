@@ -18,7 +18,8 @@ pub fn list<R>(client: &R, token: &str) -> Result<ListResponse, ListError<R::Err
     where R: SlackWebRequestSender
 {
     let params = &[("token", token)];
-    client.send("emoji.list", &params[..])
+    let url = ::get_slack_url_for_method("emoji.list");
+    client.send(&url, &params[..])
         .map_err(|err| ListError::Client(err))
         .and_then(|result| serde_json::from_str::<ListResponse>(&result).map_err(|e| ListError::MalformedResponse(e)))
         .and_then(|o| o.into())

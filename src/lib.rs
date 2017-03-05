@@ -27,3 +27,7 @@ mod types;
 pub use types::*;
 
 pub mod requests;
+
+fn get_slack_url_for_method(method: &str) -> String {
+    format!("https://slack.com/api/{}", method)
+}
