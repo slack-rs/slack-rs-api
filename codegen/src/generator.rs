@@ -523,8 +523,11 @@ impl JsonEnum {
             ("type", "Err(D::Error::missing_field(\"type\"))")
         };
         
-        let subobjs = self.variants
-            .iter()
+        let mut subobjs = self.variants.clone();
+
+        subobjs.sort_by_key(|v| v.name.clone());
+
+        let subobjs = subobjs.iter()
             .flat_map(|v| obj_recur(&v.inner))
             .collect::<Vec<_>>()
             .join("\n");

@@ -288,17 +288,6 @@ impl ::serde::Deserialize for ListResponseItem {
 }
 
 #[derive(Clone, Debug, Deserialize)]
-pub struct ListResponseItemMessage {
-    pub channel: String,
-    pub created: Option<f32>,
-    pub created_by: Option<String>,
-    pub message: ::Message,
-    #[serde(rename = "type")]
-    pub ty: String,
-}
-
-
-#[derive(Clone, Debug, Deserialize)]
 pub struct ListResponseItemFile {
     pub created: Option<f32>,
     pub created_by: Option<String>,
@@ -314,6 +303,17 @@ pub struct ListResponseItemFileComment {
     pub created: Option<f32>,
     pub created_by: Option<String>,
     pub file: ::File,
+    #[serde(rename = "type")]
+    pub ty: String,
+}
+
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct ListResponseItemMessage {
+    pub channel: String,
+    pub created: Option<f32>,
+    pub created_by: Option<String>,
+    pub message: ::Message,
     #[serde(rename = "type")]
     pub ty: String,
 }

@@ -298,18 +298,6 @@ impl ::serde::Deserialize for GetResponse {
 }
 
 #[derive(Clone, Debug, Deserialize)]
-pub struct GetResponseMessage {
-    pub channel: String,
-    error: Option<String>,
-    pub message: ::Message,
-    #[serde(default)]
-    ok: bool,
-    #[serde(rename = "type")]
-    pub ty: String,
-}
-
-
-#[derive(Clone, Debug, Deserialize)]
 pub struct GetResponseFile {
     error: Option<String>,
     pub file: ::File,
@@ -325,6 +313,18 @@ pub struct GetResponseFileComment {
     pub comment: ::FileComment,
     error: Option<String>,
     pub file: ::File,
+    #[serde(default)]
+    ok: bool,
+    #[serde(rename = "type")]
+    pub ty: String,
+}
+
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct GetResponseMessage {
+    pub channel: String,
+    error: Option<String>,
+    pub message: ::Message,
     #[serde(default)]
     ok: bool,
     #[serde(rename = "type")]
@@ -599,15 +599,6 @@ impl ::serde::Deserialize for ListResponseItem {
 }
 
 #[derive(Clone, Debug, Deserialize)]
-pub struct ListResponseItemMessage {
-    pub channel: String,
-    pub message: ::Message,
-    #[serde(rename = "type")]
-    pub ty: String,
-}
-
-
-#[derive(Clone, Debug, Deserialize)]
 pub struct ListResponseItemFile {
     pub file: ::File,
     #[serde(rename = "type")]
@@ -619,6 +610,15 @@ pub struct ListResponseItemFile {
 pub struct ListResponseItemFileComment {
     pub comment: ::FileComment,
     pub file: ::File,
+    #[serde(rename = "type")]
+    pub ty: String,
+}
+
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct ListResponseItemMessage {
+    pub channel: String,
+    pub message: ::Message,
     #[serde(rename = "type")]
     pub ty: String,
 }

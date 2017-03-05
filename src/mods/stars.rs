@@ -304,9 +304,8 @@ impl ::serde::Deserialize for ListResponseItem {
 }
 
 #[derive(Clone, Debug, Deserialize)]
-pub struct ListResponseItemMessage {
+pub struct ListResponseItemChannel {
     pub channel: String,
-    pub message: ::Message,
     #[serde(rename = "type")]
     pub ty: String,
 }
@@ -330,8 +329,8 @@ pub struct ListResponseItemFileComment {
 
 
 #[derive(Clone, Debug, Deserialize)]
-pub struct ListResponseItemChannel {
-    pub channel: String,
+pub struct ListResponseItemGroup {
+    pub group: String,
     #[serde(rename = "type")]
     pub ty: String,
 }
@@ -346,8 +345,9 @@ pub struct ListResponseItemIm {
 
 
 #[derive(Clone, Debug, Deserialize)]
-pub struct ListResponseItemGroup {
-    pub group: String,
+pub struct ListResponseItemMessage {
+    pub channel: String,
+    pub message: ::Message,
     #[serde(rename = "type")]
     pub ty: String,
 }

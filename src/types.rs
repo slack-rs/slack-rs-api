@@ -36,7 +36,7 @@ pub struct Channel {
 }
 
 #[derive(Clone, Debug, Deserialize)]
-pub struct ChannelTopic {
+pub struct ChannelPurpose {
     pub creator: Option<String>,
     pub last_set: Option<i32>,
     pub value: Option<String>,
@@ -44,7 +44,7 @@ pub struct ChannelTopic {
 
 
 #[derive(Clone, Debug, Deserialize)]
-pub struct ChannelPurpose {
+pub struct ChannelTopic {
     pub creator: Option<String>,
     pub last_set: Option<i32>,
     pub value: Option<String>,
@@ -128,7 +128,7 @@ pub struct Group {
 }
 
 #[derive(Clone, Debug, Deserialize)]
-pub struct GroupTopic {
+pub struct GroupPurpose {
     pub creator: Option<String>,
     pub last_set: Option<i32>,
     pub value: Option<String>,
@@ -136,7 +136,7 @@ pub struct GroupTopic {
 
 
 #[derive(Clone, Debug, Deserialize)]
-pub struct GroupPurpose {
+pub struct GroupTopic {
     pub creator: Option<String>,
     pub last_set: Option<i32>,
     pub value: Option<String>,
@@ -363,52 +363,6 @@ impl ::serde::Deserialize for Message {
         }
     }
 }
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct MessageStandard {
-    pub attachments: Option<Vec<MessageStandardAttachment>>,
-    pub channel: Option<String>,
-    pub edited: Option<MessageStandardEdited>,
-    pub text: Option<String>,
-    pub ts: Option<String>,
-    #[serde(rename = "type")]
-    pub ty: Option<String>,
-    pub user: Option<String>,
-}
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct MessageStandardAttachment {
-    pub author_icon: Option<String>,
-    pub author_link: Option<String>,
-    pub author_name: Option<String>,
-    pub color: Option<String>,
-    pub fallback: Option<String>,
-    pub fields: Option<Vec<MessageStandardAttachmentField>>,
-    pub footer: Option<String>,
-    pub footer_icon: Option<String>,
-    pub image_url: Option<String>,
-    pub pretext: Option<String>,
-    pub text: Option<String>,
-    pub thumb_url: Option<String>,
-    pub title: Option<String>,
-    pub title_link: Option<String>,
-    pub ts: Option<f32>,
-}
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct MessageStandardAttachmentField {
-    pub short: Option<bool>,
-    pub title: Option<String>,
-    pub value: Option<String>,
-}
-
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct MessageStandardEdited {
-    pub ts: Option<String>,
-    pub user: Option<String>,
-}
-
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct MessageBotMessage {
@@ -757,6 +711,52 @@ pub struct MessageReplyBroadcastAttachment {
     pub mrkdwn_in: Option<Vec<String>>,
     pub text: Option<String>,
     pub ts: Option<String>,
+}
+
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct MessageStandard {
+    pub attachments: Option<Vec<MessageStandardAttachment>>,
+    pub channel: Option<String>,
+    pub edited: Option<MessageStandardEdited>,
+    pub text: Option<String>,
+    pub ts: Option<String>,
+    #[serde(rename = "type")]
+    pub ty: Option<String>,
+    pub user: Option<String>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct MessageStandardAttachment {
+    pub author_icon: Option<String>,
+    pub author_link: Option<String>,
+    pub author_name: Option<String>,
+    pub color: Option<String>,
+    pub fallback: Option<String>,
+    pub fields: Option<Vec<MessageStandardAttachmentField>>,
+    pub footer: Option<String>,
+    pub footer_icon: Option<String>,
+    pub image_url: Option<String>,
+    pub pretext: Option<String>,
+    pub text: Option<String>,
+    pub thumb_url: Option<String>,
+    pub title: Option<String>,
+    pub title_link: Option<String>,
+    pub ts: Option<f32>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct MessageStandardAttachmentField {
+    pub short: Option<bool>,
+    pub title: Option<String>,
+    pub value: Option<String>,
+}
+
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct MessageStandardEdited {
+    pub ts: Option<String>,
+    pub user: Option<String>,
 }
 
 
