@@ -14,11 +14,11 @@ use requests::SlackWebRequestSender;
 ///
 /// Wraps https://api.slack.com/methods/stars.add
 
-pub fn add<R>(client: &R, request: &AddRequest) -> Result<AddResponse, AddError<R::Error>>
+pub fn add<R>(client: &R, token: &str, request: &AddRequest) -> Result<AddResponse, AddError<R::Error>>
     where R: SlackWebRequestSender
 {
 
-    let params = vec![Some(("token", request.token)),
+    let params = vec![Some(("token", token)),
                       request.file.map(|file| ("file", file)),
                       request.file_comment.map(|file_comment| ("file_comment", file_comment)),
                       request.channel.map(|channel| ("channel", channel)),
@@ -32,9 +32,6 @@ pub fn add<R>(client: &R, request: &AddRequest) -> Result<AddResponse, AddError<
 
 #[derive(Clone, Default, Debug)]
 pub struct AddRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: stars:write
-    pub token: &'a str,
     /// File to add star to.
     pub file: Option<&'a str>,
     /// File comment to add star to.
@@ -209,12 +206,12 @@ impl<E: Error> Error for AddError<E> {
 ///
 /// Wraps https://api.slack.com/methods/stars.list
 
-pub fn list<R>(client: &R, request: &ListRequest) -> Result<ListResponse, ListError<R::Error>>
+pub fn list<R>(client: &R, token: &str, request: &ListRequest) -> Result<ListResponse, ListError<R::Error>>
     where R: SlackWebRequestSender
 {
     let count = request.count.map(|count| count.to_string());
     let page = request.page.map(|page| page.to_string());
-    let params = vec![Some(("token", request.token)),
+    let params = vec![Some(("token", token)),
                       count.as_ref().map(|count| ("count", &count[..])),
                       page.as_ref().map(|page| ("page", &page[..]))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
@@ -225,10 +222,7 @@ pub fn list<R>(client: &R, request: &ListRequest) -> Result<ListResponse, ListEr
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct ListRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: stars:read
-    pub token: &'a str,
+pub struct ListRequest {
     /// Number of items to return per page.
     pub count: Option<u32>,
     /// Page number of results to return.
@@ -488,11 +482,11 @@ impl<E: Error> Error for ListError<E> {
 ///
 /// Wraps https://api.slack.com/methods/stars.remove
 
-pub fn remove<R>(client: &R, request: &RemoveRequest) -> Result<RemoveResponse, RemoveError<R::Error>>
+pub fn remove<R>(client: &R, token: &str, request: &RemoveRequest) -> Result<RemoveResponse, RemoveError<R::Error>>
     where R: SlackWebRequestSender
 {
 
-    let params = vec![Some(("token", request.token)),
+    let params = vec![Some(("token", token)),
                       request.file.map(|file| ("file", file)),
                       request.file_comment.map(|file_comment| ("file_comment", file_comment)),
                       request.channel.map(|channel| ("channel", channel)),
@@ -506,9 +500,6 @@ pub fn remove<R>(client: &R, request: &RemoveRequest) -> Result<RemoveResponse, 
 
 #[derive(Clone, Default, Debug)]
 pub struct RemoveRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: stars:write
-    pub token: &'a str,
     /// File to remove star from.
     pub file: Option<&'a str>,
     /// File comment to remove star from.

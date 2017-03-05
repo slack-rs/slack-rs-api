@@ -15,11 +15,11 @@ use requests::SlackWebRequestSender;
 ///
 /// Wraps https://api.slack.com/methods/groups.archive
 
-pub fn archive<R>(client: &R, request: &ArchiveRequest) -> Result<ArchiveResponse, ArchiveError<R::Error>>
+pub fn archive<R>(client: &R, token: &str, request: &ArchiveRequest) -> Result<ArchiveResponse, ArchiveError<R::Error>>
     where R: SlackWebRequestSender
 {
 
-    let params = vec![Some(("token", request.token)), Some(("channel", request.channel))];
+    let params = vec![Some(("token", token)), Some(("channel", request.channel))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("groups.archive", &params[..])
                 .map_err(|err| ArchiveError::Client(err))
@@ -31,9 +31,6 @@ pub fn archive<R>(client: &R, request: &ArchiveRequest) -> Result<ArchiveRespons
 
 #[derive(Clone, Default, Debug)]
 pub struct ArchiveRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: groups:write
-    pub token: &'a str,
     /// Private channel to archive
     pub channel: &'a str,
 }
@@ -200,11 +197,11 @@ impl<E: Error> Error for ArchiveError<E> {
 ///
 /// Wraps https://api.slack.com/methods/groups.close
 
-pub fn close<R>(client: &R, request: &CloseRequest) -> Result<CloseResponse, CloseError<R::Error>>
+pub fn close<R>(client: &R, token: &str, request: &CloseRequest) -> Result<CloseResponse, CloseError<R::Error>>
     where R: SlackWebRequestSender
 {
 
-    let params = vec![Some(("token", request.token)), Some(("channel", request.channel))];
+    let params = vec![Some(("token", token)), Some(("channel", request.channel))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("groups.close", &params[..])
         .map_err(|err| CloseError::Client(err))
@@ -214,9 +211,6 @@ pub fn close<R>(client: &R, request: &CloseRequest) -> Result<CloseResponse, Clo
 
 #[derive(Clone, Default, Debug)]
 pub struct CloseRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: groups:write
-    pub token: &'a str,
     /// Private channel to close.
     pub channel: &'a str,
 }
@@ -351,11 +345,11 @@ impl<E: Error> Error for CloseError<E> {
 ///
 /// Wraps https://api.slack.com/methods/groups.create
 
-pub fn create<R>(client: &R, request: &CreateRequest) -> Result<CreateResponse, CreateError<R::Error>>
+pub fn create<R>(client: &R, token: &str, request: &CreateRequest) -> Result<CreateResponse, CreateError<R::Error>>
     where R: SlackWebRequestSender
 {
 
-    let params = vec![Some(("token", request.token)), Some(("name", request.name))];
+    let params = vec![Some(("token", token)), Some(("name", request.name))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("groups.create", &params[..])
         .map_err(|err| CreateError::Client(err))
@@ -365,9 +359,6 @@ pub fn create<R>(client: &R, request: &CreateRequest) -> Result<CreateResponse, 
 
 #[derive(Clone, Default, Debug)]
 pub struct CreateRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: groups:write
-    pub token: &'a str,
     /// Name of private channel to create
     pub name: &'a str,
 }
@@ -524,12 +515,13 @@ impl<E: Error> Error for CreateError<E> {
 /// Wraps https://api.slack.com/methods/groups.createChild
 
 pub fn create_child<R>(client: &R,
+                       token: &str,
                        request: &CreateChildRequest)
                        -> Result<CreateChildResponse, CreateChildError<R::Error>>
     where R: SlackWebRequestSender
 {
 
-    let params = vec![Some(("token", request.token)), Some(("channel", request.channel))];
+    let params = vec![Some(("token", token)), Some(("channel", request.channel))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("groups.createChild", &params[..])
         .map_err(|err| CreateChildError::Client(err))
@@ -541,9 +533,6 @@ pub fn create_child<R>(client: &R,
 
 #[derive(Clone, Default, Debug)]
 pub struct CreateChildRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: groups:write
-    pub token: &'a str,
     /// Private channel to clone and archive.
     pub channel: &'a str,
 }
@@ -701,11 +690,11 @@ impl<E: Error> Error for CreateChildError<E> {
 ///
 /// Wraps https://api.slack.com/methods/groups.history
 
-pub fn history<R>(client: &R, request: &HistoryRequest) -> Result<HistoryResponse, HistoryError<R::Error>>
+pub fn history<R>(client: &R, token: &str, request: &HistoryRequest) -> Result<HistoryResponse, HistoryError<R::Error>>
     where R: SlackWebRequestSender
 {
     let count = request.count.map(|count| count.to_string());
-    let params = vec![Some(("token", request.token)),
+    let params = vec![Some(("token", token)),
                       Some(("channel", request.channel)),
                       request.latest.map(|latest| ("latest", latest)),
                       request.oldest.map(|oldest| ("oldest", oldest)),
@@ -723,9 +712,6 @@ pub fn history<R>(client: &R, request: &HistoryRequest) -> Result<HistoryRespons
 
 #[derive(Clone, Default, Debug)]
 pub struct HistoryRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: groups:history
-    pub token: &'a str,
     /// Private channel to fetch history for.
     pub channel: &'a str,
     /// End of time range of messages to include in results.
@@ -881,11 +867,11 @@ impl<E: Error> Error for HistoryError<E> {
 ///
 /// Wraps https://api.slack.com/methods/groups.info
 
-pub fn info<R>(client: &R, request: &InfoRequest) -> Result<InfoResponse, InfoError<R::Error>>
+pub fn info<R>(client: &R, token: &str, request: &InfoRequest) -> Result<InfoResponse, InfoError<R::Error>>
     where R: SlackWebRequestSender
 {
 
-    let params = vec![Some(("token", request.token)), Some(("channel", request.channel))];
+    let params = vec![Some(("token", token)), Some(("channel", request.channel))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("groups.info", &params[..])
         .map_err(|err| InfoError::Client(err))
@@ -895,9 +881,6 @@ pub fn info<R>(client: &R, request: &InfoRequest) -> Result<InfoResponse, InfoEr
 
 #[derive(Clone, Default, Debug)]
 pub struct InfoRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: groups:read
-    pub token: &'a str,
     /// Private channel to get info on
     pub channel: &'a str,
 }
@@ -1033,11 +1016,11 @@ impl<E: Error> Error for InfoError<E> {
 ///
 /// Wraps https://api.slack.com/methods/groups.invite
 
-pub fn invite<R>(client: &R, request: &InviteRequest) -> Result<InviteResponse, InviteError<R::Error>>
+pub fn invite<R>(client: &R, token: &str, request: &InviteRequest) -> Result<InviteResponse, InviteError<R::Error>>
     where R: SlackWebRequestSender
 {
 
-    let params = vec![Some(("token", request.token)), Some(("channel", request.channel)), Some(("user", request.user))];
+    let params = vec![Some(("token", token)), Some(("channel", request.channel)), Some(("user", request.user))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("groups.invite", &params[..])
         .map_err(|err| InviteError::Client(err))
@@ -1047,9 +1030,6 @@ pub fn invite<R>(client: &R, request: &InviteRequest) -> Result<InviteResponse, 
 
 #[derive(Clone, Default, Debug)]
 pub struct InviteRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: groups:write
-    pub token: &'a str,
     /// Private channel to invite user to.
     pub channel: &'a str,
     /// User to invite.
@@ -1213,11 +1193,11 @@ impl<E: Error> Error for InviteError<E> {
 ///
 /// Wraps https://api.slack.com/methods/groups.kick
 
-pub fn kick<R>(client: &R, request: &KickRequest) -> Result<KickResponse, KickError<R::Error>>
+pub fn kick<R>(client: &R, token: &str, request: &KickRequest) -> Result<KickResponse, KickError<R::Error>>
     where R: SlackWebRequestSender
 {
 
-    let params = vec![Some(("token", request.token)), Some(("channel", request.channel)), Some(("user", request.user))];
+    let params = vec![Some(("token", token)), Some(("channel", request.channel)), Some(("user", request.user))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("groups.kick", &params[..])
         .map_err(|err| KickError::Client(err))
@@ -1227,9 +1207,6 @@ pub fn kick<R>(client: &R, request: &KickRequest) -> Result<KickResponse, KickEr
 
 #[derive(Clone, Default, Debug)]
 pub struct KickRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: groups:write
-    pub token: &'a str,
     /// Private channel to remove user from.
     pub channel: &'a str,
     /// User to remove from private channel.
@@ -1394,11 +1371,11 @@ impl<E: Error> Error for KickError<E> {
 ///
 /// Wraps https://api.slack.com/methods/groups.leave
 
-pub fn leave<R>(client: &R, request: &LeaveRequest) -> Result<LeaveResponse, LeaveError<R::Error>>
+pub fn leave<R>(client: &R, token: &str, request: &LeaveRequest) -> Result<LeaveResponse, LeaveError<R::Error>>
     where R: SlackWebRequestSender
 {
 
-    let params = vec![Some(("token", request.token)), Some(("channel", request.channel))];
+    let params = vec![Some(("token", token)), Some(("channel", request.channel))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("groups.leave", &params[..])
         .map_err(|err| LeaveError::Client(err))
@@ -1408,9 +1385,6 @@ pub fn leave<R>(client: &R, request: &LeaveRequest) -> Result<LeaveResponse, Lea
 
 #[derive(Clone, Default, Debug)]
 pub struct LeaveRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: groups:write
-    pub token: &'a str,
     /// Private channel to leave
     pub channel: &'a str,
 }
@@ -1571,11 +1545,11 @@ impl<E: Error> Error for LeaveError<E> {
 ///
 /// Wraps https://api.slack.com/methods/groups.list
 
-pub fn list<R>(client: &R, request: &ListRequest) -> Result<ListResponse, ListError<R::Error>>
+pub fn list<R>(client: &R, token: &str, request: &ListRequest) -> Result<ListResponse, ListError<R::Error>>
     where R: SlackWebRequestSender
 {
 
-    let params = vec![Some(("token", request.token)),
+    let params = vec![Some(("token", token)),
                       request.exclude_archived
                           .map(|exclude_archived| ("exclude_archived", if exclude_archived { "1" } else { "0" }))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
@@ -1586,10 +1560,7 @@ pub fn list<R>(client: &R, request: &ListRequest) -> Result<ListResponse, ListEr
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct ListRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: groups:read
-    pub token: &'a str,
+pub struct ListRequest {
     /// Don't return archived private channels.
     pub exclude_archived: Option<bool>,
 }
@@ -1721,11 +1692,11 @@ impl<E: Error> Error for ListError<E> {
 ///
 /// Wraps https://api.slack.com/methods/groups.mark
 
-pub fn mark<R>(client: &R, request: &MarkRequest) -> Result<MarkResponse, MarkError<R::Error>>
+pub fn mark<R>(client: &R, token: &str, request: &MarkRequest) -> Result<MarkResponse, MarkError<R::Error>>
     where R: SlackWebRequestSender
 {
 
-    let params = vec![Some(("token", request.token)), Some(("channel", request.channel)), Some(("ts", request.ts))];
+    let params = vec![Some(("token", token)), Some(("channel", request.channel)), Some(("ts", request.ts))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("groups.mark", &params[..])
         .map_err(|err| MarkError::Client(err))
@@ -1735,9 +1706,6 @@ pub fn mark<R>(client: &R, request: &MarkRequest) -> Result<MarkResponse, MarkEr
 
 #[derive(Clone, Default, Debug)]
 pub struct MarkRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: groups:write
-    pub token: &'a str,
     /// Private channel to set reading cursor in.
     pub channel: &'a str,
     /// Timestamp of the most recently seen message.
@@ -1878,11 +1846,11 @@ impl<E: Error> Error for MarkError<E> {
 ///
 /// Wraps https://api.slack.com/methods/groups.open
 
-pub fn open<R>(client: &R, request: &OpenRequest) -> Result<OpenResponse, OpenError<R::Error>>
+pub fn open<R>(client: &R, token: &str, request: &OpenRequest) -> Result<OpenResponse, OpenError<R::Error>>
     where R: SlackWebRequestSender
 {
 
-    let params = vec![Some(("token", request.token)), Some(("channel", request.channel))];
+    let params = vec![Some(("token", token)), Some(("channel", request.channel))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("groups.open", &params[..])
         .map_err(|err| OpenError::Client(err))
@@ -1892,9 +1860,6 @@ pub fn open<R>(client: &R, request: &OpenRequest) -> Result<OpenResponse, OpenEr
 
 #[derive(Clone, Default, Debug)]
 pub struct OpenRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: groups:write
-    pub token: &'a str,
     /// Private channel to open.
     pub channel: &'a str,
 }
@@ -2029,11 +1994,11 @@ impl<E: Error> Error for OpenError<E> {
 ///
 /// Wraps https://api.slack.com/methods/groups.rename
 
-pub fn rename<R>(client: &R, request: &RenameRequest) -> Result<RenameResponse, RenameError<R::Error>>
+pub fn rename<R>(client: &R, token: &str, request: &RenameRequest) -> Result<RenameResponse, RenameError<R::Error>>
     where R: SlackWebRequestSender
 {
 
-    let params = vec![Some(("token", request.token)), Some(("channel", request.channel)), Some(("name", request.name))];
+    let params = vec![Some(("token", token)), Some(("channel", request.channel)), Some(("name", request.name))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("groups.rename", &params[..])
         .map_err(|err| RenameError::Client(err))
@@ -2043,9 +2008,6 @@ pub fn rename<R>(client: &R, request: &RenameRequest) -> Result<RenameResponse, 
 
 #[derive(Clone, Default, Debug)]
 pub struct RenameRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: groups:write
-    pub token: &'a str,
     /// Private channel to rename
     pub channel: &'a str,
     /// New name for private channel.
@@ -2209,13 +2171,12 @@ impl<E: Error> Error for RenameError<E> {
 ///
 /// Wraps https://api.slack.com/methods/groups.replies
 
-pub fn replies<R>(client: &R, request: &RepliesRequest) -> Result<RepliesResponse, RepliesError<R::Error>>
+pub fn replies<R>(client: &R, token: &str, request: &RepliesRequest) -> Result<RepliesResponse, RepliesError<R::Error>>
     where R: SlackWebRequestSender
 {
 
-    let params = vec![Some(("token", request.token)),
-                      Some(("channel", request.channel)),
-                      Some(("thread_ts", request.thread_ts))];
+    let params =
+        vec![Some(("token", token)), Some(("channel", request.channel)), Some(("thread_ts", request.thread_ts))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("groups.replies", &params[..])
                 .map_err(|err| RepliesError::Client(err))
@@ -2227,9 +2188,6 @@ pub fn replies<R>(client: &R, request: &RepliesRequest) -> Result<RepliesRespons
 
 #[derive(Clone, Default, Debug)]
 pub struct RepliesRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: groups:history
-    pub token: &'a str,
     /// Private channel to fetch thread from
     pub channel: &'a str,
     /// Unique identifier of a thread's parent message
@@ -2376,12 +2334,14 @@ impl<E: Error> Error for RepliesError<E> {
 ///
 /// Wraps https://api.slack.com/methods/groups.setPurpose
 
-pub fn set_purpose<R>(client: &R, request: &SetPurposeRequest) -> Result<SetPurposeResponse, SetPurposeError<R::Error>>
+pub fn set_purpose<R>(client: &R,
+                      token: &str,
+                      request: &SetPurposeRequest)
+                      -> Result<SetPurposeResponse, SetPurposeError<R::Error>>
     where R: SlackWebRequestSender
 {
 
-    let params =
-        vec![Some(("token", request.token)), Some(("channel", request.channel)), Some(("purpose", request.purpose))];
+    let params = vec![Some(("token", token)), Some(("channel", request.channel)), Some(("purpose", request.purpose))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("groups.setPurpose", &params[..])
         .map_err(|err| SetPurposeError::Client(err))
@@ -2393,9 +2353,6 @@ pub fn set_purpose<R>(client: &R, request: &SetPurposeRequest) -> Result<SetPurp
 
 #[derive(Clone, Default, Debug)]
 pub struct SetPurposeRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: groups:write
-    pub token: &'a str,
     /// Private channel to set the purpose of
     pub channel: &'a str,
     /// The new purpose
@@ -2549,12 +2506,14 @@ impl<E: Error> Error for SetPurposeError<E> {
 ///
 /// Wraps https://api.slack.com/methods/groups.setTopic
 
-pub fn set_topic<R>(client: &R, request: &SetTopicRequest) -> Result<SetTopicResponse, SetTopicError<R::Error>>
+pub fn set_topic<R>(client: &R,
+                    token: &str,
+                    request: &SetTopicRequest)
+                    -> Result<SetTopicResponse, SetTopicError<R::Error>>
     where R: SlackWebRequestSender
 {
 
-    let params =
-        vec![Some(("token", request.token)), Some(("channel", request.channel)), Some(("topic", request.topic))];
+    let params = vec![Some(("token", token)), Some(("channel", request.channel)), Some(("topic", request.topic))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("groups.setTopic", &params[..])
         .map_err(|err| SetTopicError::Client(err))
@@ -2566,9 +2525,6 @@ pub fn set_topic<R>(client: &R, request: &SetTopicRequest) -> Result<SetTopicRes
 
 #[derive(Clone, Default, Debug)]
 pub struct SetTopicRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: groups:write
-    pub token: &'a str,
     /// Private channel to set the topic of
     pub channel: &'a str,
     /// The new topic
@@ -2720,11 +2676,14 @@ impl<E: Error> Error for SetTopicError<E> {
 ///
 /// Wraps https://api.slack.com/methods/groups.unarchive
 
-pub fn unarchive<R>(client: &R, request: &UnarchiveRequest) -> Result<UnarchiveResponse, UnarchiveError<R::Error>>
+pub fn unarchive<R>(client: &R,
+                    token: &str,
+                    request: &UnarchiveRequest)
+                    -> Result<UnarchiveResponse, UnarchiveError<R::Error>>
     where R: SlackWebRequestSender
 {
 
-    let params = vec![Some(("token", request.token)), Some(("channel", request.channel))];
+    let params = vec![Some(("token", token)), Some(("channel", request.channel))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("groups.unarchive", &params[..])
         .map_err(|err| UnarchiveError::Client(err))
@@ -2736,9 +2695,6 @@ pub fn unarchive<R>(client: &R, request: &UnarchiveRequest) -> Result<UnarchiveR
 
 #[derive(Clone, Default, Debug)]
 pub struct UnarchiveRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: groups:write
-    pub token: &'a str,
     /// Private channel to unarchive
     pub channel: &'a str,
 }

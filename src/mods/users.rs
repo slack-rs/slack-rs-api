@@ -15,27 +15,16 @@ use requests::SlackWebRequestSender;
 ///
 /// Wraps https://api.slack.com/methods/users.deletePhoto
 
-pub fn delete_photo<R>(client: &R,
-                       request: &DeletePhotoRequest)
-                       -> Result<DeletePhotoResponse, DeletePhotoError<R::Error>>
+pub fn delete_photo<R>(client: &R, token: &str) -> Result<DeletePhotoResponse, DeletePhotoError<R::Error>>
     where R: SlackWebRequestSender
 {
-
-    let params = vec![Some(("token", request.token))];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = &[("token", token)];
     client.send("users.deletePhoto", &params[..])
         .map_err(|err| DeletePhotoError::Client(err))
         .and_then(|result| {
             serde_json::from_str::<DeletePhotoResponse>(&result).map_err(|_| DeletePhotoError::MalformedResponse)
         })
         .and_then(|o| o.into())
-}
-
-#[derive(Clone, Default, Debug)]
-pub struct DeletePhotoRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: users.profile:write
-    pub token: &'a str,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -171,12 +160,13 @@ impl<E: Error> Error for DeletePhotoError<E> {
 /// Wraps https://api.slack.com/methods/users.getPresence
 
 pub fn get_presence<R>(client: &R,
+                       token: &str,
                        request: &GetPresenceRequest)
                        -> Result<GetPresenceResponse, GetPresenceError<R::Error>>
     where R: SlackWebRequestSender
 {
 
-    let params = vec![Some(("token", request.token)), Some(("user", request.user))];
+    let params = vec![Some(("token", token)), Some(("user", request.user))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("users.getPresence", &params[..])
         .map_err(|err| GetPresenceError::Client(err))
@@ -188,9 +178,6 @@ pub fn get_presence<R>(client: &R,
 
 #[derive(Clone, Default, Debug)]
 pub struct GetPresenceRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: users:read
-    pub token: &'a str,
     /// User to get presence info on. Defaults to the authed user.
     pub user: &'a str,
 }
@@ -324,25 +311,16 @@ impl<E: Error> Error for GetPresenceError<E> {
 ///
 /// Wraps https://api.slack.com/methods/users.identity
 
-pub fn identity<R>(client: &R, request: &IdentityRequest) -> Result<IdentityResponse, IdentityError<R::Error>>
+pub fn identity<R>(client: &R, token: &str) -> Result<IdentityResponse, IdentityError<R::Error>>
     where R: SlackWebRequestSender
 {
-
-    let params = vec![Some(("token", request.token))];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = &[("token", token)];
     client.send("users.identity", &params[..])
         .map_err(|err| IdentityError::Client(err))
         .and_then(|result| {
             serde_json::from_str::<IdentityResponse>(&result).map_err(|_| IdentityError::MalformedResponse)
         })
         .and_then(|o| o.into())
-}
-
-#[derive(Clone, Default, Debug)]
-pub struct IdentityRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: identity.basic
-    pub token: &'a str,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -477,11 +455,11 @@ impl<E: Error> Error for IdentityError<E> {
 ///
 /// Wraps https://api.slack.com/methods/users.info
 
-pub fn info<R>(client: &R, request: &InfoRequest) -> Result<InfoResponse, InfoError<R::Error>>
+pub fn info<R>(client: &R, token: &str, request: &InfoRequest) -> Result<InfoResponse, InfoError<R::Error>>
     where R: SlackWebRequestSender
 {
 
-    let params = vec![Some(("token", request.token)), Some(("user", request.user))];
+    let params = vec![Some(("token", token)), Some(("user", request.user))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("users.info", &params[..])
         .map_err(|err| InfoError::Client(err))
@@ -491,9 +469,6 @@ pub fn info<R>(client: &R, request: &InfoRequest) -> Result<InfoResponse, InfoEr
 
 #[derive(Clone, Default, Debug)]
 pub struct InfoRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: users:read
-    pub token: &'a str,
     /// User to get info on
     pub user: &'a str,
 }
@@ -633,11 +608,11 @@ impl<E: Error> Error for InfoError<E> {
 ///
 /// Wraps https://api.slack.com/methods/users.list
 
-pub fn list<R>(client: &R, request: &ListRequest) -> Result<ListResponse, ListError<R::Error>>
+pub fn list<R>(client: &R, token: &str, request: &ListRequest) -> Result<ListResponse, ListError<R::Error>>
     where R: SlackWebRequestSender
 {
 
-    let params = vec![Some(("token", request.token)),
+    let params = vec![Some(("token", token)),
                       request.presence.map(|presence| ("presence", if presence { "1" } else { "0" }))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("users.list", &params[..])
@@ -647,10 +622,7 @@ pub fn list<R>(client: &R, request: &ListRequest) -> Result<ListResponse, ListEr
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct ListRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: users:read
-    pub token: &'a str,
+pub struct ListRequest {
     /// Whether to include presence data in the output
     pub presence: Option<bool>,
 }
@@ -782,25 +754,16 @@ impl<E: Error> Error for ListError<E> {
 ///
 /// Wraps https://api.slack.com/methods/users.setActive
 
-pub fn set_active<R>(client: &R, request: &SetActiveRequest) -> Result<SetActiveResponse, SetActiveError<R::Error>>
+pub fn set_active<R>(client: &R, token: &str) -> Result<SetActiveResponse, SetActiveError<R::Error>>
     where R: SlackWebRequestSender
 {
-
-    let params = vec![Some(("token", request.token))];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = &[("token", token)];
     client.send("users.setActive", &params[..])
         .map_err(|err| SetActiveError::Client(err))
         .and_then(|result| {
             serde_json::from_str::<SetActiveResponse>(&result).map_err(|_| SetActiveError::MalformedResponse)
         })
         .and_then(|o| o.into())
-}
-
-#[derive(Clone, Default, Debug)]
-pub struct SetActiveRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: users:write
-    pub token: &'a str,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -929,13 +892,16 @@ impl<E: Error> Error for SetActiveError<E> {
 ///
 /// Wraps https://api.slack.com/methods/users.setPhoto
 
-pub fn set_photo<R>(client: &R, request: &SetPhotoRequest) -> Result<SetPhotoResponse, SetPhotoError<R::Error>>
+pub fn set_photo<R>(client: &R,
+                    token: &str,
+                    request: &SetPhotoRequest)
+                    -> Result<SetPhotoResponse, SetPhotoError<R::Error>>
     where R: SlackWebRequestSender
 {
     let crop_x = request.crop_x.map(|crop_x| crop_x.to_string());
     let crop_y = request.crop_y.map(|crop_y| crop_y.to_string());
     let crop_w = request.crop_w.map(|crop_w| crop_w.to_string());
-    let params = vec![Some(("token", request.token)),
+    let params = vec![Some(("token", token)),
                       Some(("image", request.image)),
                       crop_x.as_ref().map(|crop_x| ("crop_x", &crop_x[..])),
                       crop_y.as_ref().map(|crop_y| ("crop_y", &crop_y[..])),
@@ -951,9 +917,6 @@ pub fn set_photo<R>(client: &R, request: &SetPhotoRequest) -> Result<SetPhotoRes
 
 #[derive(Clone, Default, Debug)]
 pub struct SetPhotoRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: users.profile:write
-    pub token: &'a str,
     /// File contents via multipart/form-data.
     pub image: &'a str,
     /// X coordinate of top-left corner of crop box
@@ -1109,12 +1072,13 @@ impl<E: Error> Error for SetPhotoError<E> {
 /// Wraps https://api.slack.com/methods/users.setPresence
 
 pub fn set_presence<R>(client: &R,
+                       token: &str,
                        request: &SetPresenceRequest)
                        -> Result<SetPresenceResponse, SetPresenceError<R::Error>>
     where R: SlackWebRequestSender
 {
 
-    let params = vec![Some(("token", request.token)), Some(("presence", request.presence))];
+    let params = vec![Some(("token", token)), Some(("presence", request.presence))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("users.setPresence", &params[..])
         .map_err(|err| SetPresenceError::Client(err))
@@ -1126,9 +1090,6 @@ pub fn set_presence<R>(client: &R,
 
 #[derive(Clone, Default, Debug)]
 pub struct SetPresenceRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: users:write
-    pub token: &'a str,
     /// Either auto or away
     pub presence: &'a str,
 }

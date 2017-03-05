@@ -14,11 +14,11 @@ use requests::SlackWebRequestSender;
 ///
 /// Wraps https://api.slack.com/methods/rtm.start
 
-pub fn start<R>(client: &R, request: &StartRequest) -> Result<StartResponse, StartError<R::Error>>
+pub fn start<R>(client: &R, token: &str, request: &StartRequest) -> Result<StartResponse, StartError<R::Error>>
     where R: SlackWebRequestSender
 {
 
-    let params = vec![Some(("token", request.token)),
+    let params = vec![Some(("token", token)),
                       request.no_unreads.map(|no_unreads| ("no_unreads", no_unreads)),
                       request.mpim_aware.map(|mpim_aware| ("mpim_aware", mpim_aware))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
@@ -30,9 +30,6 @@ pub fn start<R>(client: &R, request: &StartRequest) -> Result<StartResponse, Sta
 
 #[derive(Clone, Default, Debug)]
 pub struct StartRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: client
-    pub token: &'a str,
     /// Skip unread counts for each channel (improves performance).
     pub no_unreads: Option<&'a str>,
     /// Returns MPIMs to the client in the API response.

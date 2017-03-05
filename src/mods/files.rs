@@ -15,11 +15,11 @@ use requests::SlackWebRequestSender;
 ///
 /// Wraps https://api.slack.com/methods/files.delete
 
-pub fn delete<R>(client: &R, request: &DeleteRequest) -> Result<DeleteResponse, DeleteError<R::Error>>
+pub fn delete<R>(client: &R, token: &str, request: &DeleteRequest) -> Result<DeleteResponse, DeleteError<R::Error>>
     where R: SlackWebRequestSender
 {
 
-    let params = vec![Some(("token", request.token)), Some(("file", request.file))];
+    let params = vec![Some(("token", token)), Some(("file", request.file))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("files.delete", &params[..])
         .map_err(|err| DeleteError::Client(err))
@@ -29,9 +29,6 @@ pub fn delete<R>(client: &R, request: &DeleteRequest) -> Result<DeleteResponse, 
 
 #[derive(Clone, Default, Debug)]
 pub struct DeleteRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: files:write:user
-    pub token: &'a str,
     /// ID of file to delete.
     pub file: &'a str,
 }
@@ -178,12 +175,12 @@ impl<E: Error> Error for DeleteError<E> {
 ///
 /// Wraps https://api.slack.com/methods/files.info
 
-pub fn info<R>(client: &R, request: &InfoRequest) -> Result<InfoResponse, InfoError<R::Error>>
+pub fn info<R>(client: &R, token: &str, request: &InfoRequest) -> Result<InfoResponse, InfoError<R::Error>>
     where R: SlackWebRequestSender
 {
     let count = request.count.map(|count| count.to_string());
     let page = request.page.map(|page| page.to_string());
-    let params = vec![Some(("token", request.token)),
+    let params = vec![Some(("token", token)),
                       Some(("file", request.file)),
                       count.as_ref().map(|count| ("count", &count[..])),
                       page.as_ref().map(|page| ("page", &page[..]))];
@@ -196,9 +193,6 @@ pub fn info<R>(client: &R, request: &InfoRequest) -> Result<InfoResponse, InfoEr
 
 #[derive(Clone, Default, Debug)]
 pub struct InfoRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: files:read
-    pub token: &'a str,
     /// Specify a file by providing its ID.
     pub file: &'a str,
     /// Number of items to return per page.
@@ -344,14 +338,14 @@ impl<E: Error> Error for InfoError<E> {
 ///
 /// Wraps https://api.slack.com/methods/files.list
 
-pub fn list<R>(client: &R, request: &ListRequest) -> Result<ListResponse, ListError<R::Error>>
+pub fn list<R>(client: &R, token: &str, request: &ListRequest) -> Result<ListResponse, ListError<R::Error>>
     where R: SlackWebRequestSender
 {
     let ts_from = request.ts_from.map(|ts_from| ts_from.to_string());
     let ts_to = request.ts_to.map(|ts_to| ts_to.to_string());
     let count = request.count.map(|count| count.to_string());
     let page = request.page.map(|page| page.to_string());
-    let params = vec![Some(("token", request.token)),
+    let params = vec![Some(("token", token)),
                       request.user.map(|user| ("user", user)),
                       request.channel.map(|channel| ("channel", channel)),
                       ts_from.as_ref().map(|ts_from| ("ts_from", &ts_from[..])),
@@ -368,9 +362,6 @@ pub fn list<R>(client: &R, request: &ListRequest) -> Result<ListResponse, ListEr
 
 #[derive(Clone, Default, Debug)]
 pub struct ListRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: files:read
-    pub token: &'a str,
     /// Filter files created by a single user.
     pub user: Option<&'a str>,
     /// Filter files appearing in a specific channel, indicated by its ID.
@@ -540,12 +531,13 @@ impl<E: Error> Error for ListError<E> {
 /// Wraps https://api.slack.com/methods/files.revokePublicURL
 
 pub fn revoke_public_url<R>(client: &R,
+                            token: &str,
                             request: &RevokePublicURLRequest)
                             -> Result<RevokePublicURLResponse, RevokePublicURLError<R::Error>>
     where R: SlackWebRequestSender
 {
 
-    let params = vec![Some(("token", request.token)), Some(("file", request.file))];
+    let params = vec![Some(("token", token)), Some(("file", request.file))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("files.revokePublicURL", &params[..])
         .map_err(|err| RevokePublicURLError::Client(err))
@@ -558,9 +550,6 @@ pub fn revoke_public_url<R>(client: &R,
 
 #[derive(Clone, Default, Debug)]
 pub struct RevokePublicURLRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: files:write:user
-    pub token: &'a str,
     /// File to revoke
     pub file: &'a str,
 }
@@ -709,12 +698,13 @@ impl<E: Error> Error for RevokePublicURLError<E> {
 /// Wraps https://api.slack.com/methods/files.sharedPublicURL
 
 pub fn shared_public_url<R>(client: &R,
+                            token: &str,
                             request: &SharedPublicURLRequest)
                             -> Result<SharedPublicURLResponse, SharedPublicURLError<R::Error>>
     where R: SlackWebRequestSender
 {
 
-    let params = vec![Some(("token", request.token)), Some(("file", request.file))];
+    let params = vec![Some(("token", token)), Some(("file", request.file))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("files.sharedPublicURL", &params[..])
         .map_err(|err| SharedPublicURLError::Client(err))
@@ -727,9 +717,6 @@ pub fn shared_public_url<R>(client: &R,
 
 #[derive(Clone, Default, Debug)]
 pub struct SharedPublicURLRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: files:write:user
-    pub token: &'a str,
     /// File to share
     pub file: &'a str,
 }

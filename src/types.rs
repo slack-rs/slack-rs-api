@@ -36,7 +36,7 @@ pub struct Channel {
 }
 
 #[derive(Clone, Debug, Deserialize)]
-pub struct ChannelTopic {
+pub struct ChannelPurpose {
     pub creator: Option<String>,
     pub last_set: Option<i32>,
     pub value: Option<String>,
@@ -44,7 +44,7 @@ pub struct ChannelTopic {
 
 
 #[derive(Clone, Debug, Deserialize)]
-pub struct ChannelPurpose {
+pub struct ChannelTopic {
     pub creator: Option<String>,
     pub last_set: Option<i32>,
     pub value: Option<String>,

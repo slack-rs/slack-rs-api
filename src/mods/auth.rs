@@ -14,12 +14,11 @@ use requests::SlackWebRequestSender;
 ///
 /// Wraps https://api.slack.com/methods/auth.revoke
 
-pub fn revoke<R>(client: &R, request: &RevokeRequest) -> Result<RevokeResponse, RevokeError<R::Error>>
+pub fn revoke<R>(client: &R, token: &str, request: &RevokeRequest) -> Result<RevokeResponse, RevokeError<R::Error>>
     where R: SlackWebRequestSender
 {
 
-    let params = vec![request.token.map(|token| ("token", token)),
-                      request.test.map(|test| ("test", if test { "1" } else { "0" }))];
+    let params = vec![Some(("token", token)), request.test.map(|test| ("test", if test { "1" } else { "0" }))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("auth.revoke", &params[..])
         .map_err(|err| RevokeError::Client(err))
@@ -28,9 +27,7 @@ pub fn revoke<R>(client: &R, request: &RevokeRequest) -> Result<RevokeResponse, 
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct RevokeRequest<'a> {
-    /// Authentication token.
-    pub token: Option<&'a str>,
+pub struct RevokeRequest {
     /// Setting this parameter to 1 triggers a testing mode where the specified token will not actually be revoked.
     pub test: Option<bool>,
 }
@@ -162,23 +159,14 @@ impl<E: Error> Error for RevokeError<E> {
 ///
 /// Wraps https://api.slack.com/methods/auth.test
 
-pub fn test<R>(client: &R, request: &TestRequest) -> Result<TestResponse, TestError<R::Error>>
+pub fn test<R>(client: &R, token: &str) -> Result<TestResponse, TestError<R::Error>>
     where R: SlackWebRequestSender
 {
-
-    let params = vec![Some(("token", request.token))];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = &[("token", token)];
     client.send("auth.test", &params[..])
         .map_err(|err| TestError::Client(err))
         .and_then(|result| serde_json::from_str::<TestResponse>(&result).map_err(|_| TestError::MalformedResponse))
         .and_then(|o| o.into())
-}
-
-#[derive(Clone, Default, Debug)]
-pub struct TestRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: identify
-    pub token: &'a str,
 }
 
 #[derive(Clone, Debug, Deserialize)]

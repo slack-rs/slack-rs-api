@@ -15,11 +15,11 @@ use requests::SlackWebRequestSender;
 ///
 /// Wraps https://api.slack.com/methods/mpim.close
 
-pub fn close<R>(client: &R, request: &CloseRequest) -> Result<CloseResponse, CloseError<R::Error>>
+pub fn close<R>(client: &R, token: &str, request: &CloseRequest) -> Result<CloseResponse, CloseError<R::Error>>
     where R: SlackWebRequestSender
 {
 
-    let params = vec![Some(("token", request.token)), Some(("channel", request.channel))];
+    let params = vec![Some(("token", token)), Some(("channel", request.channel))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("mpim.close", &params[..])
         .map_err(|err| CloseError::Client(err))
@@ -29,9 +29,6 @@ pub fn close<R>(client: &R, request: &CloseRequest) -> Result<CloseResponse, Clo
 
 #[derive(Clone, Default, Debug)]
 pub struct CloseRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: mpim:write
-    pub token: &'a str,
     /// MPIM to close.
     pub channel: &'a str,
 }
@@ -166,11 +163,11 @@ impl<E: Error> Error for CloseError<E> {
 ///
 /// Wraps https://api.slack.com/methods/mpim.history
 
-pub fn history<R>(client: &R, request: &HistoryRequest) -> Result<HistoryResponse, HistoryError<R::Error>>
+pub fn history<R>(client: &R, token: &str, request: &HistoryRequest) -> Result<HistoryResponse, HistoryError<R::Error>>
     where R: SlackWebRequestSender
 {
     let count = request.count.map(|count| count.to_string());
-    let params = vec![Some(("token", request.token)),
+    let params = vec![Some(("token", token)),
                       Some(("channel", request.channel)),
                       request.latest.map(|latest| ("latest", latest)),
                       request.oldest.map(|oldest| ("oldest", oldest)),
@@ -188,9 +185,6 @@ pub fn history<R>(client: &R, request: &HistoryRequest) -> Result<HistoryRespons
 
 #[derive(Clone, Default, Debug)]
 pub struct HistoryRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: mpim:history
-    pub token: &'a str,
     /// Multiparty direct message to fetch history for.
     pub channel: &'a str,
     /// End of time range of messages to include in results.
@@ -346,23 +340,14 @@ impl<E: Error> Error for HistoryError<E> {
 ///
 /// Wraps https://api.slack.com/methods/mpim.list
 
-pub fn list<R>(client: &R, request: &ListRequest) -> Result<ListResponse, ListError<R::Error>>
+pub fn list<R>(client: &R, token: &str) -> Result<ListResponse, ListError<R::Error>>
     where R: SlackWebRequestSender
 {
-
-    let params = vec![Some(("token", request.token))];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = &[("token", token)];
     client.send("mpim.list", &params[..])
         .map_err(|err| ListError::Client(err))
         .and_then(|result| serde_json::from_str::<ListResponse>(&result).map_err(|_| ListError::MalformedResponse))
         .and_then(|o| o.into())
-}
-
-#[derive(Clone, Default, Debug)]
-pub struct ListRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: mpim:read
-    pub token: &'a str,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -492,11 +477,11 @@ impl<E: Error> Error for ListError<E> {
 ///
 /// Wraps https://api.slack.com/methods/mpim.mark
 
-pub fn mark<R>(client: &R, request: &MarkRequest) -> Result<MarkResponse, MarkError<R::Error>>
+pub fn mark<R>(client: &R, token: &str, request: &MarkRequest) -> Result<MarkResponse, MarkError<R::Error>>
     where R: SlackWebRequestSender
 {
 
-    let params = vec![Some(("token", request.token)), Some(("channel", request.channel)), Some(("ts", request.ts))];
+    let params = vec![Some(("token", token)), Some(("channel", request.channel)), Some(("ts", request.ts))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("mpim.mark", &params[..])
         .map_err(|err| MarkError::Client(err))
@@ -506,9 +491,6 @@ pub fn mark<R>(client: &R, request: &MarkRequest) -> Result<MarkResponse, MarkEr
 
 #[derive(Clone, Default, Debug)]
 pub struct MarkRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: mpim:write
-    pub token: &'a str,
     /// multiparty direct message channel to set reading cursor in.
     pub channel: &'a str,
     /// Timestamp of the most recently seen message.
@@ -649,11 +631,11 @@ impl<E: Error> Error for MarkError<E> {
 ///
 /// Wraps https://api.slack.com/methods/mpim.open
 
-pub fn open<R>(client: &R, request: &OpenRequest) -> Result<OpenResponse, OpenError<R::Error>>
+pub fn open<R>(client: &R, token: &str, request: &OpenRequest) -> Result<OpenResponse, OpenError<R::Error>>
     where R: SlackWebRequestSender
 {
 
-    let params = vec![Some(("token", request.token)), Some(("users", request.users))];
+    let params = vec![Some(("token", token)), Some(("users", request.users))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("mpim.open", &params[..])
         .map_err(|err| OpenError::Client(err))
@@ -663,9 +645,6 @@ pub fn open<R>(client: &R, request: &OpenRequest) -> Result<OpenResponse, OpenEr
 
 #[derive(Clone, Default, Debug)]
 pub struct OpenRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: mpim:write
-    pub token: &'a str,
     /// Comma separated lists of users.  The ordering of the users is preserved whenever a MPIM group is returned.
     pub users: &'a str,
 }
@@ -809,13 +788,12 @@ impl<E: Error> Error for OpenError<E> {
 ///
 /// Wraps https://api.slack.com/methods/mpim.replies
 
-pub fn replies<R>(client: &R, request: &RepliesRequest) -> Result<RepliesResponse, RepliesError<R::Error>>
+pub fn replies<R>(client: &R, token: &str, request: &RepliesRequest) -> Result<RepliesResponse, RepliesError<R::Error>>
     where R: SlackWebRequestSender
 {
 
-    let params = vec![Some(("token", request.token)),
-                      Some(("channel", request.channel)),
-                      Some(("thread_ts", request.thread_ts))];
+    let params =
+        vec![Some(("token", token)), Some(("channel", request.channel)), Some(("thread_ts", request.thread_ts))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("mpim.replies", &params[..])
                 .map_err(|err| RepliesError::Client(err))
@@ -827,9 +805,6 @@ pub fn replies<R>(client: &R, request: &RepliesRequest) -> Result<RepliesRespons
 
 #[derive(Clone, Default, Debug)]
 pub struct RepliesRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: mpim:history
-    pub token: &'a str,
     /// Multiparty direct message channel to fetch thread from.
     pub channel: &'a str,
     /// Unique identifier of a thread's parent message.

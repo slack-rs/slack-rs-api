@@ -14,11 +14,11 @@ use requests::SlackWebRequestSender;
 ///
 /// Wraps https://api.slack.com/methods/team.profile.get
 
-pub fn get<R>(client: &R, request: &GetRequest) -> Result<GetResponse, GetError<R::Error>>
+pub fn get<R>(client: &R, token: &str, request: &GetRequest) -> Result<GetResponse, GetError<R::Error>>
     where R: SlackWebRequestSender
 {
 
-    let params = vec![Some(("token", request.token)), request.visibility.map(|visibility| ("visibility", visibility))];
+    let params = vec![Some(("token", token)), request.visibility.map(|visibility| ("visibility", visibility))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("team.profile.get", &params[..])
         .map_err(|err| GetError::Client(err))
@@ -28,9 +28,6 @@ pub fn get<R>(client: &R, request: &GetRequest) -> Result<GetResponse, GetError<
 
 #[derive(Clone, Default, Debug)]
 pub struct GetRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: users.profile:read
-    pub token: &'a str,
     /// Filter by visibility.
     pub visibility: Option<&'a str>,
 }

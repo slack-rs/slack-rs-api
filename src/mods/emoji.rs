@@ -14,23 +14,14 @@ use requests::SlackWebRequestSender;
 ///
 /// Wraps https://api.slack.com/methods/emoji.list
 
-pub fn list<R>(client: &R, request: &ListRequest) -> Result<ListResponse, ListError<R::Error>>
+pub fn list<R>(client: &R, token: &str) -> Result<ListResponse, ListError<R::Error>>
     where R: SlackWebRequestSender
 {
-
-    let params = vec![Some(("token", request.token))];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = &[("token", token)];
     client.send("emoji.list", &params[..])
         .map_err(|err| ListError::Client(err))
         .and_then(|result| serde_json::from_str::<ListResponse>(&result).map_err(|_| ListError::MalformedResponse))
         .and_then(|o| o.into())
-}
-
-#[derive(Clone, Default, Debug)]
-pub struct ListRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: emoji:read
-    pub token: &'a str,
 }
 
 #[derive(Clone, Debug, Deserialize)]

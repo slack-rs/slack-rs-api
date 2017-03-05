@@ -14,11 +14,11 @@ use requests::SlackWebRequestSender;
 ///
 /// Wraps https://api.slack.com/methods/bots.info
 
-pub fn info<R>(client: &R, request: &InfoRequest) -> Result<InfoResponse, InfoError<R::Error>>
+pub fn info<R>(client: &R, token: &str, request: &InfoRequest) -> Result<InfoResponse, InfoError<R::Error>>
     where R: SlackWebRequestSender
 {
 
-    let params = vec![Some(("token", request.token)), request.bot.map(|bot| ("bot", bot))];
+    let params = vec![Some(("token", token)), request.bot.map(|bot| ("bot", bot))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("bots.info", &params[..])
         .map_err(|err| InfoError::Client(err))
@@ -28,9 +28,6 @@ pub fn info<R>(client: &R, request: &InfoRequest) -> Result<InfoResponse, InfoEr
 
 #[derive(Clone, Default, Debug)]
 pub struct InfoRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: users:read
-    pub token: &'a str,
     /// Bot user to get info on
     pub bot: Option<&'a str>,
 }

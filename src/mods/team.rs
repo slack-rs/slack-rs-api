@@ -14,13 +14,16 @@ use requests::SlackWebRequestSender;
 ///
 /// Wraps https://api.slack.com/methods/team.accessLogs
 
-pub fn access_logs<R>(client: &R, request: &AccessLogsRequest) -> Result<AccessLogsResponse, AccessLogsError<R::Error>>
+pub fn access_logs<R>(client: &R,
+                      token: &str,
+                      request: &AccessLogsRequest)
+                      -> Result<AccessLogsResponse, AccessLogsError<R::Error>>
     where R: SlackWebRequestSender
 {
     let count = request.count.map(|count| count.to_string());
     let page = request.page.map(|page| page.to_string());
     let before = request.before.map(|before| before.to_string());
-    let params = vec![Some(("token", request.token)),
+    let params = vec![Some(("token", token)),
                       count.as_ref().map(|count| ("count", &count[..])),
                       page.as_ref().map(|page| ("page", &page[..])),
                       before.as_ref().map(|before| ("before", &before[..]))];
@@ -34,10 +37,7 @@ pub fn access_logs<R>(client: &R, request: &AccessLogsRequest) -> Result<AccessL
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct AccessLogsRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: admin
-    pub token: &'a str,
+pub struct AccessLogsRequest {
     /// Number of items to return per page.
     pub count: Option<u32>,
     /// Page number of results to return.
@@ -206,12 +206,13 @@ impl<E: Error> Error for AccessLogsError<E> {
 /// Wraps https://api.slack.com/methods/team.billableInfo
 
 pub fn billable_info<R>(client: &R,
+                        token: &str,
                         request: &BillableInfoRequest)
                         -> Result<BillableInfoResponse, BillableInfoError<R::Error>>
     where R: SlackWebRequestSender
 {
 
-    let params = vec![Some(("token", request.token)), request.user.map(|user| ("user", user))];
+    let params = vec![Some(("token", token)), request.user.map(|user| ("user", user))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("team.billableInfo", &params[..])
         .map_err(|err| BillableInfoError::Client(err))
@@ -223,9 +224,6 @@ pub fn billable_info<R>(client: &R,
 
 #[derive(Clone, Default, Debug)]
 pub struct BillableInfoRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: admin
-    pub token: &'a str,
     /// A user to retrieve the billable information for. Defaults to all users.
     pub user: Option<&'a str>,
 }
@@ -367,23 +365,14 @@ impl<E: Error> Error for BillableInfoError<E> {
 ///
 /// Wraps https://api.slack.com/methods/team.info
 
-pub fn info<R>(client: &R, request: &InfoRequest) -> Result<InfoResponse, InfoError<R::Error>>
+pub fn info<R>(client: &R, token: &str) -> Result<InfoResponse, InfoError<R::Error>>
     where R: SlackWebRequestSender
 {
-
-    let params = vec![Some(("token", request.token))];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = &[("token", token)];
     client.send("team.info", &params[..])
         .map_err(|err| InfoError::Client(err))
         .and_then(|result| serde_json::from_str::<InfoResponse>(&result).map_err(|_| InfoError::MalformedResponse))
         .and_then(|o| o.into())
-}
-
-#[derive(Clone, Default, Debug)]
-pub struct InfoRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: team:read
-    pub token: &'a str,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -514,13 +503,14 @@ impl<E: Error> Error for InfoError<E> {
 /// Wraps https://api.slack.com/methods/team.integrationLogs
 
 pub fn integration_logs<R>(client: &R,
+                           token: &str,
                            request: &IntegrationLogsRequest)
                            -> Result<IntegrationLogsResponse, IntegrationLogsError<R::Error>>
     where R: SlackWebRequestSender
 {
     let count = request.count.map(|count| count.to_string());
     let page = request.page.map(|page| page.to_string());
-    let params = vec![Some(("token", request.token)),
+    let params = vec![Some(("token", token)),
                       request.service_id.map(|service_id| ("service_id", service_id)),
                       request.app_id.map(|app_id| ("app_id", app_id)),
                       request.user.map(|user| ("user", user)),
@@ -539,9 +529,6 @@ pub fn integration_logs<R>(client: &R,
 
 #[derive(Clone, Default, Debug)]
 pub struct IntegrationLogsRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: admin
-    pub token: &'a str,
     /// Filter logs to this service. Defaults to all logs.
     pub service_id: Option<&'a str>,
     /// Filter logs to this Slack app. Defaults to all logs.

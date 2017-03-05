@@ -14,11 +14,11 @@ use requests::SlackWebRequestSender;
 ///
 /// Wraps https://api.slack.com/methods/users.profile.get
 
-pub fn get<R>(client: &R, request: &GetRequest) -> Result<GetResponse, GetError<R::Error>>
+pub fn get<R>(client: &R, token: &str, request: &GetRequest) -> Result<GetResponse, GetError<R::Error>>
     where R: SlackWebRequestSender
 {
 
-    let params = vec![Some(("token", request.token)),
+    let params = vec![Some(("token", token)),
                       request.user.map(|user| ("user", user)),
                       request.include_labels
                           .map(|include_labels| ("include_labels", if include_labels { "1" } else { "0" }))];
@@ -31,9 +31,6 @@ pub fn get<R>(client: &R, request: &GetRequest) -> Result<GetResponse, GetError<
 
 #[derive(Clone, Default, Debug)]
 pub struct GetRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: users.profile:read
-    pub token: &'a str,
     /// User to retrieve profile info for
     pub user: Option<&'a str>,
     /// Include labels for each ID in custom profile fields
@@ -175,11 +172,11 @@ impl<E: Error> Error for GetError<E> {
 ///
 /// Wraps https://api.slack.com/methods/users.profile.set
 
-pub fn set<R>(client: &R, request: &SetRequest) -> Result<SetResponse, SetError<R::Error>>
+pub fn set<R>(client: &R, token: &str, request: &SetRequest) -> Result<SetResponse, SetError<R::Error>>
     where R: SlackWebRequestSender
 {
 
-    let params = vec![Some(("token", request.token)),
+    let params = vec![Some(("token", token)),
                       request.user.map(|user| ("user", user)),
                       request.profile.map(|profile| ("profile", profile)),
                       request.name.map(|name| ("name", name)),
@@ -193,9 +190,6 @@ pub fn set<R>(client: &R, request: &SetRequest) -> Result<SetResponse, SetError<
 
 #[derive(Clone, Default, Debug)]
 pub struct SetRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: users.profile:write
-    pub token: &'a str,
     /// ID of user to change. This argument may only be specified by team admins on paid teams.
     pub user: Option<&'a str>,
     /// Collection of key:value pairs presented as a URL-encoded JSON hash.

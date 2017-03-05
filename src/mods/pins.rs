@@ -14,11 +14,11 @@ use requests::SlackWebRequestSender;
 ///
 /// Wraps https://api.slack.com/methods/pins.add
 
-pub fn add<R>(client: &R, request: &AddRequest) -> Result<AddResponse, AddError<R::Error>>
+pub fn add<R>(client: &R, token: &str, request: &AddRequest) -> Result<AddResponse, AddError<R::Error>>
     where R: SlackWebRequestSender
 {
 
-    let params = vec![Some(("token", request.token)),
+    let params = vec![Some(("token", token)),
                       Some(("channel", request.channel)),
                       request.file.map(|file| ("file", file)),
                       request.file_comment.map(|file_comment| ("file_comment", file_comment)),
@@ -32,9 +32,6 @@ pub fn add<R>(client: &R, request: &AddRequest) -> Result<AddResponse, AddError<
 
 #[derive(Clone, Default, Debug)]
 pub struct AddRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: pins:write
-    pub token: &'a str,
     /// Channel to pin the item in.
     pub channel: &'a str,
     /// File to pin.
@@ -217,11 +214,11 @@ impl<E: Error> Error for AddError<E> {
 ///
 /// Wraps https://api.slack.com/methods/pins.list
 
-pub fn list<R>(client: &R, request: &ListRequest) -> Result<ListResponse, ListError<R::Error>>
+pub fn list<R>(client: &R, token: &str, request: &ListRequest) -> Result<ListResponse, ListError<R::Error>>
     where R: SlackWebRequestSender
 {
 
-    let params = vec![Some(("token", request.token)), Some(("channel", request.channel))];
+    let params = vec![Some(("token", token)), Some(("channel", request.channel))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("pins.list", &params[..])
         .map_err(|err| ListError::Client(err))
@@ -231,9 +228,6 @@ pub fn list<R>(client: &R, request: &ListRequest) -> Result<ListResponse, ListEr
 
 #[derive(Clone, Default, Debug)]
 pub struct ListRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: pins:read
-    pub token: &'a str,
     /// Channel to get pinned items for.
     pub channel: &'a str,
 }
@@ -446,11 +440,11 @@ impl<E: Error> Error for ListError<E> {
 ///
 /// Wraps https://api.slack.com/methods/pins.remove
 
-pub fn remove<R>(client: &R, request: &RemoveRequest) -> Result<RemoveResponse, RemoveError<R::Error>>
+pub fn remove<R>(client: &R, token: &str, request: &RemoveRequest) -> Result<RemoveResponse, RemoveError<R::Error>>
     where R: SlackWebRequestSender
 {
 
-    let params = vec![Some(("token", request.token)),
+    let params = vec![Some(("token", token)),
                       Some(("channel", request.channel)),
                       request.file.map(|file| ("file", file)),
                       request.file_comment.map(|file_comment| ("file_comment", file_comment)),
@@ -464,9 +458,6 @@ pub fn remove<R>(client: &R, request: &RemoveRequest) -> Result<RemoveResponse, 
 
 #[derive(Clone, Default, Debug)]
 pub struct RemoveRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: pins:write
-    pub token: &'a str,
     /// Channel where the item is pinned to.
     pub channel: &'a str,
     /// File to un-pin.

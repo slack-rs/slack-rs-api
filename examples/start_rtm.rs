@@ -9,8 +9,8 @@ fn main() {
     let client = reqwest::Client::new().unwrap();
 
     {
-        let request = slack::rtm::StartRequest { token: &token, ..Default::default() };
-        let response = slack::rtm::start(&client, &request);
+        let request = slack::rtm::StartRequest::default();
+        let response = slack::rtm::start(&client, &token, &request);
 
         if let Ok(response) = response {
             if let Some(channels) = response.channels {

@@ -15,11 +15,11 @@ use requests::SlackWebRequestSender;
 ///
 /// Wraps https://api.slack.com/methods/im.close
 
-pub fn close<R>(client: &R, request: &CloseRequest) -> Result<CloseResponse, CloseError<R::Error>>
+pub fn close<R>(client: &R, token: &str, request: &CloseRequest) -> Result<CloseResponse, CloseError<R::Error>>
     where R: SlackWebRequestSender
 {
 
-    let params = vec![Some(("token", request.token)), Some(("channel", request.channel))];
+    let params = vec![Some(("token", token)), Some(("channel", request.channel))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("im.close", &params[..])
         .map_err(|err| CloseError::Client(err))
@@ -29,9 +29,6 @@ pub fn close<R>(client: &R, request: &CloseRequest) -> Result<CloseResponse, Clo
 
 #[derive(Clone, Default, Debug)]
 pub struct CloseRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: im:write
-    pub token: &'a str,
     /// Direct message channel to close.
     pub channel: &'a str,
 }
@@ -172,11 +169,11 @@ impl<E: Error> Error for CloseError<E> {
 ///
 /// Wraps https://api.slack.com/methods/im.history
 
-pub fn history<R>(client: &R, request: &HistoryRequest) -> Result<HistoryResponse, HistoryError<R::Error>>
+pub fn history<R>(client: &R, token: &str, request: &HistoryRequest) -> Result<HistoryResponse, HistoryError<R::Error>>
     where R: SlackWebRequestSender
 {
     let count = request.count.map(|count| count.to_string());
-    let params = vec![Some(("token", request.token)),
+    let params = vec![Some(("token", token)),
                       Some(("channel", request.channel)),
                       request.latest.map(|latest| ("latest", latest)),
                       request.oldest.map(|oldest| ("oldest", oldest)),
@@ -194,9 +191,6 @@ pub fn history<R>(client: &R, request: &HistoryRequest) -> Result<HistoryRespons
 
 #[derive(Clone, Default, Debug)]
 pub struct HistoryRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: im:history
-    pub token: &'a str,
     /// Direct message channel to fetch history for.
     pub channel: &'a str,
     /// End of time range of messages to include in results.
@@ -352,23 +346,14 @@ impl<E: Error> Error for HistoryError<E> {
 ///
 /// Wraps https://api.slack.com/methods/im.list
 
-pub fn list<R>(client: &R, request: &ListRequest) -> Result<ListResponse, ListError<R::Error>>
+pub fn list<R>(client: &R, token: &str) -> Result<ListResponse, ListError<R::Error>>
     where R: SlackWebRequestSender
 {
-
-    let params = vec![Some(("token", request.token))];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = &[("token", token)];
     client.send("im.list", &params[..])
         .map_err(|err| ListError::Client(err))
         .and_then(|result| serde_json::from_str::<ListResponse>(&result).map_err(|_| ListError::MalformedResponse))
         .and_then(|o| o.into())
-}
-
-#[derive(Clone, Default, Debug)]
-pub struct ListRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: im:read
-    pub token: &'a str,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -498,11 +483,11 @@ impl<E: Error> Error for ListError<E> {
 ///
 /// Wraps https://api.slack.com/methods/im.mark
 
-pub fn mark<R>(client: &R, request: &MarkRequest) -> Result<MarkResponse, MarkError<R::Error>>
+pub fn mark<R>(client: &R, token: &str, request: &MarkRequest) -> Result<MarkResponse, MarkError<R::Error>>
     where R: SlackWebRequestSender
 {
 
-    let params = vec![Some(("token", request.token)), Some(("channel", request.channel)), Some(("ts", request.ts))];
+    let params = vec![Some(("token", token)), Some(("channel", request.channel)), Some(("ts", request.ts))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("im.mark", &params[..])
         .map_err(|err| MarkError::Client(err))
@@ -512,9 +497,6 @@ pub fn mark<R>(client: &R, request: &MarkRequest) -> Result<MarkResponse, MarkEr
 
 #[derive(Clone, Default, Debug)]
 pub struct MarkRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: im:write
-    pub token: &'a str,
     /// Direct message channel to set reading cursor in.
     pub channel: &'a str,
     /// Timestamp of the most recently seen message.
@@ -659,11 +641,11 @@ impl<E: Error> Error for MarkError<E> {
 ///
 /// Wraps https://api.slack.com/methods/im.open
 
-pub fn open<R>(client: &R, request: &OpenRequest) -> Result<OpenResponse, OpenError<R::Error>>
+pub fn open<R>(client: &R, token: &str, request: &OpenRequest) -> Result<OpenResponse, OpenError<R::Error>>
     where R: SlackWebRequestSender
 {
 
-    let params = vec![Some(("token", request.token)),
+    let params = vec![Some(("token", token)),
                       Some(("user", request.user)),
                       request.return_im.map(|return_im| ("return_im", return_im))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
@@ -675,9 +657,6 @@ pub fn open<R>(client: &R, request: &OpenRequest) -> Result<OpenResponse, OpenEr
 
 #[derive(Clone, Default, Debug)]
 pub struct OpenRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: im:write
-    pub token: &'a str,
     /// User to open a direct message channel with.
     pub user: &'a str,
     /// Boolean, indicates you want the full IM channel definition in the response.
@@ -825,13 +804,12 @@ impl<E: Error> Error for OpenError<E> {
 ///
 /// Wraps https://api.slack.com/methods/im.replies
 
-pub fn replies<R>(client: &R, request: &RepliesRequest) -> Result<RepliesResponse, RepliesError<R::Error>>
+pub fn replies<R>(client: &R, token: &str, request: &RepliesRequest) -> Result<RepliesResponse, RepliesError<R::Error>>
     where R: SlackWebRequestSender
 {
 
-    let params = vec![Some(("token", request.token)),
-                      Some(("channel", request.channel)),
-                      Some(("thread_ts", request.thread_ts))];
+    let params =
+        vec![Some(("token", token)), Some(("channel", request.channel)), Some(("thread_ts", request.thread_ts))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("im.replies", &params[..])
                 .map_err(|err| RepliesError::Client(err))
@@ -843,9 +821,6 @@ pub fn replies<R>(client: &R, request: &RepliesRequest) -> Result<RepliesRespons
 
 #[derive(Clone, Default, Debug)]
 pub struct RepliesRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: im:history
-    pub token: &'a str,
     /// Direct message channel to fetch thread from
     pub channel: &'a str,
     /// Unique identifier of a thread's parent message

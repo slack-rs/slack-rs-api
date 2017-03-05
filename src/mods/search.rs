@@ -15,12 +15,12 @@ use requests::SlackWebRequestSender;
 ///
 /// Wraps https://api.slack.com/methods/search.all
 
-pub fn all<R>(client: &R, request: &AllRequest) -> Result<AllResponse, AllError<R::Error>>
+pub fn all<R>(client: &R, token: &str, request: &AllRequest) -> Result<AllResponse, AllError<R::Error>>
     where R: SlackWebRequestSender
 {
     let count = request.count.map(|count| count.to_string());
     let page = request.page.map(|page| page.to_string());
-    let params = vec![Some(("token", request.token)),
+    let params = vec![Some(("token", token)),
                       Some(("query", request.query)),
                       request.sort.map(|sort| ("sort", sort)),
                       request.sort_dir.map(|sort_dir| ("sort_dir", sort_dir)),
@@ -36,9 +36,6 @@ pub fn all<R>(client: &R, request: &AllRequest) -> Result<AllResponse, AllError<
 
 #[derive(Clone, Default, Debug)]
 pub struct AllRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: search:read
-    pub token: &'a str,
     /// Search query. May contains booleans, etc.
     pub query: &'a str,
     /// Return matches sorted by either score or timestamp.
@@ -64,15 +61,15 @@ pub struct AllResponse {
 }
 
 #[derive(Clone, Debug, Deserialize)]
-pub struct AllResponseMessages {
-    pub matches: Vec<::Message>,
+pub struct AllResponseFiles {
+    pub matches: Vec<::File>,
     pub paging: ::Paging,
 }
 
 
 #[derive(Clone, Debug, Deserialize)]
-pub struct AllResponseFiles {
-    pub matches: Vec<::File>,
+pub struct AllResponseMessages {
+    pub matches: Vec<::Message>,
     pub paging: ::Paging,
 }
 
@@ -199,12 +196,12 @@ impl<E: Error> Error for AllError<E> {
 ///
 /// Wraps https://api.slack.com/methods/search.files
 
-pub fn files<R>(client: &R, request: &FilesRequest) -> Result<FilesResponse, FilesError<R::Error>>
+pub fn files<R>(client: &R, token: &str, request: &FilesRequest) -> Result<FilesResponse, FilesError<R::Error>>
     where R: SlackWebRequestSender
 {
     let count = request.count.map(|count| count.to_string());
     let page = request.page.map(|page| page.to_string());
-    let params = vec![Some(("token", request.token)),
+    let params = vec![Some(("token", token)),
                       Some(("query", request.query)),
                       request.sort.map(|sort| ("sort", sort)),
                       request.sort_dir.map(|sort_dir| ("sort_dir", sort_dir)),
@@ -220,9 +217,6 @@ pub fn files<R>(client: &R, request: &FilesRequest) -> Result<FilesResponse, Fil
 
 #[derive(Clone, Default, Debug)]
 pub struct FilesRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: search:read
-    pub token: &'a str,
     /// Search query. May contain booleans, etc.
     pub query: &'a str,
     /// Return matches sorted by either score or timestamp.
@@ -376,12 +370,15 @@ impl<E: Error> Error for FilesError<E> {
 ///
 /// Wraps https://api.slack.com/methods/search.messages
 
-pub fn messages<R>(client: &R, request: &MessagesRequest) -> Result<MessagesResponse, MessagesError<R::Error>>
+pub fn messages<R>(client: &R,
+                   token: &str,
+                   request: &MessagesRequest)
+                   -> Result<MessagesResponse, MessagesError<R::Error>>
     where R: SlackWebRequestSender
 {
     let count = request.count.map(|count| count.to_string());
     let page = request.page.map(|page| page.to_string());
-    let params = vec![Some(("token", request.token)),
+    let params = vec![Some(("token", token)),
                       Some(("query", request.query)),
                       request.sort.map(|sort| ("sort", sort)),
                       request.sort_dir.map(|sort_dir| ("sort_dir", sort_dir)),
@@ -399,9 +396,6 @@ pub fn messages<R>(client: &R, request: &MessagesRequest) -> Result<MessagesResp
 
 #[derive(Clone, Default, Debug)]
 pub struct MessagesRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: search:read
-    pub token: &'a str,
     /// Search query. May contains booleans, etc.
     pub query: &'a str,
     /// Return matches sorted by either score or timestamp.

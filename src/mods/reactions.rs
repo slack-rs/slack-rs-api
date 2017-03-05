@@ -14,11 +14,11 @@ use requests::SlackWebRequestSender;
 ///
 /// Wraps https://api.slack.com/methods/reactions.add
 
-pub fn add<R>(client: &R, request: &AddRequest) -> Result<AddResponse, AddError<R::Error>>
+pub fn add<R>(client: &R, token: &str, request: &AddRequest) -> Result<AddResponse, AddError<R::Error>>
     where R: SlackWebRequestSender
 {
 
-    let params = vec![Some(("token", request.token)),
+    let params = vec![Some(("token", token)),
                       Some(("name", request.name)),
                       request.file.map(|file| ("file", file)),
                       request.file_comment.map(|file_comment| ("file_comment", file_comment)),
@@ -33,9 +33,6 @@ pub fn add<R>(client: &R, request: &AddRequest) -> Result<AddResponse, AddError<
 
 #[derive(Clone, Default, Debug)]
 pub struct AddRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: reactions:write
-    pub token: &'a str,
     /// Reaction (emoji) name.
     pub name: &'a str,
     /// File to add reaction to.
@@ -222,11 +219,11 @@ impl<E: Error> Error for AddError<E> {
 ///
 /// Wraps https://api.slack.com/methods/reactions.get
 
-pub fn get<R>(client: &R, request: &GetRequest) -> Result<GetResponse, GetError<R::Error>>
+pub fn get<R>(client: &R, token: &str, request: &GetRequest) -> Result<GetResponse, GetError<R::Error>>
     where R: SlackWebRequestSender
 {
 
-    let params = vec![Some(("token", request.token)),
+    let params = vec![Some(("token", token)),
                       request.file.map(|file| ("file", file)),
                       request.file_comment.map(|file_comment| ("file_comment", file_comment)),
                       request.channel.map(|channel| ("channel", channel)),
@@ -241,9 +238,6 @@ pub fn get<R>(client: &R, request: &GetRequest) -> Result<GetResponse, GetError<
 
 #[derive(Clone, Default, Debug)]
 pub struct GetRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: reactions:read
-    pub token: &'a str,
     /// File to get reactions for.
     pub file: Option<&'a str>,
     /// File comment to get reactions for.
@@ -518,12 +512,12 @@ impl<E: Error> Error for GetError<E> {
 ///
 /// Wraps https://api.slack.com/methods/reactions.list
 
-pub fn list<R>(client: &R, request: &ListRequest) -> Result<ListResponse, ListError<R::Error>>
+pub fn list<R>(client: &R, token: &str, request: &ListRequest) -> Result<ListResponse, ListError<R::Error>>
     where R: SlackWebRequestSender
 {
     let count = request.count.map(|count| count.to_string());
     let page = request.page.map(|page| page.to_string());
-    let params = vec![Some(("token", request.token)),
+    let params = vec![Some(("token", token)),
                       request.user.map(|user| ("user", user)),
                       request.full.map(|full| ("full", full)),
                       count.as_ref().map(|count| ("count", &count[..])),
@@ -537,9 +531,6 @@ pub fn list<R>(client: &R, request: &ListRequest) -> Result<ListResponse, ListEr
 
 #[derive(Clone, Default, Debug)]
 pub struct ListRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: reactions:read
-    pub token: &'a str,
     /// Show reactions made by this user. Defaults to the authed user.
     pub user: Option<&'a str>,
     /// If true always return the complete reaction list.
@@ -753,11 +744,11 @@ impl<E: Error> Error for ListError<E> {
 ///
 /// Wraps https://api.slack.com/methods/reactions.remove
 
-pub fn remove<R>(client: &R, request: &RemoveRequest) -> Result<RemoveResponse, RemoveError<R::Error>>
+pub fn remove<R>(client: &R, token: &str, request: &RemoveRequest) -> Result<RemoveResponse, RemoveError<R::Error>>
     where R: SlackWebRequestSender
 {
 
-    let params = vec![Some(("token", request.token)),
+    let params = vec![Some(("token", token)),
                       Some(("name", request.name)),
                       request.file.map(|file| ("file", file)),
                       request.file_comment.map(|file_comment| ("file_comment", file_comment)),
@@ -772,9 +763,6 @@ pub fn remove<R>(client: &R, request: &RemoveRequest) -> Result<RemoveResponse, 
 
 #[derive(Clone, Default, Debug)]
 pub struct RemoveRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: reactions:write
-    pub token: &'a str,
     /// Reaction (emoji) name.
     pub name: &'a str,
     /// File to remove reaction from.

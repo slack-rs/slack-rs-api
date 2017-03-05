@@ -15,11 +15,11 @@ use requests::SlackWebRequestSender;
 ///
 /// Wraps https://api.slack.com/methods/chat.delete
 
-pub fn delete<R>(client: &R, request: &DeleteRequest) -> Result<DeleteResponse, DeleteError<R::Error>>
+pub fn delete<R>(client: &R, token: &str, request: &DeleteRequest) -> Result<DeleteResponse, DeleteError<R::Error>>
     where R: SlackWebRequestSender
 {
 
-    let params = vec![Some(("token", request.token)),
+    let params = vec![Some(("token", token)),
                       Some(("ts", request.ts)),
                       Some(("channel", request.channel)),
                       request.as_user.map(|as_user| ("as_user", if as_user { "1" } else { "0" }))];
@@ -32,9 +32,6 @@ pub fn delete<R>(client: &R, request: &DeleteRequest) -> Result<DeleteResponse, 
 
 #[derive(Clone, Default, Debug)]
 pub struct DeleteRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: chat:write:bot or chat:write:user
-    pub token: &'a str,
     /// Timestamp of the message to be deleted.
     pub ts: &'a str,
     /// Channel containing the message to be deleted.
@@ -191,11 +188,14 @@ impl<E: Error> Error for DeleteError<E> {
 ///
 /// Wraps https://api.slack.com/methods/chat.meMessage
 
-pub fn me_message<R>(client: &R, request: &MeMessageRequest) -> Result<MeMessageResponse, MeMessageError<R::Error>>
+pub fn me_message<R>(client: &R,
+                     token: &str,
+                     request: &MeMessageRequest)
+                     -> Result<MeMessageResponse, MeMessageError<R::Error>>
     where R: SlackWebRequestSender
 {
 
-    let params = vec![Some(("token", request.token)), Some(("channel", request.channel)), Some(("text", request.text))];
+    let params = vec![Some(("token", token)), Some(("channel", request.channel)), Some(("text", request.text))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("chat.meMessage", &params[..])
         .map_err(|err| MeMessageError::Client(err))
@@ -207,9 +207,6 @@ pub fn me_message<R>(client: &R, request: &MeMessageRequest) -> Result<MeMessage
 
 #[derive(Clone, Default, Debug)]
 pub struct MeMessageRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: chat:write:user
-    pub token: &'a str,
     /// Channel to send message to. Can be a public channel, private group or IM channel. Can be an encoded ID, or a name.
     pub channel: &'a str,
     /// Text of the message to send.
@@ -372,12 +369,13 @@ impl<E: Error> Error for MeMessageError<E> {
 /// Wraps https://api.slack.com/methods/chat.postMessage
 
 pub fn post_message<R>(client: &R,
+                       token: &str,
                        request: &PostMessageRequest)
                        -> Result<PostMessageResponse, PostMessageError<R::Error>>
     where R: SlackWebRequestSender
 {
 
-    let params = vec![Some(("token", request.token)),
+    let params = vec![Some(("token", token)),
                       Some(("channel", request.channel)),
                       Some(("text", request.text)),
                       request.parse.map(|parse| ("parse", parse)),
@@ -403,9 +401,6 @@ pub fn post_message<R>(client: &R,
 
 #[derive(Clone, Default, Debug)]
 pub struct PostMessageRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: chat:write:bot or chat:write:user
-    pub token: &'a str,
     /// Channel, private group, or IM channel to send message to. Can be an encoded ID, or a name. See below for more details.
     pub channel: &'a str,
     /// Text of the message to send. See below for an explanation of formatting. This field is usually required, unless you're providing only attachments instead.
@@ -601,11 +596,11 @@ impl<E: Error> Error for PostMessageError<E> {
 ///
 /// Wraps https://api.slack.com/methods/chat.update
 
-pub fn update<R>(client: &R, request: &UpdateRequest) -> Result<UpdateResponse, UpdateError<R::Error>>
+pub fn update<R>(client: &R, token: &str, request: &UpdateRequest) -> Result<UpdateResponse, UpdateError<R::Error>>
     where R: SlackWebRequestSender
 {
 
-    let params = vec![Some(("token", request.token)),
+    let params = vec![Some(("token", token)),
                       Some(("ts", request.ts)),
                       Some(("channel", request.channel)),
                       Some(("text", request.text)),
@@ -622,9 +617,6 @@ pub fn update<R>(client: &R, request: &UpdateRequest) -> Result<UpdateResponse, 
 
 #[derive(Clone, Default, Debug)]
 pub struct UpdateRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: chat:write:bot or chat:write:user
-    pub token: &'a str,
     /// Timestamp of the message to be updated.
     pub ts: &'a str,
     /// Channel containing the message to be updated.

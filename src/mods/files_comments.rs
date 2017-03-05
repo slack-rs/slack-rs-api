@@ -14,11 +14,11 @@ use requests::SlackWebRequestSender;
 ///
 /// Wraps https://api.slack.com/methods/files.comments.add
 
-pub fn add<R>(client: &R, request: &AddRequest) -> Result<AddResponse, AddError<R::Error>>
+pub fn add<R>(client: &R, token: &str, request: &AddRequest) -> Result<AddResponse, AddError<R::Error>>
     where R: SlackWebRequestSender
 {
 
-    let params = vec![Some(("token", request.token)),
+    let params = vec![Some(("token", token)),
                       Some(("file", request.file)),
                       Some(("comment", request.comment)),
                       request.channel.map(|channel| ("channel", channel))];
@@ -31,9 +31,6 @@ pub fn add<R>(client: &R, request: &AddRequest) -> Result<AddResponse, AddError<
 
 #[derive(Clone, Default, Debug)]
 pub struct AddRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: files:write:user
-    pub token: &'a str,
     /// File to add a comment to.
     pub file: &'a str,
     /// Text of the comment to add.
@@ -181,11 +178,11 @@ impl<E: Error> Error for AddError<E> {
 ///
 /// Wraps https://api.slack.com/methods/files.comments.delete
 
-pub fn delete<R>(client: &R, request: &DeleteRequest) -> Result<DeleteResponse, DeleteError<R::Error>>
+pub fn delete<R>(client: &R, token: &str, request: &DeleteRequest) -> Result<DeleteResponse, DeleteError<R::Error>>
     where R: SlackWebRequestSender
 {
 
-    let params = vec![Some(("token", request.token)), Some(("file", request.file)), Some(("id", request.id))];
+    let params = vec![Some(("token", token)), Some(("file", request.file)), Some(("id", request.id))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("files.comments.delete", &params[..])
         .map_err(|err| DeleteError::Client(err))
@@ -195,9 +192,6 @@ pub fn delete<R>(client: &R, request: &DeleteRequest) -> Result<DeleteResponse, 
 
 #[derive(Clone, Default, Debug)]
 pub struct DeleteRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: files:write:user
-    pub token: &'a str,
     /// File to delete a comment from.
     pub file: &'a str,
     /// The comment to delete.
@@ -342,11 +336,11 @@ impl<E: Error> Error for DeleteError<E> {
 ///
 /// Wraps https://api.slack.com/methods/files.comments.edit
 
-pub fn edit<R>(client: &R, request: &EditRequest) -> Result<EditResponse, EditError<R::Error>>
+pub fn edit<R>(client: &R, token: &str, request: &EditRequest) -> Result<EditResponse, EditError<R::Error>>
     where R: SlackWebRequestSender
 {
 
-    let params = vec![Some(("token", request.token)),
+    let params = vec![Some(("token", token)),
                       Some(("file", request.file)),
                       Some(("id", request.id)),
                       Some(("comment", request.comment))];
@@ -359,9 +353,6 @@ pub fn edit<R>(client: &R, request: &EditRequest) -> Result<EditResponse, EditEr
 
 #[derive(Clone, Default, Debug)]
 pub struct EditRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: files:write:user
-    pub token: &'a str,
     /// File containing the comment to edit.
     pub file: &'a str,
     /// The comment to edit.

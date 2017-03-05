@@ -14,11 +14,11 @@ use requests::SlackWebRequestSender;
 ///
 /// Wraps https://api.slack.com/methods/reminders.add
 
-pub fn add<R>(client: &R, request: &AddRequest) -> Result<AddResponse, AddError<R::Error>>
+pub fn add<R>(client: &R, token: &str, request: &AddRequest) -> Result<AddResponse, AddError<R::Error>>
     where R: SlackWebRequestSender
 {
     let time = request.time.to_string();
-    let params = vec![Some(("token", request.token)),
+    let params = vec![Some(("token", token)),
                       Some(("text", request.text)),
                       Some(("time", &time[..])),
                       request.user.map(|user| ("user", user))];
@@ -31,9 +31,6 @@ pub fn add<R>(client: &R, request: &AddRequest) -> Result<AddResponse, AddError<
 
 #[derive(Clone, Default, Debug)]
 pub struct AddRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: reminders:write
-    pub token: &'a str,
     /// The content of the reminder
     pub text: &'a str,
     /// When this reminder should happen: the Unix timestamp (up to five years from now), the number of seconds until the reminder (if within 24 hours), or a natural language description (Ex. "in 15 minutes," or "every Thursday")
@@ -203,11 +200,14 @@ impl<E: Error> Error for AddError<E> {
 ///
 /// Wraps https://api.slack.com/methods/reminders.complete
 
-pub fn complete<R>(client: &R, request: &CompleteRequest) -> Result<CompleteResponse, CompleteError<R::Error>>
+pub fn complete<R>(client: &R,
+                   token: &str,
+                   request: &CompleteRequest)
+                   -> Result<CompleteResponse, CompleteError<R::Error>>
     where R: SlackWebRequestSender
 {
 
-    let params = vec![Some(("token", request.token)), Some(("reminder", request.reminder))];
+    let params = vec![Some(("token", token)), Some(("reminder", request.reminder))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("reminders.complete", &params[..])
         .map_err(|err| CompleteError::Client(err))
@@ -219,9 +219,6 @@ pub fn complete<R>(client: &R, request: &CompleteRequest) -> Result<CompleteResp
 
 #[derive(Clone, Default, Debug)]
 pub struct CompleteRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: reminders:write
-    pub token: &'a str,
     /// The ID of the reminder to be marked as complete
     pub reminder: &'a str,
 }
@@ -372,11 +369,11 @@ impl<E: Error> Error for CompleteError<E> {
 ///
 /// Wraps https://api.slack.com/methods/reminders.delete
 
-pub fn delete<R>(client: &R, request: &DeleteRequest) -> Result<DeleteResponse, DeleteError<R::Error>>
+pub fn delete<R>(client: &R, token: &str, request: &DeleteRequest) -> Result<DeleteResponse, DeleteError<R::Error>>
     where R: SlackWebRequestSender
 {
 
-    let params = vec![Some(("token", request.token)), Some(("reminder", request.reminder))];
+    let params = vec![Some(("token", token)), Some(("reminder", request.reminder))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("reminders.delete", &params[..])
         .map_err(|err| DeleteError::Client(err))
@@ -386,9 +383,6 @@ pub fn delete<R>(client: &R, request: &DeleteRequest) -> Result<DeleteResponse, 
 
 #[derive(Clone, Default, Debug)]
 pub struct DeleteRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: reminders:write
-    pub token: &'a str,
     /// The ID of the reminder
     pub reminder: &'a str,
 }
@@ -527,11 +521,11 @@ impl<E: Error> Error for DeleteError<E> {
 ///
 /// Wraps https://api.slack.com/methods/reminders.info
 
-pub fn info<R>(client: &R, request: &InfoRequest) -> Result<InfoResponse, InfoError<R::Error>>
+pub fn info<R>(client: &R, token: &str, request: &InfoRequest) -> Result<InfoResponse, InfoError<R::Error>>
     where R: SlackWebRequestSender
 {
 
-    let params = vec![Some(("token", request.token)), Some(("reminder", request.reminder))];
+    let params = vec![Some(("token", token)), Some(("reminder", request.reminder))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("reminders.info", &params[..])
         .map_err(|err| InfoError::Client(err))
@@ -541,9 +535,6 @@ pub fn info<R>(client: &R, request: &InfoRequest) -> Result<InfoResponse, InfoEr
 
 #[derive(Clone, Default, Debug)]
 pub struct InfoRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: reminders:read
-    pub token: &'a str,
     /// The ID of the reminder
     pub reminder: &'a str,
 }
@@ -683,23 +674,14 @@ impl<E: Error> Error for InfoError<E> {
 ///
 /// Wraps https://api.slack.com/methods/reminders.list
 
-pub fn list<R>(client: &R, request: &ListRequest) -> Result<ListResponse, ListError<R::Error>>
+pub fn list<R>(client: &R, token: &str) -> Result<ListResponse, ListError<R::Error>>
     where R: SlackWebRequestSender
 {
-
-    let params = vec![Some(("token", request.token))];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = &[("token", token)];
     client.send("reminders.list", &params[..])
         .map_err(|err| ListError::Client(err))
         .and_then(|result| serde_json::from_str::<ListResponse>(&result).map_err(|_| ListError::MalformedResponse))
         .and_then(|o| o.into())
-}
-
-#[derive(Clone, Default, Debug)]
-pub struct ListRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: reminders:read
-    pub token: &'a str,
 }
 
 #[derive(Clone, Debug, Deserialize)]

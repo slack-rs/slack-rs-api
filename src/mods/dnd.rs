@@ -15,23 +15,14 @@ use requests::SlackWebRequestSender;
 ///
 /// Wraps https://api.slack.com/methods/dnd.endDnd
 
-pub fn end_dnd<R>(client: &R, request: &EndDndRequest) -> Result<EndDndResponse, EndDndError<R::Error>>
+pub fn end_dnd<R>(client: &R, token: &str) -> Result<EndDndResponse, EndDndError<R::Error>>
     where R: SlackWebRequestSender
 {
-
-    let params = vec![Some(("token", request.token))];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = &[("token", token)];
     client.send("dnd.endDnd", &params[..])
         .map_err(|err| EndDndError::Client(err))
         .and_then(|result| serde_json::from_str::<EndDndResponse>(&result).map_err(|_| EndDndError::MalformedResponse))
         .and_then(|o| o.into())
-}
-
-#[derive(Clone, Default, Debug)]
-pub struct EndDndRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: dnd:write
-    pub token: &'a str,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -170,25 +161,16 @@ impl<E: Error> Error for EndDndError<E> {
 ///
 /// Wraps https://api.slack.com/methods/dnd.endSnooze
 
-pub fn end_snooze<R>(client: &R, request: &EndSnoozeRequest) -> Result<EndSnoozeResponse, EndSnoozeError<R::Error>>
+pub fn end_snooze<R>(client: &R, token: &str) -> Result<EndSnoozeResponse, EndSnoozeError<R::Error>>
     where R: SlackWebRequestSender
 {
-
-    let params = vec![Some(("token", request.token))];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = &[("token", token)];
     client.send("dnd.endSnooze", &params[..])
         .map_err(|err| EndSnoozeError::Client(err))
         .and_then(|result| {
             serde_json::from_str::<EndSnoozeResponse>(&result).map_err(|_| EndSnoozeError::MalformedResponse)
         })
         .and_then(|o| o.into())
-}
-
-#[derive(Clone, Default, Debug)]
-pub struct EndSnoozeRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: dnd:write
-    pub token: &'a str,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -337,11 +319,11 @@ impl<E: Error> Error for EndSnoozeError<E> {
 ///
 /// Wraps https://api.slack.com/methods/dnd.info
 
-pub fn info<R>(client: &R, request: &InfoRequest) -> Result<InfoResponse, InfoError<R::Error>>
+pub fn info<R>(client: &R, token: &str, request: &InfoRequest) -> Result<InfoResponse, InfoError<R::Error>>
     where R: SlackWebRequestSender
 {
 
-    let params = vec![Some(("token", request.token)), request.user.map(|user| ("user", user))];
+    let params = vec![Some(("token", token)), request.user.map(|user| ("user", user))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("dnd.info", &params[..])
         .map_err(|err| InfoError::Client(err))
@@ -351,9 +333,6 @@ pub fn info<R>(client: &R, request: &InfoRequest) -> Result<InfoResponse, InfoEr
 
 #[derive(Clone, Default, Debug)]
 pub struct InfoRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: dnd:read
-    pub token: &'a str,
     /// User to fetch status for (defaults to current user)
     pub user: Option<&'a str>,
 }
@@ -494,11 +473,14 @@ impl<E: Error> Error for InfoError<E> {
 ///
 /// Wraps https://api.slack.com/methods/dnd.setSnooze
 
-pub fn set_snooze<R>(client: &R, request: &SetSnoozeRequest) -> Result<SetSnoozeResponse, SetSnoozeError<R::Error>>
+pub fn set_snooze<R>(client: &R,
+                     token: &str,
+                     request: &SetSnoozeRequest)
+                     -> Result<SetSnoozeResponse, SetSnoozeError<R::Error>>
     where R: SlackWebRequestSender
 {
     let num_minutes = request.num_minutes.to_string();
-    let params = vec![Some(("token", request.token)), Some(("num_minutes", &num_minutes[..]))];
+    let params = vec![Some(("token", token)), Some(("num_minutes", &num_minutes[..]))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("dnd.setSnooze", &params[..])
         .map_err(|err| SetSnoozeError::Client(err))
@@ -509,10 +491,7 @@ pub fn set_snooze<R>(client: &R, request: &SetSnoozeRequest) -> Result<SetSnooze
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct SetSnoozeRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: dnd:write
-    pub token: &'a str,
+pub struct SetSnoozeRequest {
     /// Number of minutes, from now, to snooze until.
     pub num_minutes: u32,
 }
@@ -660,11 +639,14 @@ impl<E: Error> Error for SetSnoozeError<E> {
 ///
 /// Wraps https://api.slack.com/methods/dnd.teamInfo
 
-pub fn team_info<R>(client: &R, request: &TeamInfoRequest) -> Result<TeamInfoResponse, TeamInfoError<R::Error>>
+pub fn team_info<R>(client: &R,
+                    token: &str,
+                    request: &TeamInfoRequest)
+                    -> Result<TeamInfoResponse, TeamInfoError<R::Error>>
     where R: SlackWebRequestSender
 {
 
-    let params = vec![Some(("token", request.token)), request.users.map(|users| ("users", users))];
+    let params = vec![Some(("token", token)), request.users.map(|users| ("users", users))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("dnd.teamInfo", &params[..])
         .map_err(|err| TeamInfoError::Client(err))
@@ -676,9 +658,6 @@ pub fn team_info<R>(client: &R, request: &TeamInfoRequest) -> Result<TeamInfoRes
 
 #[derive(Clone, Default, Debug)]
 pub struct TeamInfoRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: dnd:read
-    pub token: &'a str,
     /// Comma-separated list of users to fetch Do Not Disturb status for
     pub users: Option<&'a str>,
 }

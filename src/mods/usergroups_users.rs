@@ -14,11 +14,11 @@ use requests::SlackWebRequestSender;
 ///
 /// Wraps https://api.slack.com/methods/usergroups.users.list
 
-pub fn list<R>(client: &R, request: &ListRequest) -> Result<ListResponse, ListError<R::Error>>
+pub fn list<R>(client: &R, token: &str, request: &ListRequest) -> Result<ListResponse, ListError<R::Error>>
     where R: SlackWebRequestSender
 {
 
-    let params = vec![Some(("token", request.token)),
+    let params = vec![Some(("token", token)),
                       Some(("usergroup", request.usergroup)),
                       request.include_disabled
                           .map(|include_disabled| ("include_disabled", if include_disabled { "1" } else { "0" }))];
@@ -31,9 +31,6 @@ pub fn list<R>(client: &R, request: &ListRequest) -> Result<ListResponse, ListEr
 
 #[derive(Clone, Default, Debug)]
 pub struct ListRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: usergroups:read
-    pub token: &'a str,
     /// The encoded ID of the User Group to update.
     pub usergroup: &'a str,
     /// Allow results that involve disabled User Groups.
@@ -177,11 +174,11 @@ impl<E: Error> Error for ListError<E> {
 ///
 /// Wraps https://api.slack.com/methods/usergroups.users.update
 
-pub fn update<R>(client: &R, request: &UpdateRequest) -> Result<UpdateResponse, UpdateError<R::Error>>
+pub fn update<R>(client: &R, token: &str, request: &UpdateRequest) -> Result<UpdateResponse, UpdateError<R::Error>>
     where R: SlackWebRequestSender
 {
 
-    let params = vec![Some(("token", request.token)),
+    let params = vec![Some(("token", token)),
                       Some(("usergroup", request.usergroup)),
                       Some(("users", request.users)),
                       request.include_count
@@ -195,9 +192,6 @@ pub fn update<R>(client: &R, request: &UpdateRequest) -> Result<UpdateResponse, 
 
 #[derive(Clone, Default, Debug)]
 pub struct UpdateRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: usergroups:write
-    pub token: &'a str,
     /// The encoded ID of the User Group to update.
     pub usergroup: &'a str,
     /// A comma separated string of encoded user IDs that represent the entire list of users for the User Group.

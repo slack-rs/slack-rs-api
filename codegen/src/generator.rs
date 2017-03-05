@@ -85,60 +85,120 @@ impl Method {
             base_call
         };
 
-        format!(
-            "{documentation}
-            pub fn {method_name}<R>(client: &R, 
-                                    request: &{request_type}) 
-                                    -> Result<{response_type}, {error_type}<R::Error>>
-                   where R: SlackWebRequestSender
-            {{
-                {local_vars}
-                let params = vec![
-                    {param_pairs}
-                ];
-                let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-                {send_call}
-            }}
+        if self.params.is_empty() {
+            format!(
+                "{documentation}
+                pub fn {method_name}<R>(client: &R) -> Result<{response_type}, {error_type}<R::Error>>
+                    where R: SlackWebRequestSender
+                {{
+                    let params = &[];
+                    {send_call}
+                }}
 
-            {request}
+                {response}
+                ",
+                documentation = format_docs("///", &[
+                    &self.description,
+                    "",
+                    &format!("Wraps {}", self.documentation_url)
+                ].join("\n")),
+                method_name = fn_name,
+                response_type = response_struct_name,
+                error_type = error_enum_name,
+                response = response,
+                send_call = send_call
+            )
+        } else if self.params.len() == 1 && self.params[0].ty == "auth_token" {
+            format!(
+                "{documentation}
+                pub fn {method_name}<R>(client: &R, token: &str) -> Result<{response_type}, {error_type}<R::Error>>
+                    where R: SlackWebRequestSender
+                {{
+                    let params = &[(\"token\", token)];
+                    {send_call}
+                }}
 
-            {response}
-            ",
-            documentation = format_docs("///", &[
-                &self.description,
-                "",
-                &format!("Wraps {}", self.documentation_url)
-            ].join("\n")),
-            method_name = fn_name,
-            request_type = request_struct_name,
-            response_type = response_struct_name,
-            error_type = error_enum_name,
-            response = response,
-            request = self.get_request_struct(&request_struct_name),
-            local_vars = self.params.iter()
-                .filter(|p| p.name != "simple_latest") // HACK: simple_latest breaks deserialization
-                .filter_map(|p| p.lifted())
-                .collect::<Vec<_>>()
-                .join("\n"),
-            param_pairs = self.params.iter()
-                .filter(|p| p.name != "simple_latest") // HACK: simple_latest breaks deserialization
-                .map(Param::get_pair)
-                .collect::<Vec<String>>()
-                .join(",\n"),
-            send_call = send_call
-        )
+                {response}
+                ",
+                documentation = format_docs("///", &[
+                    &self.description,
+                    "",
+                    &format!("Wraps {}", self.documentation_url)
+                ].join("\n")),
+                method_name = fn_name,
+                response_type = response_struct_name,
+                error_type = error_enum_name,
+                response = response,
+                send_call = send_call
+            )
+        } else {
+            let has_token = self.params.iter().find(|p| p.ty == "auth_token").is_some();
+            let method_params = if has_token {
+                format!("client: &R, token: &str, request: &{}", request_struct_name)
+            } else {
+                format!("client: &R, request: &{}", request_struct_name)
+            };
+            format!(
+                "{documentation}
+                pub fn {method_name}<R>({method_params}) -> Result<{response_type}, {error_type}<R::Error>>
+                    where R: SlackWebRequestSender
+                {{
+                    {local_vars}
+                    let params = vec![
+                        {token}
+                        {param_pairs}
+                    ];
+                    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+                    {send_call}
+                }}
+
+                {request}
+
+                {response}
+                ",
+                documentation = format_docs("///", &[
+                    &self.description,
+                    "",
+                    &format!("Wraps {}", self.documentation_url)
+                ].join("\n")),
+                method_name = fn_name,
+                response_type = response_struct_name,
+                error_type = error_enum_name,
+                response = response,
+                request = self.get_request_struct(&request_struct_name),
+                method_params = method_params,
+                token = if has_token { "Some((\"token\", token))," } else { "" },
+                local_vars = self.params.iter()
+                    .filter(|p| p.ty != "auth_token") // passed in method params instead
+                    .filter(|p| p.name != "simple_latest") // HACK: simple_latest breaks deserialization
+                    .filter_map(|p| p.lifted())
+                    .collect::<Vec<_>>()
+                    .join("\n"),
+                param_pairs = self.params.iter()
+                    .filter(|p| p.ty != "auth_token") // passed in method params instead
+                    .filter(|p| p.name != "simple_latest") // HACK: simple_latest breaks deserialization
+                    .map(Param::get_pair)
+                    .collect::<Vec<String>>()
+                    .join(",\n"),
+                send_call = send_call
+            )
+        }
     }
 
     fn get_request_struct(&self, ty_name: &str) -> String {
         format!(
             "#[derive(Clone, Default, Debug)]
-            pub struct {request_type}<'a> {{
+            pub struct {request_type}{lifetime} {{
                 {request_params}
             }}",
             request_type = ty_name,
             request_params = self.params.iter()
+                .filter(|p| p.ty != "auth_token") // passed in method params instead
                 .filter(|p| p.name != "simple_latest") // HACK: simple_latest breaks deserialization
-                .map(Param::generate).collect::<Vec<String>>().join("\n")
+                .map(Param::generate).collect::<Vec<String>>().join("\n"),
+            lifetime = if self.params.iter()
+                .filter(|p| p.ty != "auth_token")
+                .all(|p| p.ty == "integer" || p.ty == "boolean") { "" } else { "<'a>" }
         )
     }
 }

@@ -15,11 +15,11 @@ use requests::SlackWebRequestSender;
 ///
 /// Wraps https://api.slack.com/methods/usergroups.create
 
-pub fn create<R>(client: &R, request: &CreateRequest) -> Result<CreateResponse, CreateError<R::Error>>
+pub fn create<R>(client: &R, token: &str, request: &CreateRequest) -> Result<CreateResponse, CreateError<R::Error>>
     where R: SlackWebRequestSender
 {
 
-    let params = vec![Some(("token", request.token)),
+    let params = vec![Some(("token", token)),
                       Some(("name", request.name)),
                       request.handle.map(|handle| ("handle", handle)),
                       request.description.map(|description| ("description", description)),
@@ -35,9 +35,6 @@ pub fn create<R>(client: &R, request: &CreateRequest) -> Result<CreateResponse, 
 
 #[derive(Clone, Default, Debug)]
 pub struct CreateRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: usergroups:write
-    pub token: &'a str,
     /// A name for the User Group. Must be unique among User Groups.
     pub name: &'a str,
     /// A mention handle. Must be unique among channels, users and User Groups.
@@ -187,11 +184,11 @@ impl<E: Error> Error for CreateError<E> {
 ///
 /// Wraps https://api.slack.com/methods/usergroups.disable
 
-pub fn disable<R>(client: &R, request: &DisableRequest) -> Result<DisableResponse, DisableError<R::Error>>
+pub fn disable<R>(client: &R, token: &str, request: &DisableRequest) -> Result<DisableResponse, DisableError<R::Error>>
     where R: SlackWebRequestSender
 {
 
-    let params = vec![Some(("token", request.token)),
+    let params = vec![Some(("token", token)),
                       Some(("usergroup", request.usergroup)),
                       request.include_count
                           .map(|include_count| ("include_count", if include_count { "1" } else { "0" }))];
@@ -206,9 +203,6 @@ pub fn disable<R>(client: &R, request: &DisableRequest) -> Result<DisableRespons
 
 #[derive(Clone, Default, Debug)]
 pub struct DisableRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: usergroups:write
-    pub token: &'a str,
     /// The encoded ID of the User Group to disable.
     pub usergroup: &'a str,
     /// Include the number of users in the User Group.
@@ -352,11 +346,11 @@ impl<E: Error> Error for DisableError<E> {
 ///
 /// Wraps https://api.slack.com/methods/usergroups.enable
 
-pub fn enable<R>(client: &R, request: &EnableRequest) -> Result<EnableResponse, EnableError<R::Error>>
+pub fn enable<R>(client: &R, token: &str, request: &EnableRequest) -> Result<EnableResponse, EnableError<R::Error>>
     where R: SlackWebRequestSender
 {
 
-    let params = vec![Some(("token", request.token)),
+    let params = vec![Some(("token", token)),
                       Some(("usergroup", request.usergroup)),
                       request.include_count
                           .map(|include_count| ("include_count", if include_count { "1" } else { "0" }))];
@@ -369,9 +363,6 @@ pub fn enable<R>(client: &R, request: &EnableRequest) -> Result<EnableResponse, 
 
 #[derive(Clone, Default, Debug)]
 pub struct EnableRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: usergroups:write
-    pub token: &'a str,
     /// The encoded ID of the User Group to enable.
     pub usergroup: &'a str,
     /// Include the number of users in the User Group.
@@ -515,12 +506,12 @@ impl<E: Error> Error for EnableError<E> {
 ///
 /// Wraps https://api.slack.com/methods/usergroups.list
 
-pub fn list<R>(client: &R, request: &ListRequest) -> Result<ListResponse, ListError<R::Error>>
+pub fn list<R>(client: &R, token: &str, request: &ListRequest) -> Result<ListResponse, ListError<R::Error>>
     where R: SlackWebRequestSender
 {
 
     let params =
-        vec![Some(("token", request.token)),
+        vec![Some(("token", token)),
              request.include_disabled
                  .map(|include_disabled| ("include_disabled", if include_disabled { "1" } else { "0" })),
              request.include_count.map(|include_count| ("include_count", if include_count { "1" } else { "0" })),
@@ -533,10 +524,7 @@ pub fn list<R>(client: &R, request: &ListRequest) -> Result<ListResponse, ListEr
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct ListRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: usergroups:read
-    pub token: &'a str,
+pub struct ListRequest {
     /// Include disabled User Groups.
     pub include_disabled: Option<bool>,
     /// Include the number of users in each User Group.
@@ -682,11 +670,11 @@ impl<E: Error> Error for ListError<E> {
 ///
 /// Wraps https://api.slack.com/methods/usergroups.update
 
-pub fn update<R>(client: &R, request: &UpdateRequest) -> Result<UpdateResponse, UpdateError<R::Error>>
+pub fn update<R>(client: &R, token: &str, request: &UpdateRequest) -> Result<UpdateResponse, UpdateError<R::Error>>
     where R: SlackWebRequestSender
 {
 
-    let params = vec![Some(("token", request.token)),
+    let params = vec![Some(("token", token)),
                       Some(("usergroup", request.usergroup)),
                       request.name.map(|name| ("name", name)),
                       request.handle.map(|handle| ("handle", handle)),
@@ -703,9 +691,6 @@ pub fn update<R>(client: &R, request: &UpdateRequest) -> Result<UpdateResponse, 
 
 #[derive(Clone, Default, Debug)]
 pub struct UpdateRequest<'a> {
-    /// Authentication token.
-    /// Requires scope: usergroups:write
-    pub token: &'a str,
     /// The encoded ID of the User Group to update.
     pub usergroup: &'a str,
     /// A name for the User Group. Must be unique among User Groups.
