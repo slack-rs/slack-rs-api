@@ -115,8 +115,16 @@ impl Method {
             error_type = error_enum_name,
             response = response,
             request = self.get_request_struct(&request_struct_name),
-            local_vars = self.params.iter().filter_map(|p| p.lifted()).collect::<Vec<_>>().join("\n"),
-            param_pairs = self.params.iter().map(Param::get_pair).collect::<Vec<String>>().join(",\n"),
+            local_vars = self.params.iter()
+                .filter(|p| p.name != "simple_latest") // HACK: simple_latest breaks deserialization
+                .filter_map(|p| p.lifted())
+                .collect::<Vec<_>>()
+                .join("\n"),
+            param_pairs = self.params.iter()
+                .filter(|p| p.name != "simple_latest") // HACK: simple_latest breaks deserialization
+                .map(Param::get_pair)
+                .collect::<Vec<String>>()
+                .join(",\n"),
             send_call = send_call
         )
     }
@@ -128,7 +136,9 @@ impl Method {
                 {request_params}
             }}",
             request_type = ty_name,
-            request_params = self.params.iter().map(Param::generate).collect::<Vec<String>>().join("\n")
+            request_params = self.params.iter()
+                .filter(|p| p.name != "simple_latest") // HACK: simple_latest breaks deserialization
+                .map(Param::generate).collect::<Vec<String>>().join("\n")
         )
     }
 }

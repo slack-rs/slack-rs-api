@@ -19,7 +19,6 @@ pub fn start<R>(client: &R, request: &StartRequest) -> Result<StartResponse, Sta
 {
 
     let params = vec![Some(("token", request.token)),
-                      request.simple_latest.map(|simple_latest| ("simple_latest", simple_latest)),
                       request.no_unreads.map(|no_unreads| ("no_unreads", no_unreads)),
                       request.mpim_aware.map(|mpim_aware| ("mpim_aware", mpim_aware))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
@@ -34,8 +33,6 @@ pub struct StartRequest<'a> {
     /// Authentication token.
     /// Requires scope: client
     pub token: &'a str,
-    /// Return timestamp only for latest message object of each channel (improves performance).
-    pub simple_latest: Option<&'a str>,
     /// Skip unread counts for each channel (improves performance).
     pub no_unreads: Option<&'a str>,
     /// Returns MPIMs to the client in the API response.
