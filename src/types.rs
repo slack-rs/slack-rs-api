@@ -26,7 +26,7 @@ pub struct Channel {
     pub is_general: Option<bool>,
     pub is_member: Option<bool>,
     pub last_read: Option<String>,
-    pub latest: Option<ChannelLatest>,
+    pub latest: Option<::Message>,
     pub members: Option<Vec<String>>,
     pub name: Option<String>,
     pub purpose: Option<ChannelPurpose>,
@@ -35,49 +35,8 @@ pub struct Channel {
     pub unread_count_display: Option<i32>,
 }
 
-
-#[derive(Clone, Debug)]
-pub enum ChannelLatest {
-    Full(::Message),
-    Simple(String),
-}
-
-impl ::serde::Deserialize for ChannelLatest {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where D: ::serde::Deserializer
-    {
-        use serde::de::Error as SerdeError;
-
-        const VARIANTS: &'static [&'static str] = &["full", "simple"];
-
-        let value = ::serde_json::Value::deserialize(deserializer)?;
-        if let Some(ty_val) = value.get("type") {
-            if let Some(ty) = ty_val.as_str() {
-                match ty {
-                    "full" => {
-                        ::serde_json::from_value::<::Message>(value.clone())
-                            .map(|obj| ChannelLatest::Full(obj))
-                            .map_err(|e| D::Error::custom(&format!("{}", e)))
-                    }
-                    "simple" => {
-                        ::serde_json::from_value::<String>(value.clone())
-                            .map(|obj| ChannelLatest::Simple(obj))
-                            .map_err(|e| D::Error::custom(&format!("{}", e)))
-                    }
-                    _ => Err(D::Error::unknown_variant(ty, VARIANTS)),
-                }
-            } else {
-                Err(D::Error::invalid_type(::serde::de::Unexpected::Unit, &"a string"))
-            }
-        } else {
-            Err(D::Error::missing_field("type"))
-        }
-    }
-}
-
-
 #[derive(Clone, Debug, Deserialize)]
-pub struct ChannelPurpose {
+pub struct ChannelTopic {
     pub creator: Option<String>,
     pub last_set: Option<i32>,
     pub value: Option<String>,
@@ -85,7 +44,7 @@ pub struct ChannelPurpose {
 
 
 #[derive(Clone, Debug, Deserialize)]
-pub struct ChannelTopic {
+pub struct ChannelPurpose {
     pub creator: Option<String>,
     pub last_set: Option<i32>,
     pub value: Option<String>,
@@ -159,7 +118,7 @@ pub struct Group {
     pub is_group: Option<bool>,
     pub is_mpim: Option<bool>,
     pub last_read: Option<String>,
-    pub latest: Option<GroupLatest>,
+    pub latest: Option<::Message>,
     pub members: Option<Vec<String>>,
     pub name: Option<String>,
     pub purpose: Option<GroupPurpose>,
@@ -168,49 +127,8 @@ pub struct Group {
     pub unread_count_display: Option<i32>,
 }
 
-
-#[derive(Clone, Debug)]
-pub enum GroupLatest {
-    Full(::Message),
-    Simple(String),
-}
-
-impl ::serde::Deserialize for GroupLatest {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where D: ::serde::Deserializer
-    {
-        use serde::de::Error as SerdeError;
-
-        const VARIANTS: &'static [&'static str] = &["full", "simple"];
-
-        let value = ::serde_json::Value::deserialize(deserializer)?;
-        if let Some(ty_val) = value.get("type") {
-            if let Some(ty) = ty_val.as_str() {
-                match ty {
-                    "full" => {
-                        ::serde_json::from_value::<::Message>(value.clone())
-                            .map(|obj| GroupLatest::Full(obj))
-                            .map_err(|e| D::Error::custom(&format!("{}", e)))
-                    }
-                    "simple" => {
-                        ::serde_json::from_value::<String>(value.clone())
-                            .map(|obj| GroupLatest::Simple(obj))
-                            .map_err(|e| D::Error::custom(&format!("{}", e)))
-                    }
-                    _ => Err(D::Error::unknown_variant(ty, VARIANTS)),
-                }
-            } else {
-                Err(D::Error::invalid_type(::serde::de::Unexpected::Unit, &"a string"))
-            }
-        } else {
-            Err(D::Error::missing_field("type"))
-        }
-    }
-}
-
-
 #[derive(Clone, Debug, Deserialize)]
-pub struct GroupTopic {
+pub struct GroupPurpose {
     pub creator: Option<String>,
     pub last_set: Option<i32>,
     pub value: Option<String>,
@@ -218,7 +136,7 @@ pub struct GroupTopic {
 
 
 #[derive(Clone, Debug, Deserialize)]
-pub struct GroupPurpose {
+pub struct GroupTopic {
     pub creator: Option<String>,
     pub last_set: Option<i32>,
     pub value: Option<String>,
@@ -459,6 +377,13 @@ pub struct MessageStandard {
 }
 
 #[derive(Clone, Debug, Deserialize)]
+pub struct MessageStandardEdited {
+    pub ts: Option<String>,
+    pub user: Option<String>,
+}
+
+
+#[derive(Clone, Debug, Deserialize)]
 pub struct MessageStandardAttachment {
     pub author_icon: Option<String>,
     pub author_link: Option<String>,
@@ -482,13 +407,6 @@ pub struct MessageStandardAttachmentField {
     pub short: Option<bool>,
     pub title: Option<String>,
     pub value: Option<String>,
-}
-
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct MessageStandardEdited {
-    pub ts: Option<String>,
-    pub user: Option<String>,
 }
 
 
@@ -866,51 +784,11 @@ pub struct Mpim {
     pub is_group: Option<bool>,
     pub is_mpim: Option<bool>,
     pub last_read: Option<String>,
-    pub latest: Option<MpimLatest>,
+    pub latest: Option<::Message>,
     pub members: Option<Vec<String>>,
     pub name: Option<String>,
     pub unread_count: Option<i32>,
     pub unread_count_display: Option<i32>,
-}
-
-
-#[derive(Clone, Debug)]
-pub enum MpimLatest {
-    Full(::Message),
-    Simple(String),
-}
-
-impl ::serde::Deserialize for MpimLatest {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where D: ::serde::Deserializer
-    {
-        use serde::de::Error as SerdeError;
-
-        const VARIANTS: &'static [&'static str] = &["full", "simple"];
-
-        let value = ::serde_json::Value::deserialize(deserializer)?;
-        if let Some(ty_val) = value.get("type") {
-            if let Some(ty) = ty_val.as_str() {
-                match ty {
-                    "full" => {
-                        ::serde_json::from_value::<::Message>(value.clone())
-                            .map(|obj| MpimLatest::Full(obj))
-                            .map_err(|e| D::Error::custom(&format!("{}", e)))
-                    }
-                    "simple" => {
-                        ::serde_json::from_value::<String>(value.clone())
-                            .map(|obj| MpimLatest::Simple(obj))
-                            .map_err(|e| D::Error::custom(&format!("{}", e)))
-                    }
-                    _ => Err(D::Error::unknown_variant(ty, VARIANTS)),
-                }
-            } else {
-                Err(D::Error::invalid_type(::serde::de::Unexpected::Unit, &"a string"))
-            }
-        } else {
-            Err(D::Error::missing_field("type"))
-        }
-    }
 }
 
 #[derive(Clone, Debug, Deserialize)]
