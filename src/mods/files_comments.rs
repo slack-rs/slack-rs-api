@@ -25,7 +25,7 @@ pub fn add<R>(client: &R, token: &str, request: &AddRequest) -> Result<AddRespon
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("files.comments.add", &params[..])
         .map_err(|err| AddError::Client(err))
-        .and_then(|result| serde_json::from_str::<AddResponse>(&result).map_err(|_| AddError::MalformedResponse))
+        .and_then(|result| serde_json::from_str::<AddResponse>(&result).map_err(|e| AddError::MalformedResponse(e)))
         .and_then(|o| o.into())
 }
 
@@ -57,7 +57,7 @@ impl<E: Error> Into<Result<AddResponse, AddError<E>>> for AddResponse {
         }
     }
 }
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub enum AddError<E: Error> {
     /// The requested file could not be found.
     FileNotFound,
@@ -86,7 +86,7 @@ pub enum AddError<E: Error> {
     /// The method was called via a POST request, but the POST data was either missing or truncated.
     RequestTimeout,
     /// The response was not parseable as the expected object
-    MalformedResponse,
+    MalformedResponse(serde_json::error::Error),
     /// The response returned an error that was unknown to the library
     Unknown(String),
     /// The client had an error sending the request to Slack
@@ -160,7 +160,7 @@ impl<E: Error> Error for AddError<E> {
                 "request_timeout: The method was called via a POST request, but the POST data was either missing or \
                  truncated."
             }
-            &AddError::MalformedResponse => "Malformed response data from Slack.",
+            &AddError::MalformedResponse(ref e) => e.description(),
             &AddError::Unknown(ref s) => s,
             &AddError::Client(ref inner) => inner.description(),
         }
@@ -168,6 +168,7 @@ impl<E: Error> Error for AddError<E> {
 
     fn cause(&self) -> Option<&Error> {
         match self {
+            &AddError::MalformedResponse(ref e) => Some(e),
             &AddError::Client(ref inner) => Some(inner),
             _ => None,
         }
@@ -186,7 +187,9 @@ pub fn delete<R>(client: &R, token: &str, request: &DeleteRequest) -> Result<Del
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("files.comments.delete", &params[..])
         .map_err(|err| DeleteError::Client(err))
-        .and_then(|result| serde_json::from_str::<DeleteResponse>(&result).map_err(|_| DeleteError::MalformedResponse))
+        .and_then(|result| {
+            serde_json::from_str::<DeleteResponse>(&result).map_err(|e| DeleteError::MalformedResponse(e))
+        })
         .and_then(|o| o.into())
 }
 
@@ -215,7 +218,7 @@ impl<E: Error> Into<Result<DeleteResponse, DeleteError<E>>> for DeleteResponse {
         }
     }
 }
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub enum DeleteError<E: Error> {
     /// The requested file could not be found.
     FileNotFound,
@@ -244,7 +247,7 @@ pub enum DeleteError<E: Error> {
     /// The method was called via a POST request, but the POST data was either missing or truncated.
     RequestTimeout,
     /// The response was not parseable as the expected object
-    MalformedResponse,
+    MalformedResponse(serde_json::error::Error),
     /// The response returned an error that was unknown to the library
     Unknown(String),
     /// The client had an error sending the request to Slack
@@ -318,7 +321,7 @@ impl<E: Error> Error for DeleteError<E> {
                 "request_timeout: The method was called via a POST request, but the POST data was either missing or \
                  truncated."
             }
-            &DeleteError::MalformedResponse => "Malformed response data from Slack.",
+            &DeleteError::MalformedResponse(ref e) => e.description(),
             &DeleteError::Unknown(ref s) => s,
             &DeleteError::Client(ref inner) => inner.description(),
         }
@@ -326,6 +329,7 @@ impl<E: Error> Error for DeleteError<E> {
 
     fn cause(&self) -> Option<&Error> {
         match self {
+            &DeleteError::MalformedResponse(ref e) => Some(e),
             &DeleteError::Client(ref inner) => Some(inner),
             _ => None,
         }
@@ -347,7 +351,7 @@ pub fn edit<R>(client: &R, token: &str, request: &EditRequest) -> Result<EditRes
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("files.comments.edit", &params[..])
         .map_err(|err| EditError::Client(err))
-        .and_then(|result| serde_json::from_str::<EditResponse>(&result).map_err(|_| EditError::MalformedResponse))
+        .and_then(|result| serde_json::from_str::<EditResponse>(&result).map_err(|e| EditError::MalformedResponse(e)))
         .and_then(|o| o.into())
 }
 
@@ -379,7 +383,7 @@ impl<E: Error> Into<Result<EditResponse, EditError<E>>> for EditResponse {
         }
     }
 }
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub enum EditError<E: Error> {
     /// The requested file could not be found.
     FileNotFound,
@@ -412,7 +416,7 @@ pub enum EditError<E: Error> {
     /// The method was called via a POST request, but the POST data was either missing or truncated.
     RequestTimeout,
     /// The response was not parseable as the expected object
-    MalformedResponse,
+    MalformedResponse(serde_json::error::Error),
     /// The response returned an error that was unknown to the library
     Unknown(String),
     /// The client had an error sending the request to Slack
@@ -490,7 +494,7 @@ impl<E: Error> Error for EditError<E> {
                 "request_timeout: The method was called via a POST request, but the POST data was either missing or \
                  truncated."
             }
-            &EditError::MalformedResponse => "Malformed response data from Slack.",
+            &EditError::MalformedResponse(ref e) => e.description(),
             &EditError::Unknown(ref s) => s,
             &EditError::Client(ref inner) => inner.description(),
         }
@@ -498,6 +502,7 @@ impl<E: Error> Error for EditError<E> {
 
     fn cause(&self) -> Option<&Error> {
         match self {
+            &EditError::MalformedResponse(ref e) => Some(e),
             &EditError::Client(ref inner) => Some(inner),
             _ => None,
         }

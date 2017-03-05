@@ -22,7 +22,7 @@ pub fn info<R>(client: &R, token: &str, request: &InfoRequest) -> Result<InfoRes
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("bots.info", &params[..])
         .map_err(|err| InfoError::Client(err))
-        .and_then(|result| serde_json::from_str::<InfoResponse>(&result).map_err(|_| InfoError::MalformedResponse))
+        .and_then(|result| serde_json::from_str::<InfoResponse>(&result).map_err(|e| InfoError::MalformedResponse(e)))
         .and_then(|o| o.into())
 }
 
@@ -66,7 +66,7 @@ impl<E: Error> Into<Result<InfoResponse, InfoError<E>>> for InfoResponse {
         }
     }
 }
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub enum InfoError<E: Error> {
     /// Value passed for bot was invalid.
     BotNotFound,
@@ -93,7 +93,7 @@ pub enum InfoError<E: Error> {
     /// The method was called via a POST request, but the POST data was either missing or truncated.
     RequestTimeout,
     /// The response was not parseable as the expected object
-    MalformedResponse,
+    MalformedResponse(serde_json::error::Error),
     /// The response returned an error that was unknown to the library
     Unknown(String),
     /// The client had an error sending the request to Slack
@@ -165,7 +165,7 @@ impl<E: Error> Error for InfoError<E> {
                 "request_timeout: The method was called via a POST request, but the POST data was either missing or \
                  truncated."
             }
-            &InfoError::MalformedResponse => "Malformed response data from Slack.",
+            &InfoError::MalformedResponse(ref e) => e.description(),
             &InfoError::Unknown(ref s) => s,
             &InfoError::Client(ref inner) => inner.description(),
         }
@@ -173,6 +173,7 @@ impl<E: Error> Error for InfoError<E> {
 
     fn cause(&self) -> Option<&Error> {
         match self {
+            &InfoError::MalformedResponse(ref e) => Some(e),
             &InfoError::Client(ref inner) => Some(inner),
             _ => None,
         }

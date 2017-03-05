@@ -29,7 +29,9 @@ pub fn create<R>(client: &R, token: &str, request: &CreateRequest) -> Result<Cre
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("usergroups.create", &params[..])
         .map_err(|err| CreateError::Client(err))
-        .and_then(|result| serde_json::from_str::<CreateResponse>(&result).map_err(|_| CreateError::MalformedResponse))
+        .and_then(|result| {
+            serde_json::from_str::<CreateResponse>(&result).map_err(|e| CreateError::MalformedResponse(e))
+        })
         .and_then(|o| o.into())
 }
 
@@ -65,7 +67,7 @@ impl<E: Error> Into<Result<CreateResponse, CreateError<E>>> for CreateResponse {
         }
     }
 }
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub enum CreateError<E: Error> {
     /// No authentication token provided.
     NotAuthed,
@@ -92,7 +94,7 @@ pub enum CreateError<E: Error> {
     /// The method was called via a POST request, but the POST data was either missing or truncated.
     RequestTimeout,
     /// The response was not parseable as the expected object
-    MalformedResponse,
+    MalformedResponse(serde_json::error::Error),
     /// The response returned an error that was unknown to the library
     Unknown(String),
     /// The client had an error sending the request to Slack
@@ -166,7 +168,7 @@ impl<E: Error> Error for CreateError<E> {
                 "request_timeout: The method was called via a POST request, but the POST data was either missing or \
                  truncated."
             }
-            &CreateError::MalformedResponse => "Malformed response data from Slack.",
+            &CreateError::MalformedResponse(ref e) => e.description(),
             &CreateError::Unknown(ref s) => s,
             &CreateError::Client(ref inner) => inner.description(),
         }
@@ -174,6 +176,7 @@ impl<E: Error> Error for CreateError<E> {
 
     fn cause(&self) -> Option<&Error> {
         match self {
+            &CreateError::MalformedResponse(ref e) => Some(e),
             &CreateError::Client(ref inner) => Some(inner),
             _ => None,
         }
@@ -194,11 +197,11 @@ pub fn disable<R>(client: &R, token: &str, request: &DisableRequest) -> Result<D
                           .map(|include_count| ("include_count", if include_count { "1" } else { "0" }))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("usergroups.disable", &params[..])
-                .map_err(|err| DisableError::Client(err))
-                .and_then(|result| {
-                    serde_json::from_str::<DisableResponse>(&result)
-                        .map_err(|_| DisableError::MalformedResponse)
-                }).and_then(|o| o.into())
+        .map_err(|err| DisableError::Client(err))
+        .and_then(|result| {
+            serde_json::from_str::<DisableResponse>(&result).map_err(|e| DisableError::MalformedResponse(e))
+        })
+        .and_then(|o| o.into())
 }
 
 #[derive(Clone, Default, Debug)]
@@ -227,7 +230,7 @@ impl<E: Error> Into<Result<DisableResponse, DisableError<E>>> for DisableRespons
         }
     }
 }
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub enum DisableError<E: Error> {
     /// No authentication token provided.
     NotAuthed,
@@ -254,7 +257,7 @@ pub enum DisableError<E: Error> {
     /// The method was called via a POST request, but the POST data was either missing or truncated.
     RequestTimeout,
     /// The response was not parseable as the expected object
-    MalformedResponse,
+    MalformedResponse(serde_json::error::Error),
     /// The response returned an error that was unknown to the library
     Unknown(String),
     /// The client had an error sending the request to Slack
@@ -328,7 +331,7 @@ impl<E: Error> Error for DisableError<E> {
                 "request_timeout: The method was called via a POST request, but the POST data was either missing or \
                  truncated."
             }
-            &DisableError::MalformedResponse => "Malformed response data from Slack.",
+            &DisableError::MalformedResponse(ref e) => e.description(),
             &DisableError::Unknown(ref s) => s,
             &DisableError::Client(ref inner) => inner.description(),
         }
@@ -336,6 +339,7 @@ impl<E: Error> Error for DisableError<E> {
 
     fn cause(&self) -> Option<&Error> {
         match self {
+            &DisableError::MalformedResponse(ref e) => Some(e),
             &DisableError::Client(ref inner) => Some(inner),
             _ => None,
         }
@@ -357,7 +361,9 @@ pub fn enable<R>(client: &R, token: &str, request: &EnableRequest) -> Result<Ena
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("usergroups.enable", &params[..])
         .map_err(|err| EnableError::Client(err))
-        .and_then(|result| serde_json::from_str::<EnableResponse>(&result).map_err(|_| EnableError::MalformedResponse))
+        .and_then(|result| {
+            serde_json::from_str::<EnableResponse>(&result).map_err(|e| EnableError::MalformedResponse(e))
+        })
         .and_then(|o| o.into())
 }
 
@@ -387,7 +393,7 @@ impl<E: Error> Into<Result<EnableResponse, EnableError<E>>> for EnableResponse {
         }
     }
 }
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub enum EnableError<E: Error> {
     /// No authentication token provided.
     NotAuthed,
@@ -414,7 +420,7 @@ pub enum EnableError<E: Error> {
     /// The method was called via a POST request, but the POST data was either missing or truncated.
     RequestTimeout,
     /// The response was not parseable as the expected object
-    MalformedResponse,
+    MalformedResponse(serde_json::error::Error),
     /// The response returned an error that was unknown to the library
     Unknown(String),
     /// The client had an error sending the request to Slack
@@ -488,7 +494,7 @@ impl<E: Error> Error for EnableError<E> {
                 "request_timeout: The method was called via a POST request, but the POST data was either missing or \
                  truncated."
             }
-            &EnableError::MalformedResponse => "Malformed response data from Slack.",
+            &EnableError::MalformedResponse(ref e) => e.description(),
             &EnableError::Unknown(ref s) => s,
             &EnableError::Client(ref inner) => inner.description(),
         }
@@ -496,6 +502,7 @@ impl<E: Error> Error for EnableError<E> {
 
     fn cause(&self) -> Option<&Error> {
         match self {
+            &EnableError::MalformedResponse(ref e) => Some(e),
             &EnableError::Client(ref inner) => Some(inner),
             _ => None,
         }
@@ -519,7 +526,7 @@ pub fn list<R>(client: &R, token: &str, request: &ListRequest) -> Result<ListRes
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("usergroups.list", &params[..])
         .map_err(|err| ListError::Client(err))
-        .and_then(|result| serde_json::from_str::<ListResponse>(&result).map_err(|_| ListError::MalformedResponse))
+        .and_then(|result| serde_json::from_str::<ListResponse>(&result).map_err(|e| ListError::MalformedResponse(e)))
         .and_then(|o| o.into())
 }
 
@@ -551,7 +558,7 @@ impl<E: Error> Into<Result<ListResponse, ListError<E>>> for ListResponse {
         }
     }
 }
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub enum ListError<E: Error> {
     /// No authentication token provided.
     NotAuthed,
@@ -578,7 +585,7 @@ pub enum ListError<E: Error> {
     /// The method was called via a POST request, but the POST data was either missing or truncated.
     RequestTimeout,
     /// The response was not parseable as the expected object
-    MalformedResponse,
+    MalformedResponse(serde_json::error::Error),
     /// The response returned an error that was unknown to the library
     Unknown(String),
     /// The client had an error sending the request to Slack
@@ -652,7 +659,7 @@ impl<E: Error> Error for ListError<E> {
                 "request_timeout: The method was called via a POST request, but the POST data was either missing or \
                  truncated."
             }
-            &ListError::MalformedResponse => "Malformed response data from Slack.",
+            &ListError::MalformedResponse(ref e) => e.description(),
             &ListError::Unknown(ref s) => s,
             &ListError::Client(ref inner) => inner.description(),
         }
@@ -660,6 +667,7 @@ impl<E: Error> Error for ListError<E> {
 
     fn cause(&self) -> Option<&Error> {
         match self {
+            &ListError::MalformedResponse(ref e) => Some(e),
             &ListError::Client(ref inner) => Some(inner),
             _ => None,
         }
@@ -685,7 +693,9 @@ pub fn update<R>(client: &R, token: &str, request: &UpdateRequest) -> Result<Upd
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("usergroups.update", &params[..])
         .map_err(|err| UpdateError::Client(err))
-        .and_then(|result| serde_json::from_str::<UpdateResponse>(&result).map_err(|_| UpdateError::MalformedResponse))
+        .and_then(|result| {
+            serde_json::from_str::<UpdateResponse>(&result).map_err(|e| UpdateError::MalformedResponse(e))
+        })
         .and_then(|o| o.into())
 }
 
@@ -723,7 +733,7 @@ impl<E: Error> Into<Result<UpdateResponse, UpdateError<E>>> for UpdateResponse {
         }
     }
 }
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub enum UpdateError<E: Error> {
     /// No authentication token provided.
     NotAuthed,
@@ -750,7 +760,7 @@ pub enum UpdateError<E: Error> {
     /// The method was called via a POST request, but the POST data was either missing or truncated.
     RequestTimeout,
     /// The response was not parseable as the expected object
-    MalformedResponse,
+    MalformedResponse(serde_json::error::Error),
     /// The response returned an error that was unknown to the library
     Unknown(String),
     /// The client had an error sending the request to Slack
@@ -824,7 +834,7 @@ impl<E: Error> Error for UpdateError<E> {
                 "request_timeout: The method was called via a POST request, but the POST data was either missing or \
                  truncated."
             }
-            &UpdateError::MalformedResponse => "Malformed response data from Slack.",
+            &UpdateError::MalformedResponse(ref e) => e.description(),
             &UpdateError::Unknown(ref s) => s,
             &UpdateError::Client(ref inner) => inner.description(),
         }
@@ -832,6 +842,7 @@ impl<E: Error> Error for UpdateError<E> {
 
     fn cause(&self) -> Option<&Error> {
         match self {
+            &UpdateError::MalformedResponse(ref e) => Some(e),
             &UpdateError::Client(ref inner) => Some(inner),
             _ => None,
         }

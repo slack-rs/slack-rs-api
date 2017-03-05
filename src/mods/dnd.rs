@@ -21,7 +21,9 @@ pub fn end_dnd<R>(client: &R, token: &str) -> Result<EndDndResponse, EndDndError
     let params = &[("token", token)];
     client.send("dnd.endDnd", &params[..])
         .map_err(|err| EndDndError::Client(err))
-        .and_then(|result| serde_json::from_str::<EndDndResponse>(&result).map_err(|_| EndDndError::MalformedResponse))
+        .and_then(|result| {
+            serde_json::from_str::<EndDndResponse>(&result).map_err(|e| EndDndError::MalformedResponse(e))
+        })
         .and_then(|o| o.into())
 }
 
@@ -42,7 +44,7 @@ impl<E: Error> Into<Result<EndDndResponse, EndDndError<E>>> for EndDndResponse {
         }
     }
 }
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub enum EndDndError<E: Error> {
     /// There was a mysterious problem ending the user's Do Not Disturb session
     UnknownError,
@@ -69,7 +71,7 @@ pub enum EndDndError<E: Error> {
     /// The method was called via a POST request, but the POST data was either missing or truncated.
     RequestTimeout,
     /// The response was not parseable as the expected object
-    MalformedResponse,
+    MalformedResponse(serde_json::error::Error),
     /// The response returned an error that was unknown to the library
     Unknown(String),
     /// The client had an error sending the request to Slack
@@ -143,7 +145,7 @@ impl<E: Error> Error for EndDndError<E> {
                 "request_timeout: The method was called via a POST request, but the POST data was either missing or \
                  truncated."
             }
-            &EndDndError::MalformedResponse => "Malformed response data from Slack.",
+            &EndDndError::MalformedResponse(ref e) => e.description(),
             &EndDndError::Unknown(ref s) => s,
             &EndDndError::Client(ref inner) => inner.description(),
         }
@@ -151,6 +153,7 @@ impl<E: Error> Error for EndDndError<E> {
 
     fn cause(&self) -> Option<&Error> {
         match self {
+            &EndDndError::MalformedResponse(ref e) => Some(e),
             &EndDndError::Client(ref inner) => Some(inner),
             _ => None,
         }
@@ -168,7 +171,7 @@ pub fn end_snooze<R>(client: &R, token: &str) -> Result<EndSnoozeResponse, EndSn
     client.send("dnd.endSnooze", &params[..])
         .map_err(|err| EndSnoozeError::Client(err))
         .and_then(|result| {
-            serde_json::from_str::<EndSnoozeResponse>(&result).map_err(|_| EndSnoozeError::MalformedResponse)
+            serde_json::from_str::<EndSnoozeResponse>(&result).map_err(|e| EndSnoozeError::MalformedResponse(e))
         })
         .and_then(|o| o.into())
 }
@@ -194,7 +197,7 @@ impl<E: Error> Into<Result<EndSnoozeResponse, EndSnoozeError<E>>> for EndSnoozeR
         }
     }
 }
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub enum EndSnoozeError<E: Error> {
     /// Snooze is not active for this user and cannot be ended
     SnoozeNotActive,
@@ -223,7 +226,7 @@ pub enum EndSnoozeError<E: Error> {
     /// The method was called via a POST request, but the POST data was either missing or truncated.
     RequestTimeout,
     /// The response was not parseable as the expected object
-    MalformedResponse,
+    MalformedResponse(serde_json::error::Error),
     /// The response returned an error that was unknown to the library
     Unknown(String),
     /// The client had an error sending the request to Slack
@@ -301,7 +304,7 @@ impl<E: Error> Error for EndSnoozeError<E> {
                 "request_timeout: The method was called via a POST request, but the POST data was either missing or \
                  truncated."
             }
-            &EndSnoozeError::MalformedResponse => "Malformed response data from Slack.",
+            &EndSnoozeError::MalformedResponse(ref e) => e.description(),
             &EndSnoozeError::Unknown(ref s) => s,
             &EndSnoozeError::Client(ref inner) => inner.description(),
         }
@@ -309,6 +312,7 @@ impl<E: Error> Error for EndSnoozeError<E> {
 
     fn cause(&self) -> Option<&Error> {
         match self {
+            &EndSnoozeError::MalformedResponse(ref e) => Some(e),
             &EndSnoozeError::Client(ref inner) => Some(inner),
             _ => None,
         }
@@ -327,7 +331,7 @@ pub fn info<R>(client: &R, token: &str, request: &InfoRequest) -> Result<InfoRes
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("dnd.info", &params[..])
         .map_err(|err| InfoError::Client(err))
-        .and_then(|result| serde_json::from_str::<InfoResponse>(&result).map_err(|_| InfoError::MalformedResponse))
+        .and_then(|result| serde_json::from_str::<InfoResponse>(&result).map_err(|e| InfoError::MalformedResponse(e)))
         .and_then(|o| o.into())
 }
 
@@ -360,7 +364,7 @@ impl<E: Error> Into<Result<InfoResponse, InfoError<E>>> for InfoResponse {
         }
     }
 }
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub enum InfoError<E: Error> {
     /// Value passed for user was invalid.
     UserNotFound,
@@ -385,7 +389,7 @@ pub enum InfoError<E: Error> {
     /// The method was called via a POST request, but the POST data was either missing or truncated.
     RequestTimeout,
     /// The response was not parseable as the expected object
-    MalformedResponse,
+    MalformedResponse(serde_json::error::Error),
     /// The response returned an error that was unknown to the library
     Unknown(String),
     /// The client had an error sending the request to Slack
@@ -455,7 +459,7 @@ impl<E: Error> Error for InfoError<E> {
                 "request_timeout: The method was called via a POST request, but the POST data was either missing or \
                  truncated."
             }
-            &InfoError::MalformedResponse => "Malformed response data from Slack.",
+            &InfoError::MalformedResponse(ref e) => e.description(),
             &InfoError::Unknown(ref s) => s,
             &InfoError::Client(ref inner) => inner.description(),
         }
@@ -463,6 +467,7 @@ impl<E: Error> Error for InfoError<E> {
 
     fn cause(&self) -> Option<&Error> {
         match self {
+            &InfoError::MalformedResponse(ref e) => Some(e),
             &InfoError::Client(ref inner) => Some(inner),
             _ => None,
         }
@@ -485,7 +490,7 @@ pub fn set_snooze<R>(client: &R,
     client.send("dnd.setSnooze", &params[..])
         .map_err(|err| SetSnoozeError::Client(err))
         .and_then(|result| {
-            serde_json::from_str::<SetSnoozeResponse>(&result).map_err(|_| SetSnoozeError::MalformedResponse)
+            serde_json::from_str::<SetSnoozeResponse>(&result).map_err(|e| SetSnoozeError::MalformedResponse(e))
         })
         .and_then(|o| o.into())
 }
@@ -516,7 +521,7 @@ impl<E: Error> Into<Result<SetSnoozeResponse, SetSnoozeError<E>>> for SetSnoozeR
         }
     }
 }
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub enum SetSnoozeError<E: Error> {
     /// No value provided for num_minutes
     MissingDuration,
@@ -545,7 +550,7 @@ pub enum SetSnoozeError<E: Error> {
     /// The method was called via a POST request, but the POST data was either missing or truncated.
     RequestTimeout,
     /// The response was not parseable as the expected object
-    MalformedResponse,
+    MalformedResponse(serde_json::error::Error),
     /// The response returned an error that was unknown to the library
     Unknown(String),
     /// The client had an error sending the request to Slack
@@ -621,7 +626,7 @@ impl<E: Error> Error for SetSnoozeError<E> {
                 "request_timeout: The method was called via a POST request, but the POST data was either missing or \
                  truncated."
             }
-            &SetSnoozeError::MalformedResponse => "Malformed response data from Slack.",
+            &SetSnoozeError::MalformedResponse(ref e) => e.description(),
             &SetSnoozeError::Unknown(ref s) => s,
             &SetSnoozeError::Client(ref inner) => inner.description(),
         }
@@ -629,6 +634,7 @@ impl<E: Error> Error for SetSnoozeError<E> {
 
     fn cause(&self) -> Option<&Error> {
         match self {
+            &SetSnoozeError::MalformedResponse(ref e) => Some(e),
             &SetSnoozeError::Client(ref inner) => Some(inner),
             _ => None,
         }
@@ -651,7 +657,7 @@ pub fn team_info<R>(client: &R,
     client.send("dnd.teamInfo", &params[..])
         .map_err(|err| TeamInfoError::Client(err))
         .and_then(|result| {
-            serde_json::from_str::<TeamInfoResponse>(&result).map_err(|_| TeamInfoError::MalformedResponse)
+            serde_json::from_str::<TeamInfoResponse>(&result).map_err(|e| TeamInfoError::MalformedResponse(e))
         })
         .and_then(|o| o.into())
 }
@@ -680,7 +686,7 @@ impl<E: Error> Into<Result<TeamInfoResponse, TeamInfoError<E>>> for TeamInfoResp
         }
     }
 }
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub enum TeamInfoError<E: Error> {
     /// No authentication token provided.
     NotAuthed,
@@ -703,7 +709,7 @@ pub enum TeamInfoError<E: Error> {
     /// The method was called via a POST request, but the POST data was either missing or truncated.
     RequestTimeout,
     /// The response was not parseable as the expected object
-    MalformedResponse,
+    MalformedResponse(serde_json::error::Error),
     /// The response returned an error that was unknown to the library
     Unknown(String),
     /// The client had an error sending the request to Slack
@@ -771,7 +777,7 @@ impl<E: Error> Error for TeamInfoError<E> {
                 "request_timeout: The method was called via a POST request, but the POST data was either missing or \
                  truncated."
             }
-            &TeamInfoError::MalformedResponse => "Malformed response data from Slack.",
+            &TeamInfoError::MalformedResponse(ref e) => e.description(),
             &TeamInfoError::Unknown(ref s) => s,
             &TeamInfoError::Client(ref inner) => inner.description(),
         }
@@ -779,6 +785,7 @@ impl<E: Error> Error for TeamInfoError<E> {
 
     fn cause(&self) -> Option<&Error> {
         match self {
+            &TeamInfoError::MalformedResponse(ref e) => Some(e),
             &TeamInfoError::Client(ref inner) => Some(inner),
             _ => None,
         }

@@ -22,7 +22,7 @@ pub fn test<R>(client: &R, request: &TestRequest) -> Result<TestResponse, TestEr
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("api.test", &params[..])
         .map_err(|err| TestError::Client(err))
-        .and_then(|result| serde_json::from_str::<TestResponse>(&result).map_err(|_| TestError::MalformedResponse))
+        .and_then(|result| serde_json::from_str::<TestResponse>(&result).map_err(|e| TestError::MalformedResponse(e)))
         .and_then(|o| o.into())
 }
 
@@ -52,7 +52,7 @@ impl<E: Error> Into<Result<TestResponse, TestError<E>>> for TestResponse {
         }
     }
 }
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub enum TestError<E: Error> {
     /// The method was passed an argument whose name falls outside the bounds of common decency. This includes very long names and names with non-alphanumeric characters other than _. If you get this error, it is typically an indication that you have made a very malformed API call.
     InvalidArgName,
@@ -69,7 +69,7 @@ pub enum TestError<E: Error> {
     /// The method was called via a POST request, but the POST data was either missing or truncated.
     RequestTimeout,
     /// The response was not parseable as the expected object
-    MalformedResponse,
+    MalformedResponse(serde_json::error::Error),
     /// The response returned an error that was unknown to the library
     Unknown(String),
     /// The client had an error sending the request to Slack
@@ -131,7 +131,7 @@ impl<E: Error> Error for TestError<E> {
                 "request_timeout: The method was called via a POST request, but the POST data was either missing or \
                  truncated."
             }
-            &TestError::MalformedResponse => "Malformed response data from Slack.",
+            &TestError::MalformedResponse(ref e) => e.description(),
             &TestError::Unknown(ref s) => s,
             &TestError::Client(ref inner) => inner.description(),
         }
@@ -139,6 +139,7 @@ impl<E: Error> Error for TestError<E> {
 
     fn cause(&self) -> Option<&Error> {
         match self {
+            &TestError::MalformedResponse(ref e) => Some(e),
             &TestError::Client(ref inner) => Some(inner),
             _ => None,
         }

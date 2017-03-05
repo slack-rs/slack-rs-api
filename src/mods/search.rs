@@ -30,7 +30,7 @@ pub fn all<R>(client: &R, token: &str, request: &AllRequest) -> Result<AllRespon
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("search.all", &params[..])
         .map_err(|err| AllError::Client(err))
-        .and_then(|result| serde_json::from_str::<AllResponse>(&result).map_err(|_| AllError::MalformedResponse))
+        .and_then(|result| serde_json::from_str::<AllResponse>(&result).map_err(|e| AllError::MalformedResponse(e)))
         .and_then(|o| o.into())
 }
 
@@ -61,15 +61,15 @@ pub struct AllResponse {
 }
 
 #[derive(Clone, Debug, Deserialize)]
-pub struct AllResponseFiles {
-    pub matches: Vec<::File>,
+pub struct AllResponseMessages {
+    pub matches: Vec<::Message>,
     pub paging: ::Paging,
 }
 
 
 #[derive(Clone, Debug, Deserialize)]
-pub struct AllResponseMessages {
-    pub matches: Vec<::Message>,
+pub struct AllResponseFiles {
+    pub matches: Vec<::File>,
     pub paging: ::Paging,
 }
 
@@ -83,7 +83,7 @@ impl<E: Error> Into<Result<AllResponse, AllError<E>>> for AllResponse {
         }
     }
 }
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub enum AllError<E: Error> {
     /// No authentication token provided.
     NotAuthed,
@@ -108,7 +108,7 @@ pub enum AllError<E: Error> {
     /// The method was called via a POST request, but the POST data was either missing or truncated.
     RequestTimeout,
     /// The response was not parseable as the expected object
-    MalformedResponse,
+    MalformedResponse(serde_json::error::Error),
     /// The response returned an error that was unknown to the library
     Unknown(String),
     /// The client had an error sending the request to Slack
@@ -178,7 +178,7 @@ impl<E: Error> Error for AllError<E> {
                 "request_timeout: The method was called via a POST request, but the POST data was either missing or \
                  truncated."
             }
-            &AllError::MalformedResponse => "Malformed response data from Slack.",
+            &AllError::MalformedResponse(ref e) => e.description(),
             &AllError::Unknown(ref s) => s,
             &AllError::Client(ref inner) => inner.description(),
         }
@@ -186,6 +186,7 @@ impl<E: Error> Error for AllError<E> {
 
     fn cause(&self) -> Option<&Error> {
         match self {
+            &AllError::MalformedResponse(ref e) => Some(e),
             &AllError::Client(ref inner) => Some(inner),
             _ => None,
         }
@@ -211,7 +212,7 @@ pub fn files<R>(client: &R, token: &str, request: &FilesRequest) -> Result<Files
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("search.files", &params[..])
         .map_err(|err| FilesError::Client(err))
-        .and_then(|result| serde_json::from_str::<FilesResponse>(&result).map_err(|_| FilesError::MalformedResponse))
+        .and_then(|result| serde_json::from_str::<FilesResponse>(&result).map_err(|e| FilesError::MalformedResponse(e)))
         .and_then(|o| o.into())
 }
 
@@ -257,7 +258,7 @@ impl<E: Error> Into<Result<FilesResponse, FilesError<E>>> for FilesResponse {
         }
     }
 }
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub enum FilesError<E: Error> {
     /// No authentication token provided.
     NotAuthed,
@@ -282,7 +283,7 @@ pub enum FilesError<E: Error> {
     /// The method was called via a POST request, but the POST data was either missing or truncated.
     RequestTimeout,
     /// The response was not parseable as the expected object
-    MalformedResponse,
+    MalformedResponse(serde_json::error::Error),
     /// The response returned an error that was unknown to the library
     Unknown(String),
     /// The client had an error sending the request to Slack
@@ -352,7 +353,7 @@ impl<E: Error> Error for FilesError<E> {
                 "request_timeout: The method was called via a POST request, but the POST data was either missing or \
                  truncated."
             }
-            &FilesError::MalformedResponse => "Malformed response data from Slack.",
+            &FilesError::MalformedResponse(ref e) => e.description(),
             &FilesError::Unknown(ref s) => s,
             &FilesError::Client(ref inner) => inner.description(),
         }
@@ -360,6 +361,7 @@ impl<E: Error> Error for FilesError<E> {
 
     fn cause(&self) -> Option<&Error> {
         match self {
+            &FilesError::MalformedResponse(ref e) => Some(e),
             &FilesError::Client(ref inner) => Some(inner),
             _ => None,
         }
@@ -389,7 +391,7 @@ pub fn messages<R>(client: &R,
     client.send("search.messages", &params[..])
         .map_err(|err| MessagesError::Client(err))
         .and_then(|result| {
-            serde_json::from_str::<MessagesResponse>(&result).map_err(|_| MessagesError::MalformedResponse)
+            serde_json::from_str::<MessagesResponse>(&result).map_err(|e| MessagesError::MalformedResponse(e))
         })
         .and_then(|o| o.into())
 }
@@ -436,7 +438,7 @@ impl<E: Error> Into<Result<MessagesResponse, MessagesError<E>>> for MessagesResp
         }
     }
 }
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub enum MessagesError<E: Error> {
     /// No authentication token provided.
     NotAuthed,
@@ -461,7 +463,7 @@ pub enum MessagesError<E: Error> {
     /// The method was called via a POST request, but the POST data was either missing or truncated.
     RequestTimeout,
     /// The response was not parseable as the expected object
-    MalformedResponse,
+    MalformedResponse(serde_json::error::Error),
     /// The response returned an error that was unknown to the library
     Unknown(String),
     /// The client had an error sending the request to Slack
@@ -531,7 +533,7 @@ impl<E: Error> Error for MessagesError<E> {
                 "request_timeout: The method was called via a POST request, but the POST data was either missing or \
                  truncated."
             }
-            &MessagesError::MalformedResponse => "Malformed response data from Slack.",
+            &MessagesError::MalformedResponse(ref e) => e.description(),
             &MessagesError::Unknown(ref s) => s,
             &MessagesError::Client(ref inner) => inner.description(),
         }
@@ -539,6 +541,7 @@ impl<E: Error> Error for MessagesError<E> {
 
     fn cause(&self) -> Option<&Error> {
         match self {
+            &MessagesError::MalformedResponse(ref e) => Some(e),
             &MessagesError::Client(ref inner) => Some(inner),
             _ => None,
         }

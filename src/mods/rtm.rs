@@ -24,7 +24,7 @@ pub fn start<R>(client: &R, token: &str, request: &StartRequest) -> Result<Start
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("rtm.start", &params[..])
         .map_err(|err| StartError::Client(err))
-        .and_then(|result| serde_json::from_str::<StartResponse>(&result).map_err(|_| StartError::MalformedResponse))
+        .and_then(|result| serde_json::from_str::<StartResponse>(&result).map_err(|e| StartError::MalformedResponse(e)))
         .and_then(|o| o.into())
 }
 
@@ -63,7 +63,7 @@ impl<E: Error> Into<Result<StartResponse, StartError<E>>> for StartResponse {
         }
     }
 }
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub enum StartError<E: Error> {
     /// Team is being migrated between servers. See the team_migration_started event documentation for details.
     MigrationInProgress,
@@ -88,7 +88,7 @@ pub enum StartError<E: Error> {
     /// The method was called via a POST request, but the POST data was either missing or truncated.
     RequestTimeout,
     /// The response was not parseable as the expected object
-    MalformedResponse,
+    MalformedResponse(serde_json::error::Error),
     /// The response returned an error that was unknown to the library
     Unknown(String),
     /// The client had an error sending the request to Slack
@@ -161,7 +161,7 @@ impl<E: Error> Error for StartError<E> {
                 "request_timeout: The method was called via a POST request, but the POST data was either missing or \
                  truncated."
             }
-            &StartError::MalformedResponse => "Malformed response data from Slack.",
+            &StartError::MalformedResponse(ref e) => e.description(),
             &StartError::Unknown(ref s) => s,
             &StartError::Client(ref inner) => inner.description(),
         }
@@ -169,6 +169,7 @@ impl<E: Error> Error for StartError<E> {
 
     fn cause(&self) -> Option<&Error> {
         match self {
+            &StartError::MalformedResponse(ref e) => Some(e),
             &StartError::Client(ref inner) => Some(inner),
             _ => None,
         }

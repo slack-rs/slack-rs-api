@@ -25,7 +25,7 @@ pub fn add<R>(client: &R, token: &str, request: &AddRequest) -> Result<AddRespon
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("reminders.add", &params[..])
         .map_err(|err| AddError::Client(err))
-        .and_then(|result| serde_json::from_str::<AddResponse>(&result).map_err(|_| AddError::MalformedResponse))
+        .and_then(|result| serde_json::from_str::<AddResponse>(&result).map_err(|e| AddError::MalformedResponse(e)))
         .and_then(|o| o.into())
 }
 
@@ -57,7 +57,7 @@ impl<E: Error> Into<Result<AddResponse, AddError<E>>> for AddResponse {
         }
     }
 }
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub enum AddError<E: Error> {
     /// The phrasing of the timing for this reminder is unclear. You must include a complete time description. Some examples that work: 1458678068, 20, in 5 minutes, tomorrow, at 3:30pm, on Tuesday, or next week.
     CannotParse,
@@ -94,7 +94,7 @@ pub enum AddError<E: Error> {
     /// The method was called via a POST request, but the POST data was either missing or truncated.
     RequestTimeout,
     /// The response was not parseable as the expected object
-    MalformedResponse,
+    MalformedResponse(serde_json::error::Error),
     /// The response returned an error that was unknown to the library
     Unknown(String),
     /// The client had an error sending the request to Slack
@@ -182,7 +182,7 @@ impl<E: Error> Error for AddError<E> {
                 "request_timeout: The method was called via a POST request, but the POST data was either missing or \
                  truncated."
             }
-            &AddError::MalformedResponse => "Malformed response data from Slack.",
+            &AddError::MalformedResponse(ref e) => e.description(),
             &AddError::Unknown(ref s) => s,
             &AddError::Client(ref inner) => inner.description(),
         }
@@ -190,6 +190,7 @@ impl<E: Error> Error for AddError<E> {
 
     fn cause(&self) -> Option<&Error> {
         match self {
+            &AddError::MalformedResponse(ref e) => Some(e),
             &AddError::Client(ref inner) => Some(inner),
             _ => None,
         }
@@ -212,7 +213,7 @@ pub fn complete<R>(client: &R,
     client.send("reminders.complete", &params[..])
         .map_err(|err| CompleteError::Client(err))
         .and_then(|result| {
-            serde_json::from_str::<CompleteResponse>(&result).map_err(|_| CompleteError::MalformedResponse)
+            serde_json::from_str::<CompleteResponse>(&result).map_err(|e| CompleteError::MalformedResponse(e))
         })
         .and_then(|o| o.into())
 }
@@ -240,7 +241,7 @@ impl<E: Error> Into<Result<CompleteResponse, CompleteError<E>>> for CompleteResp
         }
     }
 }
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub enum CompleteError<E: Error> {
     /// That reminder can't be found.
     NotFound,
@@ -271,7 +272,7 @@ pub enum CompleteError<E: Error> {
     /// The method was called via a POST request, but the POST data was either missing or truncated.
     RequestTimeout,
     /// The response was not parseable as the expected object
-    MalformedResponse,
+    MalformedResponse(serde_json::error::Error),
     /// The response returned an error that was unknown to the library
     Unknown(String),
     /// The client had an error sending the request to Slack
@@ -351,7 +352,7 @@ impl<E: Error> Error for CompleteError<E> {
                 "request_timeout: The method was called via a POST request, but the POST data was either missing or \
                  truncated."
             }
-            &CompleteError::MalformedResponse => "Malformed response data from Slack.",
+            &CompleteError::MalformedResponse(ref e) => e.description(),
             &CompleteError::Unknown(ref s) => s,
             &CompleteError::Client(ref inner) => inner.description(),
         }
@@ -359,6 +360,7 @@ impl<E: Error> Error for CompleteError<E> {
 
     fn cause(&self) -> Option<&Error> {
         match self {
+            &CompleteError::MalformedResponse(ref e) => Some(e),
             &CompleteError::Client(ref inner) => Some(inner),
             _ => None,
         }
@@ -377,7 +379,9 @@ pub fn delete<R>(client: &R, token: &str, request: &DeleteRequest) -> Result<Del
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("reminders.delete", &params[..])
         .map_err(|err| DeleteError::Client(err))
-        .and_then(|result| serde_json::from_str::<DeleteResponse>(&result).map_err(|_| DeleteError::MalformedResponse))
+        .and_then(|result| {
+            serde_json::from_str::<DeleteResponse>(&result).map_err(|e| DeleteError::MalformedResponse(e))
+        })
         .and_then(|o| o.into())
 }
 
@@ -404,7 +408,7 @@ impl<E: Error> Into<Result<DeleteResponse, DeleteError<E>>> for DeleteResponse {
         }
     }
 }
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub enum DeleteError<E: Error> {
     /// That reminder can't be found.
     NotFound,
@@ -431,7 +435,7 @@ pub enum DeleteError<E: Error> {
     /// The method was called via a POST request, but the POST data was either missing or truncated.
     RequestTimeout,
     /// The response was not parseable as the expected object
-    MalformedResponse,
+    MalformedResponse(serde_json::error::Error),
     /// The response returned an error that was unknown to the library
     Unknown(String),
     /// The client had an error sending the request to Slack
@@ -503,7 +507,7 @@ impl<E: Error> Error for DeleteError<E> {
                 "request_timeout: The method was called via a POST request, but the POST data was either missing or \
                  truncated."
             }
-            &DeleteError::MalformedResponse => "Malformed response data from Slack.",
+            &DeleteError::MalformedResponse(ref e) => e.description(),
             &DeleteError::Unknown(ref s) => s,
             &DeleteError::Client(ref inner) => inner.description(),
         }
@@ -511,6 +515,7 @@ impl<E: Error> Error for DeleteError<E> {
 
     fn cause(&self) -> Option<&Error> {
         match self {
+            &DeleteError::MalformedResponse(ref e) => Some(e),
             &DeleteError::Client(ref inner) => Some(inner),
             _ => None,
         }
@@ -529,7 +534,7 @@ pub fn info<R>(client: &R, token: &str, request: &InfoRequest) -> Result<InfoRes
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("reminders.info", &params[..])
         .map_err(|err| InfoError::Client(err))
-        .and_then(|result| serde_json::from_str::<InfoResponse>(&result).map_err(|_| InfoError::MalformedResponse))
+        .and_then(|result| serde_json::from_str::<InfoResponse>(&result).map_err(|e| InfoError::MalformedResponse(e)))
         .and_then(|o| o.into())
 }
 
@@ -557,7 +562,7 @@ impl<E: Error> Into<Result<InfoResponse, InfoError<E>>> for InfoResponse {
         }
     }
 }
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub enum InfoError<E: Error> {
     /// That reminder can't be found.
     NotFound,
@@ -584,7 +589,7 @@ pub enum InfoError<E: Error> {
     /// The method was called via a POST request, but the POST data was either missing or truncated.
     RequestTimeout,
     /// The response was not parseable as the expected object
-    MalformedResponse,
+    MalformedResponse(serde_json::error::Error),
     /// The response returned an error that was unknown to the library
     Unknown(String),
     /// The client had an error sending the request to Slack
@@ -656,7 +661,7 @@ impl<E: Error> Error for InfoError<E> {
                 "request_timeout: The method was called via a POST request, but the POST data was either missing or \
                  truncated."
             }
-            &InfoError::MalformedResponse => "Malformed response data from Slack.",
+            &InfoError::MalformedResponse(ref e) => e.description(),
             &InfoError::Unknown(ref s) => s,
             &InfoError::Client(ref inner) => inner.description(),
         }
@@ -664,6 +669,7 @@ impl<E: Error> Error for InfoError<E> {
 
     fn cause(&self) -> Option<&Error> {
         match self {
+            &InfoError::MalformedResponse(ref e) => Some(e),
             &InfoError::Client(ref inner) => Some(inner),
             _ => None,
         }
@@ -680,7 +686,7 @@ pub fn list<R>(client: &R, token: &str) -> Result<ListResponse, ListError<R::Err
     let params = &[("token", token)];
     client.send("reminders.list", &params[..])
         .map_err(|err| ListError::Client(err))
-        .and_then(|result| serde_json::from_str::<ListResponse>(&result).map_err(|_| ListError::MalformedResponse))
+        .and_then(|result| serde_json::from_str::<ListResponse>(&result).map_err(|e| ListError::MalformedResponse(e)))
         .and_then(|o| o.into())
 }
 
@@ -702,7 +708,7 @@ impl<E: Error> Into<Result<ListResponse, ListError<E>>> for ListResponse {
         }
     }
 }
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub enum ListError<E: Error> {
     /// No authentication token provided.
     NotAuthed,
@@ -727,7 +733,7 @@ pub enum ListError<E: Error> {
     /// The method was called via a POST request, but the POST data was either missing or truncated.
     RequestTimeout,
     /// The response was not parseable as the expected object
-    MalformedResponse,
+    MalformedResponse(serde_json::error::Error),
     /// The response returned an error that was unknown to the library
     Unknown(String),
     /// The client had an error sending the request to Slack
@@ -797,7 +803,7 @@ impl<E: Error> Error for ListError<E> {
                 "request_timeout: The method was called via a POST request, but the POST data was either missing or \
                  truncated."
             }
-            &ListError::MalformedResponse => "Malformed response data from Slack.",
+            &ListError::MalformedResponse(ref e) => e.description(),
             &ListError::Unknown(ref s) => s,
             &ListError::Client(ref inner) => inner.description(),
         }
@@ -805,6 +811,7 @@ impl<E: Error> Error for ListError<E> {
 
     fn cause(&self) -> Option<&Error> {
         match self {
+            &ListError::MalformedResponse(ref e) => Some(e),
             &ListError::Client(ref inner) => Some(inner),
             _ => None,
         }

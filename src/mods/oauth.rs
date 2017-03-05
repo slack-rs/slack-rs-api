@@ -25,7 +25,9 @@ pub fn access<R>(client: &R, request: &AccessRequest) -> Result<AccessResponse, 
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("oauth.access", &params[..])
         .map_err(|err| AccessError::Client(err))
-        .and_then(|result| serde_json::from_str::<AccessResponse>(&result).map_err(|_| AccessError::MalformedResponse))
+        .and_then(|result| {
+            serde_json::from_str::<AccessResponse>(&result).map_err(|e| AccessError::MalformedResponse(e))
+        })
 }
 
 #[derive(Clone, Default, Debug)]
@@ -48,7 +50,7 @@ pub struct AccessResponse {
 
 
 
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub enum AccessError<E: Error> {
     /// Value passed for client_id was invalid.
     InvalidClientId,
@@ -73,7 +75,7 @@ pub enum AccessError<E: Error> {
     /// The method was called via a POST request, but the POST data was either missing or truncated.
     RequestTimeout,
     /// The response was not parseable as the expected object
-    MalformedResponse,
+    MalformedResponse(serde_json::error::Error),
     /// The response returned an error that was unknown to the library
     Unknown(String),
     /// The client had an error sending the request to Slack
@@ -146,7 +148,7 @@ impl<E: Error> Error for AccessError<E> {
                 "request_timeout: The method was called via a POST request, but the POST data was either missing or \
                  truncated."
             }
-            &AccessError::MalformedResponse => "Malformed response data from Slack.",
+            &AccessError::MalformedResponse(ref e) => e.description(),
             &AccessError::Unknown(ref s) => s,
             &AccessError::Client(ref inner) => inner.description(),
         }
@@ -154,6 +156,7 @@ impl<E: Error> Error for AccessError<E> {
 
     fn cause(&self) -> Option<&Error> {
         match self {
+            &AccessError::MalformedResponse(ref e) => Some(e),
             &AccessError::Client(ref inner) => Some(inner),
             _ => None,
         }

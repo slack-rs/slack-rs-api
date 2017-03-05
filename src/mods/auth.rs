@@ -22,7 +22,9 @@ pub fn revoke<R>(client: &R, token: &str, request: &RevokeRequest) -> Result<Rev
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("auth.revoke", &params[..])
         .map_err(|err| RevokeError::Client(err))
-        .and_then(|result| serde_json::from_str::<RevokeResponse>(&result).map_err(|_| RevokeError::MalformedResponse))
+        .and_then(|result| {
+            serde_json::from_str::<RevokeResponse>(&result).map_err(|e| RevokeError::MalformedResponse(e))
+        })
         .and_then(|o| o.into())
 }
 
@@ -50,7 +52,7 @@ impl<E: Error> Into<Result<RevokeResponse, RevokeError<E>>> for RevokeResponse {
         }
     }
 }
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub enum RevokeError<E: Error> {
     /// No authentication token provided.
     NotAuthed,
@@ -73,7 +75,7 @@ pub enum RevokeError<E: Error> {
     /// The method was called via a POST request, but the POST data was either missing or truncated.
     RequestTimeout,
     /// The response was not parseable as the expected object
-    MalformedResponse,
+    MalformedResponse(serde_json::error::Error),
     /// The response returned an error that was unknown to the library
     Unknown(String),
     /// The client had an error sending the request to Slack
@@ -141,7 +143,7 @@ impl<E: Error> Error for RevokeError<E> {
                 "request_timeout: The method was called via a POST request, but the POST data was either missing or \
                  truncated."
             }
-            &RevokeError::MalformedResponse => "Malformed response data from Slack.",
+            &RevokeError::MalformedResponse(ref e) => e.description(),
             &RevokeError::Unknown(ref s) => s,
             &RevokeError::Client(ref inner) => inner.description(),
         }
@@ -149,6 +151,7 @@ impl<E: Error> Error for RevokeError<E> {
 
     fn cause(&self) -> Option<&Error> {
         match self {
+            &RevokeError::MalformedResponse(ref e) => Some(e),
             &RevokeError::Client(ref inner) => Some(inner),
             _ => None,
         }
@@ -165,7 +168,7 @@ pub fn test<R>(client: &R, token: &str) -> Result<TestResponse, TestError<R::Err
     let params = &[("token", token)];
     client.send("auth.test", &params[..])
         .map_err(|err| TestError::Client(err))
-        .and_then(|result| serde_json::from_str::<TestResponse>(&result).map_err(|_| TestError::MalformedResponse))
+        .and_then(|result| serde_json::from_str::<TestResponse>(&result).map_err(|e| TestError::MalformedResponse(e)))
         .and_then(|o| o.into())
 }
 
@@ -191,7 +194,7 @@ impl<E: Error> Into<Result<TestResponse, TestError<E>>> for TestResponse {
         }
     }
 }
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub enum TestError<E: Error> {
     /// No authentication token provided.
     NotAuthed,
@@ -214,7 +217,7 @@ pub enum TestError<E: Error> {
     /// The method was called via a POST request, but the POST data was either missing or truncated.
     RequestTimeout,
     /// The response was not parseable as the expected object
-    MalformedResponse,
+    MalformedResponse(serde_json::error::Error),
     /// The response returned an error that was unknown to the library
     Unknown(String),
     /// The client had an error sending the request to Slack
@@ -282,7 +285,7 @@ impl<E: Error> Error for TestError<E> {
                 "request_timeout: The method was called via a POST request, but the POST data was either missing or \
                  truncated."
             }
-            &TestError::MalformedResponse => "Malformed response data from Slack.",
+            &TestError::MalformedResponse(ref e) => e.description(),
             &TestError::Unknown(ref s) => s,
             &TestError::Client(ref inner) => inner.description(),
         }
@@ -290,6 +293,7 @@ impl<E: Error> Error for TestError<E> {
 
     fn cause(&self) -> Option<&Error> {
         match self {
+            &TestError::MalformedResponse(ref e) => Some(e),
             &TestError::Client(ref inner) => Some(inner),
             _ => None,
         }

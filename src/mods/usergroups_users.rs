@@ -25,7 +25,7 @@ pub fn list<R>(client: &R, token: &str, request: &ListRequest) -> Result<ListRes
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("usergroups.users.list", &params[..])
         .map_err(|err| ListError::Client(err))
-        .and_then(|result| serde_json::from_str::<ListResponse>(&result).map_err(|_| ListError::MalformedResponse))
+        .and_then(|result| serde_json::from_str::<ListResponse>(&result).map_err(|e| ListError::MalformedResponse(e)))
         .and_then(|o| o.into())
 }
 
@@ -55,7 +55,7 @@ impl<E: Error> Into<Result<ListResponse, ListError<E>>> for ListResponse {
         }
     }
 }
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub enum ListError<E: Error> {
     /// No authentication token provided.
     NotAuthed,
@@ -82,7 +82,7 @@ pub enum ListError<E: Error> {
     /// The method was called via a POST request, but the POST data was either missing or truncated.
     RequestTimeout,
     /// The response was not parseable as the expected object
-    MalformedResponse,
+    MalformedResponse(serde_json::error::Error),
     /// The response returned an error that was unknown to the library
     Unknown(String),
     /// The client had an error sending the request to Slack
@@ -156,7 +156,7 @@ impl<E: Error> Error for ListError<E> {
                 "request_timeout: The method was called via a POST request, but the POST data was either missing or \
                  truncated."
             }
-            &ListError::MalformedResponse => "Malformed response data from Slack.",
+            &ListError::MalformedResponse(ref e) => e.description(),
             &ListError::Unknown(ref s) => s,
             &ListError::Client(ref inner) => inner.description(),
         }
@@ -164,6 +164,7 @@ impl<E: Error> Error for ListError<E> {
 
     fn cause(&self) -> Option<&Error> {
         match self {
+            &ListError::MalformedResponse(ref e) => Some(e),
             &ListError::Client(ref inner) => Some(inner),
             _ => None,
         }
@@ -186,7 +187,9 @@ pub fn update<R>(client: &R, token: &str, request: &UpdateRequest) -> Result<Upd
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     client.send("usergroups.users.update", &params[..])
         .map_err(|err| UpdateError::Client(err))
-        .and_then(|result| serde_json::from_str::<UpdateResponse>(&result).map_err(|_| UpdateError::MalformedResponse))
+        .and_then(|result| {
+            serde_json::from_str::<UpdateResponse>(&result).map_err(|e| UpdateError::MalformedResponse(e))
+        })
         .and_then(|o| o.into())
 }
 
@@ -218,7 +221,7 @@ impl<E: Error> Into<Result<UpdateResponse, UpdateError<E>>> for UpdateResponse {
         }
     }
 }
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub enum UpdateError<E: Error> {
     /// No authentication token provided.
     NotAuthed,
@@ -245,7 +248,7 @@ pub enum UpdateError<E: Error> {
     /// The method was called via a POST request, but the POST data was either missing or truncated.
     RequestTimeout,
     /// The response was not parseable as the expected object
-    MalformedResponse,
+    MalformedResponse(serde_json::error::Error),
     /// The response returned an error that was unknown to the library
     Unknown(String),
     /// The client had an error sending the request to Slack
@@ -319,7 +322,7 @@ impl<E: Error> Error for UpdateError<E> {
                 "request_timeout: The method was called via a POST request, but the POST data was either missing or \
                  truncated."
             }
-            &UpdateError::MalformedResponse => "Malformed response data from Slack.",
+            &UpdateError::MalformedResponse(ref e) => e.description(),
             &UpdateError::Unknown(ref s) => s,
             &UpdateError::Client(ref inner) => inner.description(),
         }
@@ -327,6 +330,7 @@ impl<E: Error> Error for UpdateError<E> {
 
     fn cause(&self) -> Option<&Error> {
         match self {
+            &UpdateError::MalformedResponse(ref e) => Some(e),
             &UpdateError::Client(ref inner) => Some(inner),
             _ => None,
         }
