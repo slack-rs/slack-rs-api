@@ -36,7 +36,7 @@ pub struct Channel {
 }
 
 #[derive(Clone, Debug, Deserialize)]
-pub struct ChannelTopic {
+pub struct ChannelPurpose {
     pub creator: Option<String>,
     pub last_set: Option<i32>,
     pub value: Option<String>,
@@ -44,7 +44,7 @@ pub struct ChannelTopic {
 
 
 #[derive(Clone, Debug, Deserialize)]
-pub struct ChannelPurpose {
+pub struct ChannelTopic {
     pub creator: Option<String>,
     pub last_set: Option<i32>,
     pub value: Option<String>,
@@ -128,7 +128,7 @@ pub struct Group {
 }
 
 #[derive(Clone, Debug, Deserialize)]
-pub struct GroupPurpose {
+pub struct GroupTopic {
     pub creator: Option<String>,
     pub last_set: Option<i32>,
     pub value: Option<String>,
@@ -136,7 +136,7 @@ pub struct GroupPurpose {
 
 
 #[derive(Clone, Debug, Deserialize)]
-pub struct GroupTopic {
+pub struct GroupPurpose {
     pub creator: Option<String>,
     pub last_set: Option<i32>,
     pub value: Option<String>,
@@ -726,13 +726,6 @@ pub struct MessageStandard {
 }
 
 #[derive(Clone, Debug, Deserialize)]
-pub struct MessageStandardEdited {
-    pub ts: Option<String>,
-    pub user: Option<String>,
-}
-
-
-#[derive(Clone, Debug, Deserialize)]
 pub struct MessageStandardAttachment {
     pub author_icon: Option<String>,
     pub author_link: Option<String>,
@@ -756,6 +749,13 @@ pub struct MessageStandardAttachmentField {
     pub short: Option<bool>,
     pub title: Option<String>,
     pub value: Option<String>,
+}
+
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct MessageStandardEdited {
+    pub ts: Option<String>,
+    pub user: Option<String>,
 }
 
 

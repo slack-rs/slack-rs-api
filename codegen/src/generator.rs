@@ -51,8 +51,8 @@ pub struct Method {
 
 impl Method {
     pub fn generate(&self) -> String {
-        // HACK: files.upload requires multipart support, which is not yet supported by this library
-        if self.name == "files.upload" {
+        // HACK: these methods requires multipart support, which is not yet supported by this library
+        if self.name == "files.upload" || self.name == "users.setPhoto" {
             return String::new();
         }
 
