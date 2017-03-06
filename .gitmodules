@@ -1,0 +1,3 @@
+[submodule "codegen/slack-api-schemas"]
+	path = codegen/slack-api-schemas
+	url = https://github.com/slack-rs/slack-api-schemas.git

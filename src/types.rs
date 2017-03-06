@@ -1,780 +1,910 @@
-// Copyright 2015-2016 the slack-rs authors.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+use std::collections::HashMap;
 
-use rustc_serialize::{Decodable, Decoder};
-
-/// The `Reaction` object as found in the [`File`](https://api.slack.com/types/file) type and some
-/// [`Message`](https://api.slack.com/events/message) responses.
-#[derive(Clone,Debug,RustcDecodable)]
-pub struct Reaction {
-    pub name: String,
-    pub count: u32,
-    pub users: Vec<String>,
-}
-
-/// The `Comment` object as found in the [`File`](https://api.slack.com/types/file) type and the
-/// [`files.info`](https://api.slack.com/methods/files.info) response.
-#[derive(Clone,Debug,RustcDecodable)]
-pub struct Comment {
-    pub id: String,
-    pub timestamp: u32,
-    pub user: String,
-    pub comment: String,
-    pub reactions: Option<Vec<Reaction>>,
-}
-
-/// The Slack [`File`](https://api.slack.com/types/file) type.
-#[derive(Clone,Debug,RustcDecodable)]
-pub struct File {
-    pub id: String,
-    pub created: Option<u32>,
-    pub timestamp: Option<u32>,
+#[derive(Clone, Debug, Deserialize)]
+pub struct Bot {
+    pub app_id: Option<String>,
+    pub deleted: Option<bool>,
+    pub icons: Option<BotIcons>,
+    pub id: Option<String>,
     pub name: Option<String>,
-    pub title: String,
-    pub mimetype: String,
-    pub filetype: String,
-    pub pretty_type: String,
-    pub user: String,
-    pub mode: String,
-    pub editable: bool,
-    pub is_external: bool,
-    pub external_type: String,
-    pub size: u32,
-    pub url: Option<String>,
-    pub url_download: Option<String>,
-    pub url_private: String,
-    pub url_private_download: String,
-    pub thumb_64: Option<String>,
-    pub thumb_80: Option<String>,
-    pub thumb_360_gif: Option<String>,
-    pub thumb_360_w: Option<u32>,
-    pub thumb_360_h: Option<u32>,
-    pub thumb_360: Option<String>,
-    pub thumb_480_w: Option<u32>,
-    pub thumb_480_h: Option<u32>,
-    pub thumb_480: Option<String>,
-    pub thumb_720_w: Option<u32>,
-    pub thumb_720_h: Option<u32>,
-    pub thumb_720: Option<String>,
-    pub thumb_960_w: Option<u32>,
-    pub thumb_960_h: Option<u32>,
-    pub thumb_960: Option<String>,
-    pub thumb_1024_w: Option<u32>,
-    pub thumb_1024_h: Option<u32>,
-    pub thumb_1024: Option<String>,
-    pub permalink: String,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct BotIcons {
+    pub image_36: Option<String>,
+    pub image_48: Option<String>,
+    pub image_72: Option<String>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct Channel {
+    pub created: Option<i32>,
+    pub creator: Option<String>,
+    pub id: Option<String>,
+    pub is_archived: Option<bool>,
+    pub is_channel: Option<bool>,
+    pub is_general: Option<bool>,
+    pub is_member: Option<bool>,
+    pub last_read: Option<String>,
+    pub latest: Option<::Message>,
+    pub members: Option<Vec<String>>,
+    pub name: Option<String>,
+    pub purpose: Option<ChannelPurpose>,
+    pub topic: Option<ChannelTopic>,
+    pub unread_count: Option<i32>,
+    pub unread_count_display: Option<i32>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct ChannelPurpose {
+    pub creator: Option<String>,
+    pub last_set: Option<i32>,
+    pub value: Option<String>,
+}
+
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct ChannelTopic {
+    pub creator: Option<String>,
+    pub last_set: Option<i32>,
+    pub value: Option<String>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct File {
+    pub channels: Option<Vec<String>>,
+    pub comments_count: Option<i32>,
+    pub created: Option<i32>,
+    pub display_as_bot: Option<bool>,
     pub edit_link: Option<String>,
+    pub editable: Option<bool>,
+    pub external_type: Option<String>,
+    pub filetype: Option<String>,
+    pub groups: Option<Vec<String>>,
+    pub id: Option<String>,
+    pub ims: Option<Vec<String>>,
+    pub initial_comment: Option<::FileComment>,
+    pub is_external: Option<bool>,
+    pub is_public: Option<bool>,
+    pub is_starred: Option<bool>,
+    pub lines: Option<i32>,
+    pub lines_more: Option<i32>,
+    pub mimetype: Option<String>,
+    pub mode: Option<String>,
+    pub name: Option<String>,
+    pub num_stars: Option<i32>,
+    pub permalink: Option<String>,
+    pub permalink_public: Option<String>,
+    pub pinned_to: Option<Vec<String>>,
+    pub pretty_type: Option<String>,
     pub preview: Option<String>,
     pub preview_highlight: Option<String>,
-    pub lines: Option<u32>,
-    pub lines_more: Option<u32>,
-    pub is_public: bool,
-    pub public_url_shared: bool,
-    pub channels: Vec<String>,
-    pub groups: Vec<String>,
-    pub ims: Option<Vec<String>>,
-    pub initial_comment: Option<Comment>,
-    pub num_stars: Option<u32>,
-    pub is_starred: Option<bool>,
-    pub pinned_to: Option<Vec<String>>,
-    pub reactions: Option<Vec<Reaction>>,
+    pub public_url_shared: Option<bool>,
+    pub reactions: Option<Vec<::Reaction>>,
+    pub size: Option<i32>,
+    pub thumb_160: Option<String>,
+    pub thumb_360: Option<String>,
+    pub thumb_360_gif: Option<String>,
+    pub thumb_360_h: Option<i32>,
+    pub thumb_360_w: Option<i32>,
+    pub thumb_480: Option<String>,
+    pub thumb_480_h: Option<i32>,
+    pub thumb_480_w: Option<i32>,
+    pub thumb_64: Option<String>,
+    pub thumb_80: Option<String>,
+    pub timestamp: Option<i32>,
+    pub title: Option<String>,
+    pub url_private: Option<String>,
+    pub url_private_download: Option<String>,
+    pub user: Option<String>,
+    pub username: Option<String>,
 }
 
-/// The `Paging` object as found in API endpoints that return pages of items.
-#[derive(Clone,Debug,RustcDecodable)]
-pub struct Pagination {
-    pub count: u32,
-    pub total: u32,
-    pub page: u32,
-    pub pages: u32,
+#[derive(Clone, Debug, Deserialize)]
+pub struct FileComment {
+    pub comment: Option<String>,
+    pub id: Option<String>,
+    pub reactions: Option<Vec<::Reaction>>,
+    pub timestamp: Option<i32>,
+    pub user: Option<String>,
 }
 
-/// The `Reminder` object, representing a reminder a user has set for themself or for another user.
-// `time` and `complete_ts` will only be provided if `recurring` is `false`
-// This type is not described directly, but an example can be seen [here](https://api.slack.com/methods/reminders.info).
-#[derive(Clone,Debug,RustcDecodable)]
-pub struct Reminder {
-    pub id: String,
-    pub creator: String,
-    pub user: String,
-    pub text: String,
-    pub recurring: bool,
-    pub time: Option<u64>,
-    pub complete_ts: Option<u64>,
-}
-
-/// The Slack [`Channel`](https://api.slack.com/types/channel) type.
-// Currently missing "latest" field
-#[derive(Clone,Debug,RustcDecodable)]
-pub struct Channel {
-    pub id: String,
-    pub name: String,
-    pub is_channel: bool,
-    pub created: i64,
-    pub creator: String,
-    pub is_archived: bool,
-    pub is_general: bool,
-    pub members: Option<Vec<String>>,
-    pub topic: Option<Topic>,
-    pub purpose: Option<Purpose>,
-    pub is_member: bool,
-    pub last_read: Option<String>,
-    pub unread_count: Option<i64>,
-    pub unread_count_display: Option<i64>,
-}
-
-/// The Slack [`Group`](https://api.slack.com/types/group) type.
-// Currently missing "latest" field
-#[derive(Clone,Debug,RustcDecodable)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct Group {
-    pub id: String,
-    pub name: String,
-    pub is_group: bool,
-    pub created: i64,
-    pub creator: String,
-    pub is_archived: bool,
-    pub members: Option<Vec<String>>,
-    pub topic: Option<Topic>,
-    pub purpose: Option<Purpose>,
+    pub created: Option<i32>,
+    pub creator: Option<String>,
+    pub id: Option<String>,
+    pub is_archived: Option<bool>,
+    pub is_group: Option<bool>,
+    pub is_mpim: Option<bool>,
     pub last_read: Option<String>,
-    pub unread_count: Option<i64>,
-    pub unread_count_display: Option<i64>,
+    pub latest: Option<::Message>,
+    pub members: Option<Vec<String>>,
+    pub name: Option<String>,
+    pub purpose: Option<GroupPurpose>,
+    pub topic: Option<GroupTopic>,
+    pub unread_count: Option<i32>,
+    pub unread_count_display: Option<i32>,
 }
 
-/// The Profile that belongs to a [`User`](https://api.slack.com/types/user).
-#[derive(Clone,Debug,RustcDecodable)]
-pub struct UserProfile {
-    pub first_name: Option<String>,
-    pub last_name: Option<String>,
-    pub real_name: Option<String>,
-    pub email: Option<String>,
-    pub skype: Option<String>,
-    pub phone: Option<String>,
-    pub image_24: String,
-    pub image_32: String,
-    pub image_48: String,
-    pub image_72: String,
-    pub image_192: String,
+#[derive(Clone, Debug, Deserialize)]
+pub struct GroupPurpose {
+    pub creator: Option<String>,
+    pub last_set: Option<i32>,
+    pub value: Option<String>,
 }
 
-/// The Slack [`User`](https://api.slack.com/types/user) type.
-#[derive(Clone,Debug,RustcDecodable)]
-pub struct User {
-    pub id: String,
-    pub name: String,
-    pub deleted: bool,
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct GroupTopic {
+    pub creator: Option<String>,
+    pub last_set: Option<i32>,
+    pub value: Option<String>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct Im {
+    pub created: Option<i32>,
+    pub id: Option<String>,
+    pub is_im: Option<bool>,
+    pub is_user_deleted: Option<bool>,
+    pub user: Option<String>,
+}
+
+#[derive(Clone, Debug)]
+pub enum Message {
+    Standard(MessageStandard),
+    BotMessage(MessageBotMessage),
+    ChannelArchive(MessageChannelArchive),
+    ChannelJoin(MessageChannelJoin),
+    ChannelLeave(MessageChannelLeave),
+    ChannelName(MessageChannelName),
+    ChannelPurpose(MessageChannelPurpose),
+    ChannelTopic(MessageChannelTopic),
+    ChannelUnarchive(MessageChannelUnarchive),
+    FileComment(MessageFileComment),
+    FileMention(MessageFileMention),
+    FileShare(MessageFileShare),
+    GroupArchive(MessageGroupArchive),
+    GroupJoin(MessageGroupJoin),
+    GroupLeave(MessageGroupLeave),
+    GroupName(MessageGroupName),
+    GroupPurpose(MessageGroupPurpose),
+    GroupTopic(MessageGroupTopic),
+    GroupUnarchive(MessageGroupUnarchive),
+    MeMessage(MessageMeMessage),
+    MessageChanged(MessageMessageChanged),
+    MessageDeleted(MessageMessageDeleted),
+    MessageReplied(MessageMessageReplied),
+    PinnedItem(MessagePinnedItem),
+    ReplyBroadcast(MessageReplyBroadcast),
+    UnpinnedItem(MessageUnpinnedItem),
+}
+
+impl ::serde::Deserialize for Message {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+        where D: ::serde::Deserializer
+    {
+        use serde::de::Error as SerdeError;
+
+        const VARIANTS: &'static [&'static str] = &["standard",
+                                                    "bot_message",
+                                                    "channel_archive",
+                                                    "channel_join",
+                                                    "channel_leave",
+                                                    "channel_name",
+                                                    "channel_purpose",
+                                                    "channel_topic",
+                                                    "channel_unarchive",
+                                                    "file_comment",
+                                                    "file_mention",
+                                                    "file_share",
+                                                    "group_archive",
+                                                    "group_join",
+                                                    "group_leave",
+                                                    "group_name",
+                                                    "group_purpose",
+                                                    "group_topic",
+                                                    "group_unarchive",
+                                                    "me_message",
+                                                    "message_changed",
+                                                    "message_deleted",
+                                                    "message_replied",
+                                                    "pinned_item",
+                                                    "reply_broadcast",
+                                                    "unpinned_item"];
+
+        let value = ::serde_json::Value::deserialize(deserializer)?;
+        if let Some(ty_val) = value.get("subtype") {
+            if let Some(ty) = ty_val.as_str() {
+                match ty {
+                    "standard" => {
+                        ::serde_json::from_value::<MessageStandard>(value.clone())
+                            .map(|obj| Message::Standard(obj))
+                            .map_err(|e| D::Error::custom(&format!("{}", e)))
+                    }
+                    "bot_message" => {
+                        ::serde_json::from_value::<MessageBotMessage>(value.clone())
+                            .map(|obj| Message::BotMessage(obj))
+                            .map_err(|e| D::Error::custom(&format!("{}", e)))
+                    }
+                    "channel_archive" => {
+                        ::serde_json::from_value::<MessageChannelArchive>(value.clone())
+                            .map(|obj| Message::ChannelArchive(obj))
+                            .map_err(|e| D::Error::custom(&format!("{}", e)))
+                    }
+                    "channel_join" => {
+                        ::serde_json::from_value::<MessageChannelJoin>(value.clone())
+                            .map(|obj| Message::ChannelJoin(obj))
+                            .map_err(|e| D::Error::custom(&format!("{}", e)))
+                    }
+                    "channel_leave" => {
+                        ::serde_json::from_value::<MessageChannelLeave>(value.clone())
+                            .map(|obj| Message::ChannelLeave(obj))
+                            .map_err(|e| D::Error::custom(&format!("{}", e)))
+                    }
+                    "channel_name" => {
+                        ::serde_json::from_value::<MessageChannelName>(value.clone())
+                            .map(|obj| Message::ChannelName(obj))
+                            .map_err(|e| D::Error::custom(&format!("{}", e)))
+                    }
+                    "channel_purpose" => {
+                        ::serde_json::from_value::<MessageChannelPurpose>(value.clone())
+                            .map(|obj| Message::ChannelPurpose(obj))
+                            .map_err(|e| D::Error::custom(&format!("{}", e)))
+                    }
+                    "channel_topic" => {
+                        ::serde_json::from_value::<MessageChannelTopic>(value.clone())
+                            .map(|obj| Message::ChannelTopic(obj))
+                            .map_err(|e| D::Error::custom(&format!("{}", e)))
+                    }
+                    "channel_unarchive" => {
+                        ::serde_json::from_value::<MessageChannelUnarchive>(value.clone())
+                            .map(|obj| Message::ChannelUnarchive(obj))
+                            .map_err(|e| D::Error::custom(&format!("{}", e)))
+                    }
+                    "file_comment" => {
+                        ::serde_json::from_value::<MessageFileComment>(value.clone())
+                            .map(|obj| Message::FileComment(obj))
+                            .map_err(|e| D::Error::custom(&format!("{}", e)))
+                    }
+                    "file_mention" => {
+                        ::serde_json::from_value::<MessageFileMention>(value.clone())
+                            .map(|obj| Message::FileMention(obj))
+                            .map_err(|e| D::Error::custom(&format!("{}", e)))
+                    }
+                    "file_share" => {
+                        ::serde_json::from_value::<MessageFileShare>(value.clone())
+                            .map(|obj| Message::FileShare(obj))
+                            .map_err(|e| D::Error::custom(&format!("{}", e)))
+                    }
+                    "group_archive" => {
+                        ::serde_json::from_value::<MessageGroupArchive>(value.clone())
+                            .map(|obj| Message::GroupArchive(obj))
+                            .map_err(|e| D::Error::custom(&format!("{}", e)))
+                    }
+                    "group_join" => {
+                        ::serde_json::from_value::<MessageGroupJoin>(value.clone())
+                            .map(|obj| Message::GroupJoin(obj))
+                            .map_err(|e| D::Error::custom(&format!("{}", e)))
+                    }
+                    "group_leave" => {
+                        ::serde_json::from_value::<MessageGroupLeave>(value.clone())
+                            .map(|obj| Message::GroupLeave(obj))
+                            .map_err(|e| D::Error::custom(&format!("{}", e)))
+                    }
+                    "group_name" => {
+                        ::serde_json::from_value::<MessageGroupName>(value.clone())
+                            .map(|obj| Message::GroupName(obj))
+                            .map_err(|e| D::Error::custom(&format!("{}", e)))
+                    }
+                    "group_purpose" => {
+                        ::serde_json::from_value::<MessageGroupPurpose>(value.clone())
+                            .map(|obj| Message::GroupPurpose(obj))
+                            .map_err(|e| D::Error::custom(&format!("{}", e)))
+                    }
+                    "group_topic" => {
+                        ::serde_json::from_value::<MessageGroupTopic>(value.clone())
+                            .map(|obj| Message::GroupTopic(obj))
+                            .map_err(|e| D::Error::custom(&format!("{}", e)))
+                    }
+                    "group_unarchive" => {
+                        ::serde_json::from_value::<MessageGroupUnarchive>(value.clone())
+                            .map(|obj| Message::GroupUnarchive(obj))
+                            .map_err(|e| D::Error::custom(&format!("{}", e)))
+                    }
+                    "me_message" => {
+                        ::serde_json::from_value::<MessageMeMessage>(value.clone())
+                            .map(|obj| Message::MeMessage(obj))
+                            .map_err(|e| D::Error::custom(&format!("{}", e)))
+                    }
+                    "message_changed" => {
+                        ::serde_json::from_value::<MessageMessageChanged>(value.clone())
+                            .map(|obj| Message::MessageChanged(obj))
+                            .map_err(|e| D::Error::custom(&format!("{}", e)))
+                    }
+                    "message_deleted" => {
+                        ::serde_json::from_value::<MessageMessageDeleted>(value.clone())
+                            .map(|obj| Message::MessageDeleted(obj))
+                            .map_err(|e| D::Error::custom(&format!("{}", e)))
+                    }
+                    "message_replied" => {
+                        ::serde_json::from_value::<MessageMessageReplied>(value.clone())
+                            .map(|obj| Message::MessageReplied(obj))
+                            .map_err(|e| D::Error::custom(&format!("{}", e)))
+                    }
+                    "pinned_item" => {
+                        ::serde_json::from_value::<MessagePinnedItem>(value.clone())
+                            .map(|obj| Message::PinnedItem(obj))
+                            .map_err(|e| D::Error::custom(&format!("{}", e)))
+                    }
+                    "reply_broadcast" => {
+                        ::serde_json::from_value::<MessageReplyBroadcast>(value.clone())
+                            .map(|obj| Message::ReplyBroadcast(obj))
+                            .map_err(|e| D::Error::custom(&format!("{}", e)))
+                    }
+                    "unpinned_item" => {
+                        ::serde_json::from_value::<MessageUnpinnedItem>(value.clone())
+                            .map(|obj| Message::UnpinnedItem(obj))
+                            .map_err(|e| D::Error::custom(&format!("{}", e)))
+                    }
+                    _ => Err(D::Error::unknown_variant(ty, VARIANTS)),
+                }
+            } else {
+                Err(D::Error::invalid_type(::serde::de::Unexpected::Unit, &"a string"))
+            }
+        } else {
+            ::serde_json::from_value::<MessageStandard>(value.clone())
+                .map(|obj| {
+                    Message::Standard(obj)
+                })
+                .map_err(|e| D::Error::custom(&format!("{}", e)))
+        }
+    }
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct MessageBotMessage {
+    pub bot_id: Option<String>,
+    pub icons: Option<MessageBotMessageIcons>,
+    pub subtype: Option<String>,
+    pub text: Option<String>,
+    pub ts: Option<String>,
+    #[serde(rename = "type")]
+    pub ty: Option<String>,
+    pub username: Option<String>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct MessageBotMessageIcons {
+    pub image_36: Option<String>,
+    pub image_48: Option<String>,
+    pub image_72: Option<String>,
+}
+
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct MessageChannelArchive {
+    pub members: Option<Vec<String>>,
+    pub subtype: Option<String>,
+    pub text: Option<String>,
+    pub ts: Option<String>,
+    #[serde(rename = "type")]
+    pub ty: Option<String>,
+    pub user: Option<String>,
+}
+
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct MessageChannelJoin {
+    pub subtype: Option<String>,
+    pub text: Option<String>,
+    pub ts: Option<String>,
+    #[serde(rename = "type")]
+    pub ty: Option<String>,
+    pub user: Option<String>,
+}
+
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct MessageChannelLeave {
+    pub subtype: Option<String>,
+    pub text: Option<String>,
+    pub ts: Option<String>,
+    #[serde(rename = "type")]
+    pub ty: Option<String>,
+    pub user: Option<String>,
+}
+
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct MessageChannelName {
+    pub name: Option<String>,
+    pub old_name: Option<String>,
+    pub subtype: Option<String>,
+    pub text: Option<String>,
+    pub ts: Option<String>,
+    #[serde(rename = "type")]
+    pub ty: Option<String>,
+    pub user: Option<String>,
+}
+
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct MessageChannelPurpose {
+    pub purpose: Option<String>,
+    pub subtype: Option<String>,
+    pub text: Option<String>,
+    pub ts: Option<String>,
+    #[serde(rename = "type")]
+    pub ty: Option<String>,
+    pub user: Option<String>,
+}
+
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct MessageChannelTopic {
+    pub subtype: Option<String>,
+    pub text: Option<String>,
+    pub topic: Option<String>,
+    pub ts: Option<String>,
+    #[serde(rename = "type")]
+    pub ty: Option<String>,
+    pub user: Option<String>,
+}
+
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct MessageChannelUnarchive {
+    pub subtype: Option<String>,
+    pub text: Option<String>,
+    pub ts: Option<String>,
+    #[serde(rename = "type")]
+    pub ty: Option<String>,
+    pub user: Option<String>,
+}
+
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct MessageFileComment {
+    pub comment: Option<::FileComment>,
+    pub file: Option<::File>,
+    pub subtype: Option<String>,
+    pub text: Option<String>,
+    pub ts: Option<String>,
+    #[serde(rename = "type")]
+    pub ty: Option<String>,
+}
+
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct MessageFileMention {
+    pub file: Option<::File>,
+    pub subtype: Option<String>,
+    pub text: Option<String>,
+    pub ts: Option<String>,
+    #[serde(rename = "type")]
+    pub ty: Option<String>,
+    pub user: Option<String>,
+}
+
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct MessageFileShare {
+    pub file: Option<::File>,
+    pub subtype: Option<String>,
+    pub text: Option<String>,
+    pub ts: Option<String>,
+    #[serde(rename = "type")]
+    pub ty: Option<String>,
+    pub upload: Option<bool>,
+    pub user: Option<String>,
+}
+
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct MessageGroupArchive {
+    pub members: Option<Vec<String>>,
+    pub subtype: Option<String>,
+    pub text: Option<String>,
+    pub ts: Option<String>,
+    #[serde(rename = "type")]
+    pub ty: Option<String>,
+    pub user: Option<String>,
+}
+
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct MessageGroupJoin {
+    pub subtype: Option<String>,
+    pub text: Option<String>,
+    pub ts: Option<String>,
+    #[serde(rename = "type")]
+    pub ty: Option<String>,
+    pub user: Option<String>,
+}
+
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct MessageGroupLeave {
+    pub subtype: Option<String>,
+    pub text: Option<String>,
+    pub ts: Option<String>,
+    #[serde(rename = "type")]
+    pub ty: Option<String>,
+    pub user: Option<String>,
+}
+
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct MessageGroupName {
+    pub name: Option<String>,
+    pub old_name: Option<String>,
+    pub subtype: Option<String>,
+    pub text: Option<String>,
+    pub ts: Option<String>,
+    #[serde(rename = "type")]
+    pub ty: Option<String>,
+    pub user: Option<String>,
+}
+
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct MessageGroupPurpose {
+    pub purpose: Option<String>,
+    pub subtype: Option<String>,
+    pub text: Option<String>,
+    pub ts: Option<String>,
+    #[serde(rename = "type")]
+    pub ty: Option<String>,
+    pub user: Option<String>,
+}
+
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct MessageGroupTopic {
+    pub subtype: Option<String>,
+    pub text: Option<String>,
+    pub topic: Option<String>,
+    pub ts: Option<String>,
+    #[serde(rename = "type")]
+    pub ty: Option<String>,
+    pub user: Option<String>,
+}
+
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct MessageGroupUnarchive {
+    pub subtype: Option<String>,
+    pub text: Option<String>,
+    pub ts: Option<String>,
+    #[serde(rename = "type")]
+    pub ty: Option<String>,
+    pub user: Option<String>,
+}
+
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct MessageMeMessage {
+    pub channel: Option<String>,
+    pub subtype: Option<String>,
+    pub text: Option<String>,
+    pub ts: Option<String>,
+    #[serde(rename = "type")]
+    pub ty: Option<String>,
+    pub user: Option<String>,
+}
+
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct MessageMessageChanged {
+    pub channel: Option<String>,
+    pub hidden: Option<bool>,
+    pub message: Option<MessageMessageChangedMessage>,
+    pub subtype: Option<String>,
+    pub ts: Option<String>,
+    #[serde(rename = "type")]
+    pub ty: Option<String>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct MessageMessageChangedMessage {
+    pub edited: Option<MessageMessageChangedMessageEdited>,
+    pub text: Option<String>,
+    pub ts: Option<String>,
+    #[serde(rename = "type")]
+    pub ty: Option<String>,
+    pub user: Option<String>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct MessageMessageChangedMessageEdited {
+    pub ts: Option<String>,
+    pub user: Option<String>,
+}
+
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct MessageMessageDeleted {
+    pub channel: Option<String>,
+    pub deleted_ts: Option<String>,
+    pub hidden: Option<bool>,
+    pub subtype: Option<String>,
+    pub ts: Option<String>,
+    #[serde(rename = "type")]
+    pub ty: Option<String>,
+}
+
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct MessageMessageReplied {
+    pub channel: Option<String>,
+    pub event_ts: Option<String>,
+    pub hidden: Option<bool>,
+    pub message: Option<MessageMessageRepliedMessage>,
+    pub subtype: Option<String>,
+    pub ts: Option<String>,
+    #[serde(rename = "type")]
+    pub ty: Option<String>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct MessageMessageRepliedMessage {
+    pub replies: Option<Vec<MessageMessageRepliedMessageReply>>,
+    pub reply_count: Option<i32>,
+    pub text: Option<String>,
+    pub thread_ts: Option<String>,
+    pub ts: Option<String>,
+    #[serde(rename = "type")]
+    pub ty: Option<String>,
+    pub user: Option<String>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct MessageMessageRepliedMessageReply {
+    pub ts: Option<String>,
+    pub user: Option<String>,
+}
+
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct MessagePinnedItem {
+    pub channel: Option<String>,
+    pub item: Option<MessagePinnedItemItem>,
+    pub item_type: Option<String>,
+    pub subtype: Option<String>,
+    pub text: Option<String>,
+    pub ts: Option<String>,
+    #[serde(rename = "type")]
+    pub ty: Option<String>,
+    pub user: Option<String>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct MessagePinnedItemItem {}
+
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct MessageReplyBroadcast {
+    pub attachments: Option<Vec<MessageReplyBroadcastAttachment>>,
+    pub channel: Option<String>,
+    pub event_ts: Option<String>,
+    pub subtype: Option<String>,
+    pub ts: Option<String>,
+    #[serde(rename = "type")]
+    pub ty: Option<String>,
+    pub user: Option<String>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct MessageReplyBroadcastAttachment {
+    pub author_icon: Option<String>,
+    pub author_link: Option<String>,
+    pub author_subname: Option<String>,
+    pub channel_id: Option<String>,
+    pub channel_name: Option<String>,
+    pub fallback: Option<String>,
+    pub footer: Option<String>,
+    pub from_url: Option<String>,
+    pub id: Option<i32>,
+    pub mrkdwn_in: Option<Vec<String>>,
+    pub text: Option<String>,
+    pub ts: Option<String>,
+}
+
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct MessageStandard {
+    pub attachments: Option<Vec<MessageStandardAttachment>>,
+    pub channel: Option<String>,
+    pub edited: Option<MessageStandardEdited>,
+    pub text: Option<String>,
+    pub ts: Option<String>,
+    #[serde(rename = "type")]
+    pub ty: Option<String>,
+    pub user: Option<String>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct MessageStandardEdited {
+    pub ts: Option<String>,
+    pub user: Option<String>,
+}
+
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct MessageStandardAttachment {
+    pub author_icon: Option<String>,
+    pub author_link: Option<String>,
+    pub author_name: Option<String>,
     pub color: Option<String>,
-    pub profile: UserProfile,
+    pub fallback: Option<String>,
+    pub fields: Option<Vec<MessageStandardAttachmentField>>,
+    pub footer: Option<String>,
+    pub footer_icon: Option<String>,
+    pub image_url: Option<String>,
+    pub pretext: Option<String>,
+    pub text: Option<String>,
+    pub thumb_url: Option<String>,
+    pub title: Option<String>,
+    pub title_link: Option<String>,
+    pub ts: Option<f32>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct MessageStandardAttachmentField {
+    pub short: Option<bool>,
+    pub title: Option<String>,
+    pub value: Option<String>,
+}
+
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct MessageUnpinnedItem {
+    pub channel: Option<String>,
+    pub item: Option<MessageUnpinnedItemItem>,
+    pub item_type: Option<String>,
+    pub subtype: Option<String>,
+    pub text: Option<String>,
+    pub ts: Option<String>,
+    #[serde(rename = "type")]
+    pub ty: Option<String>,
+    pub user: Option<String>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct MessageUnpinnedItemItem {}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct Mpim {
+    pub created: Option<i32>,
+    pub creator: Option<String>,
+    pub id: Option<String>,
+    pub is_group: Option<bool>,
+    pub is_mpim: Option<bool>,
+    pub last_read: Option<String>,
+    pub latest: Option<::Message>,
+    pub members: Option<Vec<String>>,
+    pub name: Option<String>,
+    pub unread_count: Option<i32>,
+    pub unread_count_display: Option<i32>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct Paging {
+    pub count: Option<i32>,
+    pub page: Option<i32>,
+    pub pages: Option<i32>,
+    pub total: Option<i32>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct Reaction {
+    pub count: Option<i32>,
+    pub name: Option<String>,
+    pub users: Option<Vec<String>>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct Reminder {
+    pub complete_ts: Option<f32>,
+    pub creator: Option<String>,
+    pub id: Option<String>,
+    pub recurring: Option<bool>,
+    pub text: Option<String>,
+    pub time: Option<f32>,
+    pub user: Option<String>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct Team {
+    pub domain: Option<String>,
+    pub email_domain: Option<String>,
+    pub icon: Option<TeamIcon>,
+    pub id: Option<String>,
+    pub name: Option<String>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct TeamIcon {
+    pub image_102: Option<String>,
+    pub image_132: Option<String>,
+    pub image_34: Option<String>,
+    pub image_44: Option<String>,
+    pub image_68: Option<String>,
+    pub image_88: Option<String>,
+    pub image_default: Option<bool>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct ThreadInfo {
+    pub complete: Option<bool>,
+    pub count: Option<i32>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct User {
+    pub color: Option<String>,
+    pub deleted: Option<bool>,
+    pub has_2fa: Option<bool>,
+    pub id: Option<String>,
     pub is_admin: Option<bool>,
     pub is_owner: Option<bool>,
     pub is_primary_owner: Option<bool>,
     pub is_restricted: Option<bool>,
     pub is_ultra_restricted: Option<bool>,
-    pub has_2fa: Option<bool>,
+    pub name: Option<String>,
+    pub profile: Option<::UserProfile>,
     pub two_factor_type: Option<String>,
-    pub has_files: Option<bool>,
 }
 
-/// The `Team` object as found in the [`rtm.start`](https://api.slack.com/methods/rtm.start)
-/// response.
-// We've left out the prefs field for now
-#[derive(Clone,Debug,RustcDecodable)]
-pub struct Team {
-    pub id: String,
-    pub name: String,
-    pub email_domain: String,
-    pub domain: String,
-    pub msg_edit_window_mins: i64,
-    pub over_storage_limit: bool,
-    pub plan: String,
+#[derive(Clone, Debug, Deserialize)]
+pub struct Usergroup {
+    pub auto_type: Option<String>,
+    pub created_by: Option<String>,
+    pub date_create: Option<i32>,
+    pub date_delete: Option<i32>,
+    pub date_update: Option<i32>,
+    pub deleted_by: Option<String>,
+    pub description: Option<String>,
+    pub handle: Option<String>,
+    pub id: Option<String>,
+    pub is_external: Option<bool>,
+    pub is_usergroup: Option<bool>,
+    pub name: Option<String>,
+    pub prefs: Option<UsergroupPrefs>,
+    pub team_id: Option<String>,
+    pub updated_by: Option<String>,
+    pub user_count: Option<String>,
 }
 
-/// The `Topic` object as found in the [`Group`](https://api.slack.com/types/group) and
-/// [`Channel`](https://api.slack.com/types/channel) types.
-#[derive(Clone,Debug,RustcDecodable)]
-pub struct Topic {
-    pub value: String,
-    pub creator: String,
-    pub last_set: i64,
+#[derive(Clone, Debug, Deserialize)]
+pub struct UsergroupPrefs {
+    pub channels: Option<Vec<String>>,
+    pub groups: Option<Vec<String>>,
 }
 
-/// The `Purpose` object as found in the [`Group`](https://api.slack.com/types/group) and
-/// [`Channel`](https://api.slack.com/types/channel) types.
-#[derive(Clone,Debug,RustcDecodable)]
-pub struct Purpose {
-    pub value: String,
-    pub creator: String,
-    pub last_set: i64,
+#[derive(Clone, Debug, Deserialize)]
+pub struct UserProfile {
+    pub email: Option<String>,
+    pub fields: Option<HashMap<String, UserProfileFields>>,
+    pub first_name: Option<String>,
+    pub image_1024: Option<String>,
+    pub image_192: Option<String>,
+    pub image_24: Option<String>,
+    pub image_32: Option<String>,
+    pub image_48: Option<String>,
+    pub image_512: Option<String>,
+    pub image_72: Option<String>,
+    pub image_original: Option<String>,
+    pub last_name: Option<String>,
+    pub phone: Option<String>,
+    pub skype: Option<String>,
 }
 
-/// The Slack [`Im`](https://api.slack.com/types/im) type.
-#[derive(Clone,Debug,RustcDecodable)]
-pub struct Im {
-    pub id: String,
-    pub is_im: bool,
-    pub user: String,
-    pub created: i64,
-    pub is_user_deleted: Option<bool>,
-}
-
-/// A field within an [`Attachment`](https://api.slack.com/docs/attachments).
-#[derive(Clone,Debug,RustcDecodable,RustcEncodable)]
-pub struct AttachmentField {
-    pub title: String,
-    pub value: String,
-    pub short: bool,
-}
-
-/// The Slack [`Attachment`](https://api.slack.com/docs/attachments) object as found in
-/// richly-formatted messages.
-#[derive(Clone,Debug,RustcDecodable,RustcEncodable)]
-pub struct Attachment {
-    pub fallback: Option<String>,
-    pub color: Option<String>,
-    pub pretext: Option<String>,
-    pub author_name: Option<String>,
-    pub author_link: Option<String>,
-    pub author_icon: Option<String>,
-    pub title: Option<String>,
-    pub title_link: Option<String>,
-    pub text: Option<String>,
-    pub fields: Option<Vec<AttachmentField>>,
-    pub image_url: Option<String>,
-    pub thumb_url: Option<String>,
-}
-
-/// Represents a `Message`, `File` or `Comment` as returned by
-/// [`pins.list`](https://api.slack.com/methods/pins.list),
-/// [`reactions.list`](https://api.slack.com/methods/reactions.list), and
-/// [`reactions.get`](https://api.slack.com/methods/reactions.get).
-#[derive(Clone,Debug)]
-pub enum Item {
-    Message {
-        channel: String,
-        message: Box<super::Message>,
-    },
-    File {
-        file: File,
-    },
-    FileComment {
-        file: File,
-        comment: Comment,
-    },
-}
-
-impl Decodable for Item {
-    fn decode<D: Decoder>(d: &mut D) -> Result<Item, D::Error> {
-        d.read_struct("item", 0, |d| {
-            let ty: String = try!(d.read_struct_field("type", 0, |d| Decodable::decode(d)));
-            match ty.as_ref() {
-                "message" => Ok(Item::Message {
-                    channel: try!(d.read_struct_field("channel", 0, |d| Decodable::decode(d))),
-                    message: try!(d.read_struct_field("message", 0, |d| Decodable::decode(d))),
-                }),
-                "file" => Ok(Item::File { file: try!(d.read_struct_field("file", 0, |d| Decodable::decode(d))) }),
-                "file_comment" => Ok(Item::FileComment {
-                    file: try!(d.read_struct_field("file", 0, |d| Decodable::decode(d))),
-                    comment: try!(d.read_struct_field("comment", 0, |d| Decodable::decode(d))),
-                }),
-                _ => Err(d.error(&format!("Unknown Item type: {}", ty)))
-            }
-        })
-    }
-}
-
-/// Represents a starred item as returned by [`stars.list`](https://api.slack.com/methods/stars.list).
-// The Message, File and FileComment variants are the same as the ones in `super::Item`. However,
-// stars can be applied to channels, groups and ims as well, so we need a new enum to support those
-// options.
-#[derive(Clone,Debug)]
-pub enum StarredItem {
-    Message {
-        channel: String,
-        message: super::Message,
-    },
-    File {
-        file: super::File,
-    },
-    FileComment {
-        file: super::File,
-        comment: super::Comment,
-    },
-    Channel {
-        channel: String,
-    },
-    Group {
-        group: String,
-    },
-    Im {
-        channel: String,
-    },
-}
-
-impl Decodable for StarredItem {
-    fn decode<D: Decoder>(d: &mut D) -> Result<StarredItem, D::Error> {
-        d.read_struct("item", 0, |d| {
-            let ty: String = try!(d.read_struct_field("type", 0, |d| Decodable::decode(d)));
-            match ty.as_ref() {
-                "message" => Ok(StarredItem::Message {
-                        channel: try!(d.read_struct_field("channel", 0, |d| Decodable::decode(d))),
-                        message: try!(d.read_struct_field("message", 0, |d| Decodable::decode(d))),
-                    }),
-                "file" => Ok(StarredItem::File { file: try!(d.read_struct_field("file", 0, |d| Decodable::decode(d))) }),
-                "file_comment" => Ok(StarredItem::FileComment {
-                        file: try!(d.read_struct_field("file", 0, |d| Decodable::decode(d))),
-                        comment: try!(d.read_struct_field("comment", 0, |d| Decodable::decode(d))),
-                    }),
-                "channel" => Ok(StarredItem::Channel { channel: try!(d.read_struct_field("channel", 0, |d| Decodable::decode(d))) }),
-                "group" => Ok(StarredItem::Group { group: try!(d.read_struct_field("group", 0, |d| Decodable::decode(d))) }),
-                "im" => Ok(StarredItem::Im { channel: try!(d.read_struct_field("channel", 0, |d| Decodable::decode(d))) }),
-                _ => Err(d.error(&format!("Unknown StarredItem type: {}", ty))),
-            }
-        })
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::super::Message;
-    use super::*;
-    use rustc_serialize::json;
-
-    #[test]
-    fn item_message_decode() {
-        let item: Item = json::decode(r#"{
-            "type": "message",
-            "channel": "C2147483705",
-            "message": {
-                "ts": "12345",
-                "user": "123",
-                "text": "something"
-            }
-        }"#)
-                             .unwrap();
-        match item {
-            Item::Message { channel: c, message: m } => {
-                assert_eq!(c, "C2147483705");
-                match *m.clone() {
-                    Message::Standard { ts: _, channel: _, user, text: _, is_starred: _, pinned_to: _, reactions: _, edited: _, attachments: _ } => {
-                        assert_eq!(user.unwrap(), "123")
-                    }
-                    _ => panic!("Message decoded into incorrect variant."),
-                }
-            }
-            _ => panic!("Item decoded into incorrect variant."),
-        }
-    }
-
-    #[test]
-    fn item_image_file_decode() {
-        let item: Item = json::decode(r#"{
-            "type": "file",
-            "file": {
-                "id": "F12345678",
-                "created": 1444929467,
-                "timestamp": 1444929467,
-                "name": "test_img.png",
-                "title": "test_img",
-                "mimetype": "image\/png",
-                "filetype": "png",
-                "pretty_type": "PNG",
-                "user": "U12345678",
-                "editable": false,
-                "size": 16153,
-                "mode": "hosted",
-                "is_external": false,
-                "external_type": "",
-                "is_public": true,
-                "public_url_shared": false,
-                "display_as_bot": false,
-                "username": "",
-                "url": "https:\/\/slack-files.com\/files-pub\/PUBLIC-TEST-GUID\/test_img.png",
-                "url_download": "https:\/\/slack-files.com\/files-pub\/PUBLIC-TEST-GUID\/download\/test_img.png",
-                "url_private": "https:\/\/files.slack.com\/files-pri\/PRIVATE-ID\/test_img.png",
-                "url_private_download": "https:\/\/files.slack.com\/files-pri\/PRIVATE-ID\/download\/test_img.png",
-                "thumb_64": "https:\/\/slack-files.com\/files-tmb\/PRIVATE-TEST-GUID\/test_img_64.png",
-                "thumb_80": "https:\/\/slack-files.com\/files-tmb\/PRIVATE-TEST-GUID\/test_img_80.png",
-                "thumb_360": "https:\/\/slack-files.com\/files-tmb\/PRIVATE-TEST-GUID\/test_img_360.png",
-                "thumb_360_w": 360,
-                "thumb_360_h": 28,
-                "thumb_480": "https:\/\/slack-files.com\/files-tmb\/PRIVATE-TEST-GUID\/test_img_480.png",
-                "thumb_480_w": 480,
-                "thumb_480_h": 37,
-                "thumb_160": "https:\/\/slack-files.com\/files-tmb\/PRIVATE-TEST-GUID\/test_img_160.png",
-                "thumb_720": "https:\/\/slack-files.com\/files-tmb\/PRIVATE-TEST-GUID\/test_img_720.png",
-                "thumb_720_w": 720,
-                "thumb_720_h": 56,
-                "image_exif_rotation": 1,
-                "original_w": 895,
-                "original_h": 69,
-                "permalink": "https:\/\/test-team.slack.com\/files\/testuser\/F12345678\/test_img.png",
-                "permalink_public": "https:\/\/slack-files.com\/PUBLIC-TEST-GUID",
-                "channels": [
-                    "C12345678"
-                ],
-                "groups": [
-
-                ],
-                "ims": [
-
-                ],
-                "comments_count": 0
-            }
-        }"#)
-                             .unwrap();
-        match item {
-            Item::File { file: f } => {
-                assert_eq!(f.id, "F12345678");
-            }
-            _ => panic!("Item decoded into incorrect variant."),
-        }
-    }
-
-    #[test]
-    fn item_non_image_file_decode() {
-        let item: Item = json::decode(r#"{
-            "type": "file",
-            "file": {
-                "id": "F12345678",
-                "created": 1444929467,
-                "timestamp": 1444929467,
-                "name": "test_html.html",
-                "title": "test_img",
-                "mimetype": "text/plain",
-                "filetype": "html",
-                "pretty_type": "HTML",
-                "user": "U12345678",
-                "editable": false,
-                "size": 16153,
-                "mode": "hosted",
-                "is_external": false,
-                "external_type": "",
-                "is_public": true,
-                "public_url_shared": false,
-                "display_as_bot": false,
-                "username": "",
-                "url": "https:\/\/slack-files.com\/files-pub\/PUBLIC-TEST-GUID\/test_html.html",
-                "url_download": "https:\/\/slack-files.com\/files-pub\/PUBLIC-TEST-GUID\/download\/test_html.html",
-                "url_private": "https:\/\/files.slack.com\/files-pri\/PRIVATE-ID\/test_html.html",
-                "url_private_download": "https:\/\/files.slack.com\/files-pri\/PRIVATE-ID\/download\/test_html.html",
-                "permalink": "https:\/\/test-team.slack.com\/files\/testuser\/F12345678\/test_html.html",
-                "permalink_public": "https:\/\/slack-files.com\/PUBLIC-TEST-GUID",
-                "channels": [
-                    "C12345678"
-                ],
-                "groups": [
-
-                ],
-                "ims": [
-
-                ],
-                "comments_count": 0
-            }
-        }"#)
-                             .unwrap();
-        match item {
-            Item::File { file: f } => {
-                assert_eq!(f.id, "F12345678");
-                assert!(f.thumb_64.is_none());
-                assert!(f.thumb_80.is_none());
-                assert!(f.thumb_360_gif.is_none());
-                assert!(f.thumb_360_w.is_none());
-                assert!(f.thumb_360_h.is_none());
-                assert!(f.thumb_360.is_none());
-                assert!(f.thumb_480_w.is_none());
-                assert!(f.thumb_480_h.is_none());
-                assert!(f.thumb_480.is_none());
-                assert!(f.thumb_720_w.is_none());
-                assert!(f.thumb_720_h.is_none());
-                assert!(f.thumb_720.is_none());
-                assert!(f.thumb_960_w.is_none());
-                assert!(f.thumb_960_h.is_none());
-                assert!(f.thumb_960.is_none());
-                assert!(f.thumb_1024_w.is_none());
-                assert!(f.thumb_1024_h.is_none());
-                assert!(f.thumb_1024.is_none());
-
-            }
-            _ => panic!("Item decoded into incorrect variant."),
-        }
-    }
-
-    #[test]
-    fn item_file_comment_decode() {
-        let item: Item = json::decode(r#"{
-            "type": "file_comment",
-            "file": {
-                "id": "F12345678",
-                "created": 1444929467,
-                "timestamp": 1444929467,
-                "name": "test_img.png",
-                "title": "test_img",
-                "mimetype": "image\/png",
-                "filetype": "png",
-                "pretty_type": "PNG",
-                "user": "U12345678",
-                "editable": false,
-                "size": 16153,
-                "mode": "hosted",
-                "is_external": false,
-                "external_type": "",
-                "is_public": true,
-                "public_url_shared": false,
-                "display_as_bot": false,
-                "username": "",
-                "url": "https:\/\/slack-files.com\/files-pub\/PUBLIC-TEST-GUID\/test_img.png",
-                "url_download": "https:\/\/slack-files.com\/files-pub\/PUBLIC-TEST-GUID\/download\/test_img.png",
-                "url_private": "https:\/\/files.slack.com\/files-pri\/PRIVATE-ID\/test_img.png",
-                "url_private_download": "https:\/\/files.slack.com\/files-pri\/PRIVATE-ID\/download\/test_img.png",
-                "thumb_64": "https:\/\/slack-files.com\/files-tmb\/PRIVATE-TEST-GUID\/test_img_64.png",
-                "thumb_80": "https:\/\/slack-files.com\/files-tmb\/PRIVATE-TEST-GUID\/test_img_80.png",
-                "thumb_360": "https:\/\/slack-files.com\/files-tmb\/PRIVATE-TEST-GUID\/test_img_360.png",
-                "thumb_360_w": 360,
-                "thumb_360_h": 28,
-                "thumb_480": "https:\/\/slack-files.com\/files-tmb\/PRIVATE-TEST-GUID\/test_img_480.png",
-                "thumb_480_w": 480,
-                "thumb_480_h": 37,
-                "thumb_160": "https:\/\/slack-files.com\/files-tmb\/PRIVATE-TEST-GUID\/test_img_160.png",
-                "thumb_720": "https:\/\/slack-files.com\/files-tmb\/PRIVATE-TEST-GUID\/test_img_720.png",
-                "thumb_720_w": 720,
-                "thumb_720_h": 56,
-                "image_exif_rotation": 1,
-                "original_w": 895,
-                "original_h": 69,
-                "permalink": "https:\/\/test-team.slack.com\/files\/testuser\/F12345678\/test_img.png",
-                "permalink_public": "https:\/\/slack-files.com\/PUBLIC-TEST-GUID",
-                "channels": [
-                    "C12345678"
-                ],
-                "groups": [
-
-                ],
-                "ims": [
-
-                ],
-                "comments_count": 0
-            },
-            "comment": {
-                "id": "Fc12345678",
-                "timestamp": 1356032811,
-                "user": "U12345678",
-                "comment": "This is a comment"
-            }
-        }"#)
-                             .unwrap();
-        match item {
-            Item::FileComment { file: f, comment: c } => {
-                assert_eq!(f.id, "F12345678");
-                assert_eq!(c.id, "Fc12345678");
-            }
-            _ => panic!("Item decoded into incorrect variant."),
-        }
-    }
-
-    #[test]
-    fn starred_item_message_decode() {
-        let item: StarredItem = json::decode(r#"{
-            "type": "message",
-            "channel": "C2147483705",
-            "message": {
-                "ts": "12345",
-                "user": "123",
-                "text": "something"
-            }
-        }"#)
-                                    .unwrap();
-        match item {
-            StarredItem::Message { channel: c, message: m } => {
-                assert_eq!(c, "C2147483705");
-                match m.clone() {
-                    Message::Standard { ts: _, channel: _, user, text: _, is_starred: _, pinned_to: _, reactions: _, edited: _, attachments: _ } => {
-                        assert_eq!(user.unwrap(), "123");
-                    }
-                    _ => panic!("Message decoded into incorrect variant."),
-                }
-            }
-            _ => panic!("StarredItem decoded into incorrect variant."),
-        }
-    }
-
-    #[test]
-    fn starred_item_file_decode() {
-        let item: StarredItem = json::decode(r#"{
-            "type": "file",
-            "file": {
-                "id": "F12345678",
-                "created": 1444929467,
-                "timestamp": 1444929467,
-                "name": "test_img.png",
-                "title": "test_img",
-                "mimetype": "image\/png",
-                "filetype": "png",
-                "pretty_type": "PNG",
-                "user": "U12345678",
-                "editable": false,
-                "size": 16153,
-                "mode": "hosted",
-                "is_external": false,
-                "external_type": "",
-                "is_public": true,
-                "public_url_shared": false,
-                "display_as_bot": false,
-                "username": "",
-                "url": "https:\/\/slack-files.com\/files-pub\/PUBLIC-TEST-GUID\/test_img.png",
-                "url_download": "https:\/\/slack-files.com\/files-pub\/PUBLIC-TEST-GUID\/download\/test_img.png",
-                "url_private": "https:\/\/files.slack.com\/files-pri\/PRIVATE-ID\/test_img.png",
-                "url_private_download": "https:\/\/files.slack.com\/files-pri\/PRIVATE-ID\/download\/test_img.png",
-                "thumb_64": "https:\/\/slack-files.com\/files-tmb\/PRIVATE-TEST-GUID\/test_img_64.png",
-                "thumb_80": "https:\/\/slack-files.com\/files-tmb\/PRIVATE-TEST-GUID\/test_img_80.png",
-                "thumb_360": "https:\/\/slack-files.com\/files-tmb\/PRIVATE-TEST-GUID\/test_img_360.png",
-                "thumb_360_w": 360,
-                "thumb_360_h": 28,
-                "thumb_480": "https:\/\/slack-files.com\/files-tmb\/PRIVATE-TEST-GUID\/test_img_480.png",
-                "thumb_480_w": 480,
-                "thumb_480_h": 37,
-                "thumb_160": "https:\/\/slack-files.com\/files-tmb\/PRIVATE-TEST-GUID\/test_img_160.png",
-                "thumb_720": "https:\/\/slack-files.com\/files-tmb\/PRIVATE-TEST-GUID\/test_img_720.png",
-                "thumb_720_w": 720,
-                "thumb_720_h": 56,
-                "image_exif_rotation": 1,
-                "original_w": 895,
-                "original_h": 69,
-                "permalink": "https:\/\/test-team.slack.com\/files\/testuser\/F12345678\/test_img.png",
-                "permalink_public": "https:\/\/slack-files.com\/PUBLIC-TEST-GUID",
-                "channels": [
-                    "C12345678"
-                ],
-                "groups": [
-
-                ],
-                "ims": [
-
-                ],
-                "comments_count": 0
-            }
-        }"#)
-                                    .unwrap();
-        match item {
-            StarredItem::File { file: f } => {
-                assert_eq!(f.id, "F12345678");
-            }
-            _ => panic!("StarredItem decoded into incorrect variant."),
-        }
-    }
-
-    #[test]
-    fn starred_item_file_comment_decode() {
-        let item: StarredItem = json::decode(r#"{
-            "type": "file_comment",
-            "file": {
-                "id": "F12345678",
-                "created": 1444929467,
-                "timestamp": 1444929467,
-                "name": "test_img.png",
-                "title": "test_img",
-                "mimetype": "image\/png",
-                "filetype": "png",
-                "pretty_type": "PNG",
-                "user": "U12345678",
-                "editable": false,
-                "size": 16153,
-                "mode": "hosted",
-                "is_external": false,
-                "external_type": "",
-                "is_public": true,
-                "public_url_shared": false,
-                "display_as_bot": false,
-                "username": "",
-                "url": "https:\/\/slack-files.com\/files-pub\/PUBLIC-TEST-GUID\/test_img.png",
-                "url_download": "https:\/\/slack-files.com\/files-pub\/PUBLIC-TEST-GUID\/download\/test_img.png",
-                "url_private": "https:\/\/files.slack.com\/files-pri\/PRIVATE-ID\/test_img.png",
-                "url_private_download": "https:\/\/files.slack.com\/files-pri\/PRIVATE-ID\/download\/test_img.png",
-                "thumb_64": "https:\/\/slack-files.com\/files-tmb\/PRIVATE-TEST-GUID\/test_img_64.png",
-                "thumb_80": "https:\/\/slack-files.com\/files-tmb\/PRIVATE-TEST-GUID\/test_img_80.png",
-                "thumb_360": "https:\/\/slack-files.com\/files-tmb\/PRIVATE-TEST-GUID\/test_img_360.png",
-                "thumb_360_w": 360,
-                "thumb_360_h": 28,
-                "thumb_480": "https:\/\/slack-files.com\/files-tmb\/PRIVATE-TEST-GUID\/test_img_480.png",
-                "thumb_480_w": 480,
-                "thumb_480_h": 37,
-                "thumb_160": "https:\/\/slack-files.com\/files-tmb\/PRIVATE-TEST-GUID\/test_img_160.png",
-                "thumb_720": "https:\/\/slack-files.com\/files-tmb\/PRIVATE-TEST-GUID\/test_img_720.png",
-                "thumb_720_w": 720,
-                "thumb_720_h": 56,
-                "image_exif_rotation": 1,
-                "original_w": 895,
-                "original_h": 69,
-                "permalink": "https:\/\/test-team.slack.com\/files\/testuser\/F12345678\/test_img.png",
-                "permalink_public": "https:\/\/slack-files.com\/PUBLIC-TEST-GUID",
-                "channels": [
-                    "C12345678"
-                ],
-                "groups": [
-
-                ],
-                "ims": [
-
-                ],
-                "comments_count": 0
-            },
-            "comment": {
-                "id": "Fc12345678",
-                "timestamp": 1356032811,
-                "user": "U12345678",
-                "comment": "This is a comment"
-            }
-        }"#)
-                                    .unwrap();
-        match item {
-            StarredItem::FileComment { file: f, comment: c } => {
-                assert_eq!(f.id, "F12345678");
-                assert_eq!(c.id, "Fc12345678");
-            }
-            _ => panic!("StarredItem decoded into incorrect variant."),
-        }
-    }
-
-    #[test]
-    fn starred_item_channel_decode() {
-        let item: StarredItem = json::decode(r#"{"type": "channel", "channel": "C12345678"}"#).unwrap();
-        match item {
-            StarredItem::Channel { channel: c } => {
-                assert_eq!(c, "C12345678");
-            }
-            _ => panic!("StarredItem decoded into incorrect variant."),
-        }
-    }
-
-    #[test]
-    fn starred_item_group_decode() {
-        let item: StarredItem = json::decode(r#"{"type": "group", "group": "G12345678"}"#).unwrap();
-        match item {
-            StarredItem::Group { group: g } => {
-                assert_eq!(g, "G12345678");
-            }
-            _ => panic!("StarredItem decoded into incorrect variant."),
-        }
-    }
-
-    #[test]
-    fn starred_item_im_decode() {
-        let item: StarredItem = json::decode(r#"{"type": "im", "channel": "D12345678"}"#).unwrap();
-        match item {
-            StarredItem::Im { channel: c } => {
-                assert_eq!(c, "D12345678");
-            }
-            _ => panic!("StarredItem decoded into incorrect variant."),
-        }
-    }
+#[derive(Clone, Debug, Deserialize)]
+pub struct UserProfileFields {
+    pub alt: Option<String>,
+    pub label: Option<String>,
+    pub value: Option<String>,
 }
