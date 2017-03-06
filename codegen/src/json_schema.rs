@@ -108,7 +108,12 @@ impl PropType {
             Some("number") => PropType::Num,
             Some("null") => PropType::Null,
             Some("array") => {
-                let item_name = &name.to_singular();
+                // HACK: to_singular is broken in current Inflector release
+                let item_name = if name.ends_with("ies") {
+                    name[..name.len() - 3].to_owned() + "y"
+                } else {
+                    name.to_singular()
+                };
                 let item_schema = schema.items
                     .as_ref()
                     .expect(&format!("{} is an array but no schema is set for items", item_name));

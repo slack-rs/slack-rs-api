@@ -128,7 +128,7 @@ pub struct Group {
 }
 
 #[derive(Clone, Debug, Deserialize)]
-pub struct GroupTopic {
+pub struct GroupPurpose {
     pub creator: Option<String>,
     pub last_set: Option<i32>,
     pub value: Option<String>,
@@ -136,7 +136,7 @@ pub struct GroupTopic {
 
 
 #[derive(Clone, Debug, Deserialize)]
-pub struct GroupPurpose {
+pub struct GroupTopic {
     pub creator: Option<String>,
     pub last_set: Option<i32>,
     pub value: Option<String>,
@@ -650,7 +650,7 @@ pub struct MessageMessageReplied {
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct MessageMessageRepliedMessage {
-    pub replies: Option<Vec<MessageMessageRepliedMessageReplie>>,
+    pub replies: Option<Vec<MessageMessageRepliedMessageReply>>,
     pub reply_count: Option<i32>,
     pub text: Option<String>,
     pub thread_ts: Option<String>,
@@ -661,7 +661,7 @@ pub struct MessageMessageRepliedMessage {
 }
 
 #[derive(Clone, Debug, Deserialize)]
-pub struct MessageMessageRepliedMessageReplie {
+pub struct MessageMessageRepliedMessageReply {
     pub ts: Option<String>,
     pub user: Option<String>,
 }
@@ -726,6 +726,13 @@ pub struct MessageStandard {
 }
 
 #[derive(Clone, Debug, Deserialize)]
+pub struct MessageStandardEdited {
+    pub ts: Option<String>,
+    pub user: Option<String>,
+}
+
+
+#[derive(Clone, Debug, Deserialize)]
 pub struct MessageStandardAttachment {
     pub author_icon: Option<String>,
     pub author_link: Option<String>,
@@ -749,13 +756,6 @@ pub struct MessageStandardAttachmentField {
     pub short: Option<bool>,
     pub title: Option<String>,
     pub value: Option<String>,
-}
-
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct MessageStandardEdited {
-    pub ts: Option<String>,
-    pub user: Option<String>,
 }
 
 
