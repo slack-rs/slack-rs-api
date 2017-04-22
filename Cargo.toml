@@ -3,7 +3,7 @@ name = "slack_api"
 version = "0.16.0"
 authors = ["Benjamin Elder <ben.the.elder@gmail.com>", "Matt Jones <mthjones@gmail.com>"]
 repository = "https://github.com/slack-rs/slack-rs-api.git"
-documentation = "http://slack-rs.github.io/slack-rs-api/slack_api/"
+documentation = "https://docs.rs/slack_api"
 description = "Interface for the Slack Web API"
 license = "Apache-2.0"
 
