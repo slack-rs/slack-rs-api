@@ -1,4 +1,4 @@
-# slack-rs
+# slack-rs-api
 
 [Slack][slack] Web API interface.
 
