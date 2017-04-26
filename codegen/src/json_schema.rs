@@ -43,6 +43,7 @@ pub struct JsonObjectFieldInfo {
 pub struct JsonEnum {
     pub name: String,
     pub variants: Vec<JsonEnumVariant>,
+    pub untagged: bool,
 }
 
 #[derive(Clone, Debug)]
@@ -85,6 +86,7 @@ impl PropType {
         if let Some(ref one_of) = schema.one_of {
             return PropType::Enum(JsonEnum {
                 name: name.to_owned(),
+                untagged: one_of.iter().any(|o| o.ty != one_of[0].ty),
                 variants: one_of.iter()
                     .map(|o| {
                         // TODO: Have this just check title. id is not reliable

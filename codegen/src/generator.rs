@@ -534,6 +534,26 @@ impl JsonEnum {
             .collect::<Vec<_>>()
             .join("\n");
 
+        if self.untagged {
+            return format!("\
+                #[derive(Clone, Debug, Deserialize)]
+                #[serde(untagged)]
+                pub enum {name} {{
+                    {variants}
+                }}
+
+                {subobjs}
+
+                ",
+                name = self.name,
+                variants = self.variants
+                    .iter()
+                    .map(|v| v.to_code())
+                    .collect::<Vec<_>>()
+                    .join("\n"),
+                subobjs = subobjs);
+        }
+
         format!("\
             #[derive(Clone, Debug)]
             pub enum {name} {{
