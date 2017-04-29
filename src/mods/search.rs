@@ -52,7 +52,7 @@ pub struct AllRequest<'a> {
     pub sort: Option<&'a str>,
     /// Change sort direction to ascending (asc) or descending (desc).
     pub sort_dir: Option<&'a str>,
-    /// Pass a value of 1 to enable query highlight markers (see below).
+    /// Pass a value of true to enable query highlight markers (see below).
     pub highlight: Option<bool>,
     /// Number of items to return per page.
     pub count: Option<u32>,
@@ -115,10 +115,12 @@ pub enum AllError<E: Error> {
     InvalidCharset,
     /// The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid.
     InvalidFormData,
-    /// The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/json application/x-www-form-urlencoded multipart/form-data text/plain.
+    /// The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/x-www-form-urlencoded multipart/form-data text/plain.
     InvalidPostType,
     /// The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.
     MissingPostType,
+    /// The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.
+    TeamAddedToOrg,
     /// The method was called via a POST request, but the POST data was either missing or truncated.
     RequestTimeout,
     /// The response was not parseable as the expected object
@@ -142,6 +144,7 @@ impl<'a, E: Error> From<&'a str> for AllError<E> {
             "invalid_form_data" => AllError::InvalidFormData,
             "invalid_post_type" => AllError::InvalidPostType,
             "missing_post_type" => AllError::MissingPostType,
+            "team_added_to_org" => AllError::TeamAddedToOrg,
             "request_timeout" => AllError::RequestTimeout,
             _ => AllError::Unknown(s.to_owned()),
         }
@@ -165,8 +168,9 @@ impl<E: Error> Error for AllError<E> {
             &AllError::InvalidArrayArg => "invalid_array_arg: The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API.",
             &AllError::InvalidCharset => "invalid_charset: The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1.",
             &AllError::InvalidFormData => "invalid_form_data: The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid.",
-            &AllError::InvalidPostType => "invalid_post_type: The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/json application/x-www-form-urlencoded multipart/form-data text/plain.",
+            &AllError::InvalidPostType => "invalid_post_type: The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/x-www-form-urlencoded multipart/form-data text/plain.",
             &AllError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
+            &AllError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
             &AllError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
             &AllError::MalformedResponse(ref e) => e.description(),
             &AllError::Unknown(ref s) => s,
@@ -224,7 +228,7 @@ pub struct FilesRequest<'a> {
     pub sort: Option<&'a str>,
     /// Change sort direction to ascending (asc) or descending (desc).
     pub sort_dir: Option<&'a str>,
-    /// Pass a value of 1 to enable query highlight markers (see below).
+    /// Pass a value of true to enable query highlight markers (see below).
     pub highlight: Option<bool>,
     /// Number of items to return per page.
     pub count: Option<u32>,
@@ -280,10 +284,12 @@ pub enum FilesError<E: Error> {
     InvalidCharset,
     /// The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid.
     InvalidFormData,
-    /// The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/json application/x-www-form-urlencoded multipart/form-data text/plain.
+    /// The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/x-www-form-urlencoded multipart/form-data text/plain.
     InvalidPostType,
     /// The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.
     MissingPostType,
+    /// The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.
+    TeamAddedToOrg,
     /// The method was called via a POST request, but the POST data was either missing or truncated.
     RequestTimeout,
     /// The response was not parseable as the expected object
@@ -307,6 +313,7 @@ impl<'a, E: Error> From<&'a str> for FilesError<E> {
             "invalid_form_data" => FilesError::InvalidFormData,
             "invalid_post_type" => FilesError::InvalidPostType,
             "missing_post_type" => FilesError::MissingPostType,
+            "team_added_to_org" => FilesError::TeamAddedToOrg,
             "request_timeout" => FilesError::RequestTimeout,
             _ => FilesError::Unknown(s.to_owned()),
         }
@@ -330,8 +337,9 @@ impl<E: Error> Error for FilesError<E> {
             &FilesError::InvalidArrayArg => "invalid_array_arg: The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API.",
             &FilesError::InvalidCharset => "invalid_charset: The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1.",
             &FilesError::InvalidFormData => "invalid_form_data: The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid.",
-            &FilesError::InvalidPostType => "invalid_post_type: The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/json application/x-www-form-urlencoded multipart/form-data text/plain.",
+            &FilesError::InvalidPostType => "invalid_post_type: The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/x-www-form-urlencoded multipart/form-data text/plain.",
             &FilesError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
+            &FilesError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
             &FilesError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
             &FilesError::MalformedResponse(ref e) => e.description(),
             &FilesError::Unknown(ref s) => s,
@@ -389,7 +397,7 @@ pub struct MessagesRequest<'a> {
     pub sort: Option<&'a str>,
     /// Change sort direction to ascending (asc) or descending (desc).
     pub sort_dir: Option<&'a str>,
-    /// Pass a value of 1 to enable query highlight markers (see below).
+    /// Pass a value of true to enable query highlight markers (see below).
     pub highlight: Option<bool>,
     /// Number of items to return per page.
     pub count: Option<u32>,
@@ -445,10 +453,12 @@ pub enum MessagesError<E: Error> {
     InvalidCharset,
     /// The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid.
     InvalidFormData,
-    /// The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/json application/x-www-form-urlencoded multipart/form-data text/plain.
+    /// The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/x-www-form-urlencoded multipart/form-data text/plain.
     InvalidPostType,
     /// The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.
     MissingPostType,
+    /// The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.
+    TeamAddedToOrg,
     /// The method was called via a POST request, but the POST data was either missing or truncated.
     RequestTimeout,
     /// The response was not parseable as the expected object
@@ -472,6 +482,7 @@ impl<'a, E: Error> From<&'a str> for MessagesError<E> {
             "invalid_form_data" => MessagesError::InvalidFormData,
             "invalid_post_type" => MessagesError::InvalidPostType,
             "missing_post_type" => MessagesError::MissingPostType,
+            "team_added_to_org" => MessagesError::TeamAddedToOrg,
             "request_timeout" => MessagesError::RequestTimeout,
             _ => MessagesError::Unknown(s.to_owned()),
         }
@@ -495,8 +506,9 @@ impl<E: Error> Error for MessagesError<E> {
             &MessagesError::InvalidArrayArg => "invalid_array_arg: The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API.",
             &MessagesError::InvalidCharset => "invalid_charset: The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1.",
             &MessagesError::InvalidFormData => "invalid_form_data: The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid.",
-            &MessagesError::InvalidPostType => "invalid_post_type: The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/json application/x-www-form-urlencoded multipart/form-data text/plain.",
+            &MessagesError::InvalidPostType => "invalid_post_type: The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/x-www-form-urlencoded multipart/form-data text/plain.",
             &MessagesError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
+            &MessagesError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
             &MessagesError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
             &MessagesError::MalformedResponse(ref e) => e.description(),
             &MessagesError::Unknown(ref s) => s,
