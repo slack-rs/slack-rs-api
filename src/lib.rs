@@ -31,3 +31,52 @@ pub mod requests;
 fn get_slack_url_for_method(method: &str) -> String {
     format!("https://slack.com/api/{}", method)
 }
+
+fn optional_struct_or_empty_array<'de, T, D>(deserializer: D) -> Result<Option<T>, D::Error>
+    where T: serde::Deserialize + Default,
+          D: serde::Deserializer
+{
+    use std::marker::PhantomData;
+    use serde::de;
+
+    struct StructOrEmptyArray<T>(PhantomData<T>);
+
+    impl<'de, T> de::Visitor for StructOrEmptyArray<T>
+        where T: de::Deserialize + Default
+    {
+        type Value = Option<T>;
+
+        fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+            formatter.write_str("struct or empty array")
+        }
+
+        fn visit_seq<A>(self, mut seq: A) -> Result<Option<T>, A::Error>
+            where A: de::SeqVisitor
+        {
+            match seq.visit::<T>()? {
+                Some(_) => Err(de::Error::custom("non-empty array is not valid")),
+                None => Ok(Some(T::default())),
+            }
+        }
+
+        fn visit_unit<E>(self) -> Result<Option<T>, E>
+            where E: de::Error
+        {
+            Ok(None)
+        }
+
+        fn visit_none<E>(self) -> Result<Option<T>, E>
+            where E: de::Error
+        {
+            Ok(None)
+        }
+
+        fn visit_map<M>(self, visitor: M) -> Result<Option<T>, M::Error>
+            where M: de::MapVisitor
+        {
+            de::Deserialize::deserialize(de::value::MapVisitorDeserializer::new(visitor)).map(Some)
+        }
+    }
+
+    deserializer.deserialize(StructOrEmptyArray(PhantomData))
+}

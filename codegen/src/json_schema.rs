@@ -37,6 +37,7 @@ pub struct JsonObjectFieldInfo {
     pub name: String,
     pub ty: PropType,
     pub rename: Option<String>,
+    pub deserialize_with: Option<&'static str>,
 }
 
 #[derive(Clone, Debug)]
@@ -154,6 +155,7 @@ impl PropType {
                                         name: field_name.into(),
                                         ty: ty,
                                         rename: rename,
+                                        deserialize_with: None,
                                     }
                                 })
                                 .collect();
