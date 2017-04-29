@@ -151,11 +151,19 @@ impl PropType {
                                     } else {
                                         ty = PropType::Optional(Box::new(ty));
                                     }
+                                    // Hack for slack bug which writes empty map as empty array
+                                    let deserialize_with = {
+                                        if name == "UserProfile" && field_name == "fields" {
+                                            Some("::optional_struct_or_empty_array")
+                                        } else {
+                                            None
+                                        }
+                                    };
                                     JsonObjectFieldInfo {
                                         name: field_name.into(),
                                         ty: ty,
                                         rename: rename,
-                                        deserialize_with: None,
+                                        deserialize_with: deserialize_with,
                                     }
                                 })
                                 .collect();
