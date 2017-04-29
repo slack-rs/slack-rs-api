@@ -356,8 +356,8 @@ impl ::serde::Deserialize for Message {
         } else {
             ::serde_json::from_value::<MessageStandard>(value.clone())
                 .map(|obj| {
-                    Message::Standard(obj)
-                })
+                         Message::Standard(obj)
+                     })
                 .map_err(|e| D::Error::custom(&format!("{}", e)))
         }
     }
@@ -726,13 +726,6 @@ pub struct MessageStandard {
 }
 
 #[derive(Clone, Debug, Deserialize)]
-pub struct MessageStandardEdited {
-    pub ts: Option<String>,
-    pub user: Option<String>,
-}
-
-
-#[derive(Clone, Debug, Deserialize)]
 pub struct MessageStandardAttachment {
     pub author_icon: Option<String>,
     pub author_link: Option<String>,
@@ -756,6 +749,13 @@ pub struct MessageStandardAttachmentField {
     pub short: Option<bool>,
     pub title: Option<String>,
     pub value: Option<String>,
+}
+
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct MessageStandardEdited {
+    pub ts: Option<String>,
+    pub user: Option<String>,
 }
 
 

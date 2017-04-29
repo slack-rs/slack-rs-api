@@ -14,18 +14,26 @@ use requests::SlackWebRequestSender;
 ///
 /// Wraps https://api.slack.com/methods/auth.revoke
 
-pub fn revoke<R>(client: &R, token: &str, request: &RevokeRequest) -> Result<RevokeResponse, RevokeError<R::Error>>
+pub fn revoke<R>(client: &R,
+                 token: &str,
+                 request: &RevokeRequest)
+                 -> Result<RevokeResponse, RevokeError<R::Error>>
     where R: SlackWebRequestSender
 {
 
-    let params = vec![Some(("token", token)), request.test.map(|test| ("test", if test { "1" } else { "0" }))];
+    let params = vec![Some(("token", token)),
+                      request
+                          .test
+                          .map(|test| ("test", if test { "1" } else { "0" }))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = ::get_slack_url_for_method("auth.revoke");
-    client.send(&url, &params[..])
+    client
+        .send(&url, &params[..])
         .map_err(|err| RevokeError::Client(err))
         .and_then(|result| {
-            serde_json::from_str::<RevokeResponse>(&result).map_err(|e| RevokeError::MalformedResponse(e))
-        })
+                      serde_json::from_str::<RevokeResponse>(&result)
+                            .map_err(|e| RevokeError::MalformedResponse(e))
+                  })
         .and_then(|o| o.into())
 }
 
@@ -49,7 +57,11 @@ impl<E: Error> Into<Result<RevokeResponse, RevokeError<E>>> for RevokeResponse {
         if self.ok {
             Ok(self)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(self.error
+                    .as_ref()
+                    .map(String::as_ref)
+                    .unwrap_or("")
+                    .into())
         }
     }
 }
@@ -113,37 +125,13 @@ impl<E: Error> Error for RevokeError<E> {
             &RevokeError::NotAuthed => "not_authed: No authentication token provided.",
             &RevokeError::InvalidAuth => "invalid_auth: Invalid authentication token.",
             &RevokeError::AccountInactive => "account_inactive: Authentication token is for a deleted user or team.",
-            &RevokeError::InvalidArgName => {
-                "invalid_arg_name: The method was passed an argument whose name falls outside the bounds of common \
-                 decency. This includes very long names and names with non-alphanumeric characters other than _. If \
-                 you get this error, it is typically an indication that you have made a very malformed API call."
-            }
-            &RevokeError::InvalidArrayArg => {
-                "invalid_array_arg: The method was passed a PHP-style array argument (e.g. with a name like foo[7]). \
-                 These are never valid with the Slack API."
-            }
-            &RevokeError::InvalidCharset => {
-                "invalid_charset: The method was called via a POST request, but the charset specified in the \
-                 Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1."
-            }
-            &RevokeError::InvalidFormData => {
-                "invalid_form_data: The method was called via a POST request with Content-Type \
-                 application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or \
-                 syntactically invalid."
-            }
-            &RevokeError::InvalidPostType => {
-                "invalid_post_type: The method was called via a POST request, but the specified Content-Type was \
-                 invalid. Valid types are: application/json application/x-www-form-urlencoded multipart/form-data \
-                 text/plain."
-            }
-            &RevokeError::MissingPostType => {
-                "missing_post_type: The method was called via a POST request and included a data payload, but the \
-                 request did not include a Content-Type header."
-            }
-            &RevokeError::RequestTimeout => {
-                "request_timeout: The method was called via a POST request, but the POST data was either missing or \
-                 truncated."
-            }
+            &RevokeError::InvalidArgName => "invalid_arg_name: The method was passed an argument whose name falls outside the bounds of common decency. This includes very long names and names with non-alphanumeric characters other than _. If you get this error, it is typically an indication that you have made a very malformed API call.",
+            &RevokeError::InvalidArrayArg => "invalid_array_arg: The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API.",
+            &RevokeError::InvalidCharset => "invalid_charset: The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1.",
+            &RevokeError::InvalidFormData => "invalid_form_data: The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid.",
+            &RevokeError::InvalidPostType => "invalid_post_type: The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/json application/x-www-form-urlencoded multipart/form-data text/plain.",
+            &RevokeError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
+            &RevokeError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
             &RevokeError::MalformedResponse(ref e) => e.description(),
             &RevokeError::Unknown(ref s) => s,
             &RevokeError::Client(ref inner) => inner.description(),
@@ -168,9 +156,13 @@ pub fn test<R>(client: &R, token: &str) -> Result<TestResponse, TestError<R::Err
 {
     let params = &[("token", token)];
     let url = ::get_slack_url_for_method("auth.test");
-    client.send(&url, &params[..])
+    client
+        .send(&url, &params[..])
         .map_err(|err| TestError::Client(err))
-        .and_then(|result| serde_json::from_str::<TestResponse>(&result).map_err(|e| TestError::MalformedResponse(e)))
+        .and_then(|result| {
+                      serde_json::from_str::<TestResponse>(&result)
+                            .map_err(|e| TestError::MalformedResponse(e))
+                  })
         .and_then(|o| o.into())
 }
 
@@ -192,7 +184,11 @@ impl<E: Error> Into<Result<TestResponse, TestError<E>>> for TestResponse {
         if self.ok {
             Ok(self)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(self.error
+                    .as_ref()
+                    .map(String::as_ref)
+                    .unwrap_or("")
+                    .into())
         }
     }
 }
@@ -256,37 +252,13 @@ impl<E: Error> Error for TestError<E> {
             &TestError::NotAuthed => "not_authed: No authentication token provided.",
             &TestError::InvalidAuth => "invalid_auth: Invalid authentication token.",
             &TestError::AccountInactive => "account_inactive: Authentication token is for a deleted user or team.",
-            &TestError::InvalidArgName => {
-                "invalid_arg_name: The method was passed an argument whose name falls outside the bounds of common \
-                 decency. This includes very long names and names with non-alphanumeric characters other than _. If \
-                 you get this error, it is typically an indication that you have made a very malformed API call."
-            }
-            &TestError::InvalidArrayArg => {
-                "invalid_array_arg: The method was passed a PHP-style array argument (e.g. with a name like foo[7]). \
-                 These are never valid with the Slack API."
-            }
-            &TestError::InvalidCharset => {
-                "invalid_charset: The method was called via a POST request, but the charset specified in the \
-                 Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1."
-            }
-            &TestError::InvalidFormData => {
-                "invalid_form_data: The method was called via a POST request with Content-Type \
-                 application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or \
-                 syntactically invalid."
-            }
-            &TestError::InvalidPostType => {
-                "invalid_post_type: The method was called via a POST request, but the specified Content-Type was \
-                 invalid. Valid types are: application/json application/x-www-form-urlencoded multipart/form-data \
-                 text/plain."
-            }
-            &TestError::MissingPostType => {
-                "missing_post_type: The method was called via a POST request and included a data payload, but the \
-                 request did not include a Content-Type header."
-            }
-            &TestError::RequestTimeout => {
-                "request_timeout: The method was called via a POST request, but the POST data was either missing or \
-                 truncated."
-            }
+            &TestError::InvalidArgName => "invalid_arg_name: The method was passed an argument whose name falls outside the bounds of common decency. This includes very long names and names with non-alphanumeric characters other than _. If you get this error, it is typically an indication that you have made a very malformed API call.",
+            &TestError::InvalidArrayArg => "invalid_array_arg: The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API.",
+            &TestError::InvalidCharset => "invalid_charset: The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1.",
+            &TestError::InvalidFormData => "invalid_form_data: The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid.",
+            &TestError::InvalidPostType => "invalid_post_type: The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/json application/x-www-form-urlencoded multipart/form-data text/plain.",
+            &TestError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
+            &TestError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
             &TestError::MalformedResponse(ref e) => e.description(),
             &TestError::Unknown(ref s) => s,
             &TestError::Client(ref inner) => inner.description(),

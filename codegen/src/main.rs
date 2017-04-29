@@ -4,6 +4,7 @@ extern crate serde;
 extern crate serde_json;
 extern crate inflector;
 extern crate clap;
+extern crate rustfmt;
 
 use std::fs::{self, File, OpenOptions};
 use std::io::{self, Read, Write};
@@ -58,6 +59,11 @@ fn generate_types(output_path: &Path) -> io::Result<()> {
         }
     }
 
+    let _ = rustfmt::run(rustfmt::Input::File(codegen_filepath), &rustfmt::config::Config {
+        write_mode: rustfmt::config::WriteMode::Overwrite,
+        ..rustfmt::config::Config::default()
+    });
+
     Ok(())
 }
 
@@ -87,6 +93,11 @@ fn generate_modules(output_path: &Path) -> io::Result<()> {
                     .open(&out_filepath)?;
 
                 out_file.write_all(module.generate().as_bytes())?;
+
+                let _ = rustfmt::run(rustfmt::Input::File(out_filepath), &rustfmt::config::Config {
+                    write_mode: rustfmt::config::WriteMode::Overwrite,
+                    ..rustfmt::config::Config::default()
+                });
             }
         }
     }

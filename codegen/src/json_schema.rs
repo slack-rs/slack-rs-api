@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::path::Path;
 
 use inflector::Inflector;
@@ -12,12 +12,12 @@ pub struct JsonSchema {
     pub description: Option<String>,
     #[serde(rename = "type")]
     pub ty: Option<String>,
-    pub properties: Option<HashMap<String, JsonSchema>>,
+    pub properties: Option<BTreeMap<String, JsonSchema>>,
     pub required: Option<Vec<String>>,
-    pub definitions: Option<HashMap<String, JsonSchema>>,
+    pub definitions: Option<BTreeMap<String, JsonSchema>>,
     pub items: Option<Box<JsonSchema>>,
     #[serde(rename = "patternProperties")]
-    pub pattern_properties: Option<HashMap<String, JsonSchema>>,
+    pub pattern_properties: Option<BTreeMap<String, JsonSchema>>,
     #[serde(default, rename = "additionalProperties")]
     pub additional_properties: bool,
     #[serde(rename = "$ref")]

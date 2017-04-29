@@ -14,18 +14,29 @@ use requests::SlackWebRequestSender;
 ///
 /// Wraps https://api.slack.com/methods/rtm.start
 
-pub fn start<R>(client: &R, token: &str, request: &StartRequest) -> Result<StartResponse, StartError<R::Error>>
+pub fn start<R>(client: &R,
+                token: &str,
+                request: &StartRequest)
+                -> Result<StartResponse, StartError<R::Error>>
     where R: SlackWebRequestSender
 {
 
     let params = vec![Some(("token", token)),
-                      request.no_unreads.map(|no_unreads| ("no_unreads", no_unreads)),
-                      request.mpim_aware.map(|mpim_aware| ("mpim_aware", mpim_aware))];
+                      request
+                          .no_unreads
+                          .map(|no_unreads| ("no_unreads", no_unreads)),
+                      request
+                          .mpim_aware
+                          .map(|mpim_aware| ("mpim_aware", mpim_aware))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = ::get_slack_url_for_method("rtm.start");
-    client.send(&url, &params[..])
+    client
+        .send(&url, &params[..])
         .map_err(|err| StartError::Client(err))
-        .and_then(|result| serde_json::from_str::<StartResponse>(&result).map_err(|e| StartError::MalformedResponse(e)))
+        .and_then(|result| {
+                      serde_json::from_str::<StartResponse>(&result)
+                            .map_err(|e| StartError::MalformedResponse(e))
+                  })
         .and_then(|o| o.into())
 }
 
@@ -60,7 +71,11 @@ impl<E: Error> Into<Result<StartResponse, StartError<E>>> for StartResponse {
         if self.ok {
             Ok(self)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(self.error
+                    .as_ref()
+                    .map(String::as_ref)
+                    .unwrap_or("")
+                    .into())
         }
     }
 }
@@ -124,44 +139,17 @@ impl<E: Error> fmt::Display for StartError<E> {
 impl<E: Error> Error for StartError<E> {
     fn description(&self) -> &str {
         match self {
-            &StartError::MigrationInProgress => {
-                "migration_in_progress: Team is being migrated between servers. See the team_migration_started event \
-                 documentation for details."
-            }
+            &StartError::MigrationInProgress => "migration_in_progress: Team is being migrated between servers. See the team_migration_started event documentation for details.",
             &StartError::NotAuthed => "not_authed: No authentication token provided.",
             &StartError::InvalidAuth => "invalid_auth: Invalid authentication token.",
             &StartError::AccountInactive => "account_inactive: Authentication token is for a deleted user or team.",
-            &StartError::InvalidArgName => {
-                "invalid_arg_name: The method was passed an argument whose name falls outside the bounds of common \
-                 decency. This includes very long names and names with non-alphanumeric characters other than _. If \
-                 you get this error, it is typically an indication that you have made a very malformed API call."
-            }
-            &StartError::InvalidArrayArg => {
-                "invalid_array_arg: The method was passed a PHP-style array argument (e.g. with a name like foo[7]). \
-                 These are never valid with the Slack API."
-            }
-            &StartError::InvalidCharset => {
-                "invalid_charset: The method was called via a POST request, but the charset specified in the \
-                 Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1."
-            }
-            &StartError::InvalidFormData => {
-                "invalid_form_data: The method was called via a POST request with Content-Type \
-                 application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or \
-                 syntactically invalid."
-            }
-            &StartError::InvalidPostType => {
-                "invalid_post_type: The method was called via a POST request, but the specified Content-Type was \
-                 invalid. Valid types are: application/json application/x-www-form-urlencoded multipart/form-data \
-                 text/plain."
-            }
-            &StartError::MissingPostType => {
-                "missing_post_type: The method was called via a POST request and included a data payload, but the \
-                 request did not include a Content-Type header."
-            }
-            &StartError::RequestTimeout => {
-                "request_timeout: The method was called via a POST request, but the POST data was either missing or \
-                 truncated."
-            }
+            &StartError::InvalidArgName => "invalid_arg_name: The method was passed an argument whose name falls outside the bounds of common decency. This includes very long names and names with non-alphanumeric characters other than _. If you get this error, it is typically an indication that you have made a very malformed API call.",
+            &StartError::InvalidArrayArg => "invalid_array_arg: The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API.",
+            &StartError::InvalidCharset => "invalid_charset: The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1.",
+            &StartError::InvalidFormData => "invalid_form_data: The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid.",
+            &StartError::InvalidPostType => "invalid_post_type: The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/json application/x-www-form-urlencoded multipart/form-data text/plain.",
+            &StartError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
+            &StartError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
             &StartError::MalformedResponse(ref e) => e.description(),
             &StartError::Unknown(ref s) => s,
             &StartError::Client(ref inner) => inner.description(),

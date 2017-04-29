@@ -14,7 +14,10 @@ use requests::SlackWebRequestSender;
 ///
 /// Wraps https://api.slack.com/methods/files.comments.add
 
-pub fn add<R>(client: &R, token: &str, request: &AddRequest) -> Result<AddResponse, AddError<R::Error>>
+pub fn add<R>(client: &R,
+              token: &str,
+              request: &AddRequest)
+              -> Result<AddResponse, AddError<R::Error>>
     where R: SlackWebRequestSender
 {
 
@@ -24,9 +27,13 @@ pub fn add<R>(client: &R, token: &str, request: &AddRequest) -> Result<AddRespon
                       request.channel.map(|channel| ("channel", channel))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = ::get_slack_url_for_method("files.comments.add");
-    client.send(&url, &params[..])
+    client
+        .send(&url, &params[..])
         .map_err(|err| AddError::Client(err))
-        .and_then(|result| serde_json::from_str::<AddResponse>(&result).map_err(|e| AddError::MalformedResponse(e)))
+        .and_then(|result| {
+                      serde_json::from_str::<AddResponse>(&result)
+                            .map_err(|e| AddError::MalformedResponse(e))
+                  })
         .and_then(|o| o.into())
 }
 
@@ -54,7 +61,11 @@ impl<E: Error> Into<Result<AddResponse, AddError<E>>> for AddResponse {
         if self.ok {
             Ok(self)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(self.error
+                    .as_ref()
+                    .map(String::as_ref)
+                    .unwrap_or("")
+                    .into())
         }
     }
 }
@@ -130,37 +141,13 @@ impl<E: Error> Error for AddError<E> {
             &AddError::NotAuthed => "not_authed: No authentication token provided.",
             &AddError::InvalidAuth => "invalid_auth: Invalid authentication token.",
             &AddError::AccountInactive => "account_inactive: Authentication token is for a deleted user or team.",
-            &AddError::InvalidArgName => {
-                "invalid_arg_name: The method was passed an argument whose name falls outside the bounds of common \
-                 decency. This includes very long names and names with non-alphanumeric characters other than _. If \
-                 you get this error, it is typically an indication that you have made a very malformed API call."
-            }
-            &AddError::InvalidArrayArg => {
-                "invalid_array_arg: The method was passed a PHP-style array argument (e.g. with a name like foo[7]). \
-                 These are never valid with the Slack API."
-            }
-            &AddError::InvalidCharset => {
-                "invalid_charset: The method was called via a POST request, but the charset specified in the \
-                 Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1."
-            }
-            &AddError::InvalidFormData => {
-                "invalid_form_data: The method was called via a POST request with Content-Type \
-                 application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or \
-                 syntactically invalid."
-            }
-            &AddError::InvalidPostType => {
-                "invalid_post_type: The method was called via a POST request, but the specified Content-Type was \
-                 invalid. Valid types are: application/json application/x-www-form-urlencoded multipart/form-data \
-                 text/plain."
-            }
-            &AddError::MissingPostType => {
-                "missing_post_type: The method was called via a POST request and included a data payload, but the \
-                 request did not include a Content-Type header."
-            }
-            &AddError::RequestTimeout => {
-                "request_timeout: The method was called via a POST request, but the POST data was either missing or \
-                 truncated."
-            }
+            &AddError::InvalidArgName => "invalid_arg_name: The method was passed an argument whose name falls outside the bounds of common decency. This includes very long names and names with non-alphanumeric characters other than _. If you get this error, it is typically an indication that you have made a very malformed API call.",
+            &AddError::InvalidArrayArg => "invalid_array_arg: The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API.",
+            &AddError::InvalidCharset => "invalid_charset: The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1.",
+            &AddError::InvalidFormData => "invalid_form_data: The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid.",
+            &AddError::InvalidPostType => "invalid_post_type: The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/json application/x-www-form-urlencoded multipart/form-data text/plain.",
+            &AddError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
+            &AddError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
             &AddError::MalformedResponse(ref e) => e.description(),
             &AddError::Unknown(ref s) => s,
             &AddError::Client(ref inner) => inner.description(),
@@ -180,18 +167,25 @@ impl<E: Error> Error for AddError<E> {
 ///
 /// Wraps https://api.slack.com/methods/files.comments.delete
 
-pub fn delete<R>(client: &R, token: &str, request: &DeleteRequest) -> Result<DeleteResponse, DeleteError<R::Error>>
+pub fn delete<R>(client: &R,
+                 token: &str,
+                 request: &DeleteRequest)
+                 -> Result<DeleteResponse, DeleteError<R::Error>>
     where R: SlackWebRequestSender
 {
 
-    let params = vec![Some(("token", token)), Some(("file", request.file)), Some(("id", request.id))];
+    let params = vec![Some(("token", token)),
+                      Some(("file", request.file)),
+                      Some(("id", request.id))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = ::get_slack_url_for_method("files.comments.delete");
-    client.send(&url, &params[..])
+    client
+        .send(&url, &params[..])
         .map_err(|err| DeleteError::Client(err))
         .and_then(|result| {
-            serde_json::from_str::<DeleteResponse>(&result).map_err(|e| DeleteError::MalformedResponse(e))
-        })
+                      serde_json::from_str::<DeleteResponse>(&result)
+                            .map_err(|e| DeleteError::MalformedResponse(e))
+                  })
         .and_then(|o| o.into())
 }
 
@@ -216,7 +210,11 @@ impl<E: Error> Into<Result<DeleteResponse, DeleteError<E>>> for DeleteResponse {
         if self.ok {
             Ok(self)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(self.error
+                    .as_ref()
+                    .map(String::as_ref)
+                    .unwrap_or("")
+                    .into())
         }
     }
 }
@@ -292,37 +290,13 @@ impl<E: Error> Error for DeleteError<E> {
             &DeleteError::NotAuthed => "not_authed: No authentication token provided.",
             &DeleteError::InvalidAuth => "invalid_auth: Invalid authentication token.",
             &DeleteError::AccountInactive => "account_inactive: Authentication token is for a deleted user or team.",
-            &DeleteError::InvalidArgName => {
-                "invalid_arg_name: The method was passed an argument whose name falls outside the bounds of common \
-                 decency. This includes very long names and names with non-alphanumeric characters other than _. If \
-                 you get this error, it is typically an indication that you have made a very malformed API call."
-            }
-            &DeleteError::InvalidArrayArg => {
-                "invalid_array_arg: The method was passed a PHP-style array argument (e.g. with a name like foo[7]). \
-                 These are never valid with the Slack API."
-            }
-            &DeleteError::InvalidCharset => {
-                "invalid_charset: The method was called via a POST request, but the charset specified in the \
-                 Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1."
-            }
-            &DeleteError::InvalidFormData => {
-                "invalid_form_data: The method was called via a POST request with Content-Type \
-                 application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or \
-                 syntactically invalid."
-            }
-            &DeleteError::InvalidPostType => {
-                "invalid_post_type: The method was called via a POST request, but the specified Content-Type was \
-                 invalid. Valid types are: application/json application/x-www-form-urlencoded multipart/form-data \
-                 text/plain."
-            }
-            &DeleteError::MissingPostType => {
-                "missing_post_type: The method was called via a POST request and included a data payload, but the \
-                 request did not include a Content-Type header."
-            }
-            &DeleteError::RequestTimeout => {
-                "request_timeout: The method was called via a POST request, but the POST data was either missing or \
-                 truncated."
-            }
+            &DeleteError::InvalidArgName => "invalid_arg_name: The method was passed an argument whose name falls outside the bounds of common decency. This includes very long names and names with non-alphanumeric characters other than _. If you get this error, it is typically an indication that you have made a very malformed API call.",
+            &DeleteError::InvalidArrayArg => "invalid_array_arg: The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API.",
+            &DeleteError::InvalidCharset => "invalid_charset: The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1.",
+            &DeleteError::InvalidFormData => "invalid_form_data: The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid.",
+            &DeleteError::InvalidPostType => "invalid_post_type: The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/json application/x-www-form-urlencoded multipart/form-data text/plain.",
+            &DeleteError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
+            &DeleteError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
             &DeleteError::MalformedResponse(ref e) => e.description(),
             &DeleteError::Unknown(ref s) => s,
             &DeleteError::Client(ref inner) => inner.description(),
@@ -342,7 +316,10 @@ impl<E: Error> Error for DeleteError<E> {
 ///
 /// Wraps https://api.slack.com/methods/files.comments.edit
 
-pub fn edit<R>(client: &R, token: &str, request: &EditRequest) -> Result<EditResponse, EditError<R::Error>>
+pub fn edit<R>(client: &R,
+               token: &str,
+               request: &EditRequest)
+               -> Result<EditResponse, EditError<R::Error>>
     where R: SlackWebRequestSender
 {
 
@@ -352,9 +329,13 @@ pub fn edit<R>(client: &R, token: &str, request: &EditRequest) -> Result<EditRes
                       Some(("comment", request.comment))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = ::get_slack_url_for_method("files.comments.edit");
-    client.send(&url, &params[..])
+    client
+        .send(&url, &params[..])
         .map_err(|err| EditError::Client(err))
-        .and_then(|result| serde_json::from_str::<EditResponse>(&result).map_err(|e| EditError::MalformedResponse(e)))
+        .and_then(|result| {
+                      serde_json::from_str::<EditResponse>(&result)
+                            .map_err(|e| EditError::MalformedResponse(e))
+                  })
         .and_then(|o| o.into())
 }
 
@@ -382,7 +363,11 @@ impl<E: Error> Into<Result<EditResponse, EditError<E>>> for EditResponse {
         if self.ok {
             Ok(self)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(self.error
+                    .as_ref()
+                    .map(String::as_ref)
+                    .unwrap_or("")
+                    .into())
         }
     }
 }
@@ -466,37 +451,13 @@ impl<E: Error> Error for EditError<E> {
             &EditError::NotAuthed => "not_authed: No authentication token provided.",
             &EditError::InvalidAuth => "invalid_auth: Invalid authentication token.",
             &EditError::AccountInactive => "account_inactive: Authentication token is for a deleted user or team.",
-            &EditError::InvalidArgName => {
-                "invalid_arg_name: The method was passed an argument whose name falls outside the bounds of common \
-                 decency. This includes very long names and names with non-alphanumeric characters other than _. If \
-                 you get this error, it is typically an indication that you have made a very malformed API call."
-            }
-            &EditError::InvalidArrayArg => {
-                "invalid_array_arg: The method was passed a PHP-style array argument (e.g. with a name like foo[7]). \
-                 These are never valid with the Slack API."
-            }
-            &EditError::InvalidCharset => {
-                "invalid_charset: The method was called via a POST request, but the charset specified in the \
-                 Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1."
-            }
-            &EditError::InvalidFormData => {
-                "invalid_form_data: The method was called via a POST request with Content-Type \
-                 application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or \
-                 syntactically invalid."
-            }
-            &EditError::InvalidPostType => {
-                "invalid_post_type: The method was called via a POST request, but the specified Content-Type was \
-                 invalid. Valid types are: application/json application/x-www-form-urlencoded multipart/form-data \
-                 text/plain."
-            }
-            &EditError::MissingPostType => {
-                "missing_post_type: The method was called via a POST request and included a data payload, but the \
-                 request did not include a Content-Type header."
-            }
-            &EditError::RequestTimeout => {
-                "request_timeout: The method was called via a POST request, but the POST data was either missing or \
-                 truncated."
-            }
+            &EditError::InvalidArgName => "invalid_arg_name: The method was passed an argument whose name falls outside the bounds of common decency. This includes very long names and names with non-alphanumeric characters other than _. If you get this error, it is typically an indication that you have made a very malformed API call.",
+            &EditError::InvalidArrayArg => "invalid_array_arg: The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API.",
+            &EditError::InvalidCharset => "invalid_charset: The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1.",
+            &EditError::InvalidFormData => "invalid_form_data: The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid.",
+            &EditError::InvalidPostType => "invalid_post_type: The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/json application/x-www-form-urlencoded multipart/form-data text/plain.",
+            &EditError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
+            &EditError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
             &EditError::MalformedResponse(ref e) => e.description(),
             &EditError::Unknown(ref s) => s,
             &EditError::Client(ref inner) => inner.description(),
