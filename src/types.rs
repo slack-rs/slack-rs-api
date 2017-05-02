@@ -887,6 +887,8 @@ pub struct UsergroupPrefs {
 #[derive(Clone, Debug, Deserialize)]
 pub struct UserProfile {
     pub email: Option<String>,
+    #[serde(deserialize_with = "::optional_struct_or_empty_array")]
+    #[serde(default)]
     pub fields: Option<HashMap<String, UserProfileFields>>,
     pub first_name: Option<String>,
     pub image_1024: Option<String>,

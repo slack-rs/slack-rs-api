@@ -37,6 +37,8 @@ pub struct JsonObjectFieldInfo {
     pub name: String,
     pub ty: PropType,
     pub rename: Option<String>,
+    pub deserialize_with: Option<&'static str>,
+    pub default: bool,
 }
 
 #[derive(Clone, Debug)]
@@ -150,10 +152,22 @@ impl PropType {
                                     } else {
                                         ty = PropType::Optional(Box::new(ty));
                                     }
+                                    // Hack for slack bug which writes empty map as empty array
+                                    let default;
+                                    let deserialize_with;
+                                    if name == "UserProfile" && field_name == "fields" {
+                                        deserialize_with = Some("::optional_struct_or_empty_array");
+                                        default = true;
+                                    } else {
+                                        deserialize_with = None;
+                                        default = false;
+                                    }
                                     JsonObjectFieldInfo {
                                         name: field_name.into(),
                                         ty: ty,
                                         rename: rename,
+                                        deserialize_with: deserialize_with,
+                                        default: default,
                                     }
                                 })
                                 .collect();

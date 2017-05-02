@@ -485,11 +485,21 @@ impl Param {
 impl JsonObjectFieldInfo {
     pub fn to_code(&self) -> String {
         let mut prefix = String::new();
+
+        if let Some(ref path) = self.deserialize_with {
+            prefix.push_str(&format!("#[serde(deserialize_with = \"{}\")]\n", path));
+        }
+
+        if self.default {
+            prefix.push_str("#[serde(default)]\n");
+        }
+
         if self.name == "ok" {
             prefix.push_str("#[serde(default)]");
         } else if self.name != "error" && self.name != "ok" {
             prefix.push_str("pub");
         };
+        
         if let Some(ref rename) = self.rename {
             format!(
                 "#[serde(rename = \"{}\")]\n{} {}: {},",
