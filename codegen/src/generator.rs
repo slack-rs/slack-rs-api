@@ -490,6 +490,10 @@ impl JsonObjectFieldInfo {
             prefix.push_str(&format!("#[serde(deserialize_with = \"{}\")]\n", path));
         }
 
+        if self.default {
+            prefix.push_str("#[serde(default)]\n");
+        }
+
         if self.name == "ok" {
             prefix.push_str("#[serde(default)]");
         } else if self.name != "error" && self.name != "ok" {
