@@ -1,3 +1,8 @@
+# 0.16.1
+
+* This release works around a Slack API bug causing deserialization issues
+  * Thanks to @dten for implementing the fix in #39!
+
 # 0.16.0
 - This release contains **several breaking changes**
   - `hyper` has been replaced with `reqwest`, but is still an optional dependency
