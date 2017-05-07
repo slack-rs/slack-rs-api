@@ -13,7 +13,9 @@ pub trait SlackWebRequestSender {
 
 #[cfg(feature = "reqwest")]
 mod reqwest_support {
-    pub extern crate reqwest;
+    extern crate reqwest;
+    pub use self::reqwest::Client;
+    pub use self::reqwest::Error;
 
     use std::io::Read;
 
@@ -33,6 +35,10 @@ mod reqwest_support {
 
             Ok(res_str)
         }
+    }
+
+    pub fn default_client() -> Result<reqwest::Client, reqwest::Error> {
+        reqwest::Client::new()
     }
 }
 
