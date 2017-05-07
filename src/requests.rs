@@ -13,7 +13,7 @@ pub trait SlackWebRequestSender {
 
 #[cfg(feature = "reqwest")]
 mod reqwest_support {
-    extern crate reqwest;
+    pub extern crate reqwest;
 
     use std::io::Read;
 
