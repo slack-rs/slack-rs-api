@@ -1,5 +1,9 @@
-# 0.16.1
+# 0.16.2
+* This release adds a new top-level function: `default_client()`
+  * This function can be used by users to get a default client that implements `SlackWebRequestSender` so they don't have to pull in `reqwest` and version match in order to send requests.
+  * Thanks to @bwasty for adding this in #42!
 
+# 0.16.1
 * This release works around a Slack API bug causing deserialization issues
   * Thanks to @dten for implementing the fix in #39!
 
