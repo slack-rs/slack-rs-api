@@ -1,8 +1,11 @@
+//! Functionality for sending requests to Slack.
+
 use std::error;
 
 /// Functionality for sending authenticated and unauthenticated requests to Slack via HTTP.
 ///
-/// Should be implemented for clients to send requests to Slack.
+/// If you do not have a custom client to integrate with and just want to send requests, use
+/// the [`default_client()`] function to get a simple request sender.
 pub trait SlackWebRequestSender {
     type Error: error::Error;
 
@@ -37,6 +40,15 @@ mod reqwest_support {
         }
     }
 
+    /// Provides a default `reqwest` client to give to the API functions to send requests.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # let token = "some_token";
+    /// let client = slack_api::requests::default_client().unwrap();
+    /// let response = slack_api::channels::list(&client, &token, &Default::default());
+    /// ```
     pub fn default_client() -> Result<reqwest::Client, reqwest::Error> {
         reqwest::Client::new()
     }

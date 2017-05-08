@@ -28,6 +28,9 @@ pub use types::*;
 
 pub mod requests;
 
+#[cfg(feature = "reqwest")]
+pub use requests::default_client;
+
 fn get_slack_url_for_method(method: &str) -> String {
     format!("https://slack.com/api/{}", method)
 }
