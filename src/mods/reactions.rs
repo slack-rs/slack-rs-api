@@ -112,10 +112,12 @@ pub enum AddError<E: Error> {
     InvalidCharset,
     /// The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid.
     InvalidFormData,
-    /// The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/json application/x-www-form-urlencoded multipart/form-data text/plain.
+    /// The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/x-www-form-urlencoded multipart/form-data text/plain.
     InvalidPostType,
     /// The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.
     MissingPostType,
+    /// The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.
+    TeamAddedToOrg,
     /// The method was called via a POST request, but the POST data was either missing or truncated.
     RequestTimeout,
     /// The response was not parseable as the expected object
@@ -147,6 +149,7 @@ impl<'a, E: Error> From<&'a str> for AddError<E> {
             "invalid_form_data" => AddError::InvalidFormData,
             "invalid_post_type" => AddError::InvalidPostType,
             "missing_post_type" => AddError::MissingPostType,
+            "team_added_to_org" => AddError::TeamAddedToOrg,
             "request_timeout" => AddError::RequestTimeout,
             _ => AddError::Unknown(s.to_owned()),
         }
@@ -178,8 +181,9 @@ impl<E: Error> Error for AddError<E> {
             &AddError::InvalidArrayArg => "invalid_array_arg: The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API.",
             &AddError::InvalidCharset => "invalid_charset: The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1.",
             &AddError::InvalidFormData => "invalid_form_data: The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid.",
-            &AddError::InvalidPostType => "invalid_post_type: The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/json application/x-www-form-urlencoded multipart/form-data text/plain.",
+            &AddError::InvalidPostType => "invalid_post_type: The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/x-www-form-urlencoded multipart/form-data text/plain.",
             &AddError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
+            &AddError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
             &AddError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
             &AddError::MalformedResponse(ref e) => e.description(),
             &AddError::Unknown(ref s) => s,
@@ -409,10 +413,12 @@ pub enum GetError<E: Error> {
     InvalidCharset,
     /// The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid.
     InvalidFormData,
-    /// The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/json application/x-www-form-urlencoded multipart/form-data text/plain.
+    /// The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/x-www-form-urlencoded multipart/form-data text/plain.
     InvalidPostType,
     /// The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.
     MissingPostType,
+    /// The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.
+    TeamAddedToOrg,
     /// The method was called via a POST request, but the POST data was either missing or truncated.
     RequestTimeout,
     /// The response was not parseable as the expected object
@@ -440,6 +446,7 @@ impl<'a, E: Error> From<&'a str> for GetError<E> {
             "invalid_form_data" => GetError::InvalidFormData,
             "invalid_post_type" => GetError::InvalidPostType,
             "missing_post_type" => GetError::MissingPostType,
+            "team_added_to_org" => GetError::TeamAddedToOrg,
             "request_timeout" => GetError::RequestTimeout,
             _ => GetError::Unknown(s.to_owned()),
         }
@@ -467,8 +474,9 @@ impl<E: Error> Error for GetError<E> {
             &GetError::InvalidArrayArg => "invalid_array_arg: The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API.",
             &GetError::InvalidCharset => "invalid_charset: The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1.",
             &GetError::InvalidFormData => "invalid_form_data: The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid.",
-            &GetError::InvalidPostType => "invalid_post_type: The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/json application/x-www-form-urlencoded multipart/form-data text/plain.",
+            &GetError::InvalidPostType => "invalid_post_type: The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/x-www-form-urlencoded multipart/form-data text/plain.",
             &GetError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
+            &GetError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
             &GetError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
             &GetError::MalformedResponse(ref e) => e.description(),
             &GetError::Unknown(ref s) => s,
@@ -499,7 +507,9 @@ pub fn list<R>(client: &R,
     let page = request.page.map(|page| page.to_string());
     let params = vec![Some(("token", token)),
                       request.user.map(|user| ("user", user)),
-                      request.full.map(|full| ("full", full)),
+                      request
+                          .full
+                          .map(|full| ("full", if full { "1" } else { "0" })),
                       count.as_ref().map(|count| ("count", &count[..])),
                       page.as_ref().map(|page| ("page", &page[..]))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
@@ -519,7 +529,7 @@ pub struct ListRequest<'a> {
     /// Show reactions made by this user. Defaults to the authed user.
     pub user: Option<&'a str>,
     /// If true always return the complete reaction list.
-    pub full: Option<&'a str>,
+    pub full: Option<bool>,
     /// Number of items to return per page.
     pub count: Option<u32>,
     /// Page number of results to return.
@@ -637,10 +647,12 @@ pub enum ListError<E: Error> {
     InvalidCharset,
     /// The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid.
     InvalidFormData,
-    /// The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/json application/x-www-form-urlencoded multipart/form-data text/plain.
+    /// The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/x-www-form-urlencoded multipart/form-data text/plain.
     InvalidPostType,
     /// The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.
     MissingPostType,
+    /// The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.
+    TeamAddedToOrg,
     /// The method was called via a POST request, but the POST data was either missing or truncated.
     RequestTimeout,
     /// The response was not parseable as the expected object
@@ -664,6 +676,7 @@ impl<'a, E: Error> From<&'a str> for ListError<E> {
             "invalid_form_data" => ListError::InvalidFormData,
             "invalid_post_type" => ListError::InvalidPostType,
             "missing_post_type" => ListError::MissingPostType,
+            "team_added_to_org" => ListError::TeamAddedToOrg,
             "request_timeout" => ListError::RequestTimeout,
             _ => ListError::Unknown(s.to_owned()),
         }
@@ -687,8 +700,9 @@ impl<E: Error> Error for ListError<E> {
             &ListError::InvalidArrayArg => "invalid_array_arg: The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API.",
             &ListError::InvalidCharset => "invalid_charset: The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1.",
             &ListError::InvalidFormData => "invalid_form_data: The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid.",
-            &ListError::InvalidPostType => "invalid_post_type: The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/json application/x-www-form-urlencoded multipart/form-data text/plain.",
+            &ListError::InvalidPostType => "invalid_post_type: The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/x-www-form-urlencoded multipart/form-data text/plain.",
             &ListError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
+            &ListError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
             &ListError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
             &ListError::MalformedResponse(ref e) => e.description(),
             &ListError::Unknown(ref s) => s,
@@ -803,10 +817,12 @@ pub enum RemoveError<E: Error> {
     InvalidCharset,
     /// The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid.
     InvalidFormData,
-    /// The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/json application/x-www-form-urlencoded multipart/form-data text/plain.
+    /// The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/x-www-form-urlencoded multipart/form-data text/plain.
     InvalidPostType,
     /// The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.
     MissingPostType,
+    /// The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.
+    TeamAddedToOrg,
     /// The method was called via a POST request, but the POST data was either missing or truncated.
     RequestTimeout,
     /// The response was not parseable as the expected object
@@ -836,6 +852,7 @@ impl<'a, E: Error> From<&'a str> for RemoveError<E> {
             "invalid_form_data" => RemoveError::InvalidFormData,
             "invalid_post_type" => RemoveError::InvalidPostType,
             "missing_post_type" => RemoveError::MissingPostType,
+            "team_added_to_org" => RemoveError::TeamAddedToOrg,
             "request_timeout" => RemoveError::RequestTimeout,
             _ => RemoveError::Unknown(s.to_owned()),
         }
@@ -865,8 +882,9 @@ impl<E: Error> Error for RemoveError<E> {
             &RemoveError::InvalidArrayArg => "invalid_array_arg: The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API.",
             &RemoveError::InvalidCharset => "invalid_charset: The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1.",
             &RemoveError::InvalidFormData => "invalid_form_data: The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid.",
-            &RemoveError::InvalidPostType => "invalid_post_type: The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/json application/x-www-form-urlencoded multipart/form-data text/plain.",
+            &RemoveError::InvalidPostType => "invalid_post_type: The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/x-www-form-urlencoded multipart/form-data text/plain.",
             &RemoveError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
+            &RemoveError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
             &RemoveError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
             &RemoveError::MalformedResponse(ref e) => e.description(),
             &RemoveError::Unknown(ref s) => s,
