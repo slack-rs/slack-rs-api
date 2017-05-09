@@ -1,3 +1,34 @@
+# 0.17.0
+* Updates generated API definitions for the Slack API as of April 29
+
+## API Changes
+* Several additional error types were added across many API functions
+* Several documentation fixes and updates
+
+### `channels`
+* `create`, `join` and `rename` had a new `validate` field added
+* `list` had a new `exclude_members` field added
+
+### `chat`
+* `unfurl` was added. See [https://api.slack.com/methods/chat.unfurl](https://api.slack.com/methods/chat.unfurl)
+
+### `files_comments`
+* `add` had the `channel` parameter removed
+
+### `groups`
+* `create` and `rename` had a new `validate` field added
+
+### `ims`
+* `open` had its `return_im` field change from `Option<&str>` to `Option<bool>`
+
+### `reactions`
+* `list` had its `full` field change from `Option<&str>` to `Option<bool>`
+
+### `rtm`
+* `connect` was added. See [https://api.slack.com/methods/rtm.connect](https://api.slack.com/methods/rtm.connect)
+* `start` had its `no_unreads` and `mpim_aware` fields change from `Option<&str>` to `Option<bool>`
+* `start` had a new `no_latest` field added
+
 # 0.16.2
 * This release adds a new top-level function: `default_client()`
   * This function can be used by users to get a default client that implements `SlackWebRequestSender` so they don't have to pull in `reqwest` and version match in order to send requests.

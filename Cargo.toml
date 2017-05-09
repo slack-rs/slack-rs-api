@@ -5,7 +5,7 @@ documentation = "https://docs.rs/slack_api"
 license = "Apache-2.0"
 name = "slack_api"
 repository = "https://github.com/slack-rs/slack-rs-api.git"
-version = "0.16.2"
+version = "0.17.0"
 
 [dependencies]
 serde = "0.9.0"
