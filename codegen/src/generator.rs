@@ -2,6 +2,20 @@ use inflector::Inflector;
 
 use crate::json_schema::*;
 
+pub static AUTOGEN_HEADER: &str = "
+//=============================================================================
+// 
+//                    WARNING: This file is AUTO-GENERATED
+// 
+// Do not make changes directly to this file.
+//
+// If you would like to make a change to the library, please update the schema
+// definitions at https://github.com/slack-rs/slack-api-schemas
+// 
+//=============================================================================
+
+";
+
 #[derive(Deserialize, Clone, Debug)]
 pub struct Module {
     pub name: String,
@@ -12,7 +26,9 @@ pub struct Module {
 impl Module {
     pub fn generate(&self) -> String {
         format!(
-            "{docs}
+            "{header}
+
+            {docs}
 
             #[allow(unused_imports)]
             use std::collections::HashMap;
@@ -25,6 +41,7 @@ impl Module {
             use crate::requests::SlackWebRequestSender;
 
             {methods}",
+            header = AUTOGEN_HEADER,
             docs = self.description.as_ref().map(|d| format_docs("//!", d)).unwrap_or_default(),
             methods = self.methods
                 .iter()

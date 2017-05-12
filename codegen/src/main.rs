@@ -31,6 +31,7 @@ fn generate_types(output_path: &Path) -> io::Result<()> {
         .create(true)
         .open(&codegen_filepath)?;
 
+    types_file.write_all(generator::AUTOGEN_HEADER.as_bytes())?;
     types_file.write_all(b"use std::collections::HashMap;\n\n")?;
 
     let schema_path = Path::new(SCHEMA_DIR);
