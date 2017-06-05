@@ -550,9 +550,9 @@ impl JsonEnum {
                 {variants}
             }}
 
-            impl ::serde::Deserialize for {name} {{
+            impl<'de> ::serde::Deserialize<'de> for {name} {{
                 fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-                    where D: ::serde::Deserializer
+                    where D: ::serde::Deserializer<'de>
                 {{
                     use ::serde::de::Error as SerdeError;
 
