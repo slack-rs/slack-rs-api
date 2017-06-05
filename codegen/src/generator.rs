@@ -271,7 +271,7 @@ fn get_enum_to_response_impl(enm: &JsonEnum, error_type: &str) -> Option<String>
                     }}
                 }}
             }}
-            
+
             {inner_impls}",
             error_ty = error_type,
             name = enm.name,
@@ -342,7 +342,7 @@ impl Response {
                 /// The client had an error sending the request to Slack
                 Client(E)
             }}
-            
+
             impl<'a, E: Error> From<&'a str> for {error_type}<E> {{
                 fn from(s: &'a str) -> Self {{
                     match s {{
@@ -357,7 +357,7 @@ impl Response {
                      write!(f, \"{{}}\", self.description())
                 }}
             }}
-            
+
             impl<E: Error> Error for {error_type}<E> {{
                 fn description(&self) -> &str {{
                     match self {{
@@ -499,7 +499,7 @@ impl JsonObjectFieldInfo {
         } else if self.name != "error" && self.name != "ok" {
             prefix.push_str("pub");
         };
-        
+
         if let Some(ref rename) = self.rename {
             format!(
                 "#[serde(rename = \"{}\")]\n{} {}: {},",
@@ -534,7 +534,7 @@ impl JsonEnum {
         } else {
             ("type", "Err(D::Error::missing_field(\"type\"))")
         };
-        
+
         let mut subobjs = self.variants.clone();
 
         subobjs.sort_by_key(|v| v.name.clone());
@@ -550,9 +550,9 @@ impl JsonEnum {
                 {variants}
             }}
 
-            impl ::serde::Deserialize for {name} {{
+            impl<'de> ::serde::Deserialize<'de> for {name} {{
                 fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-                    where D: ::serde::Deserializer
+                    where D: ::serde::Deserializer<'de>
                 {{
                     use ::serde::de::Error as SerdeError;
 

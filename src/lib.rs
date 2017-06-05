@@ -36,16 +36,16 @@ fn get_slack_url_for_method(method: &str) -> String {
 }
 
 fn optional_struct_or_empty_array<'de, T, D>(deserializer: D) -> Result<Option<T>, D::Error>
-    where T: serde::Deserialize + Default,
-          D: serde::Deserializer
+    where T: serde::Deserialize<'de> + Default,
+          D: serde::Deserializer<'de>
 {
     use std::marker::PhantomData;
     use serde::de;
 
     struct StructOrEmptyArray<T>(PhantomData<T>);
 
-    impl<'de, T> de::Visitor for StructOrEmptyArray<T>
-        where T: de::Deserialize + Default
+    impl<'de, T> de::Visitor<'de> for StructOrEmptyArray<T>
+        where T: de::Deserialize<'de> + Default
     {
         type Value = Option<T>;
 
@@ -54,9 +54,9 @@ fn optional_struct_or_empty_array<'de, T, D>(deserializer: D) -> Result<Option<T
         }
 
         fn visit_seq<A>(self, mut seq: A) -> Result<Option<T>, A::Error>
-            where A: de::SeqVisitor
+            where A: de::SeqAccess<'de>
         {
-            match seq.visit::<T>()? {
+            match seq.next_element::<T>()? {
                 Some(_) => Err(de::Error::custom("non-empty array is not valid")),
                 None => Ok(Some(T::default())),
             }
@@ -68,14 +68,14 @@ fn optional_struct_or_empty_array<'de, T, D>(deserializer: D) -> Result<Option<T
             Ok(None)
         }
 
-        fn visit_map<M>(self, visitor: M) -> Result<Option<T>, M::Error>
-            where M: de::MapVisitor
+        fn visit_map<M>(self, access: M) -> Result<Option<T>, M::Error>
+            where M: de::MapAccess<'de>
         {
-            T::deserialize(de::value::MapVisitorDeserializer::new(visitor)).map(Some)
+            T::deserialize(de::value::MapAccessDeserializer::new(access)).map(Some)
         }
     }
 
-    deserializer.deserialize(StructOrEmptyArray(PhantomData))
+    deserializer.deserialize_any(StructOrEmptyArray(PhantomData))
 }
 
 #[cfg(test)]
