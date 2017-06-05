@@ -256,9 +256,9 @@ pub enum GetResponse {
     FileComment(GetResponseFileComment),
 }
 
-impl ::serde::Deserialize for GetResponse {
+impl<'de> ::serde::Deserialize<'de> for GetResponse {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where D: ::serde::Deserializer
+        where D: ::serde::Deserializer<'de>
     {
         use serde::de::Error as SerdeError;
 
@@ -552,9 +552,9 @@ pub enum ListResponseItem {
     FileComment(ListResponseItemFileComment),
 }
 
-impl ::serde::Deserialize for ListResponseItem {
+impl<'de> ::serde::Deserialize<'de> for ListResponseItem {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where D: ::serde::Deserializer
+        where D: ::serde::Deserializer<'de>
     {
         use serde::de::Error as SerdeError;
 
