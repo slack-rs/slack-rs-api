@@ -15,34 +15,39 @@ use requests::SlackWebRequestSender;
 ///
 /// Wraps https://api.slack.com/methods/usergroups.create
 
-pub fn create<R>(client: &R,
-                 token: &str,
-                 request: &CreateRequest)
-                 -> Result<CreateResponse, CreateError<R::Error>>
-    where R: SlackWebRequestSender
+pub fn create<R>(
+    client: &R,
+    token: &str,
+    request: &CreateRequest,
+) -> Result<CreateResponse, CreateError<R::Error>>
+where
+    R: SlackWebRequestSender,
 {
 
-    let params = vec![Some(("token", token)),
-                      Some(("name", request.name)),
-                      request.handle.map(|handle| ("handle", handle)),
-                      request
-                          .description
-                          .map(|description| ("description", description)),
-                      request.channels.map(|channels| ("channels", channels)),
-                      request
-                          .include_count
-                          .map(|include_count| {
-                                   ("include_count", if include_count { "1" } else { "0" })
-                               })];
+    let params = vec![
+        Some(("token", token)),
+        Some(("name", request.name)),
+        request.handle.map(|handle| ("handle", handle)),
+        request.description.map(|description| {
+            ("description", description)
+        }),
+        request.channels.map(|channels| ("channels", channels)),
+        request.include_count.map(|include_count| {
+            ("include_count", if include_count { "1" } else { "0" })
+        }),
+    ];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = ::get_slack_url_for_method("usergroups.create");
     client
         .send(&url, &params[..])
         .map_err(|err| CreateError::Client(err))
         .and_then(|result| {
-                      serde_json::from_str::<CreateResponse>(&result)
-                            .map_err(|e| CreateError::MalformedResponse(e))
-                  })
+            serde_json::from_str::<CreateResponse>(&result).map_err(
+                |e| {
+                    CreateError::MalformedResponse(e)
+                },
+            )
+        })
         .and_then(|o| o.into())
 }
 
@@ -74,11 +79,7 @@ impl<E: Error> Into<Result<CreateResponse, CreateError<E>>> for CreateResponse {
         if self.ok {
             Ok(self)
         } else {
-            Err(self.error
-                    .as_ref()
-                    .map(String::as_ref)
-                    .unwrap_or("")
-                    .into())
+            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }
@@ -150,17 +151,37 @@ impl<E: Error> Error for CreateError<E> {
         match self {
             &CreateError::NotAuthed => "not_authed: No authentication token provided.",
             &CreateError::InvalidAuth => "invalid_auth: Invalid authentication token.",
-            &CreateError::AccountInactive => "account_inactive: Authentication token is for a deleted user or team.",
+            &CreateError::AccountInactive => {
+                "account_inactive: Authentication token is for a deleted user or team."
+            }
             &CreateError::UserIsBot => "user_is_bot: This method cannot be called by a bot user.",
-            &CreateError::UserIsRestricted => "user_is_restricted: This method cannot be called by a restricted user or single channel guest.",
-            &CreateError::InvalidArgName => "invalid_arg_name: The method was passed an argument whose name falls outside the bounds of common decency. This includes very long names and names with non-alphanumeric characters other than _. If you get this error, it is typically an indication that you have made a very malformed API call.",
-            &CreateError::InvalidArrayArg => "invalid_array_arg: The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API.",
-            &CreateError::InvalidCharset => "invalid_charset: The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1.",
-            &CreateError::InvalidFormData => "invalid_form_data: The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid.",
-            &CreateError::InvalidPostType => "invalid_post_type: The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/x-www-form-urlencoded multipart/form-data text/plain.",
-            &CreateError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
-            &CreateError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
-            &CreateError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
+            &CreateError::UserIsRestricted => {
+                "user_is_restricted: This method cannot be called by a restricted user or single channel guest."
+            }
+            &CreateError::InvalidArgName => {
+                "invalid_arg_name: The method was passed an argument whose name falls outside the bounds of common decency. This includes very long names and names with non-alphanumeric characters other than _. If you get this error, it is typically an indication that you have made a very malformed API call."
+            }
+            &CreateError::InvalidArrayArg => {
+                "invalid_array_arg: The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API."
+            }
+            &CreateError::InvalidCharset => {
+                "invalid_charset: The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1."
+            }
+            &CreateError::InvalidFormData => {
+                "invalid_form_data: The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid."
+            }
+            &CreateError::InvalidPostType => {
+                "invalid_post_type: The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/x-www-form-urlencoded multipart/form-data text/plain."
+            }
+            &CreateError::MissingPostType => {
+                "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header."
+            }
+            &CreateError::TeamAddedToOrg => {
+                "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete."
+            }
+            &CreateError::RequestTimeout => {
+                "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated."
+            }
             &CreateError::MalformedResponse(ref e) => e.description(),
             &CreateError::Unknown(ref s) => s,
             &CreateError::Client(ref inner) => inner.description(),
@@ -180,29 +201,34 @@ impl<E: Error> Error for CreateError<E> {
 ///
 /// Wraps https://api.slack.com/methods/usergroups.disable
 
-pub fn disable<R>(client: &R,
-                  token: &str,
-                  request: &DisableRequest)
-                  -> Result<DisableResponse, DisableError<R::Error>>
-    where R: SlackWebRequestSender
+pub fn disable<R>(
+    client: &R,
+    token: &str,
+    request: &DisableRequest,
+) -> Result<DisableResponse, DisableError<R::Error>>
+where
+    R: SlackWebRequestSender,
 {
 
-    let params = vec![Some(("token", token)),
-                      Some(("usergroup", request.usergroup)),
-                      request
-                          .include_count
-                          .map(|include_count| {
-                                   ("include_count", if include_count { "1" } else { "0" })
-                               })];
+    let params = vec![
+        Some(("token", token)),
+        Some(("usergroup", request.usergroup)),
+        request.include_count.map(|include_count| {
+            ("include_count", if include_count { "1" } else { "0" })
+        }),
+    ];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = ::get_slack_url_for_method("usergroups.disable");
     client
         .send(&url, &params[..])
         .map_err(|err| DisableError::Client(err))
         .and_then(|result| {
-                      serde_json::from_str::<DisableResponse>(&result)
-                            .map_err(|e| DisableError::MalformedResponse(e))
-                  })
+            serde_json::from_str::<DisableResponse>(&result).map_err(
+                |e| {
+                    DisableError::MalformedResponse(e)
+                },
+            )
+        })
         .and_then(|o| o.into())
 }
 
@@ -228,11 +254,7 @@ impl<E: Error> Into<Result<DisableResponse, DisableError<E>>> for DisableRespons
         if self.ok {
             Ok(self)
         } else {
-            Err(self.error
-                    .as_ref()
-                    .map(String::as_ref)
-                    .unwrap_or("")
-                    .into())
+            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }
@@ -304,17 +326,37 @@ impl<E: Error> Error for DisableError<E> {
         match self {
             &DisableError::NotAuthed => "not_authed: No authentication token provided.",
             &DisableError::InvalidAuth => "invalid_auth: Invalid authentication token.",
-            &DisableError::AccountInactive => "account_inactive: Authentication token is for a deleted user or team.",
+            &DisableError::AccountInactive => {
+                "account_inactive: Authentication token is for a deleted user or team."
+            }
             &DisableError::UserIsBot => "user_is_bot: This method cannot be called by a bot user.",
-            &DisableError::UserIsRestricted => "user_is_restricted: This method cannot be called by a restricted user or single channel guest.",
-            &DisableError::InvalidArgName => "invalid_arg_name: The method was passed an argument whose name falls outside the bounds of common decency. This includes very long names and names with non-alphanumeric characters other than _. If you get this error, it is typically an indication that you have made a very malformed API call.",
-            &DisableError::InvalidArrayArg => "invalid_array_arg: The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API.",
-            &DisableError::InvalidCharset => "invalid_charset: The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1.",
-            &DisableError::InvalidFormData => "invalid_form_data: The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid.",
-            &DisableError::InvalidPostType => "invalid_post_type: The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/x-www-form-urlencoded multipart/form-data text/plain.",
-            &DisableError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
-            &DisableError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
-            &DisableError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
+            &DisableError::UserIsRestricted => {
+                "user_is_restricted: This method cannot be called by a restricted user or single channel guest."
+            }
+            &DisableError::InvalidArgName => {
+                "invalid_arg_name: The method was passed an argument whose name falls outside the bounds of common decency. This includes very long names and names with non-alphanumeric characters other than _. If you get this error, it is typically an indication that you have made a very malformed API call."
+            }
+            &DisableError::InvalidArrayArg => {
+                "invalid_array_arg: The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API."
+            }
+            &DisableError::InvalidCharset => {
+                "invalid_charset: The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1."
+            }
+            &DisableError::InvalidFormData => {
+                "invalid_form_data: The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid."
+            }
+            &DisableError::InvalidPostType => {
+                "invalid_post_type: The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/x-www-form-urlencoded multipart/form-data text/plain."
+            }
+            &DisableError::MissingPostType => {
+                "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header."
+            }
+            &DisableError::TeamAddedToOrg => {
+                "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete."
+            }
+            &DisableError::RequestTimeout => {
+                "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated."
+            }
             &DisableError::MalformedResponse(ref e) => e.description(),
             &DisableError::Unknown(ref s) => s,
             &DisableError::Client(ref inner) => inner.description(),
@@ -334,29 +376,34 @@ impl<E: Error> Error for DisableError<E> {
 ///
 /// Wraps https://api.slack.com/methods/usergroups.enable
 
-pub fn enable<R>(client: &R,
-                 token: &str,
-                 request: &EnableRequest)
-                 -> Result<EnableResponse, EnableError<R::Error>>
-    where R: SlackWebRequestSender
+pub fn enable<R>(
+    client: &R,
+    token: &str,
+    request: &EnableRequest,
+) -> Result<EnableResponse, EnableError<R::Error>>
+where
+    R: SlackWebRequestSender,
 {
 
-    let params = vec![Some(("token", token)),
-                      Some(("usergroup", request.usergroup)),
-                      request
-                          .include_count
-                          .map(|include_count| {
-                                   ("include_count", if include_count { "1" } else { "0" })
-                               })];
+    let params = vec![
+        Some(("token", token)),
+        Some(("usergroup", request.usergroup)),
+        request.include_count.map(|include_count| {
+            ("include_count", if include_count { "1" } else { "0" })
+        }),
+    ];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = ::get_slack_url_for_method("usergroups.enable");
     client
         .send(&url, &params[..])
         .map_err(|err| EnableError::Client(err))
         .and_then(|result| {
-                      serde_json::from_str::<EnableResponse>(&result)
-                            .map_err(|e| EnableError::MalformedResponse(e))
-                  })
+            serde_json::from_str::<EnableResponse>(&result).map_err(
+                |e| {
+                    EnableError::MalformedResponse(e)
+                },
+            )
+        })
         .and_then(|o| o.into())
 }
 
@@ -382,11 +429,7 @@ impl<E: Error> Into<Result<EnableResponse, EnableError<E>>> for EnableResponse {
         if self.ok {
             Ok(self)
         } else {
-            Err(self.error
-                    .as_ref()
-                    .map(String::as_ref)
-                    .unwrap_or("")
-                    .into())
+            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }
@@ -458,17 +501,37 @@ impl<E: Error> Error for EnableError<E> {
         match self {
             &EnableError::NotAuthed => "not_authed: No authentication token provided.",
             &EnableError::InvalidAuth => "invalid_auth: Invalid authentication token.",
-            &EnableError::AccountInactive => "account_inactive: Authentication token is for a deleted user or team.",
+            &EnableError::AccountInactive => {
+                "account_inactive: Authentication token is for a deleted user or team."
+            }
             &EnableError::UserIsBot => "user_is_bot: This method cannot be called by a bot user.",
-            &EnableError::UserIsRestricted => "user_is_restricted: This method cannot be called by a restricted user or single channel guest.",
-            &EnableError::InvalidArgName => "invalid_arg_name: The method was passed an argument whose name falls outside the bounds of common decency. This includes very long names and names with non-alphanumeric characters other than _. If you get this error, it is typically an indication that you have made a very malformed API call.",
-            &EnableError::InvalidArrayArg => "invalid_array_arg: The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API.",
-            &EnableError::InvalidCharset => "invalid_charset: The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1.",
-            &EnableError::InvalidFormData => "invalid_form_data: The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid.",
-            &EnableError::InvalidPostType => "invalid_post_type: The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/x-www-form-urlencoded multipart/form-data text/plain.",
-            &EnableError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
-            &EnableError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
-            &EnableError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
+            &EnableError::UserIsRestricted => {
+                "user_is_restricted: This method cannot be called by a restricted user or single channel guest."
+            }
+            &EnableError::InvalidArgName => {
+                "invalid_arg_name: The method was passed an argument whose name falls outside the bounds of common decency. This includes very long names and names with non-alphanumeric characters other than _. If you get this error, it is typically an indication that you have made a very malformed API call."
+            }
+            &EnableError::InvalidArrayArg => {
+                "invalid_array_arg: The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API."
+            }
+            &EnableError::InvalidCharset => {
+                "invalid_charset: The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1."
+            }
+            &EnableError::InvalidFormData => {
+                "invalid_form_data: The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid."
+            }
+            &EnableError::InvalidPostType => {
+                "invalid_post_type: The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/x-www-form-urlencoded multipart/form-data text/plain."
+            }
+            &EnableError::MissingPostType => {
+                "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header."
+            }
+            &EnableError::TeamAddedToOrg => {
+                "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete."
+            }
+            &EnableError::RequestTimeout => {
+                "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated."
+            }
             &EnableError::MalformedResponse(ref e) => e.description(),
             &EnableError::Unknown(ref s) => s,
             &EnableError::Client(ref inner) => inner.description(),
@@ -488,38 +551,37 @@ impl<E: Error> Error for EnableError<E> {
 ///
 /// Wraps https://api.slack.com/methods/usergroups.list
 
-pub fn list<R>(client: &R,
-               token: &str,
-               request: &ListRequest)
-               -> Result<ListResponse, ListError<R::Error>>
-    where R: SlackWebRequestSender
+pub fn list<R>(
+    client: &R,
+    token: &str,
+    request: &ListRequest,
+) -> Result<ListResponse, ListError<R::Error>>
+where
+    R: SlackWebRequestSender,
 {
 
-    let params = vec![Some(("token", token)),
-                      request
-                          .include_disabled
-                          .map(|include_disabled| {
-                                   ("include_disabled", if include_disabled { "1" } else { "0" })
-                               }),
-                      request
-                          .include_count
-                          .map(|include_count| {
-                                   ("include_count", if include_count { "1" } else { "0" })
-                               }),
-                      request
-                          .include_users
-                          .map(|include_users| {
-                                   ("include_users", if include_users { "1" } else { "0" })
-                               })];
+    let params = vec![
+        Some(("token", token)),
+        request.include_disabled.map(|include_disabled| {
+            ("include_disabled", if include_disabled { "1" } else { "0" })
+        }),
+        request.include_count.map(|include_count| {
+            ("include_count", if include_count { "1" } else { "0" })
+        }),
+        request.include_users.map(|include_users| {
+            ("include_users", if include_users { "1" } else { "0" })
+        }),
+    ];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = ::get_slack_url_for_method("usergroups.list");
     client
         .send(&url, &params[..])
         .map_err(|err| ListError::Client(err))
         .and_then(|result| {
-                      serde_json::from_str::<ListResponse>(&result)
-                            .map_err(|e| ListError::MalformedResponse(e))
-                  })
+            serde_json::from_str::<ListResponse>(&result).map_err(|e| {
+                ListError::MalformedResponse(e)
+            })
+        })
         .and_then(|o| o.into())
 }
 
@@ -547,11 +609,7 @@ impl<E: Error> Into<Result<ListResponse, ListError<E>>> for ListResponse {
         if self.ok {
             Ok(self)
         } else {
-            Err(self.error
-                    .as_ref()
-                    .map(String::as_ref)
-                    .unwrap_or("")
-                    .into())
+            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }
@@ -623,17 +681,37 @@ impl<E: Error> Error for ListError<E> {
         match self {
             &ListError::NotAuthed => "not_authed: No authentication token provided.",
             &ListError::InvalidAuth => "invalid_auth: Invalid authentication token.",
-            &ListError::AccountInactive => "account_inactive: Authentication token is for a deleted user or team.",
+            &ListError::AccountInactive => {
+                "account_inactive: Authentication token is for a deleted user or team."
+            }
             &ListError::UserIsBot => "user_is_bot: This method cannot be called by a bot user.",
-            &ListError::UserIsRestricted => "user_is_restricted: This method cannot be called by a restricted user or single channel guest.",
-            &ListError::InvalidArgName => "invalid_arg_name: The method was passed an argument whose name falls outside the bounds of common decency. This includes very long names and names with non-alphanumeric characters other than _. If you get this error, it is typically an indication that you have made a very malformed API call.",
-            &ListError::InvalidArrayArg => "invalid_array_arg: The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API.",
-            &ListError::InvalidCharset => "invalid_charset: The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1.",
-            &ListError::InvalidFormData => "invalid_form_data: The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid.",
-            &ListError::InvalidPostType => "invalid_post_type: The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/x-www-form-urlencoded multipart/form-data text/plain.",
-            &ListError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
-            &ListError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
-            &ListError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
+            &ListError::UserIsRestricted => {
+                "user_is_restricted: This method cannot be called by a restricted user or single channel guest."
+            }
+            &ListError::InvalidArgName => {
+                "invalid_arg_name: The method was passed an argument whose name falls outside the bounds of common decency. This includes very long names and names with non-alphanumeric characters other than _. If you get this error, it is typically an indication that you have made a very malformed API call."
+            }
+            &ListError::InvalidArrayArg => {
+                "invalid_array_arg: The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API."
+            }
+            &ListError::InvalidCharset => {
+                "invalid_charset: The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1."
+            }
+            &ListError::InvalidFormData => {
+                "invalid_form_data: The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid."
+            }
+            &ListError::InvalidPostType => {
+                "invalid_post_type: The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/x-www-form-urlencoded multipart/form-data text/plain."
+            }
+            &ListError::MissingPostType => {
+                "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header."
+            }
+            &ListError::TeamAddedToOrg => {
+                "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete."
+            }
+            &ListError::RequestTimeout => {
+                "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated."
+            }
             &ListError::MalformedResponse(ref e) => e.description(),
             &ListError::Unknown(ref s) => s,
             &ListError::Client(ref inner) => inner.description(),
@@ -653,35 +731,40 @@ impl<E: Error> Error for ListError<E> {
 ///
 /// Wraps https://api.slack.com/methods/usergroups.update
 
-pub fn update<R>(client: &R,
-                 token: &str,
-                 request: &UpdateRequest)
-                 -> Result<UpdateResponse, UpdateError<R::Error>>
-    where R: SlackWebRequestSender
+pub fn update<R>(
+    client: &R,
+    token: &str,
+    request: &UpdateRequest,
+) -> Result<UpdateResponse, UpdateError<R::Error>>
+where
+    R: SlackWebRequestSender,
 {
 
-    let params = vec![Some(("token", token)),
-                      Some(("usergroup", request.usergroup)),
-                      request.name.map(|name| ("name", name)),
-                      request.handle.map(|handle| ("handle", handle)),
-                      request
-                          .description
-                          .map(|description| ("description", description)),
-                      request.channels.map(|channels| ("channels", channels)),
-                      request
-                          .include_count
-                          .map(|include_count| {
-                                   ("include_count", if include_count { "1" } else { "0" })
-                               })];
+    let params = vec![
+        Some(("token", token)),
+        Some(("usergroup", request.usergroup)),
+        request.name.map(|name| ("name", name)),
+        request.handle.map(|handle| ("handle", handle)),
+        request.description.map(|description| {
+            ("description", description)
+        }),
+        request.channels.map(|channels| ("channels", channels)),
+        request.include_count.map(|include_count| {
+            ("include_count", if include_count { "1" } else { "0" })
+        }),
+    ];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = ::get_slack_url_for_method("usergroups.update");
     client
         .send(&url, &params[..])
         .map_err(|err| UpdateError::Client(err))
         .and_then(|result| {
-                      serde_json::from_str::<UpdateResponse>(&result)
-                            .map_err(|e| UpdateError::MalformedResponse(e))
-                  })
+            serde_json::from_str::<UpdateResponse>(&result).map_err(
+                |e| {
+                    UpdateError::MalformedResponse(e)
+                },
+            )
+        })
         .and_then(|o| o.into())
 }
 
@@ -715,11 +798,7 @@ impl<E: Error> Into<Result<UpdateResponse, UpdateError<E>>> for UpdateResponse {
         if self.ok {
             Ok(self)
         } else {
-            Err(self.error
-                    .as_ref()
-                    .map(String::as_ref)
-                    .unwrap_or("")
-                    .into())
+            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }
@@ -791,17 +870,37 @@ impl<E: Error> Error for UpdateError<E> {
         match self {
             &UpdateError::NotAuthed => "not_authed: No authentication token provided.",
             &UpdateError::InvalidAuth => "invalid_auth: Invalid authentication token.",
-            &UpdateError::AccountInactive => "account_inactive: Authentication token is for a deleted user or team.",
+            &UpdateError::AccountInactive => {
+                "account_inactive: Authentication token is for a deleted user or team."
+            }
             &UpdateError::UserIsBot => "user_is_bot: This method cannot be called by a bot user.",
-            &UpdateError::UserIsRestricted => "user_is_restricted: This method cannot be called by a restricted user or single channel guest.",
-            &UpdateError::InvalidArgName => "invalid_arg_name: The method was passed an argument whose name falls outside the bounds of common decency. This includes very long names and names with non-alphanumeric characters other than _. If you get this error, it is typically an indication that you have made a very malformed API call.",
-            &UpdateError::InvalidArrayArg => "invalid_array_arg: The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API.",
-            &UpdateError::InvalidCharset => "invalid_charset: The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1.",
-            &UpdateError::InvalidFormData => "invalid_form_data: The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid.",
-            &UpdateError::InvalidPostType => "invalid_post_type: The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/x-www-form-urlencoded multipart/form-data text/plain.",
-            &UpdateError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
-            &UpdateError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
-            &UpdateError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
+            &UpdateError::UserIsRestricted => {
+                "user_is_restricted: This method cannot be called by a restricted user or single channel guest."
+            }
+            &UpdateError::InvalidArgName => {
+                "invalid_arg_name: The method was passed an argument whose name falls outside the bounds of common decency. This includes very long names and names with non-alphanumeric characters other than _. If you get this error, it is typically an indication that you have made a very malformed API call."
+            }
+            &UpdateError::InvalidArrayArg => {
+                "invalid_array_arg: The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API."
+            }
+            &UpdateError::InvalidCharset => {
+                "invalid_charset: The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1."
+            }
+            &UpdateError::InvalidFormData => {
+                "invalid_form_data: The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid."
+            }
+            &UpdateError::InvalidPostType => {
+                "invalid_post_type: The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/x-www-form-urlencoded multipart/form-data text/plain."
+            }
+            &UpdateError::MissingPostType => {
+                "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header."
+            }
+            &UpdateError::TeamAddedToOrg => {
+                "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete."
+            }
+            &UpdateError::RequestTimeout => {
+                "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated."
+            }
             &UpdateError::MalformedResponse(ref e) => e.description(),
             &UpdateError::Unknown(ref s) => s,
             &UpdateError::Client(ref inner) => inner.description(),
