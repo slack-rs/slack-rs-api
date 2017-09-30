@@ -109,7 +109,7 @@ fn generate_modules(output_path: &Path) -> io::Result<()> {
         .truncate(true)
         .create(true)
         .open(output_path.join("mod.rs"))?;
-    
+
     mod_file.write_all(mods.iter().map(|modname| format!("pub mod {};", modname)).collect::<Vec<_>>().join("\n").as_bytes())?;
 
     Ok(())
@@ -143,5 +143,5 @@ fn main() {
     }
 
     generate_modules(&moddir).unwrap();
-    generate_types(&outdir).unwrap();
+    generate_types(outdir).unwrap();
 }
