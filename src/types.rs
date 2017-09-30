@@ -181,38 +181,41 @@ pub enum Message {
     UnpinnedItem(MessageUnpinnedItem),
 }
 
-impl ::serde::Deserialize for Message {
+impl<'de> ::serde::Deserialize<'de> for Message {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where D: ::serde::Deserializer
+    where
+        D: ::serde::Deserializer<'de>,
     {
         use serde::de::Error as SerdeError;
 
-        const VARIANTS: &'static [&'static str] = &["standard",
-                                                    "bot_message",
-                                                    "channel_archive",
-                                                    "channel_join",
-                                                    "channel_leave",
-                                                    "channel_name",
-                                                    "channel_purpose",
-                                                    "channel_topic",
-                                                    "channel_unarchive",
-                                                    "file_comment",
-                                                    "file_mention",
-                                                    "file_share",
-                                                    "group_archive",
-                                                    "group_join",
-                                                    "group_leave",
-                                                    "group_name",
-                                                    "group_purpose",
-                                                    "group_topic",
-                                                    "group_unarchive",
-                                                    "me_message",
-                                                    "message_changed",
-                                                    "message_deleted",
-                                                    "message_replied",
-                                                    "pinned_item",
-                                                    "reply_broadcast",
-                                                    "unpinned_item"];
+        const VARIANTS: &'static [&'static str] = &[
+            "standard",
+            "bot_message",
+            "channel_archive",
+            "channel_join",
+            "channel_leave",
+            "channel_name",
+            "channel_purpose",
+            "channel_topic",
+            "channel_unarchive",
+            "file_comment",
+            "file_mention",
+            "file_share",
+            "group_archive",
+            "group_join",
+            "group_leave",
+            "group_name",
+            "group_purpose",
+            "group_topic",
+            "group_unarchive",
+            "me_message",
+            "message_changed",
+            "message_deleted",
+            "message_replied",
+            "pinned_item",
+            "reply_broadcast",
+            "unpinned_item",
+        ];
 
         let value = ::serde_json::Value::deserialize(deserializer)?;
         if let Some(ty_val) = value.get("subtype") {
@@ -351,13 +354,16 @@ impl ::serde::Deserialize for Message {
                     _ => Err(D::Error::unknown_variant(ty, VARIANTS)),
                 }
             } else {
-                Err(D::Error::invalid_type(::serde::de::Unexpected::Unit, &"a string"))
+                Err(D::Error::invalid_type(
+                    ::serde::de::Unexpected::Unit,
+                    &"a string",
+                ))
             }
         } else {
             ::serde_json::from_value::<MessageStandard>(value.clone())
                 .map(|obj| {
-                         Message::Standard(obj)
-                     })
+                    Message::Standard(obj)
+                })
                 .map_err(|e| D::Error::custom(&format!("{}", e)))
         }
     }

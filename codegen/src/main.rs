@@ -59,10 +59,11 @@ fn generate_types(output_path: &Path) -> io::Result<()> {
         }
     }
 
-    let _ = rustfmt::run(rustfmt::Input::File(codegen_filepath), &rustfmt::config::Config {
-        write_mode: rustfmt::config::WriteMode::Overwrite,
-        ..rustfmt::config::Config::default()
-    });
+    {
+        let mut rustfmt_config = rustfmt::config::Config::default();
+        rustfmt_config.set().write_mode(rustfmt::config::WriteMode::Overwrite);
+        let _ = rustfmt::run(rustfmt::Input::File(codegen_filepath), &rustfmt_config);
+    }
 
     Ok(())
 }
@@ -94,10 +95,11 @@ fn generate_modules(output_path: &Path) -> io::Result<()> {
 
                 out_file.write_all(module.generate().as_bytes())?;
 
-                let _ = rustfmt::run(rustfmt::Input::File(out_filepath), &rustfmt::config::Config {
-                    write_mode: rustfmt::config::WriteMode::Overwrite,
-                    ..rustfmt::config::Config::default()
-                });
+                {
+                    let mut rustfmt_config = rustfmt::config::Config::default();
+                    rustfmt_config.set().write_mode(rustfmt::config::WriteMode::Overwrite);
+                    let _ = rustfmt::run(rustfmt::Input::File(out_filepath), &rustfmt_config);
+                }
             }
         }
     }
