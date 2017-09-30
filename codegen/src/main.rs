@@ -1,6 +1,5 @@
 #[macro_use]
 extern crate serde_derive;
-extern crate serde;
 extern crate serde_json;
 extern crate inflector;
 extern crate clap;
@@ -59,10 +58,11 @@ fn generate_types(output_path: &Path) -> io::Result<()> {
         }
     }
 
-    let _ = rustfmt::run(rustfmt::Input::File(codegen_filepath), &rustfmt::config::Config {
-        write_mode: rustfmt::config::WriteMode::Overwrite,
-        ..rustfmt::config::Config::default()
-    });
+    {
+        let mut rustfmt_config = rustfmt::config::Config::default();
+        rustfmt_config.set().write_mode(rustfmt::config::WriteMode::Overwrite);
+        let _ = rustfmt::run(rustfmt::Input::File(codegen_filepath), &rustfmt_config);
+    }
 
     Ok(())
 }
@@ -94,10 +94,11 @@ fn generate_modules(output_path: &Path) -> io::Result<()> {
 
                 out_file.write_all(module.generate().as_bytes())?;
 
-                let _ = rustfmt::run(rustfmt::Input::File(out_filepath), &rustfmt::config::Config {
-                    write_mode: rustfmt::config::WriteMode::Overwrite,
-                    ..rustfmt::config::Config::default()
-                });
+                {
+                    let mut rustfmt_config = rustfmt::config::Config::default();
+                    rustfmt_config.set().write_mode(rustfmt::config::WriteMode::Overwrite);
+                    let _ = rustfmt::run(rustfmt::Input::File(out_filepath), &rustfmt_config);
+                }
             }
         }
     }
@@ -107,7 +108,7 @@ fn generate_modules(output_path: &Path) -> io::Result<()> {
         .truncate(true)
         .create(true)
         .open(output_path.join("mod.rs"))?;
-    
+
     mod_file.write_all(mods.iter().map(|modname| format!("pub mod {};", modname)).collect::<Vec<_>>().join("\n").as_bytes())?;
 
     Ok(())

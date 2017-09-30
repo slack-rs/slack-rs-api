@@ -10,7 +10,7 @@ version = "0.1.0"
 [dependencies]
 Inflector = "0.7"
 clap = "2.20.5"
-rustfmt = "0.8.3"
+rustfmt = "0.9.0"
 serde = "0.9.0"
 serde_derive = "0.9.0"
 serde_json = "0.9.0"
