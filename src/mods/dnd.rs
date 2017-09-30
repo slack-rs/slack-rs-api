@@ -116,50 +116,50 @@ impl<E: Error> fmt::Display for EndDndError<E> {
 
 impl<E: Error> Error for EndDndError<E> {
     fn description(&self) -> &str {
-        match self {
-            &EndDndError::UnknownError => {
+        match *self {
+            EndDndError::UnknownError => {
                 "unknown_error: There was a mysterious problem ending the user's Do Not Disturb session"
             }
-            &EndDndError::NotAuthed => "not_authed: No authentication token provided.",
-            &EndDndError::InvalidAuth => "invalid_auth: Invalid authentication token.",
-            &EndDndError::AccountInactive => {
+            EndDndError::NotAuthed => "not_authed: No authentication token provided.",
+            EndDndError::InvalidAuth => "invalid_auth: Invalid authentication token.",
+            EndDndError::AccountInactive => {
                 "account_inactive: Authentication token is for a deleted user or team."
             }
-            &EndDndError::UserIsBot => "user_is_bot: This method cannot be called by a bot user.",
-            &EndDndError::InvalidArgName => {
+            EndDndError::UserIsBot => "user_is_bot: This method cannot be called by a bot user.",
+            EndDndError::InvalidArgName => {
                 "invalid_arg_name: The method was passed an argument whose name falls outside the bounds of common decency. This includes very long names and names with non-alphanumeric characters other than _. If you get this error, it is typically an indication that you have made a very malformed API call."
             }
-            &EndDndError::InvalidArrayArg => {
+            EndDndError::InvalidArrayArg => {
                 "invalid_array_arg: The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API."
             }
-            &EndDndError::InvalidCharset => {
+            EndDndError::InvalidCharset => {
                 "invalid_charset: The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1."
             }
-            &EndDndError::InvalidFormData => {
+            EndDndError::InvalidFormData => {
                 "invalid_form_data: The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid."
             }
-            &EndDndError::InvalidPostType => {
+            EndDndError::InvalidPostType => {
                 "invalid_post_type: The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/x-www-form-urlencoded multipart/form-data text/plain."
             }
-            &EndDndError::MissingPostType => {
+            EndDndError::MissingPostType => {
                 "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header."
             }
-            &EndDndError::TeamAddedToOrg => {
+            EndDndError::TeamAddedToOrg => {
                 "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete."
             }
-            &EndDndError::RequestTimeout => {
+            EndDndError::RequestTimeout => {
                 "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated."
             }
-            &EndDndError::MalformedResponse(ref e) => e.description(),
-            &EndDndError::Unknown(ref s) => s,
-            &EndDndError::Client(ref inner) => inner.description(),
+            EndDndError::MalformedResponse(ref e) => e.description(),
+            EndDndError::Unknown(ref s) => s,
+            EndDndError::Client(ref inner) => inner.description(),
         }
     }
 
     fn cause(&self) -> Option<&Error> {
-        match self {
-            &EndDndError::MalformedResponse(ref e) => Some(e),
-            &EndDndError::Client(ref inner) => Some(inner),
+        match *self {
+            EndDndError::MalformedResponse(ref e) => Some(e),
+            EndDndError::Client(ref inner) => Some(inner),
             _ => None,
         }
     }
@@ -277,55 +277,53 @@ impl<E: Error> fmt::Display for EndSnoozeError<E> {
 
 impl<E: Error> Error for EndSnoozeError<E> {
     fn description(&self) -> &str {
-        match self {
-            &EndSnoozeError::SnoozeNotActive => {
+        match *self {
+            EndSnoozeError::SnoozeNotActive => {
                 "snooze_not_active: Snooze is not active for this user and cannot be ended"
             }
-            &EndSnoozeError::SnoozeEndFailed => {
+            EndSnoozeError::SnoozeEndFailed => {
                 "snooze_end_failed: There was a problem setting the user's Do Not Disturb status"
             }
-            &EndSnoozeError::NotAuthed => "not_authed: No authentication token provided.",
-            &EndSnoozeError::InvalidAuth => "invalid_auth: Invalid authentication token.",
-            &EndSnoozeError::AccountInactive => {
+            EndSnoozeError::NotAuthed => "not_authed: No authentication token provided.",
+            EndSnoozeError::InvalidAuth => "invalid_auth: Invalid authentication token.",
+            EndSnoozeError::AccountInactive => {
                 "account_inactive: Authentication token is for a deleted user or team."
             }
-            &EndSnoozeError::UserIsBot => {
-                "user_is_bot: This method cannot be called by a bot user."
-            }
-            &EndSnoozeError::InvalidArgName => {
+            EndSnoozeError::UserIsBot => "user_is_bot: This method cannot be called by a bot user.",
+            EndSnoozeError::InvalidArgName => {
                 "invalid_arg_name: The method was passed an argument whose name falls outside the bounds of common decency. This includes very long names and names with non-alphanumeric characters other than _. If you get this error, it is typically an indication that you have made a very malformed API call."
             }
-            &EndSnoozeError::InvalidArrayArg => {
+            EndSnoozeError::InvalidArrayArg => {
                 "invalid_array_arg: The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API."
             }
-            &EndSnoozeError::InvalidCharset => {
+            EndSnoozeError::InvalidCharset => {
                 "invalid_charset: The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1."
             }
-            &EndSnoozeError::InvalidFormData => {
+            EndSnoozeError::InvalidFormData => {
                 "invalid_form_data: The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid."
             }
-            &EndSnoozeError::InvalidPostType => {
+            EndSnoozeError::InvalidPostType => {
                 "invalid_post_type: The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/x-www-form-urlencoded multipart/form-data text/plain."
             }
-            &EndSnoozeError::MissingPostType => {
+            EndSnoozeError::MissingPostType => {
                 "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header."
             }
-            &EndSnoozeError::TeamAddedToOrg => {
+            EndSnoozeError::TeamAddedToOrg => {
                 "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete."
             }
-            &EndSnoozeError::RequestTimeout => {
+            EndSnoozeError::RequestTimeout => {
                 "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated."
             }
-            &EndSnoozeError::MalformedResponse(ref e) => e.description(),
-            &EndSnoozeError::Unknown(ref s) => s,
-            &EndSnoozeError::Client(ref inner) => inner.description(),
+            EndSnoozeError::MalformedResponse(ref e) => e.description(),
+            EndSnoozeError::Unknown(ref s) => s,
+            EndSnoozeError::Client(ref inner) => inner.description(),
         }
     }
 
     fn cause(&self) -> Option<&Error> {
-        match self {
-            &EndSnoozeError::MalformedResponse(ref e) => Some(e),
-            &EndSnoozeError::Client(ref inner) => Some(inner),
+        match *self {
+            EndSnoozeError::MalformedResponse(ref e) => Some(e),
+            EndSnoozeError::Client(ref inner) => Some(inner),
             _ => None,
         }
     }
@@ -452,47 +450,47 @@ impl<E: Error> fmt::Display for InfoError<E> {
 
 impl<E: Error> Error for InfoError<E> {
     fn description(&self) -> &str {
-        match self {
-            &InfoError::UserNotFound => "user_not_found: Value passed for user was invalid.",
-            &InfoError::NotAuthed => "not_authed: No authentication token provided.",
-            &InfoError::InvalidAuth => "invalid_auth: Invalid authentication token.",
-            &InfoError::AccountInactive => {
+        match *self {
+            InfoError::UserNotFound => "user_not_found: Value passed for user was invalid.",
+            InfoError::NotAuthed => "not_authed: No authentication token provided.",
+            InfoError::InvalidAuth => "invalid_auth: Invalid authentication token.",
+            InfoError::AccountInactive => {
                 "account_inactive: Authentication token is for a deleted user or team."
             }
-            &InfoError::InvalidArgName => {
+            InfoError::InvalidArgName => {
                 "invalid_arg_name: The method was passed an argument whose name falls outside the bounds of common decency. This includes very long names and names with non-alphanumeric characters other than _. If you get this error, it is typically an indication that you have made a very malformed API call."
             }
-            &InfoError::InvalidArrayArg => {
+            InfoError::InvalidArrayArg => {
                 "invalid_array_arg: The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API."
             }
-            &InfoError::InvalidCharset => {
+            InfoError::InvalidCharset => {
                 "invalid_charset: The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1."
             }
-            &InfoError::InvalidFormData => {
+            InfoError::InvalidFormData => {
                 "invalid_form_data: The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid."
             }
-            &InfoError::InvalidPostType => {
+            InfoError::InvalidPostType => {
                 "invalid_post_type: The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/x-www-form-urlencoded multipart/form-data text/plain."
             }
-            &InfoError::MissingPostType => {
+            InfoError::MissingPostType => {
                 "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header."
             }
-            &InfoError::TeamAddedToOrg => {
+            InfoError::TeamAddedToOrg => {
                 "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete."
             }
-            &InfoError::RequestTimeout => {
+            InfoError::RequestTimeout => {
                 "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated."
             }
-            &InfoError::MalformedResponse(ref e) => e.description(),
-            &InfoError::Unknown(ref s) => s,
-            &InfoError::Client(ref inner) => inner.description(),
+            InfoError::MalformedResponse(ref e) => e.description(),
+            InfoError::Unknown(ref s) => s,
+            InfoError::Client(ref inner) => inner.description(),
         }
     }
 
     fn cause(&self) -> Option<&Error> {
-        match self {
-            &InfoError::MalformedResponse(ref e) => Some(e),
-            &InfoError::Client(ref inner) => Some(inner),
+        match *self {
+            InfoError::MalformedResponse(ref e) => Some(e),
+            InfoError::Client(ref inner) => Some(inner),
             _ => None,
         }
     }
@@ -624,55 +622,53 @@ impl<E: Error> fmt::Display for SetSnoozeError<E> {
 
 impl<E: Error> Error for SetSnoozeError<E> {
     fn description(&self) -> &str {
-        match self {
-            &SetSnoozeError::MissingDuration => {
+        match *self {
+            SetSnoozeError::MissingDuration => {
                 "missing_duration: No value provided for num_minutes"
             }
-            &SetSnoozeError::SnoozeFailed => {
+            SetSnoozeError::SnoozeFailed => {
                 "snooze_failed: There was a problem setting the user's Do Not Disturb status"
             }
-            &SetSnoozeError::NotAuthed => "not_authed: No authentication token provided.",
-            &SetSnoozeError::InvalidAuth => "invalid_auth: Invalid authentication token.",
-            &SetSnoozeError::AccountInactive => {
+            SetSnoozeError::NotAuthed => "not_authed: No authentication token provided.",
+            SetSnoozeError::InvalidAuth => "invalid_auth: Invalid authentication token.",
+            SetSnoozeError::AccountInactive => {
                 "account_inactive: Authentication token is for a deleted user or team."
             }
-            &SetSnoozeError::UserIsBot => {
-                "user_is_bot: This method cannot be called by a bot user."
-            }
-            &SetSnoozeError::InvalidArgName => {
+            SetSnoozeError::UserIsBot => "user_is_bot: This method cannot be called by a bot user.",
+            SetSnoozeError::InvalidArgName => {
                 "invalid_arg_name: The method was passed an argument whose name falls outside the bounds of common decency. This includes very long names and names with non-alphanumeric characters other than _. If you get this error, it is typically an indication that you have made a very malformed API call."
             }
-            &SetSnoozeError::InvalidArrayArg => {
+            SetSnoozeError::InvalidArrayArg => {
                 "invalid_array_arg: The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API."
             }
-            &SetSnoozeError::InvalidCharset => {
+            SetSnoozeError::InvalidCharset => {
                 "invalid_charset: The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1."
             }
-            &SetSnoozeError::InvalidFormData => {
+            SetSnoozeError::InvalidFormData => {
                 "invalid_form_data: The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid."
             }
-            &SetSnoozeError::InvalidPostType => {
+            SetSnoozeError::InvalidPostType => {
                 "invalid_post_type: The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/x-www-form-urlencoded multipart/form-data text/plain."
             }
-            &SetSnoozeError::MissingPostType => {
+            SetSnoozeError::MissingPostType => {
                 "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header."
             }
-            &SetSnoozeError::TeamAddedToOrg => {
+            SetSnoozeError::TeamAddedToOrg => {
                 "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete."
             }
-            &SetSnoozeError::RequestTimeout => {
+            SetSnoozeError::RequestTimeout => {
                 "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated."
             }
-            &SetSnoozeError::MalformedResponse(ref e) => e.description(),
-            &SetSnoozeError::Unknown(ref s) => s,
-            &SetSnoozeError::Client(ref inner) => inner.description(),
+            SetSnoozeError::MalformedResponse(ref e) => e.description(),
+            SetSnoozeError::Unknown(ref s) => s,
+            SetSnoozeError::Client(ref inner) => inner.description(),
         }
     }
 
     fn cause(&self) -> Option<&Error> {
-        match self {
-            &SetSnoozeError::MalformedResponse(ref e) => Some(e),
-            &SetSnoozeError::Client(ref inner) => Some(inner),
+        match *self {
+            SetSnoozeError::MalformedResponse(ref e) => Some(e),
+            SetSnoozeError::Client(ref inner) => Some(inner),
             _ => None,
         }
     }
@@ -793,46 +789,46 @@ impl<E: Error> fmt::Display for TeamInfoError<E> {
 
 impl<E: Error> Error for TeamInfoError<E> {
     fn description(&self) -> &str {
-        match self {
-            &TeamInfoError::NotAuthed => "not_authed: No authentication token provided.",
-            &TeamInfoError::InvalidAuth => "invalid_auth: Invalid authentication token.",
-            &TeamInfoError::AccountInactive => {
+        match *self {
+            TeamInfoError::NotAuthed => "not_authed: No authentication token provided.",
+            TeamInfoError::InvalidAuth => "invalid_auth: Invalid authentication token.",
+            TeamInfoError::AccountInactive => {
                 "account_inactive: Authentication token is for a deleted user or team."
             }
-            &TeamInfoError::InvalidArgName => {
+            TeamInfoError::InvalidArgName => {
                 "invalid_arg_name: The method was passed an argument whose name falls outside the bounds of common decency. This includes very long names and names with non-alphanumeric characters other than _. If you get this error, it is typically an indication that you have made a very malformed API call."
             }
-            &TeamInfoError::InvalidArrayArg => {
+            TeamInfoError::InvalidArrayArg => {
                 "invalid_array_arg: The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API."
             }
-            &TeamInfoError::InvalidCharset => {
+            TeamInfoError::InvalidCharset => {
                 "invalid_charset: The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1."
             }
-            &TeamInfoError::InvalidFormData => {
+            TeamInfoError::InvalidFormData => {
                 "invalid_form_data: The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid."
             }
-            &TeamInfoError::InvalidPostType => {
+            TeamInfoError::InvalidPostType => {
                 "invalid_post_type: The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/x-www-form-urlencoded multipart/form-data text/plain."
             }
-            &TeamInfoError::MissingPostType => {
+            TeamInfoError::MissingPostType => {
                 "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header."
             }
-            &TeamInfoError::TeamAddedToOrg => {
+            TeamInfoError::TeamAddedToOrg => {
                 "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete."
             }
-            &TeamInfoError::RequestTimeout => {
+            TeamInfoError::RequestTimeout => {
                 "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated."
             }
-            &TeamInfoError::MalformedResponse(ref e) => e.description(),
-            &TeamInfoError::Unknown(ref s) => s,
-            &TeamInfoError::Client(ref inner) => inner.description(),
+            TeamInfoError::MalformedResponse(ref e) => e.description(),
+            TeamInfoError::Unknown(ref s) => s,
+            TeamInfoError::Client(ref inner) => inner.description(),
         }
     }
 
     fn cause(&self) -> Option<&Error> {
-        match self {
-            &TeamInfoError::MalformedResponse(ref e) => Some(e),
-            &TeamInfoError::Client(ref inner) => Some(inner),
+        match *self {
+            TeamInfoError::MalformedResponse(ref e) => Some(e),
+            TeamInfoError::Client(ref inner) => Some(inner),
             _ => None,
         }
     }

@@ -131,53 +131,53 @@ impl<E: Error> fmt::Display for DeleteError<E> {
 
 impl<E: Error> Error for DeleteError<E> {
     fn description(&self) -> &str {
-        match self {
-            &DeleteError::FileNotFound => {
+        match *self {
+            DeleteError::FileNotFound => {
                 "file_not_found: The file does not exist, or is not visible to the calling user."
             }
-            &DeleteError::FileDeleted => "file_deleted: The file has already been deleted.",
-            &DeleteError::CantDeleteFile => {
+            DeleteError::FileDeleted => "file_deleted: The file has already been deleted.",
+            DeleteError::CantDeleteFile => {
                 "cant_delete_file: Authenticated user does not have permission to delete this file."
             }
-            &DeleteError::NotAuthed => "not_authed: No authentication token provided.",
-            &DeleteError::InvalidAuth => "invalid_auth: Invalid authentication token.",
-            &DeleteError::AccountInactive => {
+            DeleteError::NotAuthed => "not_authed: No authentication token provided.",
+            DeleteError::InvalidAuth => "invalid_auth: Invalid authentication token.",
+            DeleteError::AccountInactive => {
                 "account_inactive: Authentication token is for a deleted user or team."
             }
-            &DeleteError::InvalidArgName => {
+            DeleteError::InvalidArgName => {
                 "invalid_arg_name: The method was passed an argument whose name falls outside the bounds of common decency. This includes very long names and names with non-alphanumeric characters other than _. If you get this error, it is typically an indication that you have made a very malformed API call."
             }
-            &DeleteError::InvalidArrayArg => {
+            DeleteError::InvalidArrayArg => {
                 "invalid_array_arg: The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API."
             }
-            &DeleteError::InvalidCharset => {
+            DeleteError::InvalidCharset => {
                 "invalid_charset: The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1."
             }
-            &DeleteError::InvalidFormData => {
+            DeleteError::InvalidFormData => {
                 "invalid_form_data: The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid."
             }
-            &DeleteError::InvalidPostType => {
+            DeleteError::InvalidPostType => {
                 "invalid_post_type: The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/x-www-form-urlencoded multipart/form-data text/plain."
             }
-            &DeleteError::MissingPostType => {
+            DeleteError::MissingPostType => {
                 "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header."
             }
-            &DeleteError::TeamAddedToOrg => {
+            DeleteError::TeamAddedToOrg => {
                 "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete."
             }
-            &DeleteError::RequestTimeout => {
+            DeleteError::RequestTimeout => {
                 "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated."
             }
-            &DeleteError::MalformedResponse(ref e) => e.description(),
-            &DeleteError::Unknown(ref s) => s,
-            &DeleteError::Client(ref inner) => inner.description(),
+            DeleteError::MalformedResponse(ref e) => e.description(),
+            DeleteError::Unknown(ref s) => s,
+            DeleteError::Client(ref inner) => inner.description(),
         }
     }
 
     fn cause(&self) -> Option<&Error> {
-        match self {
-            &DeleteError::MalformedResponse(ref e) => Some(e),
-            &DeleteError::Client(ref inner) => Some(inner),
+        match *self {
+            DeleteError::MalformedResponse(ref e) => Some(e),
+            DeleteError::Client(ref inner) => Some(inner),
             _ => None,
         }
     }
@@ -311,48 +311,48 @@ impl<E: Error> fmt::Display for InfoError<E> {
 
 impl<E: Error> Error for InfoError<E> {
     fn description(&self) -> &str {
-        match self {
-            &InfoError::FileNotFound => "file_not_found: Value passed for file was invalid",
-            &InfoError::FileDeleted => "file_deleted: The requested file has been deleted",
-            &InfoError::NotAuthed => "not_authed: No authentication token provided.",
-            &InfoError::InvalidAuth => "invalid_auth: Invalid authentication token.",
-            &InfoError::AccountInactive => {
+        match *self {
+            InfoError::FileNotFound => "file_not_found: Value passed for file was invalid",
+            InfoError::FileDeleted => "file_deleted: The requested file has been deleted",
+            InfoError::NotAuthed => "not_authed: No authentication token provided.",
+            InfoError::InvalidAuth => "invalid_auth: Invalid authentication token.",
+            InfoError::AccountInactive => {
                 "account_inactive: Authentication token is for a deleted user or team."
             }
-            &InfoError::InvalidArgName => {
+            InfoError::InvalidArgName => {
                 "invalid_arg_name: The method was passed an argument whose name falls outside the bounds of common decency. This includes very long names and names with non-alphanumeric characters other than _. If you get this error, it is typically an indication that you have made a very malformed API call."
             }
-            &InfoError::InvalidArrayArg => {
+            InfoError::InvalidArrayArg => {
                 "invalid_array_arg: The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API."
             }
-            &InfoError::InvalidCharset => {
+            InfoError::InvalidCharset => {
                 "invalid_charset: The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1."
             }
-            &InfoError::InvalidFormData => {
+            InfoError::InvalidFormData => {
                 "invalid_form_data: The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid."
             }
-            &InfoError::InvalidPostType => {
+            InfoError::InvalidPostType => {
                 "invalid_post_type: The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/x-www-form-urlencoded multipart/form-data text/plain."
             }
-            &InfoError::MissingPostType => {
+            InfoError::MissingPostType => {
                 "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header."
             }
-            &InfoError::TeamAddedToOrg => {
+            InfoError::TeamAddedToOrg => {
                 "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete."
             }
-            &InfoError::RequestTimeout => {
+            InfoError::RequestTimeout => {
                 "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated."
             }
-            &InfoError::MalformedResponse(ref e) => e.description(),
-            &InfoError::Unknown(ref s) => s,
-            &InfoError::Client(ref inner) => inner.description(),
+            InfoError::MalformedResponse(ref e) => e.description(),
+            InfoError::Unknown(ref s) => s,
+            InfoError::Client(ref inner) => inner.description(),
         }
     }
 
     fn cause(&self) -> Option<&Error> {
-        match self {
-            &InfoError::MalformedResponse(ref e) => Some(e),
-            &InfoError::Client(ref inner) => Some(inner),
+        match *self {
+            InfoError::MalformedResponse(ref e) => Some(e),
+            InfoError::Client(ref inner) => Some(inner),
             _ => None,
         }
     }
@@ -514,49 +514,49 @@ impl<E: Error> fmt::Display for ListError<E> {
 
 impl<E: Error> Error for ListError<E> {
     fn description(&self) -> &str {
-        match self {
-            &ListError::UserNotFound => "user_not_found: Value passed for user was invalid",
-            &ListError::UnknownType => "unknown_type: Value passed for types was invalid",
-            &ListError::NotAuthed => "not_authed: No authentication token provided.",
-            &ListError::InvalidAuth => "invalid_auth: Invalid authentication token.",
-            &ListError::AccountInactive => {
+        match *self {
+            ListError::UserNotFound => "user_not_found: Value passed for user was invalid",
+            ListError::UnknownType => "unknown_type: Value passed for types was invalid",
+            ListError::NotAuthed => "not_authed: No authentication token provided.",
+            ListError::InvalidAuth => "invalid_auth: Invalid authentication token.",
+            ListError::AccountInactive => {
                 "account_inactive: Authentication token is for a deleted user or team."
             }
-            &ListError::UserIsBot => "user_is_bot: This method cannot be called by a bot user.",
-            &ListError::InvalidArgName => {
+            ListError::UserIsBot => "user_is_bot: This method cannot be called by a bot user.",
+            ListError::InvalidArgName => {
                 "invalid_arg_name: The method was passed an argument whose name falls outside the bounds of common decency. This includes very long names and names with non-alphanumeric characters other than _. If you get this error, it is typically an indication that you have made a very malformed API call."
             }
-            &ListError::InvalidArrayArg => {
+            ListError::InvalidArrayArg => {
                 "invalid_array_arg: The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API."
             }
-            &ListError::InvalidCharset => {
+            ListError::InvalidCharset => {
                 "invalid_charset: The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1."
             }
-            &ListError::InvalidFormData => {
+            ListError::InvalidFormData => {
                 "invalid_form_data: The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid."
             }
-            &ListError::InvalidPostType => {
+            ListError::InvalidPostType => {
                 "invalid_post_type: The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/x-www-form-urlencoded multipart/form-data text/plain."
             }
-            &ListError::MissingPostType => {
+            ListError::MissingPostType => {
                 "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header."
             }
-            &ListError::TeamAddedToOrg => {
+            ListError::TeamAddedToOrg => {
                 "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete."
             }
-            &ListError::RequestTimeout => {
+            ListError::RequestTimeout => {
                 "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated."
             }
-            &ListError::MalformedResponse(ref e) => e.description(),
-            &ListError::Unknown(ref s) => s,
-            &ListError::Client(ref inner) => inner.description(),
+            ListError::MalformedResponse(ref e) => e.description(),
+            ListError::Unknown(ref s) => s,
+            ListError::Client(ref inner) => inner.description(),
         }
     }
 
     fn cause(&self) -> Option<&Error> {
-        match self {
-            &ListError::MalformedResponse(ref e) => Some(e),
-            &ListError::Client(ref inner) => Some(inner),
+        match *self {
+            ListError::MalformedResponse(ref e) => Some(e),
+            ListError::Client(ref inner) => Some(inner),
             _ => None,
         }
     }
@@ -681,55 +681,55 @@ impl<E: Error> fmt::Display for RevokePublicURLError<E> {
 
 impl<E: Error> Error for RevokePublicURLError<E> {
     fn description(&self) -> &str {
-        match self {
-            &RevokePublicURLError::FileNotFound => {
+        match *self {
+            RevokePublicURLError::FileNotFound => {
                 "file_not_found: Value passed for file was invalid"
             }
-            &RevokePublicURLError::NotAuthed => "not_authed: No authentication token provided.",
-            &RevokePublicURLError::InvalidAuth => "invalid_auth: Invalid authentication token.",
-            &RevokePublicURLError::AccountInactive => {
+            RevokePublicURLError::NotAuthed => "not_authed: No authentication token provided.",
+            RevokePublicURLError::InvalidAuth => "invalid_auth: Invalid authentication token.",
+            RevokePublicURLError::AccountInactive => {
                 "account_inactive: Authentication token is for a deleted user or team."
             }
-            &RevokePublicURLError::UserIsBot => {
+            RevokePublicURLError::UserIsBot => {
                 "user_is_bot: This method cannot be called by a bot user."
             }
-            &RevokePublicURLError::UserIsRestricted => {
+            RevokePublicURLError::UserIsRestricted => {
                 "user_is_restricted: This method cannot be called by a restricted user or single channel guest."
             }
-            &RevokePublicURLError::InvalidArgName => {
+            RevokePublicURLError::InvalidArgName => {
                 "invalid_arg_name: The method was passed an argument whose name falls outside the bounds of common decency. This includes very long names and names with non-alphanumeric characters other than _. If you get this error, it is typically an indication that you have made a very malformed API call."
             }
-            &RevokePublicURLError::InvalidArrayArg => {
+            RevokePublicURLError::InvalidArrayArg => {
                 "invalid_array_arg: The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API."
             }
-            &RevokePublicURLError::InvalidCharset => {
+            RevokePublicURLError::InvalidCharset => {
                 "invalid_charset: The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1."
             }
-            &RevokePublicURLError::InvalidFormData => {
+            RevokePublicURLError::InvalidFormData => {
                 "invalid_form_data: The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid."
             }
-            &RevokePublicURLError::InvalidPostType => {
+            RevokePublicURLError::InvalidPostType => {
                 "invalid_post_type: The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/x-www-form-urlencoded multipart/form-data text/plain."
             }
-            &RevokePublicURLError::MissingPostType => {
+            RevokePublicURLError::MissingPostType => {
                 "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header."
             }
-            &RevokePublicURLError::TeamAddedToOrg => {
+            RevokePublicURLError::TeamAddedToOrg => {
                 "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete."
             }
-            &RevokePublicURLError::RequestTimeout => {
+            RevokePublicURLError::RequestTimeout => {
                 "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated."
             }
-            &RevokePublicURLError::MalformedResponse(ref e) => e.description(),
-            &RevokePublicURLError::Unknown(ref s) => s,
-            &RevokePublicURLError::Client(ref inner) => inner.description(),
+            RevokePublicURLError::MalformedResponse(ref e) => e.description(),
+            RevokePublicURLError::Unknown(ref s) => s,
+            RevokePublicURLError::Client(ref inner) => inner.description(),
         }
     }
 
     fn cause(&self) -> Option<&Error> {
-        match self {
-            &RevokePublicURLError::MalformedResponse(ref e) => Some(e),
-            &RevokePublicURLError::Client(ref inner) => Some(inner),
+        match *self {
+            RevokePublicURLError::MalformedResponse(ref e) => Some(e),
+            RevokePublicURLError::Client(ref inner) => Some(inner),
             _ => None,
         }
     }
@@ -857,58 +857,58 @@ impl<E: Error> fmt::Display for SharedPublicURLError<E> {
 
 impl<E: Error> Error for SharedPublicURLError<E> {
     fn description(&self) -> &str {
-        match self {
-            &SharedPublicURLError::FileNotFound => {
+        match *self {
+            SharedPublicURLError::FileNotFound => {
                 "file_not_found: Value passed for file was invalid"
             }
-            &SharedPublicURLError::NotAllowed => {
+            SharedPublicURLError::NotAllowed => {
                 "not_allowed: Public sharing has been disabled for this team"
             }
-            &SharedPublicURLError::NotAuthed => "not_authed: No authentication token provided.",
-            &SharedPublicURLError::InvalidAuth => "invalid_auth: Invalid authentication token.",
-            &SharedPublicURLError::AccountInactive => {
+            SharedPublicURLError::NotAuthed => "not_authed: No authentication token provided.",
+            SharedPublicURLError::InvalidAuth => "invalid_auth: Invalid authentication token.",
+            SharedPublicURLError::AccountInactive => {
                 "account_inactive: Authentication token is for a deleted user or team."
             }
-            &SharedPublicURLError::UserIsBot => {
+            SharedPublicURLError::UserIsBot => {
                 "user_is_bot: This method cannot be called by a bot user."
             }
-            &SharedPublicURLError::UserIsRestricted => {
+            SharedPublicURLError::UserIsRestricted => {
                 "user_is_restricted: This method cannot be called by a restricted user or single channel guest."
             }
-            &SharedPublicURLError::InvalidArgName => {
+            SharedPublicURLError::InvalidArgName => {
                 "invalid_arg_name: The method was passed an argument whose name falls outside the bounds of common decency. This includes very long names and names with non-alphanumeric characters other than _. If you get this error, it is typically an indication that you have made a very malformed API call."
             }
-            &SharedPublicURLError::InvalidArrayArg => {
+            SharedPublicURLError::InvalidArrayArg => {
                 "invalid_array_arg: The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API."
             }
-            &SharedPublicURLError::InvalidCharset => {
+            SharedPublicURLError::InvalidCharset => {
                 "invalid_charset: The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1."
             }
-            &SharedPublicURLError::InvalidFormData => {
+            SharedPublicURLError::InvalidFormData => {
                 "invalid_form_data: The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid."
             }
-            &SharedPublicURLError::InvalidPostType => {
+            SharedPublicURLError::InvalidPostType => {
                 "invalid_post_type: The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/x-www-form-urlencoded multipart/form-data text/plain."
             }
-            &SharedPublicURLError::MissingPostType => {
+            SharedPublicURLError::MissingPostType => {
                 "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header."
             }
-            &SharedPublicURLError::TeamAddedToOrg => {
+            SharedPublicURLError::TeamAddedToOrg => {
                 "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete."
             }
-            &SharedPublicURLError::RequestTimeout => {
+            SharedPublicURLError::RequestTimeout => {
                 "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated."
             }
-            &SharedPublicURLError::MalformedResponse(ref e) => e.description(),
-            &SharedPublicURLError::Unknown(ref s) => s,
-            &SharedPublicURLError::Client(ref inner) => inner.description(),
+            SharedPublicURLError::MalformedResponse(ref e) => e.description(),
+            SharedPublicURLError::Unknown(ref s) => s,
+            SharedPublicURLError::Client(ref inner) => inner.description(),
         }
     }
 
     fn cause(&self) -> Option<&Error> {
-        match self {
-            &SharedPublicURLError::MalformedResponse(ref e) => Some(e),
-            &SharedPublicURLError::Client(ref inner) => Some(inner),
+        match *self {
+            SharedPublicURLError::MalformedResponse(ref e) => Some(e),
+            SharedPublicURLError::Client(ref inner) => Some(inner),
             _ => None,
         }
     }

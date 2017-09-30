@@ -127,46 +127,46 @@ impl<E: Error> fmt::Display for RevokeError<E> {
 
 impl<E: Error> Error for RevokeError<E> {
     fn description(&self) -> &str {
-        match self {
-            &RevokeError::NotAuthed => "not_authed: No authentication token provided.",
-            &RevokeError::InvalidAuth => "invalid_auth: Invalid authentication token.",
-            &RevokeError::AccountInactive => {
+        match *self {
+            RevokeError::NotAuthed => "not_authed: No authentication token provided.",
+            RevokeError::InvalidAuth => "invalid_auth: Invalid authentication token.",
+            RevokeError::AccountInactive => {
                 "account_inactive: Authentication token is for a deleted user or team."
             }
-            &RevokeError::InvalidArgName => {
+            RevokeError::InvalidArgName => {
                 "invalid_arg_name: The method was passed an argument whose name falls outside the bounds of common decency. This includes very long names and names with non-alphanumeric characters other than _. If you get this error, it is typically an indication that you have made a very malformed API call."
             }
-            &RevokeError::InvalidArrayArg => {
+            RevokeError::InvalidArrayArg => {
                 "invalid_array_arg: The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API."
             }
-            &RevokeError::InvalidCharset => {
+            RevokeError::InvalidCharset => {
                 "invalid_charset: The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1."
             }
-            &RevokeError::InvalidFormData => {
+            RevokeError::InvalidFormData => {
                 "invalid_form_data: The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid."
             }
-            &RevokeError::InvalidPostType => {
+            RevokeError::InvalidPostType => {
                 "invalid_post_type: The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/x-www-form-urlencoded multipart/form-data text/plain."
             }
-            &RevokeError::MissingPostType => {
+            RevokeError::MissingPostType => {
                 "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header."
             }
-            &RevokeError::TeamAddedToOrg => {
+            RevokeError::TeamAddedToOrg => {
                 "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete."
             }
-            &RevokeError::RequestTimeout => {
+            RevokeError::RequestTimeout => {
                 "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated."
             }
-            &RevokeError::MalformedResponse(ref e) => e.description(),
-            &RevokeError::Unknown(ref s) => s,
-            &RevokeError::Client(ref inner) => inner.description(),
+            RevokeError::MalformedResponse(ref e) => e.description(),
+            RevokeError::Unknown(ref s) => s,
+            RevokeError::Client(ref inner) => inner.description(),
         }
     }
 
     fn cause(&self) -> Option<&Error> {
-        match self {
-            &RevokeError::MalformedResponse(ref e) => Some(e),
-            &RevokeError::Client(ref inner) => Some(inner),
+        match *self {
+            RevokeError::MalformedResponse(ref e) => Some(e),
+            RevokeError::Client(ref inner) => Some(inner),
             _ => None,
         }
     }
@@ -274,46 +274,46 @@ impl<E: Error> fmt::Display for TestError<E> {
 
 impl<E: Error> Error for TestError<E> {
     fn description(&self) -> &str {
-        match self {
-            &TestError::NotAuthed => "not_authed: No authentication token provided.",
-            &TestError::InvalidAuth => "invalid_auth: Invalid authentication token.",
-            &TestError::AccountInactive => {
+        match *self {
+            TestError::NotAuthed => "not_authed: No authentication token provided.",
+            TestError::InvalidAuth => "invalid_auth: Invalid authentication token.",
+            TestError::AccountInactive => {
                 "account_inactive: Authentication token is for a deleted user or team."
             }
-            &TestError::InvalidArgName => {
+            TestError::InvalidArgName => {
                 "invalid_arg_name: The method was passed an argument whose name falls outside the bounds of common decency. This includes very long names and names with non-alphanumeric characters other than _. If you get this error, it is typically an indication that you have made a very malformed API call."
             }
-            &TestError::InvalidArrayArg => {
+            TestError::InvalidArrayArg => {
                 "invalid_array_arg: The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API."
             }
-            &TestError::InvalidCharset => {
+            TestError::InvalidCharset => {
                 "invalid_charset: The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1."
             }
-            &TestError::InvalidFormData => {
+            TestError::InvalidFormData => {
                 "invalid_form_data: The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid."
             }
-            &TestError::InvalidPostType => {
+            TestError::InvalidPostType => {
                 "invalid_post_type: The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/x-www-form-urlencoded multipart/form-data text/plain."
             }
-            &TestError::MissingPostType => {
+            TestError::MissingPostType => {
                 "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header."
             }
-            &TestError::TeamAddedToOrg => {
+            TestError::TeamAddedToOrg => {
                 "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete."
             }
-            &TestError::RequestTimeout => {
+            TestError::RequestTimeout => {
                 "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated."
             }
-            &TestError::MalformedResponse(ref e) => e.description(),
-            &TestError::Unknown(ref s) => s,
-            &TestError::Client(ref inner) => inner.description(),
+            TestError::MalformedResponse(ref e) => e.description(),
+            TestError::Unknown(ref s) => s,
+            TestError::Client(ref inner) => inner.description(),
         }
     }
 
     fn cause(&self) -> Option<&Error> {
-        match self {
-            &TestError::MalformedResponse(ref e) => Some(e),
-            &TestError::Client(ref inner) => Some(inner),
+        match *self {
+            TestError::MalformedResponse(ref e) => Some(e),
+            TestError::Client(ref inner) => Some(inner),
             _ => None,
         }
     }
