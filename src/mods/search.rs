@@ -40,9 +40,9 @@ where
     let url = ::get_slack_url_for_method("search.all");
     client
         .send(&url, &params[..])
-        .map_err(|err| AllError::Client(err))
+        .map_err(AllError::Client)
         .and_then(|result| {
-            serde_json::from_str::<AllResponse>(&result).map_err(|e| AllError::MalformedResponse(e))
+            serde_json::from_str::<AllResponse>(&result).map_err(AllError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }
@@ -233,13 +233,9 @@ where
     let url = ::get_slack_url_for_method("search.files");
     client
         .send(&url, &params[..])
-        .map_err(|err| FilesError::Client(err))
+        .map_err(FilesError::Client)
         .and_then(|result| {
-            serde_json::from_str::<FilesResponse>(&result).map_err(
-                |e| {
-                    FilesError::MalformedResponse(e)
-                },
-            )
+            serde_json::from_str::<FilesResponse>(&result).map_err(FilesError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }
@@ -423,12 +419,10 @@ where
     let url = ::get_slack_url_for_method("search.messages");
     client
         .send(&url, &params[..])
-        .map_err(|err| MessagesError::Client(err))
+        .map_err(MessagesError::Client)
         .and_then(|result| {
             serde_json::from_str::<MessagesResponse>(&result).map_err(
-                |e| {
-                    MessagesError::MalformedResponse(e)
-                },
+                MessagesError::MalformedResponse,
             )
         })
         .and_then(|o| o.into())

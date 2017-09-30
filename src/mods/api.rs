@@ -27,11 +27,9 @@ where
     let url = ::get_slack_url_for_method("api.test");
     client
         .send(&url, &params[..])
-        .map_err(|err| TestError::Client(err))
+        .map_err(TestError::Client)
         .and_then(|result| {
-            serde_json::from_str::<TestResponse>(&result).map_err(|e| {
-                TestError::MalformedResponse(e)
-            })
+            serde_json::from_str::<TestResponse>(&result).map_err(TestError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }

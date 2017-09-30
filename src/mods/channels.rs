@@ -29,12 +29,10 @@ where
     let url = ::get_slack_url_for_method("channels.archive");
     client
         .send(&url, &params[..])
-        .map_err(|err| ArchiveError::Client(err))
+        .map_err(ArchiveError::Client)
         .and_then(|result| {
             serde_json::from_str::<ArchiveResponse>(&result).map_err(
-                |e| {
-                    ArchiveError::MalformedResponse(e)
-                },
+                ArchiveError::MalformedResponse,
             )
         })
         .and_then(|o| o.into())
@@ -223,13 +221,9 @@ where
     let url = ::get_slack_url_for_method("channels.create");
     client
         .send(&url, &params[..])
-        .map_err(|err| CreateError::Client(err))
+        .map_err(CreateError::Client)
         .and_then(|result| {
-            serde_json::from_str::<CreateResponse>(&result).map_err(
-                |e| {
-                    CreateError::MalformedResponse(e)
-                },
-            )
+            serde_json::from_str::<CreateResponse>(&result).map_err(CreateError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }
@@ -448,12 +442,10 @@ where
     let url = ::get_slack_url_for_method("channels.history");
     client
         .send(&url, &params[..])
-        .map_err(|err| HistoryError::Client(err))
+        .map_err(HistoryError::Client)
         .and_then(|result| {
             serde_json::from_str::<HistoryResponse>(&result).map_err(
-                |e| {
-                    HistoryError::MalformedResponse(e)
-                },
+                HistoryError::MalformedResponse,
             )
         })
         .and_then(|o| o.into())
@@ -635,11 +627,9 @@ where
     let url = ::get_slack_url_for_method("channels.info");
     client
         .send(&url, &params[..])
-        .map_err(|err| InfoError::Client(err))
+        .map_err(InfoError::Client)
         .and_then(|result| {
-            serde_json::from_str::<InfoResponse>(&result).map_err(|e| {
-                InfoError::MalformedResponse(e)
-            })
+            serde_json::from_str::<InfoResponse>(&result).map_err(InfoError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }
@@ -800,13 +790,9 @@ where
     let url = ::get_slack_url_for_method("channels.invite");
     client
         .send(&url, &params[..])
-        .map_err(|err| InviteError::Client(err))
+        .map_err(InviteError::Client)
         .and_then(|result| {
-            serde_json::from_str::<InviteResponse>(&result).map_err(
-                |e| {
-                    InviteError::MalformedResponse(e)
-                },
-            )
+            serde_json::from_str::<InviteResponse>(&result).map_err(InviteError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }
@@ -1017,11 +1003,9 @@ where
     let url = ::get_slack_url_for_method("channels.join");
     client
         .send(&url, &params[..])
-        .map_err(|err| JoinError::Client(err))
+        .map_err(JoinError::Client)
         .and_then(|result| {
-            serde_json::from_str::<JoinResponse>(&result).map_err(|e| {
-                JoinError::MalformedResponse(e)
-            })
+            serde_json::from_str::<JoinResponse>(&result).map_err(JoinError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }
@@ -1240,11 +1224,9 @@ where
     let url = ::get_slack_url_for_method("channels.kick");
     client
         .send(&url, &params[..])
-        .map_err(|err| KickError::Client(err))
+        .map_err(KickError::Client)
         .and_then(|result| {
-            serde_json::from_str::<KickResponse>(&result).map_err(|e| {
-                KickError::MalformedResponse(e)
-            })
+            serde_json::from_str::<KickResponse>(&result).map_err(KickError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }
@@ -1438,13 +1420,9 @@ where
     let url = ::get_slack_url_for_method("channels.leave");
     client
         .send(&url, &params[..])
-        .map_err(|err| LeaveError::Client(err))
+        .map_err(LeaveError::Client)
         .and_then(|result| {
-            serde_json::from_str::<LeaveResponse>(&result).map_err(
-                |e| {
-                    LeaveError::MalformedResponse(e)
-                },
-            )
+            serde_json::from_str::<LeaveResponse>(&result).map_err(LeaveError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }
@@ -1628,11 +1606,9 @@ where
     let url = ::get_slack_url_for_method("channels.list");
     client
         .send(&url, &params[..])
-        .map_err(|err| ListError::Client(err))
+        .map_err(ListError::Client)
         .and_then(|result| {
-            serde_json::from_str::<ListResponse>(&result).map_err(|e| {
-                ListError::MalformedResponse(e)
-            })
+            serde_json::from_str::<ListResponse>(&result).map_err(ListError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }
@@ -1789,11 +1765,9 @@ where
     let url = ::get_slack_url_for_method("channels.mark");
     client
         .send(&url, &params[..])
-        .map_err(|err| MarkError::Client(err))
+        .map_err(MarkError::Client)
         .and_then(|result| {
-            serde_json::from_str::<MarkResponse>(&result).map_err(|e| {
-                MarkError::MalformedResponse(e)
-            })
+            serde_json::from_str::<MarkResponse>(&result).map_err(MarkError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }
@@ -1968,13 +1942,9 @@ where
     let url = ::get_slack_url_for_method("channels.rename");
     client
         .send(&url, &params[..])
-        .map_err(|err| RenameError::Client(err))
+        .map_err(RenameError::Client)
         .and_then(|result| {
-            serde_json::from_str::<RenameResponse>(&result).map_err(
-                |e| {
-                    RenameError::MalformedResponse(e)
-                },
-            )
+            serde_json::from_str::<RenameResponse>(&result).map_err(RenameError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }
@@ -2197,12 +2167,10 @@ where
     let url = ::get_slack_url_for_method("channels.replies");
     client
         .send(&url, &params[..])
-        .map_err(|err| RepliesError::Client(err))
+        .map_err(RepliesError::Client)
         .and_then(|result| {
             serde_json::from_str::<RepliesResponse>(&result).map_err(
-                |e| {
-                    RepliesError::MalformedResponse(e)
-                },
+                RepliesError::MalformedResponse,
             )
         })
         .and_then(|o| o.into())
@@ -2373,10 +2341,10 @@ where
     let url = ::get_slack_url_for_method("channels.setPurpose");
     client
         .send(&url, &params[..])
-        .map_err(|err| SetPurposeError::Client(err))
+        .map_err(SetPurposeError::Client)
         .and_then(|result| {
             serde_json::from_str::<SetPurposeResponse>(&result)
-                .map_err(|e| SetPurposeError::MalformedResponse(e))
+                .map_err(SetPurposeError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }
@@ -2559,12 +2527,10 @@ where
     let url = ::get_slack_url_for_method("channels.setTopic");
     client
         .send(&url, &params[..])
-        .map_err(|err| SetTopicError::Client(err))
+        .map_err(SetTopicError::Client)
         .and_then(|result| {
             serde_json::from_str::<SetTopicResponse>(&result).map_err(
-                |e| {
-                    SetTopicError::MalformedResponse(e)
-                },
+                SetTopicError::MalformedResponse,
             )
         })
         .and_then(|o| o.into())
@@ -2744,12 +2710,10 @@ where
     let url = ::get_slack_url_for_method("channels.unarchive");
     client
         .send(&url, &params[..])
-        .map_err(|err| UnarchiveError::Client(err))
+        .map_err(UnarchiveError::Client)
         .and_then(|result| {
             serde_json::from_str::<UnarchiveResponse>(&result).map_err(
-                |e| {
-                    UnarchiveError::MalformedResponse(e)
-                },
+                UnarchiveError::MalformedResponse,
             )
         })
         .and_then(|o| o.into())

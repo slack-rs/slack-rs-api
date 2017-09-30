@@ -29,13 +29,9 @@ where
     let url = ::get_slack_url_for_method("files.delete");
     client
         .send(&url, &params[..])
-        .map_err(|err| DeleteError::Client(err))
+        .map_err(DeleteError::Client)
         .and_then(|result| {
-            serde_json::from_str::<DeleteResponse>(&result).map_err(
-                |e| {
-                    DeleteError::MalformedResponse(e)
-                },
-            )
+            serde_json::from_str::<DeleteResponse>(&result).map_err(DeleteError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }
@@ -207,11 +203,9 @@ where
     let url = ::get_slack_url_for_method("files.info");
     client
         .send(&url, &params[..])
-        .map_err(|err| InfoError::Client(err))
+        .map_err(InfoError::Client)
         .and_then(|result| {
-            serde_json::from_str::<InfoResponse>(&result).map_err(|e| {
-                InfoError::MalformedResponse(e)
-            })
+            serde_json::from_str::<InfoResponse>(&result).map_err(InfoError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }
@@ -388,11 +382,9 @@ where
     let url = ::get_slack_url_for_method("files.list");
     client
         .send(&url, &params[..])
-        .map_err(|err| ListError::Client(err))
+        .map_err(ListError::Client)
         .and_then(|result| {
-            serde_json::from_str::<ListResponse>(&result).map_err(|e| {
-                ListError::MalformedResponse(e)
-            })
+            serde_json::from_str::<ListResponse>(&result).map_err(ListError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }
@@ -580,10 +572,10 @@ where
     let url = ::get_slack_url_for_method("files.revokePublicURL");
     client
         .send(&url, &params[..])
-        .map_err(|err| RevokePublicURLError::Client(err))
+        .map_err(RevokePublicURLError::Client)
         .and_then(|result| {
             serde_json::from_str::<RevokePublicURLResponse>(&result)
-                .map_err(|e| RevokePublicURLError::MalformedResponse(e))
+                .map_err(RevokePublicURLError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }
@@ -753,10 +745,10 @@ where
     let url = ::get_slack_url_for_method("files.sharedPublicURL");
     client
         .send(&url, &params[..])
-        .map_err(|err| SharedPublicURLError::Client(err))
+        .map_err(SharedPublicURLError::Client)
         .and_then(|result| {
             serde_json::from_str::<SharedPublicURLResponse>(&result)
-                .map_err(|e| SharedPublicURLError::MalformedResponse(e))
+                .map_err(SharedPublicURLError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }

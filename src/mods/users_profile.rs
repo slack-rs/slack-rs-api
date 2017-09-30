@@ -34,9 +34,9 @@ where
     let url = ::get_slack_url_for_method("users.profile.get");
     client
         .send(&url, &params[..])
-        .map_err(|err| GetError::Client(err))
+        .map_err(GetError::Client)
         .and_then(|result| {
-            serde_json::from_str::<GetResponse>(&result).map_err(|e| GetError::MalformedResponse(e))
+            serde_json::from_str::<GetResponse>(&result).map_err(GetError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }
@@ -203,9 +203,9 @@ where
     let url = ::get_slack_url_for_method("users.profile.set");
     client
         .send(&url, &params[..])
-        .map_err(|err| SetError::Client(err))
+        .map_err(SetError::Client)
         .and_then(|result| {
-            serde_json::from_str::<SetResponse>(&result).map_err(|e| SetError::MalformedResponse(e))
+            serde_json::from_str::<SetResponse>(&result).map_err(SetError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }

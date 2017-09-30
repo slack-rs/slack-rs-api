@@ -33,9 +33,9 @@ where
     let url = ::get_slack_url_for_method("reminders.add");
     client
         .send(&url, &params[..])
-        .map_err(|err| AddError::Client(err))
+        .map_err(AddError::Client)
         .and_then(|result| {
-            serde_json::from_str::<AddResponse>(&result).map_err(|e| AddError::MalformedResponse(e))
+            serde_json::from_str::<AddResponse>(&result).map_err(AddError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }
@@ -226,12 +226,10 @@ where
     let url = ::get_slack_url_for_method("reminders.complete");
     client
         .send(&url, &params[..])
-        .map_err(|err| CompleteError::Client(err))
+        .map_err(CompleteError::Client)
         .and_then(|result| {
             serde_json::from_str::<CompleteResponse>(&result).map_err(
-                |e| {
-                    CompleteError::MalformedResponse(e)
-                },
+                CompleteError::MalformedResponse,
             )
         })
         .and_then(|o| o.into())
@@ -402,13 +400,9 @@ where
     let url = ::get_slack_url_for_method("reminders.delete");
     client
         .send(&url, &params[..])
-        .map_err(|err| DeleteError::Client(err))
+        .map_err(DeleteError::Client)
         .and_then(|result| {
-            serde_json::from_str::<DeleteResponse>(&result).map_err(
-                |e| {
-                    DeleteError::MalformedResponse(e)
-                },
-            )
+            serde_json::from_str::<DeleteResponse>(&result).map_err(DeleteError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }
@@ -566,11 +560,9 @@ where
     let url = ::get_slack_url_for_method("reminders.info");
     client
         .send(&url, &params[..])
-        .map_err(|err| InfoError::Client(err))
+        .map_err(InfoError::Client)
         .and_then(|result| {
-            serde_json::from_str::<InfoResponse>(&result).map_err(|e| {
-                InfoError::MalformedResponse(e)
-            })
+            serde_json::from_str::<InfoResponse>(&result).map_err(InfoError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }
@@ -723,11 +715,9 @@ where
     let url = ::get_slack_url_for_method("reminders.list");
     client
         .send(&url, &params[..])
-        .map_err(|err| ListError::Client(err))
+        .map_err(ListError::Client)
         .and_then(|result| {
-            serde_json::from_str::<ListResponse>(&result).map_err(|e| {
-                ListError::MalformedResponse(e)
-            })
+            serde_json::from_str::<ListResponse>(&result).map_err(ListError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }

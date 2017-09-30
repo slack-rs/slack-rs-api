@@ -29,13 +29,9 @@ where
     let url = ::get_slack_url_for_method("im.close");
     client
         .send(&url, &params[..])
-        .map_err(|err| CloseError::Client(err))
+        .map_err(CloseError::Client)
         .and_then(|result| {
-            serde_json::from_str::<CloseResponse>(&result).map_err(
-                |e| {
-                    CloseError::MalformedResponse(e)
-                },
-            )
+            serde_json::from_str::<CloseResponse>(&result).map_err(CloseError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }
@@ -209,12 +205,10 @@ where
     let url = ::get_slack_url_for_method("im.history");
     client
         .send(&url, &params[..])
-        .map_err(|err| HistoryError::Client(err))
+        .map_err(HistoryError::Client)
         .and_then(|result| {
             serde_json::from_str::<HistoryResponse>(&result).map_err(
-                |e| {
-                    HistoryError::MalformedResponse(e)
-                },
+                HistoryError::MalformedResponse,
             )
         })
         .and_then(|o| o.into())
@@ -390,11 +384,9 @@ where
     let url = ::get_slack_url_for_method("im.list");
     client
         .send(&url, &params[..])
-        .map_err(|err| ListError::Client(err))
+        .map_err(ListError::Client)
         .and_then(|result| {
-            serde_json::from_str::<ListResponse>(&result).map_err(|e| {
-                ListError::MalformedResponse(e)
-            })
+            serde_json::from_str::<ListResponse>(&result).map_err(ListError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }
@@ -543,11 +535,9 @@ where
     let url = ::get_slack_url_for_method("im.mark");
     client
         .send(&url, &params[..])
-        .map_err(|err| MarkError::Client(err))
+        .map_err(MarkError::Client)
         .and_then(|result| {
-            serde_json::from_str::<MarkResponse>(&result).map_err(|e| {
-                MarkError::MalformedResponse(e)
-            })
+            serde_json::from_str::<MarkResponse>(&result).map_err(MarkError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }
@@ -721,11 +711,9 @@ where
     let url = ::get_slack_url_for_method("im.open");
     client
         .send(&url, &params[..])
-        .map_err(|err| OpenError::Client(err))
+        .map_err(OpenError::Client)
         .and_then(|result| {
-            serde_json::from_str::<OpenResponse>(&result).map_err(|e| {
-                OpenError::MalformedResponse(e)
-            })
+            serde_json::from_str::<OpenResponse>(&result).map_err(OpenError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }
@@ -896,12 +884,10 @@ where
     let url = ::get_slack_url_for_method("im.replies");
     client
         .send(&url, &params[..])
-        .map_err(|err| RepliesError::Client(err))
+        .map_err(RepliesError::Client)
         .and_then(|result| {
             serde_json::from_str::<RepliesResponse>(&result).map_err(
-                |e| {
-                    RepliesError::MalformedResponse(e)
-                },
+                RepliesError::MalformedResponse,
             )
         })
         .and_then(|o| o.into())

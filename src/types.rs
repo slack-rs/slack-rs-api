@@ -223,132 +223,132 @@ impl<'de> ::serde::Deserialize<'de> for Message {
                 match ty {
                     "standard" => {
                         ::serde_json::from_value::<MessageStandard>(value.clone())
-                            .map(|obj| Message::Standard(obj))
+                            .map(Message::Standard)
                             .map_err(|e| D::Error::custom(&format!("{}", e)))
                     }
                     "bot_message" => {
                         ::serde_json::from_value::<MessageBotMessage>(value.clone())
-                            .map(|obj| Message::BotMessage(obj))
+                            .map(Message::BotMessage)
                             .map_err(|e| D::Error::custom(&format!("{}", e)))
                     }
                     "channel_archive" => {
                         ::serde_json::from_value::<MessageChannelArchive>(value.clone())
-                            .map(|obj| Message::ChannelArchive(obj))
+                            .map(Message::ChannelArchive)
                             .map_err(|e| D::Error::custom(&format!("{}", e)))
                     }
                     "channel_join" => {
                         ::serde_json::from_value::<MessageChannelJoin>(value.clone())
-                            .map(|obj| Message::ChannelJoin(obj))
+                            .map(Message::ChannelJoin)
                             .map_err(|e| D::Error::custom(&format!("{}", e)))
                     }
                     "channel_leave" => {
                         ::serde_json::from_value::<MessageChannelLeave>(value.clone())
-                            .map(|obj| Message::ChannelLeave(obj))
+                            .map(Message::ChannelLeave)
                             .map_err(|e| D::Error::custom(&format!("{}", e)))
                     }
                     "channel_name" => {
                         ::serde_json::from_value::<MessageChannelName>(value.clone())
-                            .map(|obj| Message::ChannelName(obj))
+                            .map(Message::ChannelName)
                             .map_err(|e| D::Error::custom(&format!("{}", e)))
                     }
                     "channel_purpose" => {
                         ::serde_json::from_value::<MessageChannelPurpose>(value.clone())
-                            .map(|obj| Message::ChannelPurpose(obj))
+                            .map(Message::ChannelPurpose)
                             .map_err(|e| D::Error::custom(&format!("{}", e)))
                     }
                     "channel_topic" => {
                         ::serde_json::from_value::<MessageChannelTopic>(value.clone())
-                            .map(|obj| Message::ChannelTopic(obj))
+                            .map(Message::ChannelTopic)
                             .map_err(|e| D::Error::custom(&format!("{}", e)))
                     }
                     "channel_unarchive" => {
                         ::serde_json::from_value::<MessageChannelUnarchive>(value.clone())
-                            .map(|obj| Message::ChannelUnarchive(obj))
+                            .map(Message::ChannelUnarchive)
                             .map_err(|e| D::Error::custom(&format!("{}", e)))
                     }
                     "file_comment" => {
                         ::serde_json::from_value::<MessageFileComment>(value.clone())
-                            .map(|obj| Message::FileComment(obj))
+                            .map(Message::FileComment)
                             .map_err(|e| D::Error::custom(&format!("{}", e)))
                     }
                     "file_mention" => {
                         ::serde_json::from_value::<MessageFileMention>(value.clone())
-                            .map(|obj| Message::FileMention(obj))
+                            .map(Message::FileMention)
                             .map_err(|e| D::Error::custom(&format!("{}", e)))
                     }
                     "file_share" => {
                         ::serde_json::from_value::<MessageFileShare>(value.clone())
-                            .map(|obj| Message::FileShare(obj))
+                            .map(Message::FileShare)
                             .map_err(|e| D::Error::custom(&format!("{}", e)))
                     }
                     "group_archive" => {
                         ::serde_json::from_value::<MessageGroupArchive>(value.clone())
-                            .map(|obj| Message::GroupArchive(obj))
+                            .map(Message::GroupArchive)
                             .map_err(|e| D::Error::custom(&format!("{}", e)))
                     }
                     "group_join" => {
                         ::serde_json::from_value::<MessageGroupJoin>(value.clone())
-                            .map(|obj| Message::GroupJoin(obj))
+                            .map(Message::GroupJoin)
                             .map_err(|e| D::Error::custom(&format!("{}", e)))
                     }
                     "group_leave" => {
                         ::serde_json::from_value::<MessageGroupLeave>(value.clone())
-                            .map(|obj| Message::GroupLeave(obj))
+                            .map(Message::GroupLeave)
                             .map_err(|e| D::Error::custom(&format!("{}", e)))
                     }
                     "group_name" => {
                         ::serde_json::from_value::<MessageGroupName>(value.clone())
-                            .map(|obj| Message::GroupName(obj))
+                            .map(Message::GroupName)
                             .map_err(|e| D::Error::custom(&format!("{}", e)))
                     }
                     "group_purpose" => {
                         ::serde_json::from_value::<MessageGroupPurpose>(value.clone())
-                            .map(|obj| Message::GroupPurpose(obj))
+                            .map(Message::GroupPurpose)
                             .map_err(|e| D::Error::custom(&format!("{}", e)))
                     }
                     "group_topic" => {
                         ::serde_json::from_value::<MessageGroupTopic>(value.clone())
-                            .map(|obj| Message::GroupTopic(obj))
+                            .map(Message::GroupTopic)
                             .map_err(|e| D::Error::custom(&format!("{}", e)))
                     }
                     "group_unarchive" => {
                         ::serde_json::from_value::<MessageGroupUnarchive>(value.clone())
-                            .map(|obj| Message::GroupUnarchive(obj))
+                            .map(Message::GroupUnarchive)
                             .map_err(|e| D::Error::custom(&format!("{}", e)))
                     }
                     "me_message" => {
                         ::serde_json::from_value::<MessageMeMessage>(value.clone())
-                            .map(|obj| Message::MeMessage(obj))
+                            .map(Message::MeMessage)
                             .map_err(|e| D::Error::custom(&format!("{}", e)))
                     }
                     "message_changed" => {
                         ::serde_json::from_value::<MessageMessageChanged>(value.clone())
-                            .map(|obj| Message::MessageChanged(obj))
+                            .map(Message::MessageChanged)
                             .map_err(|e| D::Error::custom(&format!("{}", e)))
                     }
                     "message_deleted" => {
                         ::serde_json::from_value::<MessageMessageDeleted>(value.clone())
-                            .map(|obj| Message::MessageDeleted(obj))
+                            .map(Message::MessageDeleted)
                             .map_err(|e| D::Error::custom(&format!("{}", e)))
                     }
                     "message_replied" => {
                         ::serde_json::from_value::<MessageMessageReplied>(value.clone())
-                            .map(|obj| Message::MessageReplied(obj))
+                            .map(Message::MessageReplied)
                             .map_err(|e| D::Error::custom(&format!("{}", e)))
                     }
                     "pinned_item" => {
                         ::serde_json::from_value::<MessagePinnedItem>(value.clone())
-                            .map(|obj| Message::PinnedItem(obj))
+                            .map(Message::PinnedItem)
                             .map_err(|e| D::Error::custom(&format!("{}", e)))
                     }
                     "reply_broadcast" => {
                         ::serde_json::from_value::<MessageReplyBroadcast>(value.clone())
-                            .map(|obj| Message::ReplyBroadcast(obj))
+                            .map(Message::ReplyBroadcast)
                             .map_err(|e| D::Error::custom(&format!("{}", e)))
                     }
                     "unpinned_item" => {
                         ::serde_json::from_value::<MessageUnpinnedItem>(value.clone())
-                            .map(|obj| Message::UnpinnedItem(obj))
+                            .map(Message::UnpinnedItem)
                             .map_err(|e| D::Error::custom(&format!("{}", e)))
                     }
                     _ => Err(D::Error::unknown_variant(ty, VARIANTS)),
@@ -361,9 +361,7 @@ impl<'de> ::serde::Deserialize<'de> for Message {
             }
         } else {
             ::serde_json::from_value::<MessageStandard>(value.clone())
-                .map(|obj| {
-                    Message::Standard(obj)
-                })
+                .map(Message::Standard)
                 .map_err(|e| D::Error::custom(&format!("{}", e)))
         }
     }

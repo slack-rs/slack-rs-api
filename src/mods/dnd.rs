@@ -23,13 +23,9 @@ where
     let url = ::get_slack_url_for_method("dnd.endDnd");
     client
         .send(&url, &params[..])
-        .map_err(|err| EndDndError::Client(err))
+        .map_err(EndDndError::Client)
         .and_then(|result| {
-            serde_json::from_str::<EndDndResponse>(&result).map_err(
-                |e| {
-                    EndDndError::MalformedResponse(e)
-                },
-            )
+            serde_json::from_str::<EndDndResponse>(&result).map_err(EndDndError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }
@@ -177,12 +173,10 @@ where
     let url = ::get_slack_url_for_method("dnd.endSnooze");
     client
         .send(&url, &params[..])
-        .map_err(|err| EndSnoozeError::Client(err))
+        .map_err(EndSnoozeError::Client)
         .and_then(|result| {
             serde_json::from_str::<EndSnoozeResponse>(&result).map_err(
-                |e| {
-                    EndSnoozeError::MalformedResponse(e)
-                },
+                EndSnoozeError::MalformedResponse,
             )
         })
         .and_then(|o| o.into())
@@ -350,11 +344,9 @@ where
     let url = ::get_slack_url_for_method("dnd.info");
     client
         .send(&url, &params[..])
-        .map_err(|err| InfoError::Client(err))
+        .map_err(InfoError::Client)
         .and_then(|result| {
-            serde_json::from_str::<InfoResponse>(&result).map_err(|e| {
-                InfoError::MalformedResponse(e)
-            })
+            serde_json::from_str::<InfoResponse>(&result).map_err(InfoError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }
@@ -517,12 +509,10 @@ where
     let url = ::get_slack_url_for_method("dnd.setSnooze");
     client
         .send(&url, &params[..])
-        .map_err(|err| SetSnoozeError::Client(err))
+        .map_err(SetSnoozeError::Client)
         .and_then(|result| {
             serde_json::from_str::<SetSnoozeResponse>(&result).map_err(
-                |e| {
-                    SetSnoozeError::MalformedResponse(e)
-                },
+                SetSnoozeError::MalformedResponse,
             )
         })
         .and_then(|o| o.into())
@@ -695,12 +685,10 @@ where
     let url = ::get_slack_url_for_method("dnd.teamInfo");
     client
         .send(&url, &params[..])
-        .map_err(|err| TeamInfoError::Client(err))
+        .map_err(TeamInfoError::Client)
         .and_then(|result| {
             serde_json::from_str::<TeamInfoResponse>(&result).map_err(
-                |e| {
-                    TeamInfoError::MalformedResponse(e)
-                },
+                TeamInfoError::MalformedResponse,
             )
         })
         .and_then(|o| o.into())
