@@ -25,7 +25,7 @@ impl Module {
             use ::requests::SlackWebRequestSender;
 
             {methods}",
-            docs = self.description.as_ref().map(|d| format_docs("//!", &d)).unwrap_or(String::new()),
+            docs = self.description.as_ref().map(|d| format_docs("//!", d)).unwrap_or_default(),
             methods = self.methods
                 .iter()
                 .map(Method::generate)
@@ -134,7 +134,7 @@ impl Method {
                 send_call = send_call
             )
         } else {
-            let has_token = self.params.iter().find(|p| p.ty == "auth_token").is_some();
+            let has_token = self.params.iter().any(|p| p.ty == "auth_token");
             let method_params = if has_token {
                 format!("client: &R, token: &str, request: &{}", request_struct_name)
             } else {
@@ -211,15 +211,15 @@ pub trait Okable {
 
 impl Okable for JsonObject {
     fn has_ok(&self) -> bool {
-        self.fields.iter().find(|f| f.name == "ok").is_some()
+        self.fields.iter().any(|f| f.name == "ok")
     }
 }
 
 impl Okable for JsonEnum {
     fn has_ok(&self) -> bool {
-        self.variants.iter().all(|v| match &v.inner {
-            &PropType::Obj(ref o) => o.has_ok(),
-            &PropType::Enum(ref e) => e.has_ok(),
+        self.variants.iter().all(|v| match v.inner {
+            PropType::Obj(ref o) => o.has_ok(),
+            PropType::Enum(ref e) => e.has_ok(),
             _ => false
         })
     }
@@ -235,7 +235,7 @@ fn generate_matches<F>(enm: &JsonEnum, var_name: &str, f: F) -> Vec<String>
                 "{variant}({var_name}) => {body},",
                 variant = v.qualified_name,
                 var_name = var_name,
-                body = f(&v)
+                body = f(v)
             )
         })
         .collect()
@@ -271,7 +271,7 @@ fn get_enum_to_response_impl(enm: &JsonEnum, error_type: &str) -> Option<String>
                     }}
                 }}
             }}
-            
+
             {inner_impls}",
             error_ty = error_type,
             name = enm.name,
@@ -279,9 +279,9 @@ fn get_enum_to_response_impl(enm: &JsonEnum, error_type: &str) -> Option<String>
                 format!("{{ let x: Result<{}, {}<E>> = inner.into(); x.map(|r| {}(r)) }}", enm.name.clone() + &v.name, error_type, v.qualified_name)
             }).join("\n"),
             inner_impls = enm.variants.iter()
-                .map(|v| match &v.inner {
-                    &PropType::Obj(ref o) => get_obj_to_response_impl(o, error_type).expect("Top-level enum inner object did not have \"ok\" field."),
-                    &PropType::Enum(ref e) => get_enum_to_response_impl(e, error_type).expect("Top-level enum inner variant did not have \"ok\" field."),
+                .map(|v| match v.inner {
+                    PropType::Obj(ref o) => get_obj_to_response_impl(o, error_type).expect("Top-level enum inner object did not have \"ok\" field."),
+                    PropType::Enum(ref e) => get_enum_to_response_impl(e, error_type).expect("Top-level enum inner variant did not have \"ok\" field."),
                     _ => panic!("Top-level enum is does not contain a type that can have an \"ok\" field.")
                 })
                 .collect::<Vec<_>>()
@@ -321,7 +321,7 @@ impl Response {
             {slack_result}
             {errors}",
             objs = objs,
-            slack_result = to_result.unwrap_or("".into()),
+            slack_result = to_result.unwrap_or_default(),
             errors = self.get_error_enum(error_ty),
         )
     }
@@ -342,7 +342,7 @@ impl Response {
                 /// The client had an error sending the request to Slack
                 Client(E)
             }}
-            
+
             impl<'a, E: Error> From<&'a str> for {error_type}<E> {{
                 fn from(s: &'a str) -> Self {{
                     match s {{
@@ -357,7 +357,7 @@ impl Response {
                      write!(f, \"{{}}\", self.description())
                 }}
             }}
-            
+
             impl<E: Error> Error for {error_type}<E> {{
                 fn description(&self) -> &str {{
                     match self {{
@@ -475,9 +475,9 @@ impl Param {
             _ => "&'a str",
         };
         if self.optional {
-            return format!("Option<{}>", ty);
+            format!("Option<{}>", ty)
         } else {
-            return ty.to_owned();
+            ty.to_owned()
         }
     }
 }
@@ -486,7 +486,7 @@ impl JsonObjectFieldInfo {
     pub fn to_code(&self) -> String {
         let mut prefix = String::new();
 
-        if let Some(ref path) = self.deserialize_with {
+        if let Some(path) = self.deserialize_with {
             prefix.push_str(&format!("#[serde(deserialize_with = \"{}\")]\n", path));
         }
 
@@ -499,7 +499,7 @@ impl JsonObjectFieldInfo {
         } else if self.name != "error" && self.name != "ok" {
             prefix.push_str("pub");
         };
-        
+
         if let Some(ref rename) = self.rename {
             format!(
                 "#[serde(rename = \"{}\")]\n{} {}: {},",
@@ -534,7 +534,7 @@ impl JsonEnum {
         } else {
             ("type", "Err(D::Error::missing_field(\"type\"))")
         };
-        
+
         let mut subobjs = self.variants.clone();
 
         subobjs.sort_by_key(|v| v.name.clone());
@@ -608,12 +608,12 @@ impl JsonEnum {
 }
 
 fn obj_recur(prop: &PropType) -> Vec<String> {
-    match prop {
-        &PropType::Obj(ref o) => vec![o.to_code()],
-        &PropType::Arr(ref prop) => obj_recur(prop),
-        &PropType::Map(ref prop) => obj_recur(prop),
-        &PropType::Optional(ref prop) => obj_recur(prop),
-        &PropType::Enum(ref e) => vec![e.to_code()],
+    match *prop {
+        PropType::Obj(ref o) => vec![o.to_code()],
+        PropType::Arr(ref prop) |
+        PropType::Map(ref prop) |
+        PropType::Optional(ref prop) => obj_recur(prop),
+        PropType::Enum(ref e) => vec![e.to_code()],
         _ => vec![],
     }
 }

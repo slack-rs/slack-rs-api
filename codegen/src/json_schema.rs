@@ -91,7 +91,7 @@ impl PropType {
                     .map(|o| {
                         // TODO: Have this just check title. id is not reliable
                         let variant_name =
-                            o.title.as_ref().or(o.id.as_ref()).unwrap().to_pascal_case();
+                            o.title.as_ref().or_else(|| o.id.as_ref()).unwrap().to_pascal_case();
                         let obj_name = name.to_owned() + &variant_name;
                         JsonEnumVariant {
                             name: variant_name.clone(),
@@ -125,7 +125,7 @@ impl PropType {
             Some("object") => {
                 if let Some(ref pp) = schema.pattern_properties {
                     let subobj_schema = pp.iter().next().unwrap().1;
-                    let subobj = Self::from_schema(&subobj_schema, &name);
+                    let subobj = Self::from_schema(subobj_schema, name);
                     PropType::Map(Box::new(subobj))
                 } else {
                     PropType::Obj(schema.properties
@@ -144,7 +144,7 @@ impl PropType {
                                     };
                                     let field_ty_name = name.to_owned() +
                                                         &orig_name.to_pascal_case();
-                                    let mut ty = Self::from_schema(&p, &field_ty_name);
+                                    let mut ty = Self::from_schema(p, &field_ty_name);
                                     if let Some(ref req) = schema.required {
                                         if !req.contains(orig_name) {
                                             ty = PropType::Optional(Box::new(ty));
