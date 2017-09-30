@@ -34,13 +34,9 @@ where
     let url = ::get_slack_url_for_method("oauth.access");
     client
         .send(&url, &params[..])
-        .map_err(|err| AccessError::Client(err))
+        .map_err(AccessError::Client)
         .and_then(|result| {
-            serde_json::from_str::<AccessResponse>(&result).map_err(
-                |e| {
-                    AccessError::MalformedResponse(e)
-                },
-            )
+            serde_json::from_str::<AccessResponse>(&result).map_err(AccessError::MalformedResponse)
         })
 }
 

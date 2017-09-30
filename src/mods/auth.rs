@@ -33,13 +33,9 @@ where
     let url = ::get_slack_url_for_method("auth.revoke");
     client
         .send(&url, &params[..])
-        .map_err(|err| RevokeError::Client(err))
+        .map_err(RevokeError::Client)
         .and_then(|result| {
-            serde_json::from_str::<RevokeResponse>(&result).map_err(
-                |e| {
-                    RevokeError::MalformedResponse(e)
-                },
-            )
+            serde_json::from_str::<RevokeResponse>(&result).map_err(RevokeError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }
@@ -184,11 +180,9 @@ where
     let url = ::get_slack_url_for_method("auth.test");
     client
         .send(&url, &params[..])
-        .map_err(|err| TestError::Client(err))
+        .map_err(TestError::Client)
         .and_then(|result| {
-            serde_json::from_str::<TestResponse>(&result).map_err(|e| {
-                TestError::MalformedResponse(e)
-            })
+            serde_json::from_str::<TestResponse>(&result).map_err(TestError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }

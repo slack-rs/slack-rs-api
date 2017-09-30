@@ -34,11 +34,9 @@ where
     let url = ::get_slack_url_for_method("usergroups.users.list");
     client
         .send(&url, &params[..])
-        .map_err(|err| ListError::Client(err))
+        .map_err(ListError::Client)
         .and_then(|result| {
-            serde_json::from_str::<ListResponse>(&result).map_err(|e| {
-                ListError::MalformedResponse(e)
-            })
+            serde_json::from_str::<ListResponse>(&result).map_err(ListError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }
@@ -208,13 +206,9 @@ where
     let url = ::get_slack_url_for_method("usergroups.users.update");
     client
         .send(&url, &params[..])
-        .map_err(|err| UpdateError::Client(err))
+        .map_err(UpdateError::Client)
         .and_then(|result| {
-            serde_json::from_str::<UpdateResponse>(&result).map_err(
-                |e| {
-                    UpdateError::MalformedResponse(e)
-                },
-            )
+            serde_json::from_str::<UpdateResponse>(&result).map_err(UpdateError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }

@@ -32,9 +32,9 @@ where
     let url = ::get_slack_url_for_method("files.comments.add");
     client
         .send(&url, &params[..])
-        .map_err(|err| AddError::Client(err))
+        .map_err(AddError::Client)
         .and_then(|result| {
-            serde_json::from_str::<AddResponse>(&result).map_err(|e| AddError::MalformedResponse(e))
+            serde_json::from_str::<AddResponse>(&result).map_err(AddError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }
@@ -203,13 +203,9 @@ where
     let url = ::get_slack_url_for_method("files.comments.delete");
     client
         .send(&url, &params[..])
-        .map_err(|err| DeleteError::Client(err))
+        .map_err(DeleteError::Client)
         .and_then(|result| {
-            serde_json::from_str::<DeleteResponse>(&result).map_err(
-                |e| {
-                    DeleteError::MalformedResponse(e)
-                },
-            )
+            serde_json::from_str::<DeleteResponse>(&result).map_err(DeleteError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }
@@ -378,11 +374,9 @@ where
     let url = ::get_slack_url_for_method("files.comments.edit");
     client
         .send(&url, &params[..])
-        .map_err(|err| EditError::Client(err))
+        .map_err(EditError::Client)
         .and_then(|result| {
-            serde_json::from_str::<EditResponse>(&result).map_err(|e| {
-                EditError::MalformedResponse(e)
-            })
+            serde_json::from_str::<EditResponse>(&result).map_err(EditError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }

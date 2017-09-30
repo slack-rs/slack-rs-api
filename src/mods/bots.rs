@@ -28,11 +28,9 @@ where
     let url = ::get_slack_url_for_method("bots.info");
     client
         .send(&url, &params[..])
-        .map_err(|err| InfoError::Client(err))
+        .map_err(InfoError::Client)
         .and_then(|result| {
-            serde_json::from_str::<InfoResponse>(&result).map_err(|e| {
-                InfoError::MalformedResponse(e)
-            })
+            serde_json::from_str::<InfoResponse>(&result).map_err(InfoError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }

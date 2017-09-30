@@ -22,12 +22,10 @@ where
     let url = ::get_slack_url_for_method("rtm.connect");
     client
         .send(&url, &params[..])
-        .map_err(|err| ConnectError::Client(err))
+        .map_err(ConnectError::Client)
         .and_then(|result| {
             serde_json::from_str::<ConnectResponse>(&result).map_err(
-                |e| {
-                    ConnectError::MalformedResponse(e)
-                },
+                ConnectError::MalformedResponse,
             )
         })
         .and_then(|o| o.into())
@@ -203,13 +201,9 @@ where
     let url = ::get_slack_url_for_method("rtm.start");
     client
         .send(&url, &params[..])
-        .map_err(|err| StartError::Client(err))
+        .map_err(StartError::Client)
         .and_then(|result| {
-            serde_json::from_str::<StartResponse>(&result).map_err(
-                |e| {
-                    StartError::MalformedResponse(e)
-                },
-            )
+            serde_json::from_str::<StartResponse>(&result).map_err(StartError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }

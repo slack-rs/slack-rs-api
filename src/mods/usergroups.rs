@@ -40,13 +40,9 @@ where
     let url = ::get_slack_url_for_method("usergroups.create");
     client
         .send(&url, &params[..])
-        .map_err(|err| CreateError::Client(err))
+        .map_err(CreateError::Client)
         .and_then(|result| {
-            serde_json::from_str::<CreateResponse>(&result).map_err(
-                |e| {
-                    CreateError::MalformedResponse(e)
-                },
-            )
+            serde_json::from_str::<CreateResponse>(&result).map_err(CreateError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }
@@ -221,12 +217,10 @@ where
     let url = ::get_slack_url_for_method("usergroups.disable");
     client
         .send(&url, &params[..])
-        .map_err(|err| DisableError::Client(err))
+        .map_err(DisableError::Client)
         .and_then(|result| {
             serde_json::from_str::<DisableResponse>(&result).map_err(
-                |e| {
-                    DisableError::MalformedResponse(e)
-                },
+                DisableError::MalformedResponse,
             )
         })
         .and_then(|o| o.into())
@@ -396,13 +390,9 @@ where
     let url = ::get_slack_url_for_method("usergroups.enable");
     client
         .send(&url, &params[..])
-        .map_err(|err| EnableError::Client(err))
+        .map_err(EnableError::Client)
         .and_then(|result| {
-            serde_json::from_str::<EnableResponse>(&result).map_err(
-                |e| {
-                    EnableError::MalformedResponse(e)
-                },
-            )
+            serde_json::from_str::<EnableResponse>(&result).map_err(EnableError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }
@@ -576,11 +566,9 @@ where
     let url = ::get_slack_url_for_method("usergroups.list");
     client
         .send(&url, &params[..])
-        .map_err(|err| ListError::Client(err))
+        .map_err(ListError::Client)
         .and_then(|result| {
-            serde_json::from_str::<ListResponse>(&result).map_err(|e| {
-                ListError::MalformedResponse(e)
-            })
+            serde_json::from_str::<ListResponse>(&result).map_err(ListError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }
@@ -757,13 +745,9 @@ where
     let url = ::get_slack_url_for_method("usergroups.update");
     client
         .send(&url, &params[..])
-        .map_err(|err| UpdateError::Client(err))
+        .map_err(UpdateError::Client)
         .and_then(|result| {
-            serde_json::from_str::<UpdateResponse>(&result).map_err(
-                |e| {
-                    UpdateError::MalformedResponse(e)
-                },
-            )
+            serde_json::from_str::<UpdateResponse>(&result).map_err(UpdateError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }

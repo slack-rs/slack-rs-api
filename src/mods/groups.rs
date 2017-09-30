@@ -29,12 +29,10 @@ where
     let url = ::get_slack_url_for_method("groups.archive");
     client
         .send(&url, &params[..])
-        .map_err(|err| ArchiveError::Client(err))
+        .map_err(ArchiveError::Client)
         .and_then(|result| {
             serde_json::from_str::<ArchiveResponse>(&result).map_err(
-                |e| {
-                    ArchiveError::MalformedResponse(e)
-                },
+                ArchiveError::MalformedResponse,
             )
         })
         .and_then(|o| o.into())
@@ -217,13 +215,9 @@ where
     let url = ::get_slack_url_for_method("groups.close");
     client
         .send(&url, &params[..])
-        .map_err(|err| CloseError::Client(err))
+        .map_err(CloseError::Client)
         .and_then(|result| {
-            serde_json::from_str::<CloseResponse>(&result).map_err(
-                |e| {
-                    CloseError::MalformedResponse(e)
-                },
-            )
+            serde_json::from_str::<CloseResponse>(&result).map_err(CloseError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }
@@ -385,13 +379,9 @@ where
     let url = ::get_slack_url_for_method("groups.create");
     client
         .send(&url, &params[..])
-        .map_err(|err| CreateError::Client(err))
+        .map_err(CreateError::Client)
         .and_then(|result| {
-            serde_json::from_str::<CreateResponse>(&result).map_err(
-                |e| {
-                    CreateError::MalformedResponse(e)
-                },
-            )
+            serde_json::from_str::<CreateResponse>(&result).map_err(CreateError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }
@@ -596,10 +586,10 @@ where
     let url = ::get_slack_url_for_method("groups.createChild");
     client
         .send(&url, &params[..])
-        .map_err(|err| CreateChildError::Client(err))
+        .map_err(CreateChildError::Client)
         .and_then(|result| {
             serde_json::from_str::<CreateChildResponse>(&result)
-                .map_err(|e| CreateChildError::MalformedResponse(e))
+                .map_err(CreateChildError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }
@@ -792,12 +782,10 @@ where
     let url = ::get_slack_url_for_method("groups.history");
     client
         .send(&url, &params[..])
-        .map_err(|err| HistoryError::Client(err))
+        .map_err(HistoryError::Client)
         .and_then(|result| {
             serde_json::from_str::<HistoryResponse>(&result).map_err(
-                |e| {
-                    HistoryError::MalformedResponse(e)
-                },
+                HistoryError::MalformedResponse,
             )
         })
         .and_then(|o| o.into())
@@ -979,11 +967,9 @@ where
     let url = ::get_slack_url_for_method("groups.info");
     client
         .send(&url, &params[..])
-        .map_err(|err| InfoError::Client(err))
+        .map_err(InfoError::Client)
         .and_then(|result| {
-            serde_json::from_str::<InfoResponse>(&result).map_err(|e| {
-                InfoError::MalformedResponse(e)
-            })
+            serde_json::from_str::<InfoResponse>(&result).map_err(InfoError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }
@@ -1144,13 +1130,9 @@ where
     let url = ::get_slack_url_for_method("groups.invite");
     client
         .send(&url, &params[..])
-        .map_err(|err| InviteError::Client(err))
+        .map_err(InviteError::Client)
         .and_then(|result| {
-            serde_json::from_str::<InviteResponse>(&result).map_err(
-                |e| {
-                    InviteError::MalformedResponse(e)
-                },
-            )
+            serde_json::from_str::<InviteResponse>(&result).map_err(InviteError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }
@@ -1347,11 +1329,9 @@ where
     let url = ::get_slack_url_for_method("groups.kick");
     client
         .send(&url, &params[..])
-        .map_err(|err| KickError::Client(err))
+        .map_err(KickError::Client)
         .and_then(|result| {
-            serde_json::from_str::<KickResponse>(&result).map_err(|e| {
-                KickError::MalformedResponse(e)
-            })
+            serde_json::from_str::<KickResponse>(&result).map_err(KickError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }
@@ -1537,13 +1517,9 @@ where
     let url = ::get_slack_url_for_method("groups.leave");
     client
         .send(&url, &params[..])
-        .map_err(|err| LeaveError::Client(err))
+        .map_err(LeaveError::Client)
         .and_then(|result| {
-            serde_json::from_str::<LeaveResponse>(&result).map_err(
-                |e| {
-                    LeaveError::MalformedResponse(e)
-                },
-            )
+            serde_json::from_str::<LeaveResponse>(&result).map_err(LeaveError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }
@@ -1718,11 +1694,9 @@ where
     let url = ::get_slack_url_for_method("groups.list");
     client
         .send(&url, &params[..])
-        .map_err(|err| ListError::Client(err))
+        .map_err(ListError::Client)
         .and_then(|result| {
-            serde_json::from_str::<ListResponse>(&result).map_err(|e| {
-                ListError::MalformedResponse(e)
-            })
+            serde_json::from_str::<ListResponse>(&result).map_err(ListError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }
@@ -1877,11 +1851,9 @@ where
     let url = ::get_slack_url_for_method("groups.mark");
     client
         .send(&url, &params[..])
-        .map_err(|err| MarkError::Client(err))
+        .map_err(MarkError::Client)
         .and_then(|result| {
-            serde_json::from_str::<MarkResponse>(&result).map_err(|e| {
-                MarkError::MalformedResponse(e)
-            })
+            serde_json::from_str::<MarkResponse>(&result).map_err(MarkError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }
@@ -2045,11 +2017,9 @@ where
     let url = ::get_slack_url_for_method("groups.open");
     client
         .send(&url, &params[..])
-        .map_err(|err| OpenError::Client(err))
+        .map_err(OpenError::Client)
         .and_then(|result| {
-            serde_json::from_str::<OpenResponse>(&result).map_err(|e| {
-                OpenError::MalformedResponse(e)
-            })
+            serde_json::from_str::<OpenResponse>(&result).map_err(OpenError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }
@@ -2212,13 +2182,9 @@ where
     let url = ::get_slack_url_for_method("groups.rename");
     client
         .send(&url, &params[..])
-        .map_err(|err| RenameError::Client(err))
+        .map_err(RenameError::Client)
         .and_then(|result| {
-            serde_json::from_str::<RenameResponse>(&result).map_err(
-                |e| {
-                    RenameError::MalformedResponse(e)
-                },
-            )
+            serde_json::from_str::<RenameResponse>(&result).map_err(RenameError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }
@@ -2433,12 +2399,10 @@ where
     let url = ::get_slack_url_for_method("groups.replies");
     client
         .send(&url, &params[..])
-        .map_err(|err| RepliesError::Client(err))
+        .map_err(RepliesError::Client)
         .and_then(|result| {
             serde_json::from_str::<RepliesResponse>(&result).map_err(
-                |e| {
-                    RepliesError::MalformedResponse(e)
-                },
+                RepliesError::MalformedResponse,
             )
         })
         .and_then(|o| o.into())
@@ -2613,10 +2577,10 @@ where
     let url = ::get_slack_url_for_method("groups.setPurpose");
     client
         .send(&url, &params[..])
-        .map_err(|err| SetPurposeError::Client(err))
+        .map_err(SetPurposeError::Client)
         .and_then(|result| {
             serde_json::from_str::<SetPurposeResponse>(&result)
-                .map_err(|e| SetPurposeError::MalformedResponse(e))
+                .map_err(SetPurposeError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }
@@ -2793,12 +2757,10 @@ where
     let url = ::get_slack_url_for_method("groups.setTopic");
     client
         .send(&url, &params[..])
-        .map_err(|err| SetTopicError::Client(err))
+        .map_err(SetTopicError::Client)
         .and_then(|result| {
             serde_json::from_str::<SetTopicResponse>(&result).map_err(
-                |e| {
-                    SetTopicError::MalformedResponse(e)
-                },
+                SetTopicError::MalformedResponse,
             )
         })
         .and_then(|o| o.into())
@@ -2972,12 +2934,10 @@ where
     let url = ::get_slack_url_for_method("groups.unarchive");
     client
         .send(&url, &params[..])
-        .map_err(|err| UnarchiveError::Client(err))
+        .map_err(UnarchiveError::Client)
         .and_then(|result| {
             serde_json::from_str::<UnarchiveResponse>(&result).map_err(
-                |e| {
-                    UnarchiveError::MalformedResponse(e)
-                },
+                UnarchiveError::MalformedResponse,
             )
         })
         .and_then(|o| o.into())

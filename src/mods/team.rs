@@ -35,10 +35,10 @@ where
     let url = ::get_slack_url_for_method("team.accessLogs");
     client
         .send(&url, &params[..])
-        .map_err(|err| AccessLogsError::Client(err))
+        .map_err(AccessLogsError::Client)
         .and_then(|result| {
             serde_json::from_str::<AccessLogsResponse>(&result)
-                .map_err(|e| AccessLogsError::MalformedResponse(e))
+                .map_err(AccessLogsError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }
@@ -227,10 +227,10 @@ where
     let url = ::get_slack_url_for_method("team.billableInfo");
     client
         .send(&url, &params[..])
-        .map_err(|err| BillableInfoError::Client(err))
+        .map_err(BillableInfoError::Client)
         .and_then(|result| {
             serde_json::from_str::<BillableInfoResponse>(&result)
-                .map_err(|e| BillableInfoError::MalformedResponse(e))
+                .map_err(BillableInfoError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }
@@ -385,11 +385,9 @@ where
     let url = ::get_slack_url_for_method("team.info");
     client
         .send(&url, &params[..])
-        .map_err(|err| InfoError::Client(err))
+        .map_err(InfoError::Client)
         .and_then(|result| {
-            serde_json::from_str::<InfoResponse>(&result).map_err(|e| {
-                InfoError::MalformedResponse(e)
-            })
+            serde_json::from_str::<InfoResponse>(&result).map_err(InfoError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }
@@ -547,10 +545,10 @@ where
     let url = ::get_slack_url_for_method("team.integrationLogs");
     client
         .send(&url, &params[..])
-        .map_err(|err| IntegrationLogsError::Client(err))
+        .map_err(IntegrationLogsError::Client)
         .and_then(|result| {
             serde_json::from_str::<IntegrationLogsResponse>(&result)
-                .map_err(|e| IntegrationLogsError::MalformedResponse(e))
+                .map_err(IntegrationLogsError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }

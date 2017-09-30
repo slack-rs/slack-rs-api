@@ -36,13 +36,9 @@ where
     let url = ::get_slack_url_for_method("chat.delete");
     client
         .send(&url, &params[..])
-        .map_err(|err| DeleteError::Client(err))
+        .map_err(DeleteError::Client)
         .and_then(|result| {
-            serde_json::from_str::<DeleteResponse>(&result).map_err(
-                |e| {
-                    DeleteError::MalformedResponse(e)
-                },
-            )
+            serde_json::from_str::<DeleteResponse>(&result).map_err(DeleteError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }
@@ -226,12 +222,10 @@ where
     let url = ::get_slack_url_for_method("chat.meMessage");
     client
         .send(&url, &params[..])
-        .map_err(|err| MeMessageError::Client(err))
+        .map_err(MeMessageError::Client)
         .and_then(|result| {
             serde_json::from_str::<MeMessageResponse>(&result).map_err(
-                |e| {
-                    MeMessageError::MalformedResponse(e)
-                },
+                MeMessageError::MalformedResponse,
             )
         })
         .and_then(|o| o.into())
@@ -445,10 +439,10 @@ where
     let url = ::get_slack_url_for_method("chat.postMessage");
     client
         .send(&url, &params[..])
-        .map_err(|err| PostMessageError::Client(err))
+        .map_err(PostMessageError::Client)
         .and_then(|result| {
             serde_json::from_str::<PostMessageResponse>(&result)
-                .map_err(|e| PostMessageError::MalformedResponse(e))
+                .map_err(PostMessageError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }
@@ -672,13 +666,9 @@ where
     let url = ::get_slack_url_for_method("chat.unfurl");
     client
         .send(&url, &params[..])
-        .map_err(|err| UnfurlError::Client(err))
+        .map_err(UnfurlError::Client)
         .and_then(|result| {
-            serde_json::from_str::<UnfurlResponse>(&result).map_err(
-                |e| {
-                    UnfurlError::MalformedResponse(e)
-                },
-            )
+            serde_json::from_str::<UnfurlResponse>(&result).map_err(UnfurlError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }
@@ -853,13 +843,9 @@ where
     let url = ::get_slack_url_for_method("chat.update");
     client
         .send(&url, &params[..])
-        .map_err(|err| UpdateError::Client(err))
+        .map_err(UpdateError::Client)
         .and_then(|result| {
-            serde_json::from_str::<UpdateResponse>(&result).map_err(
-                |e| {
-                    UpdateError::MalformedResponse(e)
-                },
-            )
+            serde_json::from_str::<UpdateResponse>(&result).map_err(UpdateError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }

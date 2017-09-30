@@ -68,10 +68,10 @@ impl Method {
             let mut base_call = format!("\
                 let url = ::get_slack_url_for_method(\"{name}\");
                 client.send(&url, &params[..])
-                    .map_err(|err| {error_type}::Client(err))
+                    .map_err({error_type}::Client)
                     .and_then(|result| {{
                         serde_json::from_str::<{response_type}>(&result)
-                            .map_err(|e| {error_type}::MalformedResponse(e))
+                            .map_err({error_type}::MalformedResponse)
                     }})",
                 name = self.name,
                 response_type = response_struct_name,
@@ -276,7 +276,7 @@ fn get_enum_to_response_impl(enm: &JsonEnum, error_type: &str) -> Option<String>
             error_ty = error_type,
             name = enm.name,
             matches = generate_matches(enm, "inner", |v| {
-                format!("{{ let x: Result<{}, {}<E>> = inner.into(); x.map(|r| {}(r)) }}", enm.name.clone() + &v.name, error_type, v.qualified_name)
+                format!("{{ let x: Result<{}, {}<E>> = inner.into(); x.map({}) }}", enm.name.clone() + &v.name, error_type, v.qualified_name)
             }).join("\n"),
             inner_impls = enm.variants.iter()
                 .map(|v| match v.inner {
@@ -528,9 +528,9 @@ impl JsonEnum {
     pub fn to_code(&self) -> String {
         // Hack to work around message having a different identifier here
         let (variant_field, on_missing_field) = if self.name == "Message" {
-            ("subtype", "::serde_json::from_value::<MessageStandard>(value.clone()).map(|obj| {{
-                Message::Standard(obj)
-            }}).map_err(|e| D::Error::custom(&format!(\"{}\", e)))")
+            ("subtype", "::serde_json::from_value::<MessageStandard>(value.clone())
+               .map(Message::Standard)
+               .map_err(|e| D::Error::custom(&format!(\"{}\", e)))")
         } else {
             ("type", "Err(D::Error::missing_field(\"type\"))")
         };
@@ -590,9 +590,9 @@ impl JsonEnum {
                 .iter()
                 .map(|v| format!("\
                     \"{type_name}\" => {{
-                        ::serde_json::from_value::<{variant_type}>(value.clone()).map(|obj| {{
-                            {variant_name}(obj)
-                        }}).map_err(|e| D::Error::custom(&format!(\"{{}}\", e)))
+                        ::serde_json::from_value::<{variant_type}>(value.clone())
+                           .map({variant_name})
+                           .map_err(|e| D::Error::custom(&format!(\"{{}}\", e)))
                     }}",
                     type_name = v.name.to_snake_case(),
                     variant_type = v.inner.to_rs_type(),

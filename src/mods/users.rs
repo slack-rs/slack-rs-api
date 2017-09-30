@@ -26,10 +26,10 @@ where
     let url = ::get_slack_url_for_method("users.deletePhoto");
     client
         .send(&url, &params[..])
-        .map_err(|err| DeletePhotoError::Client(err))
+        .map_err(DeletePhotoError::Client)
         .and_then(|result| {
             serde_json::from_str::<DeletePhotoResponse>(&result)
-                .map_err(|e| DeletePhotoError::MalformedResponse(e))
+                .map_err(DeletePhotoError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }
@@ -179,10 +179,10 @@ where
     let url = ::get_slack_url_for_method("users.getPresence");
     client
         .send(&url, &params[..])
-        .map_err(|err| GetPresenceError::Client(err))
+        .map_err(GetPresenceError::Client)
         .and_then(|result| {
             serde_json::from_str::<GetPresenceResponse>(&result)
-                .map_err(|e| GetPresenceError::MalformedResponse(e))
+                .map_err(GetPresenceError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }
@@ -327,12 +327,10 @@ where
     let url = ::get_slack_url_for_method("users.identity");
     client
         .send(&url, &params[..])
-        .map_err(|err| IdentityError::Client(err))
+        .map_err(IdentityError::Client)
         .and_then(|result| {
             serde_json::from_str::<IdentityResponse>(&result).map_err(
-                |e| {
-                    IdentityError::MalformedResponse(e)
-                },
+                IdentityError::MalformedResponse,
             )
         })
         .and_then(|o| o.into())
@@ -483,11 +481,9 @@ where
     let url = ::get_slack_url_for_method("users.info");
     client
         .send(&url, &params[..])
-        .map_err(|err| InfoError::Client(err))
+        .map_err(InfoError::Client)
         .and_then(|result| {
-            serde_json::from_str::<InfoResponse>(&result).map_err(|e| {
-                InfoError::MalformedResponse(e)
-            })
+            serde_json::from_str::<InfoResponse>(&result).map_err(InfoError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }
@@ -653,11 +649,9 @@ where
     let url = ::get_slack_url_for_method("users.list");
     client
         .send(&url, &params[..])
-        .map_err(|err| ListError::Client(err))
+        .map_err(ListError::Client)
         .and_then(|result| {
-            serde_json::from_str::<ListResponse>(&result).map_err(|e| {
-                ListError::MalformedResponse(e)
-            })
+            serde_json::from_str::<ListResponse>(&result).map_err(ListError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }
@@ -802,12 +796,10 @@ where
     let url = ::get_slack_url_for_method("users.setActive");
     client
         .send(&url, &params[..])
-        .map_err(|err| SetActiveError::Client(err))
+        .map_err(SetActiveError::Client)
         .and_then(|result| {
             serde_json::from_str::<SetActiveResponse>(&result).map_err(
-                |e| {
-                    SetActiveError::MalformedResponse(e)
-                },
+                SetActiveError::MalformedResponse,
             )
         })
         .and_then(|o| o.into())
@@ -953,10 +945,10 @@ where
     let url = ::get_slack_url_for_method("users.setPresence");
     client
         .send(&url, &params[..])
-        .map_err(|err| SetPresenceError::Client(err))
+        .map_err(SetPresenceError::Client)
         .and_then(|result| {
             serde_json::from_str::<SetPresenceResponse>(&result)
-                .map_err(|e| SetPresenceError::MalformedResponse(e))
+                .map_err(SetPresenceError::MalformedResponse)
         })
         .and_then(|o| o.into())
 }
