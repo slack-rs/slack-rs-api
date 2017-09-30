@@ -28,7 +28,7 @@ mod reqwest_support {
         type Error = reqwest::Error;
 
         fn send(&self, method_url: &str, params: &[(&str, &str)]) -> Result<String, Self::Error> {
-            let mut url = reqwest::Url::parse(&method_url).expect("Unable to parse url");
+            let mut url = reqwest::Url::parse(method_url).expect("Unable to parse url");
 
             url.query_pairs_mut().extend_pairs(params);
 
