@@ -360,18 +360,18 @@ impl Response {
 
             impl<E: Error> Error for {error_type}<E> {{
                 fn description(&self) -> &str {{
-                    match self {{
+                    match *self {{
                         {description_matches}
-                        &{error_type}::MalformedResponse(ref e) => e.description(),
-                        &{error_type}::Unknown(ref s) => s,
-                        &{error_type}::Client(ref inner) => inner.description()
+                        {error_type}::MalformedResponse(ref e) => e.description(),
+                        {error_type}::Unknown(ref s) => s,
+                        {error_type}::Client(ref inner) => inner.description()
                     }}
                 }}
 
                 fn cause(&self) -> Option<&Error> {{
-                    match self {{
-                        &{error_type}::MalformedResponse(ref e) => Some(e),
-                        &{error_type}::Client(ref inner) => Some(inner),
+                    match *self {{
+                        {error_type}::MalformedResponse(ref e) => Some(e),
+                        {error_type}::Client(ref inner) => Some(inner),
                         _ => None
                     }}
                 }}
@@ -404,7 +404,7 @@ impl Response {
                 .iter()
                 .map(|e| {
                     format!(
-                        "&{error_ty}::{ty_name} => \"{str_name}: {description}\",",
+                        "{error_ty}::{ty_name} => \"{str_name}: {description}\",",
                         error_ty = error_ty,
                         str_name = e.name,
                         description = e.description,

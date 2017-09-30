@@ -158,47 +158,47 @@ impl<E: Error> fmt::Display for AllError<E> {
 
 impl<E: Error> Error for AllError<E> {
     fn description(&self) -> &str {
-        match self {
-            &AllError::NotAuthed => "not_authed: No authentication token provided.",
-            &AllError::InvalidAuth => "invalid_auth: Invalid authentication token.",
-            &AllError::AccountInactive => {
+        match *self {
+            AllError::NotAuthed => "not_authed: No authentication token provided.",
+            AllError::InvalidAuth => "invalid_auth: Invalid authentication token.",
+            AllError::AccountInactive => {
                 "account_inactive: Authentication token is for a deleted user or team."
             }
-            &AllError::UserIsBot => "user_is_bot: This method cannot be called by a bot user.",
-            &AllError::InvalidArgName => {
+            AllError::UserIsBot => "user_is_bot: This method cannot be called by a bot user.",
+            AllError::InvalidArgName => {
                 "invalid_arg_name: The method was passed an argument whose name falls outside the bounds of common decency. This includes very long names and names with non-alphanumeric characters other than _. If you get this error, it is typically an indication that you have made a very malformed API call."
             }
-            &AllError::InvalidArrayArg => {
+            AllError::InvalidArrayArg => {
                 "invalid_array_arg: The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API."
             }
-            &AllError::InvalidCharset => {
+            AllError::InvalidCharset => {
                 "invalid_charset: The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1."
             }
-            &AllError::InvalidFormData => {
+            AllError::InvalidFormData => {
                 "invalid_form_data: The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid."
             }
-            &AllError::InvalidPostType => {
+            AllError::InvalidPostType => {
                 "invalid_post_type: The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/x-www-form-urlencoded multipart/form-data text/plain."
             }
-            &AllError::MissingPostType => {
+            AllError::MissingPostType => {
                 "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header."
             }
-            &AllError::TeamAddedToOrg => {
+            AllError::TeamAddedToOrg => {
                 "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete."
             }
-            &AllError::RequestTimeout => {
+            AllError::RequestTimeout => {
                 "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated."
             }
-            &AllError::MalformedResponse(ref e) => e.description(),
-            &AllError::Unknown(ref s) => s,
-            &AllError::Client(ref inner) => inner.description(),
+            AllError::MalformedResponse(ref e) => e.description(),
+            AllError::Unknown(ref s) => s,
+            AllError::Client(ref inner) => inner.description(),
         }
     }
 
     fn cause(&self) -> Option<&Error> {
-        match self {
-            &AllError::MalformedResponse(ref e) => Some(e),
-            &AllError::Client(ref inner) => Some(inner),
+        match *self {
+            AllError::MalformedResponse(ref e) => Some(e),
+            AllError::Client(ref inner) => Some(inner),
             _ => None,
         }
     }
@@ -348,47 +348,47 @@ impl<E: Error> fmt::Display for FilesError<E> {
 
 impl<E: Error> Error for FilesError<E> {
     fn description(&self) -> &str {
-        match self {
-            &FilesError::NotAuthed => "not_authed: No authentication token provided.",
-            &FilesError::InvalidAuth => "invalid_auth: Invalid authentication token.",
-            &FilesError::AccountInactive => {
+        match *self {
+            FilesError::NotAuthed => "not_authed: No authentication token provided.",
+            FilesError::InvalidAuth => "invalid_auth: Invalid authentication token.",
+            FilesError::AccountInactive => {
                 "account_inactive: Authentication token is for a deleted user or team."
             }
-            &FilesError::UserIsBot => "user_is_bot: This method cannot be called by a bot user.",
-            &FilesError::InvalidArgName => {
+            FilesError::UserIsBot => "user_is_bot: This method cannot be called by a bot user.",
+            FilesError::InvalidArgName => {
                 "invalid_arg_name: The method was passed an argument whose name falls outside the bounds of common decency. This includes very long names and names with non-alphanumeric characters other than _. If you get this error, it is typically an indication that you have made a very malformed API call."
             }
-            &FilesError::InvalidArrayArg => {
+            FilesError::InvalidArrayArg => {
                 "invalid_array_arg: The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API."
             }
-            &FilesError::InvalidCharset => {
+            FilesError::InvalidCharset => {
                 "invalid_charset: The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1."
             }
-            &FilesError::InvalidFormData => {
+            FilesError::InvalidFormData => {
                 "invalid_form_data: The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid."
             }
-            &FilesError::InvalidPostType => {
+            FilesError::InvalidPostType => {
                 "invalid_post_type: The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/x-www-form-urlencoded multipart/form-data text/plain."
             }
-            &FilesError::MissingPostType => {
+            FilesError::MissingPostType => {
                 "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header."
             }
-            &FilesError::TeamAddedToOrg => {
+            FilesError::TeamAddedToOrg => {
                 "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete."
             }
-            &FilesError::RequestTimeout => {
+            FilesError::RequestTimeout => {
                 "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated."
             }
-            &FilesError::MalformedResponse(ref e) => e.description(),
-            &FilesError::Unknown(ref s) => s,
-            &FilesError::Client(ref inner) => inner.description(),
+            FilesError::MalformedResponse(ref e) => e.description(),
+            FilesError::Unknown(ref s) => s,
+            FilesError::Client(ref inner) => inner.description(),
         }
     }
 
     fn cause(&self) -> Option<&Error> {
-        match self {
-            &FilesError::MalformedResponse(ref e) => Some(e),
-            &FilesError::Client(ref inner) => Some(inner),
+        match *self {
+            FilesError::MalformedResponse(ref e) => Some(e),
+            FilesError::Client(ref inner) => Some(inner),
             _ => None,
         }
     }
@@ -538,47 +538,47 @@ impl<E: Error> fmt::Display for MessagesError<E> {
 
 impl<E: Error> Error for MessagesError<E> {
     fn description(&self) -> &str {
-        match self {
-            &MessagesError::NotAuthed => "not_authed: No authentication token provided.",
-            &MessagesError::InvalidAuth => "invalid_auth: Invalid authentication token.",
-            &MessagesError::AccountInactive => {
+        match *self {
+            MessagesError::NotAuthed => "not_authed: No authentication token provided.",
+            MessagesError::InvalidAuth => "invalid_auth: Invalid authentication token.",
+            MessagesError::AccountInactive => {
                 "account_inactive: Authentication token is for a deleted user or team."
             }
-            &MessagesError::UserIsBot => "user_is_bot: This method cannot be called by a bot user.",
-            &MessagesError::InvalidArgName => {
+            MessagesError::UserIsBot => "user_is_bot: This method cannot be called by a bot user.",
+            MessagesError::InvalidArgName => {
                 "invalid_arg_name: The method was passed an argument whose name falls outside the bounds of common decency. This includes very long names and names with non-alphanumeric characters other than _. If you get this error, it is typically an indication that you have made a very malformed API call."
             }
-            &MessagesError::InvalidArrayArg => {
+            MessagesError::InvalidArrayArg => {
                 "invalid_array_arg: The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API."
             }
-            &MessagesError::InvalidCharset => {
+            MessagesError::InvalidCharset => {
                 "invalid_charset: The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1."
             }
-            &MessagesError::InvalidFormData => {
+            MessagesError::InvalidFormData => {
                 "invalid_form_data: The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid."
             }
-            &MessagesError::InvalidPostType => {
+            MessagesError::InvalidPostType => {
                 "invalid_post_type: The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/x-www-form-urlencoded multipart/form-data text/plain."
             }
-            &MessagesError::MissingPostType => {
+            MessagesError::MissingPostType => {
                 "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header."
             }
-            &MessagesError::TeamAddedToOrg => {
+            MessagesError::TeamAddedToOrg => {
                 "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete."
             }
-            &MessagesError::RequestTimeout => {
+            MessagesError::RequestTimeout => {
                 "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated."
             }
-            &MessagesError::MalformedResponse(ref e) => e.description(),
-            &MessagesError::Unknown(ref s) => s,
-            &MessagesError::Client(ref inner) => inner.description(),
+            MessagesError::MalformedResponse(ref e) => e.description(),
+            MessagesError::Unknown(ref s) => s,
+            MessagesError::Client(ref inner) => inner.description(),
         }
     }
 
     fn cause(&self) -> Option<&Error> {
-        match self {
-            &MessagesError::MalformedResponse(ref e) => Some(e),
-            &MessagesError::Client(ref inner) => Some(inner),
+        match *self {
+            MessagesError::MalformedResponse(ref e) => Some(e),
+            MessagesError::Client(ref inner) => Some(inner),
             _ => None,
         }
     }

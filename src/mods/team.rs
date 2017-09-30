@@ -154,53 +154,53 @@ impl<E: Error> fmt::Display for AccessLogsError<E> {
 
 impl<E: Error> Error for AccessLogsError<E> {
     fn description(&self) -> &str {
-        match self {
-            &AccessLogsError::PaidOnly => "paid_only: This is only available to paid teams.",
-            &AccessLogsError::OverPaginationLimit => {
+        match *self {
+            AccessLogsError::PaidOnly => "paid_only: This is only available to paid teams.",
+            AccessLogsError::OverPaginationLimit => {
                 "over_pagination_limit: It is not possible to request more than 1000 items per page or more than 100 pages."
             }
-            &AccessLogsError::NotAuthed => "not_authed: No authentication token provided.",
-            &AccessLogsError::InvalidAuth => "invalid_auth: Invalid authentication token.",
-            &AccessLogsError::AccountInactive => {
+            AccessLogsError::NotAuthed => "not_authed: No authentication token provided.",
+            AccessLogsError::InvalidAuth => "invalid_auth: Invalid authentication token.",
+            AccessLogsError::AccountInactive => {
                 "account_inactive: Authentication token is for a deleted user or team."
             }
-            &AccessLogsError::UserIsBot => {
+            AccessLogsError::UserIsBot => {
                 "user_is_bot: This method cannot be called by a bot user."
             }
-            &AccessLogsError::InvalidArgName => {
+            AccessLogsError::InvalidArgName => {
                 "invalid_arg_name: The method was passed an argument whose name falls outside the bounds of common decency. This includes very long names and names with non-alphanumeric characters other than _. If you get this error, it is typically an indication that you have made a very malformed API call."
             }
-            &AccessLogsError::InvalidArrayArg => {
+            AccessLogsError::InvalidArrayArg => {
                 "invalid_array_arg: The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API."
             }
-            &AccessLogsError::InvalidCharset => {
+            AccessLogsError::InvalidCharset => {
                 "invalid_charset: The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1."
             }
-            &AccessLogsError::InvalidFormData => {
+            AccessLogsError::InvalidFormData => {
                 "invalid_form_data: The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid."
             }
-            &AccessLogsError::InvalidPostType => {
+            AccessLogsError::InvalidPostType => {
                 "invalid_post_type: The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/x-www-form-urlencoded multipart/form-data text/plain."
             }
-            &AccessLogsError::MissingPostType => {
+            AccessLogsError::MissingPostType => {
                 "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header."
             }
-            &AccessLogsError::TeamAddedToOrg => {
+            AccessLogsError::TeamAddedToOrg => {
                 "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete."
             }
-            &AccessLogsError::RequestTimeout => {
+            AccessLogsError::RequestTimeout => {
                 "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated."
             }
-            &AccessLogsError::MalformedResponse(ref e) => e.description(),
-            &AccessLogsError::Unknown(ref s) => s,
-            &AccessLogsError::Client(ref inner) => inner.description(),
+            AccessLogsError::MalformedResponse(ref e) => e.description(),
+            AccessLogsError::Unknown(ref s) => s,
+            AccessLogsError::Client(ref inner) => inner.description(),
         }
     }
 
     fn cause(&self) -> Option<&Error> {
-        match self {
-            &AccessLogsError::MalformedResponse(ref e) => Some(e),
-            &AccessLogsError::Client(ref inner) => Some(inner),
+        match *self {
+            AccessLogsError::MalformedResponse(ref e) => Some(e),
+            AccessLogsError::Client(ref inner) => Some(inner),
             _ => None,
         }
     }
@@ -324,52 +324,50 @@ impl<E: Error> fmt::Display for BillableInfoError<E> {
 
 impl<E: Error> Error for BillableInfoError<E> {
     fn description(&self) -> &str {
-        match self {
-            &BillableInfoError::UserNotFound => {
-                "user_not_found: Unable to find the requested user."
-            }
-            &BillableInfoError::NotAuthed => "not_authed: No authentication token provided.",
-            &BillableInfoError::InvalidAuth => "invalid_auth: Invalid authentication token.",
-            &BillableInfoError::AccountInactive => {
+        match *self {
+            BillableInfoError::UserNotFound => "user_not_found: Unable to find the requested user.",
+            BillableInfoError::NotAuthed => "not_authed: No authentication token provided.",
+            BillableInfoError::InvalidAuth => "invalid_auth: Invalid authentication token.",
+            BillableInfoError::AccountInactive => {
                 "account_inactive: Authentication token is for a deleted user or team."
             }
-            &BillableInfoError::UserIsBot => {
+            BillableInfoError::UserIsBot => {
                 "user_is_bot: This method cannot be called by a bot user."
             }
-            &BillableInfoError::InvalidArgName => {
+            BillableInfoError::InvalidArgName => {
                 "invalid_arg_name: The method was passed an argument whose name falls outside the bounds of common decency. This includes very long names and names with non-alphanumeric characters other than _. If you get this error, it is typically an indication that you have made a very malformed API call."
             }
-            &BillableInfoError::InvalidArrayArg => {
+            BillableInfoError::InvalidArrayArg => {
                 "invalid_array_arg: The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API."
             }
-            &BillableInfoError::InvalidCharset => {
+            BillableInfoError::InvalidCharset => {
                 "invalid_charset: The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1."
             }
-            &BillableInfoError::InvalidFormData => {
+            BillableInfoError::InvalidFormData => {
                 "invalid_form_data: The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid."
             }
-            &BillableInfoError::InvalidPostType => {
+            BillableInfoError::InvalidPostType => {
                 "invalid_post_type: The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/x-www-form-urlencoded multipart/form-data text/plain."
             }
-            &BillableInfoError::MissingPostType => {
+            BillableInfoError::MissingPostType => {
                 "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header."
             }
-            &BillableInfoError::TeamAddedToOrg => {
+            BillableInfoError::TeamAddedToOrg => {
                 "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete."
             }
-            &BillableInfoError::RequestTimeout => {
+            BillableInfoError::RequestTimeout => {
                 "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated."
             }
-            &BillableInfoError::MalformedResponse(ref e) => e.description(),
-            &BillableInfoError::Unknown(ref s) => s,
-            &BillableInfoError::Client(ref inner) => inner.description(),
+            BillableInfoError::MalformedResponse(ref e) => e.description(),
+            BillableInfoError::Unknown(ref s) => s,
+            BillableInfoError::Client(ref inner) => inner.description(),
         }
     }
 
     fn cause(&self) -> Option<&Error> {
-        match self {
-            &BillableInfoError::MalformedResponse(ref e) => Some(e),
-            &BillableInfoError::Client(ref inner) => Some(inner),
+        match *self {
+            BillableInfoError::MalformedResponse(ref e) => Some(e),
+            BillableInfoError::Client(ref inner) => Some(inner),
             _ => None,
         }
     }
@@ -473,46 +471,46 @@ impl<E: Error> fmt::Display for InfoError<E> {
 
 impl<E: Error> Error for InfoError<E> {
     fn description(&self) -> &str {
-        match self {
-            &InfoError::NotAuthed => "not_authed: No authentication token provided.",
-            &InfoError::InvalidAuth => "invalid_auth: Invalid authentication token.",
-            &InfoError::AccountInactive => {
+        match *self {
+            InfoError::NotAuthed => "not_authed: No authentication token provided.",
+            InfoError::InvalidAuth => "invalid_auth: Invalid authentication token.",
+            InfoError::AccountInactive => {
                 "account_inactive: Authentication token is for a deleted user or team."
             }
-            &InfoError::InvalidArgName => {
+            InfoError::InvalidArgName => {
                 "invalid_arg_name: The method was passed an argument whose name falls outside the bounds of common decency. This includes very long names and names with non-alphanumeric characters other than _. If you get this error, it is typically an indication that you have made a very malformed API call."
             }
-            &InfoError::InvalidArrayArg => {
+            InfoError::InvalidArrayArg => {
                 "invalid_array_arg: The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API."
             }
-            &InfoError::InvalidCharset => {
+            InfoError::InvalidCharset => {
                 "invalid_charset: The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1."
             }
-            &InfoError::InvalidFormData => {
+            InfoError::InvalidFormData => {
                 "invalid_form_data: The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid."
             }
-            &InfoError::InvalidPostType => {
+            InfoError::InvalidPostType => {
                 "invalid_post_type: The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/x-www-form-urlencoded multipart/form-data text/plain."
             }
-            &InfoError::MissingPostType => {
+            InfoError::MissingPostType => {
                 "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header."
             }
-            &InfoError::TeamAddedToOrg => {
+            InfoError::TeamAddedToOrg => {
                 "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete."
             }
-            &InfoError::RequestTimeout => {
+            InfoError::RequestTimeout => {
                 "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated."
             }
-            &InfoError::MalformedResponse(ref e) => e.description(),
-            &InfoError::Unknown(ref s) => s,
-            &InfoError::Client(ref inner) => inner.description(),
+            InfoError::MalformedResponse(ref e) => e.description(),
+            InfoError::Unknown(ref s) => s,
+            InfoError::Client(ref inner) => inner.description(),
         }
     }
 
     fn cause(&self) -> Option<&Error> {
-        match self {
-            &InfoError::MalformedResponse(ref e) => Some(e),
-            &InfoError::Client(ref inner) => Some(inner),
+        match *self {
+            InfoError::MalformedResponse(ref e) => Some(e),
+            InfoError::Client(ref inner) => Some(inner),
             _ => None,
         }
     }
@@ -670,49 +668,49 @@ impl<E: Error> fmt::Display for IntegrationLogsError<E> {
 
 impl<E: Error> Error for IntegrationLogsError<E> {
     fn description(&self) -> &str {
-        match self {
-            &IntegrationLogsError::NotAuthed => "not_authed: No authentication token provided.",
-            &IntegrationLogsError::InvalidAuth => "invalid_auth: Invalid authentication token.",
-            &IntegrationLogsError::AccountInactive => {
+        match *self {
+            IntegrationLogsError::NotAuthed => "not_authed: No authentication token provided.",
+            IntegrationLogsError::InvalidAuth => "invalid_auth: Invalid authentication token.",
+            IntegrationLogsError::AccountInactive => {
                 "account_inactive: Authentication token is for a deleted user or team."
             }
-            &IntegrationLogsError::UserIsBot => {
+            IntegrationLogsError::UserIsBot => {
                 "user_is_bot: This method cannot be called by a bot user."
             }
-            &IntegrationLogsError::InvalidArgName => {
+            IntegrationLogsError::InvalidArgName => {
                 "invalid_arg_name: The method was passed an argument whose name falls outside the bounds of common decency. This includes very long names and names with non-alphanumeric characters other than _. If you get this error, it is typically an indication that you have made a very malformed API call."
             }
-            &IntegrationLogsError::InvalidArrayArg => {
+            IntegrationLogsError::InvalidArrayArg => {
                 "invalid_array_arg: The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API."
             }
-            &IntegrationLogsError::InvalidCharset => {
+            IntegrationLogsError::InvalidCharset => {
                 "invalid_charset: The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1."
             }
-            &IntegrationLogsError::InvalidFormData => {
+            IntegrationLogsError::InvalidFormData => {
                 "invalid_form_data: The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid."
             }
-            &IntegrationLogsError::InvalidPostType => {
+            IntegrationLogsError::InvalidPostType => {
                 "invalid_post_type: The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/x-www-form-urlencoded multipart/form-data text/plain."
             }
-            &IntegrationLogsError::MissingPostType => {
+            IntegrationLogsError::MissingPostType => {
                 "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header."
             }
-            &IntegrationLogsError::TeamAddedToOrg => {
+            IntegrationLogsError::TeamAddedToOrg => {
                 "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete."
             }
-            &IntegrationLogsError::RequestTimeout => {
+            IntegrationLogsError::RequestTimeout => {
                 "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated."
             }
-            &IntegrationLogsError::MalformedResponse(ref e) => e.description(),
-            &IntegrationLogsError::Unknown(ref s) => s,
-            &IntegrationLogsError::Client(ref inner) => inner.description(),
+            IntegrationLogsError::MalformedResponse(ref e) => e.description(),
+            IntegrationLogsError::Unknown(ref s) => s,
+            IntegrationLogsError::Client(ref inner) => inner.description(),
         }
     }
 
     fn cause(&self) -> Option<&Error> {
-        match self {
-            &IntegrationLogsError::MalformedResponse(ref e) => Some(e),
-            &IntegrationLogsError::Client(ref inner) => Some(inner),
+        match *self {
+            IntegrationLogsError::MalformedResponse(ref e) => Some(e),
+            IntegrationLogsError::Client(ref inner) => Some(inner),
             _ => None,
         }
     }
