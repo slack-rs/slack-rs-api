@@ -9,6 +9,11 @@ use std::fmt;
 
 use serde_json;
 
+#[cfg(feature = "reqwest")]
+use reqwest::unstable::async as reqwest;
+#[cfg(feature = "reqwest")]
+use futures::Future;
+
 use requests::SlackWebRequestSender;
 
 /// Archives a private channel.
@@ -37,6 +42,32 @@ where
         })
         .and_then(|o| o.into())
 }
+
+#[cfg(feature = "reqwest")]
+/// Archives a private channel.
+///
+/// Wraps https://api.slack.com/methods/groups.archive
+
+pub fn archive_async(
+    client: &reqwest::Client,
+    token: &str,
+    request: &ArchiveRequest,
+) -> impl Future<Item = ArchiveResponse, Error = ArchiveError<::reqwest::Error>> {
+
+    let params = vec![Some(("token", token)), Some(("channel", request.channel))];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = ::get_slack_url_for_method("groups.archive");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client
+        .get(url)
+        .send()
+        .map_err(ArchiveError::Client)
+        .and_then(|mut result: reqwest::Response| {
+            result.json().map_err(ArchiveError::Client)
+        })
+}
+
 
 #[derive(Clone, Default, Debug)]
 pub struct ArchiveRequest<'a> {
@@ -222,6 +253,32 @@ where
         .and_then(|o| o.into())
 }
 
+#[cfg(feature = "reqwest")]
+/// Closes a private channel.
+///
+/// Wraps https://api.slack.com/methods/groups.close
+
+pub fn close_async(
+    client: &reqwest::Client,
+    token: &str,
+    request: &CloseRequest,
+) -> impl Future<Item = CloseResponse, Error = CloseError<::reqwest::Error>> {
+
+    let params = vec![Some(("token", token)), Some(("channel", request.channel))];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = ::get_slack_url_for_method("groups.close");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client
+        .get(url)
+        .send()
+        .map_err(CloseError::Client)
+        .and_then(|mut result: reqwest::Response| {
+            result.json().map_err(CloseError::Client)
+        })
+}
+
+
 #[derive(Clone, Default, Debug)]
 pub struct CloseRequest<'a> {
     /// Private channel to close.
@@ -385,6 +442,38 @@ where
         })
         .and_then(|o| o.into())
 }
+
+#[cfg(feature = "reqwest")]
+/// Creates a private channel.
+///
+/// Wraps https://api.slack.com/methods/groups.create
+
+pub fn create_async(
+    client: &reqwest::Client,
+    token: &str,
+    request: &CreateRequest,
+) -> impl Future<Item = CreateResponse, Error = CreateError<::reqwest::Error>> {
+
+    let params = vec![
+        Some(("token", token)),
+        Some(("name", request.name)),
+        request.validate.map(|validate| {
+            ("validate", if validate { "1" } else { "0" })
+        }),
+    ];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = ::get_slack_url_for_method("groups.create");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client
+        .get(url)
+        .send()
+        .map_err(CreateError::Client)
+        .and_then(|mut result: reqwest::Response| {
+            result.json().map_err(CreateError::Client)
+        })
+}
+
 
 #[derive(Clone, Default, Debug)]
 pub struct CreateRequest<'a> {
@@ -594,6 +683,32 @@ where
         .and_then(|o| o.into())
 }
 
+#[cfg(feature = "reqwest")]
+/// Clones and archives a private channel.
+///
+/// Wraps https://api.slack.com/methods/groups.createChild
+
+pub fn create_child_async(
+    client: &reqwest::Client,
+    token: &str,
+    request: &CreateChildRequest,
+) -> impl Future<Item = CreateChildResponse, Error = CreateChildError<::reqwest::Error>> {
+
+    let params = vec![Some(("token", token)), Some(("channel", request.channel))];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = ::get_slack_url_for_method("groups.createChild");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client
+        .get(url)
+        .send()
+        .map_err(CreateChildError::Client)
+        .and_then(|mut result: reqwest::Response| {
+            result.json().map_err(CreateChildError::Client)
+        })
+}
+
+
 #[derive(Clone, Default, Debug)]
 pub struct CreateChildRequest<'a> {
     /// Private channel to clone and archive.
@@ -791,6 +906,44 @@ where
         .and_then(|o| o.into())
 }
 
+#[cfg(feature = "reqwest")]
+/// Fetches history of messages and events from a private channel.
+///
+/// Wraps https://api.slack.com/methods/groups.history
+
+pub fn history_async(
+    client: &reqwest::Client,
+    token: &str,
+    request: &HistoryRequest,
+) -> impl Future<Item = HistoryResponse, Error = HistoryError<::reqwest::Error>> {
+    let count = request.count.map(|count| count.to_string());
+    let params = vec![
+        Some(("token", token)),
+        Some(("channel", request.channel)),
+        request.latest.map(|latest| ("latest", latest)),
+        request.oldest.map(|oldest| ("oldest", oldest)),
+        request.inclusive.map(|inclusive| {
+            ("inclusive", if inclusive { "1" } else { "0" })
+        }),
+        count.as_ref().map(|count| ("count", &count[..])),
+        request.unreads.map(|unreads| {
+            ("unreads", if unreads { "1" } else { "0" })
+        }),
+    ];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = ::get_slack_url_for_method("groups.history");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client
+        .get(url)
+        .send()
+        .map_err(HistoryError::Client)
+        .and_then(|mut result: reqwest::Response| {
+            result.json().map_err(HistoryError::Client)
+        })
+}
+
+
 #[derive(Clone, Default, Debug)]
 pub struct HistoryRequest<'a> {
     /// Private channel to fetch history for.
@@ -974,6 +1127,28 @@ where
         .and_then(|o| o.into())
 }
 
+#[cfg(feature = "reqwest")]
+/// Gets information about a private channel.
+///
+/// Wraps https://api.slack.com/methods/groups.info
+
+pub fn info_async(
+    client: &reqwest::Client,
+    token: &str,
+    request: &InfoRequest,
+) -> impl Future<Item = InfoResponse, Error = InfoError<::reqwest::Error>> {
+
+    let params = vec![Some(("token", token)), Some(("channel", request.channel))];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = ::get_slack_url_for_method("groups.info");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client.get(url).send().map_err(InfoError::Client).and_then(
+        |mut result: reqwest::Response| result.json().map_err(InfoError::Client),
+    )
+}
+
+
 #[derive(Clone, Default, Debug)]
 pub struct InfoRequest<'a> {
     /// Private channel to get info on
@@ -1136,6 +1311,36 @@ where
         })
         .and_then(|o| o.into())
 }
+
+#[cfg(feature = "reqwest")]
+/// Invites a user to a private channel.
+///
+/// Wraps https://api.slack.com/methods/groups.invite
+
+pub fn invite_async(
+    client: &reqwest::Client,
+    token: &str,
+    request: &InviteRequest,
+) -> impl Future<Item = InviteResponse, Error = InviteError<::reqwest::Error>> {
+
+    let params = vec![
+        Some(("token", token)),
+        Some(("channel", request.channel)),
+        Some(("user", request.user)),
+    ];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = ::get_slack_url_for_method("groups.invite");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client
+        .get(url)
+        .send()
+        .map_err(InviteError::Client)
+        .and_then(|mut result: reqwest::Response| {
+            result.json().map_err(InviteError::Client)
+        })
+}
+
 
 #[derive(Clone, Default, Debug)]
 pub struct InviteRequest<'a> {
@@ -1336,6 +1541,32 @@ where
         .and_then(|o| o.into())
 }
 
+#[cfg(feature = "reqwest")]
+/// Removes a user from a private channel.
+///
+/// Wraps https://api.slack.com/methods/groups.kick
+
+pub fn kick_async(
+    client: &reqwest::Client,
+    token: &str,
+    request: &KickRequest,
+) -> impl Future<Item = KickResponse, Error = KickError<::reqwest::Error>> {
+
+    let params = vec![
+        Some(("token", token)),
+        Some(("channel", request.channel)),
+        Some(("user", request.user)),
+    ];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = ::get_slack_url_for_method("groups.kick");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client.get(url).send().map_err(KickError::Client).and_then(
+        |mut result: reqwest::Response| result.json().map_err(KickError::Client),
+    )
+}
+
+
 #[derive(Clone, Default, Debug)]
 pub struct KickRequest<'a> {
     /// Private channel to remove user from.
@@ -1524,6 +1755,32 @@ where
         .and_then(|o| o.into())
 }
 
+#[cfg(feature = "reqwest")]
+/// Leaves a private channel.
+///
+/// Wraps https://api.slack.com/methods/groups.leave
+
+pub fn leave_async(
+    client: &reqwest::Client,
+    token: &str,
+    request: &LeaveRequest,
+) -> impl Future<Item = LeaveResponse, Error = LeaveError<::reqwest::Error>> {
+
+    let params = vec![Some(("token", token)), Some(("channel", request.channel))];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = ::get_slack_url_for_method("groups.leave");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client
+        .get(url)
+        .send()
+        .map_err(LeaveError::Client)
+        .and_then(|mut result: reqwest::Response| {
+            result.json().map_err(LeaveError::Client)
+        })
+}
+
+
 #[derive(Clone, Default, Debug)]
 pub struct LeaveRequest<'a> {
     /// Private channel to leave
@@ -1701,6 +1958,33 @@ where
         .and_then(|o| o.into())
 }
 
+#[cfg(feature = "reqwest")]
+/// Lists private channels that the calling user has access to.
+///
+/// Wraps https://api.slack.com/methods/groups.list
+
+pub fn list_async(
+    client: &reqwest::Client,
+    token: &str,
+    request: &ListRequest,
+) -> impl Future<Item = ListResponse, Error = ListError<::reqwest::Error>> {
+
+    let params = vec![
+        Some(("token", token)),
+        request.exclude_archived.map(|exclude_archived| {
+            ("exclude_archived", if exclude_archived { "1" } else { "0" })
+        }),
+    ];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = ::get_slack_url_for_method("groups.list");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client.get(url).send().map_err(ListError::Client).and_then(
+        |mut result: reqwest::Response| result.json().map_err(ListError::Client),
+    )
+}
+
+
 #[derive(Clone, Default, Debug)]
 pub struct ListRequest {
     /// Don't return archived private channels.
@@ -1857,6 +2141,32 @@ where
         })
         .and_then(|o| o.into())
 }
+
+#[cfg(feature = "reqwest")]
+/// Sets the read cursor in a private channel.
+///
+/// Wraps https://api.slack.com/methods/groups.mark
+
+pub fn mark_async(
+    client: &reqwest::Client,
+    token: &str,
+    request: &MarkRequest,
+) -> impl Future<Item = MarkResponse, Error = MarkError<::reqwest::Error>> {
+
+    let params = vec![
+        Some(("token", token)),
+        Some(("channel", request.channel)),
+        Some(("ts", request.ts)),
+    ];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = ::get_slack_url_for_method("groups.mark");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client.get(url).send().map_err(MarkError::Client).and_then(
+        |mut result: reqwest::Response| result.json().map_err(MarkError::Client),
+    )
+}
+
 
 #[derive(Clone, Default, Debug)]
 pub struct MarkRequest<'a> {
@@ -2024,6 +2334,28 @@ where
         .and_then(|o| o.into())
 }
 
+#[cfg(feature = "reqwest")]
+/// Opens a private channel.
+///
+/// Wraps https://api.slack.com/methods/groups.open
+
+pub fn open_async(
+    client: &reqwest::Client,
+    token: &str,
+    request: &OpenRequest,
+) -> impl Future<Item = OpenResponse, Error = OpenError<::reqwest::Error>> {
+
+    let params = vec![Some(("token", token)), Some(("channel", request.channel))];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = ::get_slack_url_for_method("groups.open");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client.get(url).send().map_err(OpenError::Client).and_then(
+        |mut result: reqwest::Response| result.json().map_err(OpenError::Client),
+    )
+}
+
+
 #[derive(Clone, Default, Debug)]
 pub struct OpenRequest<'a> {
     /// Private channel to open.
@@ -2188,6 +2520,39 @@ where
         })
         .and_then(|o| o.into())
 }
+
+#[cfg(feature = "reqwest")]
+/// Renames a private channel.
+///
+/// Wraps https://api.slack.com/methods/groups.rename
+
+pub fn rename_async(
+    client: &reqwest::Client,
+    token: &str,
+    request: &RenameRequest,
+) -> impl Future<Item = RenameResponse, Error = RenameError<::reqwest::Error>> {
+
+    let params = vec![
+        Some(("token", token)),
+        Some(("channel", request.channel)),
+        Some(("name", request.name)),
+        request.validate.map(|validate| {
+            ("validate", if validate { "1" } else { "0" })
+        }),
+    ];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = ::get_slack_url_for_method("groups.rename");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client
+        .get(url)
+        .send()
+        .map_err(RenameError::Client)
+        .and_then(|mut result: reqwest::Response| {
+            result.json().map_err(RenameError::Client)
+        })
+}
+
 
 #[derive(Clone, Default, Debug)]
 pub struct RenameRequest<'a> {
@@ -2408,6 +2773,36 @@ where
         .and_then(|o| o.into())
 }
 
+#[cfg(feature = "reqwest")]
+/// Retrieve a thread of messages posted to a private channel
+///
+/// Wraps https://api.slack.com/methods/groups.replies
+
+pub fn replies_async(
+    client: &reqwest::Client,
+    token: &str,
+    request: &RepliesRequest,
+) -> impl Future<Item = RepliesResponse, Error = RepliesError<::reqwest::Error>> {
+
+    let params = vec![
+        Some(("token", token)),
+        Some(("channel", request.channel)),
+        Some(("thread_ts", request.thread_ts)),
+    ];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = ::get_slack_url_for_method("groups.replies");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client
+        .get(url)
+        .send()
+        .map_err(RepliesError::Client)
+        .and_then(|mut result: reqwest::Response| {
+            result.json().map_err(RepliesError::Client)
+        })
+}
+
+
 #[derive(Clone, Default, Debug)]
 pub struct RepliesRequest<'a> {
     /// Private channel to fetch thread from
@@ -2584,6 +2979,36 @@ where
         })
         .and_then(|o| o.into())
 }
+
+#[cfg(feature = "reqwest")]
+/// Sets the purpose for a private channel.
+///
+/// Wraps https://api.slack.com/methods/groups.setPurpose
+
+pub fn set_purpose_async(
+    client: &reqwest::Client,
+    token: &str,
+    request: &SetPurposeRequest,
+) -> impl Future<Item = SetPurposeResponse, Error = SetPurposeError<::reqwest::Error>> {
+
+    let params = vec![
+        Some(("token", token)),
+        Some(("channel", request.channel)),
+        Some(("purpose", request.purpose)),
+    ];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = ::get_slack_url_for_method("groups.setPurpose");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client
+        .get(url)
+        .send()
+        .map_err(SetPurposeError::Client)
+        .and_then(|mut result: reqwest::Response| {
+            result.json().map_err(SetPurposeError::Client)
+        })
+}
+
 
 #[derive(Clone, Default, Debug)]
 pub struct SetPurposeRequest<'a> {
@@ -2766,6 +3191,36 @@ where
         .and_then(|o| o.into())
 }
 
+#[cfg(feature = "reqwest")]
+/// Sets the topic for a private channel.
+///
+/// Wraps https://api.slack.com/methods/groups.setTopic
+
+pub fn set_topic_async(
+    client: &reqwest::Client,
+    token: &str,
+    request: &SetTopicRequest,
+) -> impl Future<Item = SetTopicResponse, Error = SetTopicError<::reqwest::Error>> {
+
+    let params = vec![
+        Some(("token", token)),
+        Some(("channel", request.channel)),
+        Some(("topic", request.topic)),
+    ];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = ::get_slack_url_for_method("groups.setTopic");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client
+        .get(url)
+        .send()
+        .map_err(SetTopicError::Client)
+        .and_then(|mut result: reqwest::Response| {
+            result.json().map_err(SetTopicError::Client)
+        })
+}
+
+
 #[derive(Clone, Default, Debug)]
 pub struct SetTopicRequest<'a> {
     /// Private channel to set the topic of
@@ -2942,6 +3397,32 @@ where
         })
         .and_then(|o| o.into())
 }
+
+#[cfg(feature = "reqwest")]
+/// Unarchives a private channel.
+///
+/// Wraps https://api.slack.com/methods/groups.unarchive
+
+pub fn unarchive_async(
+    client: &reqwest::Client,
+    token: &str,
+    request: &UnarchiveRequest,
+) -> impl Future<Item = UnarchiveResponse, Error = UnarchiveError<::reqwest::Error>> {
+
+    let params = vec![Some(("token", token)), Some(("channel", request.channel))];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = ::get_slack_url_for_method("groups.unarchive");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client
+        .get(url)
+        .send()
+        .map_err(UnarchiveError::Client)
+        .and_then(|mut result: reqwest::Response| {
+            result.json().map_err(UnarchiveError::Client)
+        })
+}
+
 
 #[derive(Clone, Default, Debug)]
 pub struct UnarchiveRequest<'a> {

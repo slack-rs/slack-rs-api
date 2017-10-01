@@ -8,6 +8,11 @@ use std::fmt;
 
 use serde_json;
 
+#[cfg(feature = "reqwest")]
+use reqwest::unstable::async as reqwest;
+#[cfg(feature = "reqwest")]
+use futures::Future;
+
 use requests::SlackWebRequestSender;
 
 /// Starts a Real Time Messaging session.
@@ -30,6 +35,28 @@ where
         })
         .and_then(|o| o.into())
 }
+
+#[cfg(feature = "reqwest")]
+/// Starts a Real Time Messaging session.
+///
+/// Wraps https://api.slack.com/methods/rtm.connect
+
+pub fn connect_async(
+    client: &reqwest::Client,
+) -> impl Future<Item = ConnectResponse, Error = ConnectError<::reqwest::Error>> {
+    let params: &[(&str, &str)] = &[];
+    let url = ::get_slack_url_for_method("rtm.connect");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client
+        .get(url)
+        .send()
+        .map_err(ConnectError::Client)
+        .and_then(|mut result: reqwest::Response| {
+            result.json().map_err(ConnectError::Client)
+        })
+}
+
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct ConnectResponse {
@@ -207,6 +234,43 @@ where
         })
         .and_then(|o| o.into())
 }
+
+#[cfg(feature = "reqwest")]
+/// Starts a Real Time Messaging session.
+///
+/// Wraps https://api.slack.com/methods/rtm.start
+
+pub fn start_async(
+    client: &reqwest::Client,
+    token: &str,
+    request: &StartRequest,
+) -> impl Future<Item = StartResponse, Error = StartError<::reqwest::Error>> {
+
+    let params = vec![
+        Some(("token", token)),
+        request.no_unreads.map(|no_unreads| {
+            ("no_unreads", if no_unreads { "1" } else { "0" })
+        }),
+        request.mpim_aware.map(|mpim_aware| {
+            ("mpim_aware", if mpim_aware { "1" } else { "0" })
+        }),
+        request.no_latest.map(|no_latest| {
+            ("no_latest", if no_latest { "1" } else { "0" })
+        }),
+    ];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = ::get_slack_url_for_method("rtm.start");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client
+        .get(url)
+        .send()
+        .map_err(StartError::Client)
+        .and_then(|mut result: reqwest::Response| {
+            result.json().map_err(StartError::Client)
+        })
+}
+
 
 #[derive(Clone, Default, Debug)]
 pub struct StartRequest {

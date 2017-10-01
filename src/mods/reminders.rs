@@ -8,6 +8,11 @@ use std::fmt;
 
 use serde_json;
 
+#[cfg(feature = "reqwest")]
+use reqwest::unstable::async as reqwest;
+#[cfg(feature = "reqwest")]
+use futures::Future;
+
 use requests::SlackWebRequestSender;
 
 /// Creates a reminder.
@@ -39,6 +44,33 @@ where
         })
         .and_then(|o| o.into())
 }
+
+#[cfg(feature = "reqwest")]
+/// Creates a reminder.
+///
+/// Wraps https://api.slack.com/methods/reminders.add
+
+pub fn add_async(
+    client: &reqwest::Client,
+    token: &str,
+    request: &AddRequest,
+) -> impl Future<Item = AddResponse, Error = AddError<::reqwest::Error>> {
+    let time = request.time.to_string();
+    let params = vec![
+        Some(("token", token)),
+        Some(("text", request.text)),
+        Some(("time", &time[..])),
+        request.user.map(|user| ("user", user)),
+    ];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = ::get_slack_url_for_method("reminders.add");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client.get(url).send().map_err(AddError::Client).and_then(
+        |mut result: reqwest::Response| result.json().map_err(AddError::Client),
+    )
+}
+
 
 #[derive(Clone, Default, Debug)]
 pub struct AddRequest<'a> {
@@ -235,6 +267,32 @@ where
         .and_then(|o| o.into())
 }
 
+#[cfg(feature = "reqwest")]
+/// Marks a reminder as complete.
+///
+/// Wraps https://api.slack.com/methods/reminders.complete
+
+pub fn complete_async(
+    client: &reqwest::Client,
+    token: &str,
+    request: &CompleteRequest,
+) -> impl Future<Item = CompleteResponse, Error = CompleteError<::reqwest::Error>> {
+
+    let params = vec![Some(("token", token)), Some(("reminder", request.reminder))];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = ::get_slack_url_for_method("reminders.complete");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client
+        .get(url)
+        .send()
+        .map_err(CompleteError::Client)
+        .and_then(|mut result: reqwest::Response| {
+            result.json().map_err(CompleteError::Client)
+        })
+}
+
+
 #[derive(Clone, Default, Debug)]
 pub struct CompleteRequest<'a> {
     /// The ID of the reminder to be marked as complete
@@ -407,6 +465,32 @@ where
         .and_then(|o| o.into())
 }
 
+#[cfg(feature = "reqwest")]
+/// Deletes a reminder.
+///
+/// Wraps https://api.slack.com/methods/reminders.delete
+
+pub fn delete_async(
+    client: &reqwest::Client,
+    token: &str,
+    request: &DeleteRequest,
+) -> impl Future<Item = DeleteResponse, Error = DeleteError<::reqwest::Error>> {
+
+    let params = vec![Some(("token", token)), Some(("reminder", request.reminder))];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = ::get_slack_url_for_method("reminders.delete");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client
+        .get(url)
+        .send()
+        .map_err(DeleteError::Client)
+        .and_then(|mut result: reqwest::Response| {
+            result.json().map_err(DeleteError::Client)
+        })
+}
+
+
 #[derive(Clone, Default, Debug)]
 pub struct DeleteRequest<'a> {
     /// The ID of the reminder
@@ -567,6 +651,28 @@ where
         .and_then(|o| o.into())
 }
 
+#[cfg(feature = "reqwest")]
+/// Gets information about a reminder.
+///
+/// Wraps https://api.slack.com/methods/reminders.info
+
+pub fn info_async(
+    client: &reqwest::Client,
+    token: &str,
+    request: &InfoRequest,
+) -> impl Future<Item = InfoResponse, Error = InfoError<::reqwest::Error>> {
+
+    let params = vec![Some(("token", token)), Some(("reminder", request.reminder))];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = ::get_slack_url_for_method("reminders.info");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client.get(url).send().map_err(InfoError::Client).and_then(
+        |mut result: reqwest::Response| result.json().map_err(InfoError::Client),
+    )
+}
+
+
 #[derive(Clone, Default, Debug)]
 pub struct InfoRequest<'a> {
     /// The ID of the reminder
@@ -721,6 +827,24 @@ where
         })
         .and_then(|o| o.into())
 }
+
+#[cfg(feature = "reqwest")]
+/// Lists all reminders created by or for a given user.
+///
+/// Wraps https://api.slack.com/methods/reminders.list
+
+pub fn list_async(
+    client: &reqwest::Client,
+) -> impl Future<Item = ListResponse, Error = ListError<::reqwest::Error>> {
+    let params: &[(&str, &str)] = &[];
+    let url = ::get_slack_url_for_method("reminders.list");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client.get(url).send().map_err(ListError::Client).and_then(
+        |mut result: reqwest::Response| result.json().map_err(ListError::Client),
+    )
+}
+
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct ListResponse {

@@ -8,6 +8,11 @@ use std::fmt;
 
 use serde_json;
 
+#[cfg(feature = "reqwest")]
+use reqwest::unstable::async as reqwest;
+#[cfg(feature = "reqwest")]
+use futures::Future;
+
 use requests::SlackWebRequestSender;
 
 /// Revokes a token.
@@ -39,6 +44,37 @@ where
         })
         .and_then(|o| o.into())
 }
+
+#[cfg(feature = "reqwest")]
+/// Revokes a token.
+///
+/// Wraps https://api.slack.com/methods/auth.revoke
+
+pub fn revoke_async(
+    client: &reqwest::Client,
+    token: &str,
+    request: &RevokeRequest,
+) -> impl Future<Item = RevokeResponse, Error = RevokeError<::reqwest::Error>> {
+
+    let params = vec![
+        Some(("token", token)),
+        request.test.map(
+            |test| ("test", if test { "1" } else { "0" })
+        ),
+    ];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = ::get_slack_url_for_method("auth.revoke");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client
+        .get(url)
+        .send()
+        .map_err(RevokeError::Client)
+        .and_then(|mut result: reqwest::Response| {
+            result.json().map_err(RevokeError::Client)
+        })
+}
+
 
 #[derive(Clone, Default, Debug)]
 pub struct RevokeRequest {
@@ -186,6 +222,24 @@ where
         })
         .and_then(|o| o.into())
 }
+
+#[cfg(feature = "reqwest")]
+/// Checks authentication & identity.
+///
+/// Wraps https://api.slack.com/methods/auth.test
+
+pub fn test_async(
+    client: &reqwest::Client,
+) -> impl Future<Item = TestResponse, Error = TestError<::reqwest::Error>> {
+    let params: &[(&str, &str)] = &[];
+    let url = ::get_slack_url_for_method("auth.test");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client.get(url).send().map_err(TestError::Client).and_then(
+        |mut result: reqwest::Response| result.json().map_err(TestError::Client),
+    )
+}
+
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct TestResponse {

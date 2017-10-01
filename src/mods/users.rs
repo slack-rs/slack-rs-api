@@ -9,6 +9,11 @@ use std::fmt;
 
 use serde_json;
 
+#[cfg(feature = "reqwest")]
+use reqwest::unstable::async as reqwest;
+#[cfg(feature = "reqwest")]
+use futures::Future;
+
 use requests::SlackWebRequestSender;
 
 /// Delete the user profile photo
@@ -33,6 +38,28 @@ where
         })
         .and_then(|o| o.into())
 }
+
+#[cfg(feature = "reqwest")]
+/// Delete the user profile photo
+///
+/// Wraps https://api.slack.com/methods/users.deletePhoto
+
+pub fn delete_photo_async(
+    client: &reqwest::Client,
+) -> impl Future<Item = DeletePhotoResponse, Error = DeletePhotoError<::reqwest::Error>> {
+    let params: &[(&str, &str)] = &[];
+    let url = ::get_slack_url_for_method("users.deletePhoto");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client
+        .get(url)
+        .send()
+        .map_err(DeletePhotoError::Client)
+        .and_then(|mut result: reqwest::Response| {
+            result.json().map_err(DeletePhotoError::Client)
+        })
+}
+
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct DeletePhotoResponse {
@@ -187,6 +214,32 @@ where
         .and_then(|o| o.into())
 }
 
+#[cfg(feature = "reqwest")]
+/// Gets user presence information.
+///
+/// Wraps https://api.slack.com/methods/users.getPresence
+
+pub fn get_presence_async(
+    client: &reqwest::Client,
+    token: &str,
+    request: &GetPresenceRequest,
+) -> impl Future<Item = GetPresenceResponse, Error = GetPresenceError<::reqwest::Error>> {
+
+    let params = vec![Some(("token", token)), Some(("user", request.user))];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = ::get_slack_url_for_method("users.getPresence");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client
+        .get(url)
+        .send()
+        .map_err(GetPresenceError::Client)
+        .and_then(|mut result: reqwest::Response| {
+            result.json().map_err(GetPresenceError::Client)
+        })
+}
+
+
 #[derive(Clone, Default, Debug)]
 pub struct GetPresenceRequest<'a> {
     /// User to get presence info on. Defaults to the authed user.
@@ -335,6 +388,28 @@ where
         })
         .and_then(|o| o.into())
 }
+
+#[cfg(feature = "reqwest")]
+/// Get a user's identity.
+///
+/// Wraps https://api.slack.com/methods/users.identity
+
+pub fn identity_async(
+    client: &reqwest::Client,
+) -> impl Future<Item = IdentityResponse, Error = IdentityError<::reqwest::Error>> {
+    let params: &[(&str, &str)] = &[];
+    let url = ::get_slack_url_for_method("users.identity");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client
+        .get(url)
+        .send()
+        .map_err(IdentityError::Client)
+        .and_then(|mut result: reqwest::Response| {
+            result.json().map_err(IdentityError::Client)
+        })
+}
+
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct IdentityResponse {
@@ -487,6 +562,28 @@ where
         })
         .and_then(|o| o.into())
 }
+
+#[cfg(feature = "reqwest")]
+/// Gets information about a user.
+///
+/// Wraps https://api.slack.com/methods/users.info
+
+pub fn info_async(
+    client: &reqwest::Client,
+    token: &str,
+    request: &InfoRequest,
+) -> impl Future<Item = InfoResponse, Error = InfoError<::reqwest::Error>> {
+
+    let params = vec![Some(("token", token)), Some(("user", request.user))];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = ::get_slack_url_for_method("users.info");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client.get(url).send().map_err(InfoError::Client).and_then(
+        |mut result: reqwest::Response| result.json().map_err(InfoError::Client),
+    )
+}
+
 
 #[derive(Clone, Default, Debug)]
 pub struct InfoRequest<'a> {
@@ -656,6 +753,33 @@ where
         .and_then(|o| o.into())
 }
 
+#[cfg(feature = "reqwest")]
+/// Lists all users in a Slack team.
+///
+/// Wraps https://api.slack.com/methods/users.list
+
+pub fn list_async(
+    client: &reqwest::Client,
+    token: &str,
+    request: &ListRequest,
+) -> impl Future<Item = ListResponse, Error = ListError<::reqwest::Error>> {
+
+    let params = vec![
+        Some(("token", token)),
+        request.presence.map(|presence| {
+            ("presence", if presence { "1" } else { "0" })
+        }),
+    ];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = ::get_slack_url_for_method("users.list");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client.get(url).send().map_err(ListError::Client).and_then(
+        |mut result: reqwest::Response| result.json().map_err(ListError::Client),
+    )
+}
+
+
 #[derive(Clone, Default, Debug)]
 pub struct ListRequest {
     /// Whether to include presence data in the output
@@ -805,6 +929,28 @@ where
         .and_then(|o| o.into())
 }
 
+#[cfg(feature = "reqwest")]
+/// Marks a user as active.
+///
+/// Wraps https://api.slack.com/methods/users.setActive
+
+pub fn set_active_async(
+    client: &reqwest::Client,
+) -> impl Future<Item = SetActiveResponse, Error = SetActiveError<::reqwest::Error>> {
+    let params: &[(&str, &str)] = &[];
+    let url = ::get_slack_url_for_method("users.setActive");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client
+        .get(url)
+        .send()
+        .map_err(SetActiveError::Client)
+        .and_then(|mut result: reqwest::Response| {
+            result.json().map_err(SetActiveError::Client)
+        })
+}
+
+
 #[derive(Clone, Debug, Deserialize)]
 pub struct SetActiveResponse {
     error: Option<String>,
@@ -952,6 +1098,32 @@ where
         })
         .and_then(|o| o.into())
 }
+
+#[cfg(feature = "reqwest")]
+/// Manually sets user presence.
+///
+/// Wraps https://api.slack.com/methods/users.setPresence
+
+pub fn set_presence_async(
+    client: &reqwest::Client,
+    token: &str,
+    request: &SetPresenceRequest,
+) -> impl Future<Item = SetPresenceResponse, Error = SetPresenceError<::reqwest::Error>> {
+
+    let params = vec![Some(("token", token)), Some(("presence", request.presence))];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = ::get_slack_url_for_method("users.setPresence");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client
+        .get(url)
+        .send()
+        .map_err(SetPresenceError::Client)
+        .and_then(|mut result: reqwest::Response| {
+            result.json().map_err(SetPresenceError::Client)
+        })
+}
+
 
 #[derive(Clone, Default, Debug)]
 pub struct SetPresenceRequest<'a> {

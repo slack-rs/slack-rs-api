@@ -8,6 +8,11 @@ use std::fmt;
 
 use serde_json;
 
+#[cfg(feature = "reqwest")]
+use reqwest::unstable::async as reqwest;
+#[cfg(feature = "reqwest")]
+use futures::Future;
+
 use requests::SlackWebRequestSender;
 
 /// Gets the access logs for the current team.
@@ -42,6 +47,39 @@ where
         })
         .and_then(|o| o.into())
 }
+
+#[cfg(feature = "reqwest")]
+/// Gets the access logs for the current team.
+///
+/// Wraps https://api.slack.com/methods/team.accessLogs
+
+pub fn access_logs_async(
+    client: &reqwest::Client,
+    token: &str,
+    request: &AccessLogsRequest,
+) -> impl Future<Item = AccessLogsResponse, Error = AccessLogsError<::reqwest::Error>> {
+    let count = request.count.map(|count| count.to_string());
+    let page = request.page.map(|page| page.to_string());
+    let before = request.before.map(|before| before.to_string());
+    let params = vec![
+        Some(("token", token)),
+        count.as_ref().map(|count| ("count", &count[..])),
+        page.as_ref().map(|page| ("page", &page[..])),
+        before.as_ref().map(|before| ("before", &before[..])),
+    ];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = ::get_slack_url_for_method("team.accessLogs");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client
+        .get(url)
+        .send()
+        .map_err(AccessLogsError::Client)
+        .and_then(|mut result: reqwest::Response| {
+            result.json().map_err(AccessLogsError::Client)
+        })
+}
+
 
 #[derive(Clone, Default, Debug)]
 pub struct AccessLogsRequest {
@@ -235,6 +273,35 @@ where
         .and_then(|o| o.into())
 }
 
+#[cfg(feature = "reqwest")]
+/// Gets billable users information for the current team.
+///
+/// Wraps https://api.slack.com/methods/team.billableInfo
+
+pub fn billable_info_async(
+    client: &reqwest::Client,
+    token: &str,
+    request: &BillableInfoRequest,
+) -> impl Future<Item = BillableInfoResponse, Error = BillableInfoError<::reqwest::Error>> {
+
+    let params = vec![
+        Some(("token", token)),
+        request.user.map(|user| ("user", user)),
+    ];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = ::get_slack_url_for_method("team.billableInfo");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client
+        .get(url)
+        .send()
+        .map_err(BillableInfoError::Client)
+        .and_then(|mut result: reqwest::Response| {
+            result.json().map_err(BillableInfoError::Client)
+        })
+}
+
+
 #[derive(Clone, Default, Debug)]
 pub struct BillableInfoRequest<'a> {
     /// A user to retrieve the billable information for. Defaults to all users.
@@ -391,6 +458,24 @@ where
         })
         .and_then(|o| o.into())
 }
+
+#[cfg(feature = "reqwest")]
+/// Gets information about the current team.
+///
+/// Wraps https://api.slack.com/methods/team.info
+
+pub fn info_async(
+    client: &reqwest::Client,
+) -> impl Future<Item = InfoResponse, Error = InfoError<::reqwest::Error>> {
+    let params: &[(&str, &str)] = &[];
+    let url = ::get_slack_url_for_method("team.info");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client.get(url).send().map_err(InfoError::Client).and_then(
+        |mut result: reqwest::Response| result.json().map_err(InfoError::Client),
+    )
+}
+
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct InfoResponse {
@@ -552,6 +637,45 @@ where
         })
         .and_then(|o| o.into())
 }
+
+#[cfg(feature = "reqwest")]
+/// Gets the integration logs for the current team.
+///
+/// Wraps https://api.slack.com/methods/team.integrationLogs
+
+pub fn integration_logs_async(
+    client: &reqwest::Client,
+    token: &str,
+    request: &IntegrationLogsRequest,
+) -> impl Future<Item = IntegrationLogsResponse, Error = IntegrationLogsError<::reqwest::Error>> {
+    let count = request.count.map(|count| count.to_string());
+    let page = request.page.map(|page| page.to_string());
+    let params = vec![
+        Some(("token", token)),
+        request.service_id.map(
+            |service_id| ("service_id", service_id)
+        ),
+        request.app_id.map(|app_id| ("app_id", app_id)),
+        request.user.map(|user| ("user", user)),
+        request.change_type.map(|change_type| {
+            ("change_type", change_type)
+        }),
+        count.as_ref().map(|count| ("count", &count[..])),
+        page.as_ref().map(|page| ("page", &page[..])),
+    ];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = ::get_slack_url_for_method("team.integrationLogs");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client
+        .get(url)
+        .send()
+        .map_err(IntegrationLogsError::Client)
+        .and_then(|mut result: reqwest::Response| {
+            result.json().map_err(IntegrationLogsError::Client)
+        })
+}
+
 
 #[derive(Clone, Default, Debug)]
 pub struct IntegrationLogsRequest<'a> {

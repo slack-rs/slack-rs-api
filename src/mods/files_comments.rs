@@ -8,6 +8,11 @@ use std::fmt;
 
 use serde_json;
 
+#[cfg(feature = "reqwest")]
+use reqwest::unstable::async as reqwest;
+#[cfg(feature = "reqwest")]
+use futures::Future;
+
 use requests::SlackWebRequestSender;
 
 /// Add a comment to an existing file.
@@ -38,6 +43,32 @@ where
         })
         .and_then(|o| o.into())
 }
+
+#[cfg(feature = "reqwest")]
+/// Add a comment to an existing file.
+///
+/// Wraps https://api.slack.com/methods/files.comments.add
+
+pub fn add_async(
+    client: &reqwest::Client,
+    token: &str,
+    request: &AddRequest,
+) -> impl Future<Item = AddResponse, Error = AddError<::reqwest::Error>> {
+
+    let params = vec![
+        Some(("token", token)),
+        Some(("file", request.file)),
+        Some(("comment", request.comment)),
+    ];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = ::get_slack_url_for_method("files.comments.add");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client.get(url).send().map_err(AddError::Client).and_then(
+        |mut result: reqwest::Response| result.json().map_err(AddError::Client),
+    )
+}
+
 
 #[derive(Clone, Default, Debug)]
 pub struct AddRequest<'a> {
@@ -210,6 +241,36 @@ where
         .and_then(|o| o.into())
 }
 
+#[cfg(feature = "reqwest")]
+/// Deletes an existing comment on a file.
+///
+/// Wraps https://api.slack.com/methods/files.comments.delete
+
+pub fn delete_async(
+    client: &reqwest::Client,
+    token: &str,
+    request: &DeleteRequest,
+) -> impl Future<Item = DeleteResponse, Error = DeleteError<::reqwest::Error>> {
+
+    let params = vec![
+        Some(("token", token)),
+        Some(("file", request.file)),
+        Some(("id", request.id)),
+    ];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = ::get_slack_url_for_method("files.comments.delete");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client
+        .get(url)
+        .send()
+        .map_err(DeleteError::Client)
+        .and_then(|mut result: reqwest::Response| {
+            result.json().map_err(DeleteError::Client)
+        })
+}
+
+
 #[derive(Clone, Default, Debug)]
 pub struct DeleteRequest<'a> {
     /// File to delete a comment from.
@@ -380,6 +441,33 @@ where
         })
         .and_then(|o| o.into())
 }
+
+#[cfg(feature = "reqwest")]
+/// Edit an existing file comment.
+///
+/// Wraps https://api.slack.com/methods/files.comments.edit
+
+pub fn edit_async(
+    client: &reqwest::Client,
+    token: &str,
+    request: &EditRequest,
+) -> impl Future<Item = EditResponse, Error = EditError<::reqwest::Error>> {
+
+    let params = vec![
+        Some(("token", token)),
+        Some(("file", request.file)),
+        Some(("id", request.id)),
+        Some(("comment", request.comment)),
+    ];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = ::get_slack_url_for_method("files.comments.edit");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client.get(url).send().map_err(EditError::Client).and_then(
+        |mut result: reqwest::Response| result.json().map_err(EditError::Client),
+    )
+}
+
 
 #[derive(Clone, Default, Debug)]
 pub struct EditRequest<'a> {

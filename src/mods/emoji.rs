@@ -8,6 +8,11 @@ use std::fmt;
 
 use serde_json;
 
+#[cfg(feature = "reqwest")]
+use reqwest::unstable::async as reqwest;
+#[cfg(feature = "reqwest")]
+use futures::Future;
+
 use requests::SlackWebRequestSender;
 
 /// Lists custom emoji for a team.
@@ -28,6 +33,24 @@ where
         })
         .and_then(|o| o.into())
 }
+
+#[cfg(feature = "reqwest")]
+/// Lists custom emoji for a team.
+///
+/// Wraps https://api.slack.com/methods/emoji.list
+
+pub fn list_async(
+    client: &reqwest::Client,
+) -> impl Future<Item = ListResponse, Error = ListError<::reqwest::Error>> {
+    let params: &[(&str, &str)] = &[];
+    let url = ::get_slack_url_for_method("emoji.list");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client.get(url).send().map_err(ListError::Client).and_then(
+        |mut result: reqwest::Response| result.json().map_err(ListError::Client),
+    )
+}
+
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct ListResponse {

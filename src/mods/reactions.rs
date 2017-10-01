@@ -8,6 +8,11 @@ use std::fmt;
 
 use serde_json;
 
+#[cfg(feature = "reqwest")]
+use reqwest::unstable::async as reqwest;
+#[cfg(feature = "reqwest")]
+use futures::Future;
+
 use requests::SlackWebRequestSender;
 
 /// Adds a reaction to an item.
@@ -43,6 +48,37 @@ where
         })
         .and_then(|o| o.into())
 }
+
+#[cfg(feature = "reqwest")]
+/// Adds a reaction to an item.
+///
+/// Wraps https://api.slack.com/methods/reactions.add
+
+pub fn add_async(
+    client: &reqwest::Client,
+    token: &str,
+    request: &AddRequest,
+) -> impl Future<Item = AddResponse, Error = AddError<::reqwest::Error>> {
+
+    let params = vec![
+        Some(("token", token)),
+        Some(("name", request.name)),
+        request.file.map(|file| ("file", file)),
+        request.file_comment.map(|file_comment| {
+            ("file_comment", file_comment)
+        }),
+        request.channel.map(|channel| ("channel", channel)),
+        request.timestamp.map(|timestamp| ("timestamp", timestamp)),
+    ];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = ::get_slack_url_for_method("reactions.add");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client.get(url).send().map_err(AddError::Client).and_then(
+        |mut result: reqwest::Response| result.json().map_err(AddError::Client),
+    )
+}
+
 
 #[derive(Clone, Default, Debug)]
 pub struct AddRequest<'a> {
@@ -262,6 +298,39 @@ where
         })
         .and_then(|o| o.into())
 }
+
+#[cfg(feature = "reqwest")]
+/// Gets reactions for an item.
+///
+/// Wraps https://api.slack.com/methods/reactions.get
+
+pub fn get_async(
+    client: &reqwest::Client,
+    token: &str,
+    request: &GetRequest,
+) -> impl Future<Item = GetResponse, Error = GetError<::reqwest::Error>> {
+
+    let params = vec![
+        Some(("token", token)),
+        request.file.map(|file| ("file", file)),
+        request.file_comment.map(|file_comment| {
+            ("file_comment", file_comment)
+        }),
+        request.channel.map(|channel| ("channel", channel)),
+        request.timestamp.map(|timestamp| ("timestamp", timestamp)),
+        request.full.map(
+            |full| ("full", if full { "1" } else { "0" })
+        ),
+    ];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = ::get_slack_url_for_method("reactions.get");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client.get(url).send().map_err(GetError::Client).and_then(
+        |mut result: reqwest::Response| result.json().map_err(GetError::Client),
+    )
+}
+
 
 #[derive(Clone, Default, Debug)]
 pub struct GetRequest<'a> {
@@ -571,6 +640,37 @@ where
         .and_then(|o| o.into())
 }
 
+#[cfg(feature = "reqwest")]
+/// Lists reactions made by a user.
+///
+/// Wraps https://api.slack.com/methods/reactions.list
+
+pub fn list_async(
+    client: &reqwest::Client,
+    token: &str,
+    request: &ListRequest,
+) -> impl Future<Item = ListResponse, Error = ListError<::reqwest::Error>> {
+    let count = request.count.map(|count| count.to_string());
+    let page = request.page.map(|page| page.to_string());
+    let params = vec![
+        Some(("token", token)),
+        request.user.map(|user| ("user", user)),
+        request.full.map(
+            |full| ("full", if full { "1" } else { "0" })
+        ),
+        count.as_ref().map(|count| ("count", &count[..])),
+        page.as_ref().map(|page| ("page", &page[..])),
+    ];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = ::get_slack_url_for_method("reactions.list");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client.get(url).send().map_err(ListError::Client).and_then(
+        |mut result: reqwest::Response| result.json().map_err(ListError::Client),
+    )
+}
+
+
 #[derive(Clone, Default, Debug)]
 pub struct ListRequest<'a> {
     /// Show reactions made by this user. Defaults to the authed user.
@@ -817,6 +917,41 @@ where
         })
         .and_then(|o| o.into())
 }
+
+#[cfg(feature = "reqwest")]
+/// Removes a reaction from an item.
+///
+/// Wraps https://api.slack.com/methods/reactions.remove
+
+pub fn remove_async(
+    client: &reqwest::Client,
+    token: &str,
+    request: &RemoveRequest,
+) -> impl Future<Item = RemoveResponse, Error = RemoveError<::reqwest::Error>> {
+
+    let params = vec![
+        Some(("token", token)),
+        Some(("name", request.name)),
+        request.file.map(|file| ("file", file)),
+        request.file_comment.map(|file_comment| {
+            ("file_comment", file_comment)
+        }),
+        request.channel.map(|channel| ("channel", channel)),
+        request.timestamp.map(|timestamp| ("timestamp", timestamp)),
+    ];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = ::get_slack_url_for_method("reactions.remove");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client
+        .get(url)
+        .send()
+        .map_err(RemoveError::Client)
+        .and_then(|mut result: reqwest::Response| {
+            result.json().map_err(RemoveError::Client)
+        })
+}
+
 
 #[derive(Clone, Default, Debug)]
 pub struct RemoveRequest<'a> {

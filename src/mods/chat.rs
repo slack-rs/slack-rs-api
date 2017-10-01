@@ -9,6 +9,11 @@ use std::fmt;
 
 use serde_json;
 
+#[cfg(feature = "reqwest")]
+use reqwest::unstable::async as reqwest;
+#[cfg(feature = "reqwest")]
+use futures::Future;
+
 use requests::SlackWebRequestSender;
 
 /// Deletes a message.
@@ -42,6 +47,39 @@ where
         })
         .and_then(|o| o.into())
 }
+
+#[cfg(feature = "reqwest")]
+/// Deletes a message.
+///
+/// Wraps https://api.slack.com/methods/chat.delete
+
+pub fn delete_async(
+    client: &reqwest::Client,
+    token: &str,
+    request: &DeleteRequest,
+) -> impl Future<Item = DeleteResponse, Error = DeleteError<::reqwest::Error>> {
+
+    let params = vec![
+        Some(("token", token)),
+        Some(("ts", request.ts)),
+        Some(("channel", request.channel)),
+        request.as_user.map(|as_user| {
+            ("as_user", if as_user { "1" } else { "0" })
+        }),
+    ];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = ::get_slack_url_for_method("chat.delete");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client
+        .get(url)
+        .send()
+        .map_err(DeleteError::Client)
+        .and_then(|mut result: reqwest::Response| {
+            result.json().map_err(DeleteError::Client)
+        })
+}
+
 
 #[derive(Clone, Default, Debug)]
 pub struct DeleteRequest<'a> {
@@ -230,6 +268,36 @@ where
         })
         .and_then(|o| o.into())
 }
+
+#[cfg(feature = "reqwest")]
+/// Share a me message into a channel.
+///
+/// Wraps https://api.slack.com/methods/chat.meMessage
+
+pub fn me_message_async(
+    client: &reqwest::Client,
+    token: &str,
+    request: &MeMessageRequest,
+) -> impl Future<Item = MeMessageResponse, Error = MeMessageError<::reqwest::Error>> {
+
+    let params = vec![
+        Some(("token", token)),
+        Some(("channel", request.channel)),
+        Some(("text", request.text)),
+    ];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = ::get_slack_url_for_method("chat.meMessage");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client
+        .get(url)
+        .send()
+        .map_err(MeMessageError::Client)
+        .and_then(|mut result: reqwest::Response| {
+            result.json().map_err(MeMessageError::Client)
+        })
+}
+
 
 #[derive(Clone, Default, Debug)]
 pub struct MeMessageRequest<'a> {
@@ -446,6 +514,61 @@ where
         })
         .and_then(|o| o.into())
 }
+
+#[cfg(feature = "reqwest")]
+/// Sends a message to a channel.
+///
+/// Wraps https://api.slack.com/methods/chat.postMessage
+
+pub fn post_message_async(
+    client: &reqwest::Client,
+    token: &str,
+    request: &PostMessageRequest,
+) -> impl Future<Item = PostMessageResponse, Error = PostMessageError<::reqwest::Error>> {
+
+    let params = vec![
+        Some(("token", token)),
+        Some(("channel", request.channel)),
+        Some(("text", request.text)),
+        request.parse.map(|parse| ("parse", parse)),
+        request.link_names.map(|link_names| {
+            ("link_names", if link_names { "1" } else { "0" })
+        }),
+        request.attachments.map(|attachments| {
+            ("attachments", attachments)
+        }),
+        request.unfurl_links.map(|unfurl_links| {
+            ("unfurl_links", if unfurl_links { "1" } else { "0" })
+        }),
+        request.unfurl_media.map(|unfurl_media| {
+            ("unfurl_media", if unfurl_media { "1" } else { "0" })
+        }),
+        request.username.map(|username| ("username", username)),
+        request.as_user.map(|as_user| {
+            ("as_user", if as_user { "1" } else { "0" })
+        }),
+        request.icon_url.map(|icon_url| ("icon_url", icon_url)),
+        request.icon_emoji.map(
+            |icon_emoji| ("icon_emoji", icon_emoji)
+        ),
+        request.thread_ts.map(|thread_ts| ("thread_ts", thread_ts)),
+        request.reply_broadcast.map(|reply_broadcast| {
+            ("reply_broadcast", if reply_broadcast { "1" } else { "0" })
+        }),
+    ];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = ::get_slack_url_for_method("chat.postMessage");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client
+        .get(url)
+        .send()
+        .map_err(PostMessageError::Client)
+        .and_then(|mut result: reqwest::Response| {
+            result.json().map_err(PostMessageError::Client)
+        })
+}
+
 
 #[derive(Clone, Default, Debug)]
 pub struct PostMessageRequest<'a> {
@@ -673,6 +796,43 @@ where
         .and_then(|o| o.into())
 }
 
+#[cfg(feature = "reqwest")]
+/// Unfurl a URL that a user posted
+///
+/// Wraps https://api.slack.com/methods/chat.unfurl
+
+pub fn unfurl_async(
+    client: &reqwest::Client,
+    token: &str,
+    request: &UnfurlRequest,
+) -> impl Future<Item = UnfurlResponse, Error = UnfurlError<::reqwest::Error>> {
+
+    let params = vec![
+        Some(("token", token)),
+        Some(("channel", request.channel)),
+        Some(("ts", request.ts)),
+        Some(("unfurls", request.unfurls)),
+        request.user_auth_required.map(|user_auth_required| {
+            (
+                "user_auth_required",
+                if user_auth_required { "1" } else { "0" },
+            )
+        }),
+    ];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = ::get_slack_url_for_method("chat.unfurl");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client
+        .get(url)
+        .send()
+        .map_err(UnfurlError::Client)
+        .and_then(|mut result: reqwest::Response| {
+            result.json().map_err(UnfurlError::Client)
+        })
+}
+
+
 #[derive(Clone, Default, Debug)]
 pub struct UnfurlRequest<'a> {
     /// Channel ID of the message
@@ -849,6 +1009,47 @@ where
         })
         .and_then(|o| o.into())
 }
+
+#[cfg(feature = "reqwest")]
+/// Updates a message.
+///
+/// Wraps https://api.slack.com/methods/chat.update
+
+pub fn update_async(
+    client: &reqwest::Client,
+    token: &str,
+    request: &UpdateRequest,
+) -> impl Future<Item = UpdateResponse, Error = UpdateError<::reqwest::Error>> {
+
+    let params = vec![
+        Some(("token", token)),
+        Some(("ts", request.ts)),
+        Some(("channel", request.channel)),
+        Some(("text", request.text)),
+        request.attachments.map(|attachments| {
+            ("attachments", attachments)
+        }),
+        request.parse.map(|parse| ("parse", parse)),
+        request.link_names.map(|link_names| {
+            ("link_names", if link_names { "1" } else { "0" })
+        }),
+        request.as_user.map(|as_user| {
+            ("as_user", if as_user { "1" } else { "0" })
+        }),
+    ];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = ::get_slack_url_for_method("chat.update");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client
+        .get(url)
+        .send()
+        .map_err(UpdateError::Client)
+        .and_then(|mut result: reqwest::Response| {
+            result.json().map_err(UpdateError::Client)
+        })
+}
+
 
 #[derive(Clone, Default, Debug)]
 pub struct UpdateRequest<'a> {

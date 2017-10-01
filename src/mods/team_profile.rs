@@ -8,6 +8,11 @@ use std::fmt;
 
 use serde_json;
 
+#[cfg(feature = "reqwest")]
+use reqwest::unstable::async as reqwest;
+#[cfg(feature = "reqwest")]
+use futures::Future;
+
 use requests::SlackWebRequestSender;
 
 /// Retrieve a team's profile.
@@ -39,6 +44,33 @@ where
         })
         .and_then(|o| o.into())
 }
+
+#[cfg(feature = "reqwest")]
+/// Retrieve a team's profile.
+///
+/// Wraps https://api.slack.com/methods/team.profile.get
+
+pub fn get_async(
+    client: &reqwest::Client,
+    token: &str,
+    request: &GetRequest,
+) -> impl Future<Item = GetResponse, Error = GetError<::reqwest::Error>> {
+
+    let params = vec![
+        Some(("token", token)),
+        request.visibility.map(
+            |visibility| ("visibility", visibility)
+        ),
+    ];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = ::get_slack_url_for_method("team.profile.get");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client.get(url).send().map_err(GetError::Client).and_then(
+        |mut result: reqwest::Response| result.json().map_err(GetError::Client),
+    )
+}
+
 
 #[derive(Clone, Default, Debug)]
 pub struct GetRequest<'a> {

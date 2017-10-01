@@ -8,6 +8,11 @@ use std::fmt;
 
 use serde_json;
 
+#[cfg(feature = "reqwest")]
+use reqwest::unstable::async as reqwest;
+#[cfg(feature = "reqwest")]
+use futures::Future;
+
 use requests::SlackWebRequestSender;
 
 /// Exchanges a temporary OAuth code for an API token.
@@ -39,6 +44,38 @@ where
             serde_json::from_str::<AccessResponse>(&result).map_err(AccessError::MalformedResponse)
         })
 }
+
+#[cfg(feature = "reqwest")]
+/// Exchanges a temporary OAuth code for an API token.
+///
+/// Wraps https://api.slack.com/methods/oauth.access
+
+pub fn access_async(
+    client: &reqwest::Client,
+    request: &AccessRequest,
+) -> impl Future<Item = AccessResponse, Error = AccessError<::reqwest::Error>> {
+
+    let params = vec![
+        Some(("client_id", request.client_id)),
+        Some(("client_secret", request.client_secret)),
+        Some(("code", request.code)),
+        request.redirect_uri.map(|redirect_uri| {
+            ("redirect_uri", redirect_uri)
+        }),
+    ];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = ::get_slack_url_for_method("oauth.access");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client
+        .get(url)
+        .send()
+        .map_err(AccessError::Client)
+        .and_then(|mut result: reqwest::Response| {
+            result.json().map_err(AccessError::Client)
+        })
+}
+
 
 #[derive(Clone, Default, Debug)]
 pub struct AccessRequest<'a> {

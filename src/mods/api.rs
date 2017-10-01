@@ -8,6 +8,11 @@ use std::fmt;
 
 use serde_json;
 
+#[cfg(feature = "reqwest")]
+use reqwest::unstable::async as reqwest;
+#[cfg(feature = "reqwest")]
+use futures::Future;
+
 use requests::SlackWebRequestSender;
 
 /// Checks API calling code.
@@ -33,6 +38,30 @@ where
         })
         .and_then(|o| o.into())
 }
+
+#[cfg(feature = "reqwest")]
+/// Checks API calling code.
+///
+/// Wraps https://api.slack.com/methods/api.test
+
+pub fn test_async(
+    client: &reqwest::Client,
+    request: &TestRequest,
+) -> impl Future<Item = TestResponse, Error = TestError<::reqwest::Error>> {
+
+    let params = vec![
+        request.error.map(|error| ("error", error)),
+        request.foo.map(|foo| ("foo", foo)),
+    ];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = ::get_slack_url_for_method("api.test");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client.get(url).send().map_err(TestError::Client).and_then(
+        |mut result: reqwest::Response| result.json().map_err(TestError::Client),
+    )
+}
+
 
 #[derive(Clone, Default, Debug)]
 pub struct TestRequest<'a> {

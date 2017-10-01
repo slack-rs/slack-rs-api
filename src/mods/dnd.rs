@@ -9,6 +9,11 @@ use std::fmt;
 
 use serde_json;
 
+#[cfg(feature = "reqwest")]
+use reqwest::unstable::async as reqwest;
+#[cfg(feature = "reqwest")]
+use futures::Future;
+
 use requests::SlackWebRequestSender;
 
 /// Ends the current user's Do Not Disturb session immediately.
@@ -29,6 +34,28 @@ where
         })
         .and_then(|o| o.into())
 }
+
+#[cfg(feature = "reqwest")]
+/// Ends the current user's Do Not Disturb session immediately.
+///
+/// Wraps https://api.slack.com/methods/dnd.endDnd
+
+pub fn end_dnd_async(
+    client: &reqwest::Client,
+) -> impl Future<Item = EndDndResponse, Error = EndDndError<::reqwest::Error>> {
+    let params: &[(&str, &str)] = &[];
+    let url = ::get_slack_url_for_method("dnd.endDnd");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client
+        .get(url)
+        .send()
+        .map_err(EndDndError::Client)
+        .and_then(|mut result: reqwest::Response| {
+            result.json().map_err(EndDndError::Client)
+        })
+}
+
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct EndDndResponse {
@@ -181,6 +208,28 @@ where
         })
         .and_then(|o| o.into())
 }
+
+#[cfg(feature = "reqwest")]
+/// Ends the current user's snooze mode immediately.
+///
+/// Wraps https://api.slack.com/methods/dnd.endSnooze
+
+pub fn end_snooze_async(
+    client: &reqwest::Client,
+) -> impl Future<Item = EndSnoozeResponse, Error = EndSnoozeError<::reqwest::Error>> {
+    let params: &[(&str, &str)] = &[];
+    let url = ::get_slack_url_for_method("dnd.endSnooze");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client
+        .get(url)
+        .send()
+        .map_err(EndSnoozeError::Client)
+        .and_then(|mut result: reqwest::Response| {
+            result.json().map_err(EndSnoozeError::Client)
+        })
+}
+
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct EndSnoozeResponse {
@@ -351,6 +400,31 @@ where
         .and_then(|o| o.into())
 }
 
+#[cfg(feature = "reqwest")]
+/// Retrieves a user's current Do Not Disturb status.
+///
+/// Wraps https://api.slack.com/methods/dnd.info
+
+pub fn info_async(
+    client: &reqwest::Client,
+    token: &str,
+    request: &InfoRequest,
+) -> impl Future<Item = InfoResponse, Error = InfoError<::reqwest::Error>> {
+
+    let params = vec![
+        Some(("token", token)),
+        request.user.map(|user| ("user", user)),
+    ];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = ::get_slack_url_for_method("dnd.info");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client.get(url).send().map_err(InfoError::Client).and_then(
+        |mut result: reqwest::Response| result.json().map_err(InfoError::Client),
+    )
+}
+
+
 #[derive(Clone, Default, Debug)]
 pub struct InfoRequest<'a> {
     /// User to fetch status for (defaults to current user)
@@ -517,6 +591,35 @@ where
         })
         .and_then(|o| o.into())
 }
+
+#[cfg(feature = "reqwest")]
+/// Turns on Do Not Disturb mode for the current user, or changes its duration.
+///
+/// Wraps https://api.slack.com/methods/dnd.setSnooze
+
+pub fn set_snooze_async(
+    client: &reqwest::Client,
+    token: &str,
+    request: &SetSnoozeRequest,
+) -> impl Future<Item = SetSnoozeResponse, Error = SetSnoozeError<::reqwest::Error>> {
+    let num_minutes = request.num_minutes.to_string();
+    let params = vec![
+        Some(("token", token)),
+        Some(("num_minutes", &num_minutes[..])),
+    ];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = ::get_slack_url_for_method("dnd.setSnooze");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client
+        .get(url)
+        .send()
+        .map_err(SetSnoozeError::Client)
+        .and_then(|mut result: reqwest::Response| {
+            result.json().map_err(SetSnoozeError::Client)
+        })
+}
+
 
 #[derive(Clone, Default, Debug)]
 pub struct SetSnoozeRequest {
@@ -693,6 +796,35 @@ where
         })
         .and_then(|o| o.into())
 }
+
+#[cfg(feature = "reqwest")]
+/// Retrieves the Do Not Disturb status for users on a team.
+///
+/// Wraps https://api.slack.com/methods/dnd.teamInfo
+
+pub fn team_info_async(
+    client: &reqwest::Client,
+    token: &str,
+    request: &TeamInfoRequest,
+) -> impl Future<Item = TeamInfoResponse, Error = TeamInfoError<::reqwest::Error>> {
+
+    let params = vec![
+        Some(("token", token)),
+        request.users.map(|users| ("users", users)),
+    ];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = ::get_slack_url_for_method("dnd.teamInfo");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client
+        .get(url)
+        .send()
+        .map_err(TeamInfoError::Client)
+        .and_then(|mut result: reqwest::Response| {
+            result.json().map_err(TeamInfoError::Client)
+        })
+}
+
 
 #[derive(Clone, Default, Debug)]
 pub struct TeamInfoRequest<'a> {

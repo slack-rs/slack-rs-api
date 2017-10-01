@@ -9,6 +9,11 @@ use std::fmt;
 
 use serde_json;
 
+#[cfg(feature = "reqwest")]
+use reqwest::unstable::async as reqwest;
+#[cfg(feature = "reqwest")]
+use futures::Future;
+
 use requests::SlackWebRequestSender;
 
 /// Searches for messages and files matching a query.
@@ -46,6 +51,39 @@ where
         })
         .and_then(|o| o.into())
 }
+
+#[cfg(feature = "reqwest")]
+/// Searches for messages and files matching a query.
+///
+/// Wraps https://api.slack.com/methods/search.all
+
+pub fn all_async(
+    client: &reqwest::Client,
+    token: &str,
+    request: &AllRequest,
+) -> impl Future<Item = AllResponse, Error = AllError<::reqwest::Error>> {
+    let count = request.count.map(|count| count.to_string());
+    let page = request.page.map(|page| page.to_string());
+    let params = vec![
+        Some(("token", token)),
+        Some(("query", request.query)),
+        request.sort.map(|sort| ("sort", sort)),
+        request.sort_dir.map(|sort_dir| ("sort_dir", sort_dir)),
+        request.highlight.map(|highlight| {
+            ("highlight", if highlight { "1" } else { "0" })
+        }),
+        count.as_ref().map(|count| ("count", &count[..])),
+        page.as_ref().map(|page| ("page", &page[..])),
+    ];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = ::get_slack_url_for_method("search.all");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client.get(url).send().map_err(AllError::Client).and_then(
+        |mut result: reqwest::Response| result.json().map_err(AllError::Client),
+    )
+}
+
 
 #[derive(Clone, Default, Debug)]
 pub struct AllRequest<'a> {
@@ -240,6 +278,43 @@ where
         .and_then(|o| o.into())
 }
 
+#[cfg(feature = "reqwest")]
+/// Searches for files matching a query.
+///
+/// Wraps https://api.slack.com/methods/search.files
+
+pub fn files_async(
+    client: &reqwest::Client,
+    token: &str,
+    request: &FilesRequest,
+) -> impl Future<Item = FilesResponse, Error = FilesError<::reqwest::Error>> {
+    let count = request.count.map(|count| count.to_string());
+    let page = request.page.map(|page| page.to_string());
+    let params = vec![
+        Some(("token", token)),
+        Some(("query", request.query)),
+        request.sort.map(|sort| ("sort", sort)),
+        request.sort_dir.map(|sort_dir| ("sort_dir", sort_dir)),
+        request.highlight.map(|highlight| {
+            ("highlight", if highlight { "1" } else { "0" })
+        }),
+        count.as_ref().map(|count| ("count", &count[..])),
+        page.as_ref().map(|page| ("page", &page[..])),
+    ];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = ::get_slack_url_for_method("search.files");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client
+        .get(url)
+        .send()
+        .map_err(FilesError::Client)
+        .and_then(|mut result: reqwest::Response| {
+            result.json().map_err(FilesError::Client)
+        })
+}
+
+
 #[derive(Clone, Default, Debug)]
 pub struct FilesRequest<'a> {
     /// Search query. May contain booleans, etc.
@@ -427,6 +502,43 @@ where
         })
         .and_then(|o| o.into())
 }
+
+#[cfg(feature = "reqwest")]
+/// Searches for messages matching a query.
+///
+/// Wraps https://api.slack.com/methods/search.messages
+
+pub fn messages_async(
+    client: &reqwest::Client,
+    token: &str,
+    request: &MessagesRequest,
+) -> impl Future<Item = MessagesResponse, Error = MessagesError<::reqwest::Error>> {
+    let count = request.count.map(|count| count.to_string());
+    let page = request.page.map(|page| page.to_string());
+    let params = vec![
+        Some(("token", token)),
+        Some(("query", request.query)),
+        request.sort.map(|sort| ("sort", sort)),
+        request.sort_dir.map(|sort_dir| ("sort_dir", sort_dir)),
+        request.highlight.map(|highlight| {
+            ("highlight", if highlight { "1" } else { "0" })
+        }),
+        count.as_ref().map(|count| ("count", &count[..])),
+        page.as_ref().map(|page| ("page", &page[..])),
+    ];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = ::get_slack_url_for_method("search.messages");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client
+        .get(url)
+        .send()
+        .map_err(MessagesError::Client)
+        .and_then(|mut result: reqwest::Response| {
+            result.json().map_err(MessagesError::Client)
+        })
+}
+
 
 #[derive(Clone, Default, Debug)]
 pub struct MessagesRequest<'a> {

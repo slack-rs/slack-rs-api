@@ -9,6 +9,11 @@ use std::fmt;
 
 use serde_json;
 
+#[cfg(feature = "reqwest")]
+use reqwest::unstable::async as reqwest;
+#[cfg(feature = "reqwest")]
+use futures::Future;
+
 use requests::SlackWebRequestSender;
 
 /// Create a User Group
@@ -46,6 +51,43 @@ where
         })
         .and_then(|o| o.into())
 }
+
+#[cfg(feature = "reqwest")]
+/// Create a User Group
+///
+/// Wraps https://api.slack.com/methods/usergroups.create
+
+pub fn create_async(
+    client: &reqwest::Client,
+    token: &str,
+    request: &CreateRequest,
+) -> impl Future<Item = CreateResponse, Error = CreateError<::reqwest::Error>> {
+
+    let params = vec![
+        Some(("token", token)),
+        Some(("name", request.name)),
+        request.handle.map(|handle| ("handle", handle)),
+        request.description.map(|description| {
+            ("description", description)
+        }),
+        request.channels.map(|channels| ("channels", channels)),
+        request.include_count.map(|include_count| {
+            ("include_count", if include_count { "1" } else { "0" })
+        }),
+    ];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = ::get_slack_url_for_method("usergroups.create");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client
+        .get(url)
+        .send()
+        .map_err(CreateError::Client)
+        .and_then(|mut result: reqwest::Response| {
+            result.json().map_err(CreateError::Client)
+        })
+}
+
 
 #[derive(Clone, Default, Debug)]
 pub struct CreateRequest<'a> {
@@ -226,6 +268,38 @@ where
         .and_then(|o| o.into())
 }
 
+#[cfg(feature = "reqwest")]
+/// Disable an existing User Group
+///
+/// Wraps https://api.slack.com/methods/usergroups.disable
+
+pub fn disable_async(
+    client: &reqwest::Client,
+    token: &str,
+    request: &DisableRequest,
+) -> impl Future<Item = DisableResponse, Error = DisableError<::reqwest::Error>> {
+
+    let params = vec![
+        Some(("token", token)),
+        Some(("usergroup", request.usergroup)),
+        request.include_count.map(|include_count| {
+            ("include_count", if include_count { "1" } else { "0" })
+        }),
+    ];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = ::get_slack_url_for_method("usergroups.disable");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client
+        .get(url)
+        .send()
+        .map_err(DisableError::Client)
+        .and_then(|mut result: reqwest::Response| {
+            result.json().map_err(DisableError::Client)
+        })
+}
+
+
 #[derive(Clone, Default, Debug)]
 pub struct DisableRequest<'a> {
     /// The encoded ID of the User Group to disable.
@@ -396,6 +470,38 @@ where
         })
         .and_then(|o| o.into())
 }
+
+#[cfg(feature = "reqwest")]
+/// Enable a User Group
+///
+/// Wraps https://api.slack.com/methods/usergroups.enable
+
+pub fn enable_async(
+    client: &reqwest::Client,
+    token: &str,
+    request: &EnableRequest,
+) -> impl Future<Item = EnableResponse, Error = EnableError<::reqwest::Error>> {
+
+    let params = vec![
+        Some(("token", token)),
+        Some(("usergroup", request.usergroup)),
+        request.include_count.map(|include_count| {
+            ("include_count", if include_count { "1" } else { "0" })
+        }),
+    ];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = ::get_slack_url_for_method("usergroups.enable");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client
+        .get(url)
+        .send()
+        .map_err(EnableError::Client)
+        .and_then(|mut result: reqwest::Response| {
+            result.json().map_err(EnableError::Client)
+        })
+}
+
 
 #[derive(Clone, Default, Debug)]
 pub struct EnableRequest<'a> {
@@ -572,6 +678,39 @@ where
         })
         .and_then(|o| o.into())
 }
+
+#[cfg(feature = "reqwest")]
+/// List all User Groups for a team
+///
+/// Wraps https://api.slack.com/methods/usergroups.list
+
+pub fn list_async(
+    client: &reqwest::Client,
+    token: &str,
+    request: &ListRequest,
+) -> impl Future<Item = ListResponse, Error = ListError<::reqwest::Error>> {
+
+    let params = vec![
+        Some(("token", token)),
+        request.include_disabled.map(|include_disabled| {
+            ("include_disabled", if include_disabled { "1" } else { "0" })
+        }),
+        request.include_count.map(|include_count| {
+            ("include_count", if include_count { "1" } else { "0" })
+        }),
+        request.include_users.map(|include_users| {
+            ("include_users", if include_users { "1" } else { "0" })
+        }),
+    ];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = ::get_slack_url_for_method("usergroups.list");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client.get(url).send().map_err(ListError::Client).and_then(
+        |mut result: reqwest::Response| result.json().map_err(ListError::Client),
+    )
+}
+
 
 #[derive(Clone, Default, Debug)]
 pub struct ListRequest {
@@ -751,6 +890,44 @@ where
         })
         .and_then(|o| o.into())
 }
+
+#[cfg(feature = "reqwest")]
+/// Update an existing User Group
+///
+/// Wraps https://api.slack.com/methods/usergroups.update
+
+pub fn update_async(
+    client: &reqwest::Client,
+    token: &str,
+    request: &UpdateRequest,
+) -> impl Future<Item = UpdateResponse, Error = UpdateError<::reqwest::Error>> {
+
+    let params = vec![
+        Some(("token", token)),
+        Some(("usergroup", request.usergroup)),
+        request.name.map(|name| ("name", name)),
+        request.handle.map(|handle| ("handle", handle)),
+        request.description.map(|description| {
+            ("description", description)
+        }),
+        request.channels.map(|channels| ("channels", channels)),
+        request.include_count.map(|include_count| {
+            ("include_count", if include_count { "1" } else { "0" })
+        }),
+    ];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = ::get_slack_url_for_method("usergroups.update");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client
+        .get(url)
+        .send()
+        .map_err(UpdateError::Client)
+        .and_then(|mut result: reqwest::Response| {
+            result.json().map_err(UpdateError::Client)
+        })
+}
+
 
 #[derive(Clone, Default, Debug)]
 pub struct UpdateRequest<'a> {

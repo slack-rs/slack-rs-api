@@ -8,6 +8,11 @@ use std::fmt;
 
 use serde_json;
 
+#[cfg(feature = "reqwest")]
+use reqwest::unstable::async as reqwest;
+#[cfg(feature = "reqwest")]
+use futures::Future;
+
 use requests::SlackWebRequestSender;
 
 /// List all users in a User Group
@@ -40,6 +45,34 @@ where
         })
         .and_then(|o| o.into())
 }
+
+#[cfg(feature = "reqwest")]
+/// List all users in a User Group
+///
+/// Wraps https://api.slack.com/methods/usergroups.users.list
+
+pub fn list_async(
+    client: &reqwest::Client,
+    token: &str,
+    request: &ListRequest,
+) -> impl Future<Item = ListResponse, Error = ListError<::reqwest::Error>> {
+
+    let params = vec![
+        Some(("token", token)),
+        Some(("usergroup", request.usergroup)),
+        request.include_disabled.map(|include_disabled| {
+            ("include_disabled", if include_disabled { "1" } else { "0" })
+        }),
+    ];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = ::get_slack_url_for_method("usergroups.users.list");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client.get(url).send().map_err(ListError::Client).and_then(
+        |mut result: reqwest::Response| result.json().map_err(ListError::Client),
+    )
+}
+
 
 #[derive(Clone, Default, Debug)]
 pub struct ListRequest<'a> {
@@ -212,6 +245,39 @@ where
         })
         .and_then(|o| o.into())
 }
+
+#[cfg(feature = "reqwest")]
+/// Update the list of users for a User Group
+///
+/// Wraps https://api.slack.com/methods/usergroups.users.update
+
+pub fn update_async(
+    client: &reqwest::Client,
+    token: &str,
+    request: &UpdateRequest,
+) -> impl Future<Item = UpdateResponse, Error = UpdateError<::reqwest::Error>> {
+
+    let params = vec![
+        Some(("token", token)),
+        Some(("usergroup", request.usergroup)),
+        Some(("users", request.users)),
+        request.include_count.map(|include_count| {
+            ("include_count", if include_count { "1" } else { "0" })
+        }),
+    ];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = ::get_slack_url_for_method("usergroups.users.update");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client
+        .get(url)
+        .send()
+        .map_err(UpdateError::Client)
+        .and_then(|mut result: reqwest::Response| {
+            result.json().map_err(UpdateError::Client)
+        })
+}
+
 
 #[derive(Clone, Default, Debug)]
 pub struct UpdateRequest<'a> {

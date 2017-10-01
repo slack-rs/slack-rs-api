@@ -9,6 +9,11 @@ use std::fmt;
 
 use serde_json;
 
+#[cfg(feature = "reqwest")]
+use reqwest::unstable::async as reqwest;
+#[cfg(feature = "reqwest")]
+use futures::Future;
+
 use requests::SlackWebRequestSender;
 
 /// Deletes a file.
@@ -35,6 +40,32 @@ where
         })
         .and_then(|o| o.into())
 }
+
+#[cfg(feature = "reqwest")]
+/// Deletes a file.
+///
+/// Wraps https://api.slack.com/methods/files.delete
+
+pub fn delete_async(
+    client: &reqwest::Client,
+    token: &str,
+    request: &DeleteRequest,
+) -> impl Future<Item = DeleteResponse, Error = DeleteError<::reqwest::Error>> {
+
+    let params = vec![Some(("token", token)), Some(("file", request.file))];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = ::get_slack_url_for_method("files.delete");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client
+        .get(url)
+        .send()
+        .map_err(DeleteError::Client)
+        .and_then(|mut result: reqwest::Response| {
+            result.json().map_err(DeleteError::Client)
+        })
+}
+
 
 #[derive(Clone, Default, Debug)]
 pub struct DeleteRequest<'a> {
@@ -209,6 +240,34 @@ where
         })
         .and_then(|o| o.into())
 }
+
+#[cfg(feature = "reqwest")]
+/// Gets information about a team file.
+///
+/// Wraps https://api.slack.com/methods/files.info
+
+pub fn info_async(
+    client: &reqwest::Client,
+    token: &str,
+    request: &InfoRequest,
+) -> impl Future<Item = InfoResponse, Error = InfoError<::reqwest::Error>> {
+    let count = request.count.map(|count| count.to_string());
+    let page = request.page.map(|page| page.to_string());
+    let params = vec![
+        Some(("token", token)),
+        Some(("file", request.file)),
+        count.as_ref().map(|count| ("count", &count[..])),
+        page.as_ref().map(|page| ("page", &page[..])),
+    ];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = ::get_slack_url_for_method("files.info");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client.get(url).send().map_err(InfoError::Client).and_then(
+        |mut result: reqwest::Response| result.json().map_err(InfoError::Client),
+    )
+}
+
 
 #[derive(Clone, Default, Debug)]
 pub struct InfoRequest<'a> {
@@ -388,6 +447,40 @@ where
         })
         .and_then(|o| o.into())
 }
+
+#[cfg(feature = "reqwest")]
+/// Lists & filters team files.
+///
+/// Wraps https://api.slack.com/methods/files.list
+
+pub fn list_async(
+    client: &reqwest::Client,
+    token: &str,
+    request: &ListRequest,
+) -> impl Future<Item = ListResponse, Error = ListError<::reqwest::Error>> {
+    let ts_from = request.ts_from.map(|ts_from| ts_from.to_string());
+    let ts_to = request.ts_to.map(|ts_to| ts_to.to_string());
+    let count = request.count.map(|count| count.to_string());
+    let page = request.page.map(|page| page.to_string());
+    let params = vec![
+        Some(("token", token)),
+        request.user.map(|user| ("user", user)),
+        request.channel.map(|channel| ("channel", channel)),
+        ts_from.as_ref().map(|ts_from| ("ts_from", &ts_from[..])),
+        ts_to.as_ref().map(|ts_to| ("ts_to", &ts_to[..])),
+        request.types.map(|types| ("types", types)),
+        count.as_ref().map(|count| ("count", &count[..])),
+        page.as_ref().map(|page| ("page", &page[..])),
+    ];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = ::get_slack_url_for_method("files.list");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client.get(url).send().map_err(ListError::Client).and_then(
+        |mut result: reqwest::Response| result.json().map_err(ListError::Client),
+    )
+}
+
 
 #[derive(Clone, Default, Debug)]
 pub struct ListRequest<'a> {
@@ -580,6 +673,32 @@ where
         .and_then(|o| o.into())
 }
 
+#[cfg(feature = "reqwest")]
+/// Revokes public/external sharing access for a file
+///
+/// Wraps https://api.slack.com/methods/files.revokePublicURL
+
+pub fn revoke_public_url_async(
+    client: &reqwest::Client,
+    token: &str,
+    request: &RevokePublicURLRequest,
+) -> impl Future<Item = RevokePublicURLResponse, Error = RevokePublicURLError<::reqwest::Error>> {
+
+    let params = vec![Some(("token", token)), Some(("file", request.file))];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = ::get_slack_url_for_method("files.revokePublicURL");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client
+        .get(url)
+        .send()
+        .map_err(RevokePublicURLError::Client)
+        .and_then(|mut result: reqwest::Response| {
+            result.json().map_err(RevokePublicURLError::Client)
+        })
+}
+
+
 #[derive(Clone, Default, Debug)]
 pub struct RevokePublicURLRequest<'a> {
     /// File to revoke
@@ -752,6 +871,32 @@ where
         })
         .and_then(|o| o.into())
 }
+
+#[cfg(feature = "reqwest")]
+/// Enables a file for public/external sharing.
+///
+/// Wraps https://api.slack.com/methods/files.sharedPublicURL
+
+pub fn shared_public_url_async(
+    client: &reqwest::Client,
+    token: &str,
+    request: &SharedPublicURLRequest,
+) -> impl Future<Item = SharedPublicURLResponse, Error = SharedPublicURLError<::reqwest::Error>> {
+
+    let params = vec![Some(("token", token)), Some(("file", request.file))];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = ::get_slack_url_for_method("files.sharedPublicURL");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client
+        .get(url)
+        .send()
+        .map_err(SharedPublicURLError::Client)
+        .and_then(|mut result: reqwest::Response| {
+            result.json().map_err(SharedPublicURLError::Client)
+        })
+}
+
 
 #[derive(Clone, Default, Debug)]
 pub struct SharedPublicURLRequest<'a> {

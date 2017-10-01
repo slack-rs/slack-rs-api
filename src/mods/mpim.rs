@@ -9,6 +9,11 @@ use std::fmt;
 
 use serde_json;
 
+#[cfg(feature = "reqwest")]
+use reqwest::unstable::async as reqwest;
+#[cfg(feature = "reqwest")]
+use futures::Future;
+
 use requests::SlackWebRequestSender;
 
 /// Closes a multiparty direct message channel.
@@ -35,6 +40,32 @@ where
         })
         .and_then(|o| o.into())
 }
+
+#[cfg(feature = "reqwest")]
+/// Closes a multiparty direct message channel.
+///
+/// Wraps https://api.slack.com/methods/mpim.close
+
+pub fn close_async(
+    client: &reqwest::Client,
+    token: &str,
+    request: &CloseRequest,
+) -> impl Future<Item = CloseResponse, Error = CloseError<::reqwest::Error>> {
+
+    let params = vec![Some(("token", token)), Some(("channel", request.channel))];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = ::get_slack_url_for_method("mpim.close");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client
+        .get(url)
+        .send()
+        .map_err(CloseError::Client)
+        .and_then(|mut result: reqwest::Response| {
+            result.json().map_err(CloseError::Client)
+        })
+}
+
 
 #[derive(Clone, Default, Debug)]
 pub struct CloseRequest<'a> {
@@ -207,6 +238,44 @@ where
         })
         .and_then(|o| o.into())
 }
+
+#[cfg(feature = "reqwest")]
+/// Fetches history of messages and events from a multiparty direct message.
+///
+/// Wraps https://api.slack.com/methods/mpim.history
+
+pub fn history_async(
+    client: &reqwest::Client,
+    token: &str,
+    request: &HistoryRequest,
+) -> impl Future<Item = HistoryResponse, Error = HistoryError<::reqwest::Error>> {
+    let count = request.count.map(|count| count.to_string());
+    let params = vec![
+        Some(("token", token)),
+        Some(("channel", request.channel)),
+        request.latest.map(|latest| ("latest", latest)),
+        request.oldest.map(|oldest| ("oldest", oldest)),
+        request.inclusive.map(|inclusive| {
+            ("inclusive", if inclusive { "1" } else { "0" })
+        }),
+        count.as_ref().map(|count| ("count", &count[..])),
+        request.unreads.map(|unreads| {
+            ("unreads", if unreads { "1" } else { "0" })
+        }),
+    ];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = ::get_slack_url_for_method("mpim.history");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client
+        .get(url)
+        .send()
+        .map_err(HistoryError::Client)
+        .and_then(|mut result: reqwest::Response| {
+            result.json().map_err(HistoryError::Client)
+        })
+}
+
 
 #[derive(Clone, Default, Debug)]
 pub struct HistoryRequest<'a> {
@@ -385,6 +454,24 @@ where
         .and_then(|o| o.into())
 }
 
+#[cfg(feature = "reqwest")]
+/// Lists multiparty direct message channels for the calling user.
+///
+/// Wraps https://api.slack.com/methods/mpim.list
+
+pub fn list_async(
+    client: &reqwest::Client,
+) -> impl Future<Item = ListResponse, Error = ListError<::reqwest::Error>> {
+    let params: &[(&str, &str)] = &[];
+    let url = ::get_slack_url_for_method("mpim.list");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client.get(url).send().map_err(ListError::Client).and_then(
+        |mut result: reqwest::Response| result.json().map_err(ListError::Client),
+    )
+}
+
+
 #[derive(Clone, Debug, Deserialize)]
 pub struct ListResponse {
     error: Option<String>,
@@ -535,6 +622,32 @@ where
         })
         .and_then(|o| o.into())
 }
+
+#[cfg(feature = "reqwest")]
+/// Sets the read cursor in a multiparty direct message channel.
+///
+/// Wraps https://api.slack.com/methods/mpim.mark
+
+pub fn mark_async(
+    client: &reqwest::Client,
+    token: &str,
+    request: &MarkRequest,
+) -> impl Future<Item = MarkResponse, Error = MarkError<::reqwest::Error>> {
+
+    let params = vec![
+        Some(("token", token)),
+        Some(("channel", request.channel)),
+        Some(("ts", request.ts)),
+    ];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = ::get_slack_url_for_method("mpim.mark");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client.get(url).send().map_err(MarkError::Client).and_then(
+        |mut result: reqwest::Response| result.json().map_err(MarkError::Client),
+    )
+}
+
 
 #[derive(Clone, Default, Debug)]
 pub struct MarkRequest<'a> {
@@ -701,6 +814,28 @@ where
         })
         .and_then(|o| o.into())
 }
+
+#[cfg(feature = "reqwest")]
+/// This method opens a multiparty direct message.
+///
+/// Wraps https://api.slack.com/methods/mpim.open
+
+pub fn open_async(
+    client: &reqwest::Client,
+    token: &str,
+    request: &OpenRequest,
+) -> impl Future<Item = OpenResponse, Error = OpenError<::reqwest::Error>> {
+
+    let params = vec![Some(("token", token)), Some(("users", request.users))];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = ::get_slack_url_for_method("mpim.open");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client.get(url).send().map_err(OpenError::Client).and_then(
+        |mut result: reqwest::Response| result.json().map_err(OpenError::Client),
+    )
+}
+
 
 #[derive(Clone, Default, Debug)]
 pub struct OpenRequest<'a> {
@@ -872,6 +1007,36 @@ where
         })
         .and_then(|o| o.into())
 }
+
+#[cfg(feature = "reqwest")]
+/// Retrieve a thread of messages posted to a direct message conversation from a multiparty direct message.
+///
+/// Wraps https://api.slack.com/methods/mpim.replies
+
+pub fn replies_async(
+    client: &reqwest::Client,
+    token: &str,
+    request: &RepliesRequest,
+) -> impl Future<Item = RepliesResponse, Error = RepliesError<::reqwest::Error>> {
+
+    let params = vec![
+        Some(("token", token)),
+        Some(("channel", request.channel)),
+        Some(("thread_ts", request.thread_ts)),
+    ];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = ::get_slack_url_for_method("mpim.replies");
+    let mut url = ::reqwest::Url::parse(&url).expect("Unable to parse url");
+    url.query_pairs_mut().extend_pairs(params);
+    client
+        .get(url)
+        .send()
+        .map_err(RepliesError::Client)
+        .and_then(|mut result: reqwest::Response| {
+            result.json().map_err(RepliesError::Client)
+        })
+}
+
 
 #[derive(Clone, Default, Debug)]
 pub struct RepliesRequest<'a> {
