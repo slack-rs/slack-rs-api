@@ -15,10 +15,17 @@
 //! Low-level, direct interface for the [Slack Web
 //! API](https://api.slack.com/methods).
 
+#![cfg_attr(feature = "reqwest", feature(conservative_impl_trait))]
+
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
 extern crate serde_json;
+
+#[cfg(feature = "reqwest")]
+extern crate futures;
+#[cfg(feature = "reqwest")]
+extern crate reqwest;
 
 mod mods;
 pub use mods::*;

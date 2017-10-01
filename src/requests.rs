@@ -34,7 +34,7 @@ mod reqwest_support {
 
             let mut response = self.get(url).send()?;
             let mut res_str = String::new();
-            response.read_to_string(&mut res_str).map_err(reqwest::HyperError::from)?;
+            response.read_to_string(&mut res_str).unwrap();
 
             Ok(res_str)
         }
@@ -49,7 +49,7 @@ mod reqwest_support {
     /// let client = slack_api::requests::default_client().unwrap();
     /// let response = slack_api::channels::list(&client, &token, &Default::default());
     /// ```
-    pub fn default_client() -> Result<reqwest::Client, reqwest::Error> {
+    pub fn default_client() -> reqwest::Client {
         reqwest::Client::new()
     }
 }

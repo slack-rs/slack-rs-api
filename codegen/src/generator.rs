@@ -22,6 +22,11 @@ impl Module {
 
             use serde_json;
 
+            #[cfg(feature = \"reqwest\")]
+            use reqwest::unstable::async as reqwest;
+            #[cfg(feature = \"reqwest\")]
+            use futures::Future;
+
             use ::requests::SlackWebRequestSender;
 
             {methods}",
@@ -87,6 +92,22 @@ impl Method {
             base_call
         };
 
+        let send_async_call = {
+            format!("\
+                let url = ::get_slack_url_for_method(\"{name}\");
+                let mut url = ::reqwest::Url::parse(&url).expect(\"Unable to parse url\");
+                url.query_pairs_mut().extend_pairs(params);
+                client.get(url)
+                    .send()
+                    .map_err({error_type}::Client)
+                    .and_then(|mut result: reqwest::Response| {{
+                          result.json().map_err({error_type}::Client)
+                    }})",
+                name = self.name,
+                error_type = error_enum_name,
+            )
+        };
+
         if self.params.is_empty() {
             format!("\
                 {documentation}
@@ -120,6 +141,16 @@ impl Method {
                     {send_call}
                 }}
 
+                #[cfg(feature = \"reqwest\")]
+                {documentation}
+                pub fn {method_name}_async(
+                    client: &reqwest::Client,
+                    ) -> impl Future<Item={response_type}, Error={error_type}<::reqwest::Error>>
+                {{
+                     let params: &[(&str, &str)] = &[];
+                     {send_async_call}
+                }}
+
                 {response}
                 ",
                 documentation = format_docs("///", &[
@@ -131,7 +162,8 @@ impl Method {
                 response_type = response_struct_name,
                 error_type = error_enum_name,
                 response = response,
-                send_call = send_call
+                send_call = send_call,
+                send_async_call = send_async_call,
             )
         } else {
             let has_token = self.params.iter().any(|p| p.ty == "auth_token");
@@ -139,6 +171,11 @@ impl Method {
                 format!("client: &R, token: &str, request: &{}", request_struct_name)
             } else {
                 format!("client: &R, request: &{}", request_struct_name)
+            };
+            let method_async_params = if has_token {
+                format!("client: &reqwest::Client, token: &str, request: &{}", request_struct_name)
+            } else {
+                format!("client: &reqwest::Client, request: &{}", request_struct_name)
             };
             format!("\
                 {documentation}
@@ -152,6 +189,20 @@ impl Method {
                     ];
                     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
                     {send_call}
+                }}
+
+                #[cfg(feature = \"reqwest\")]
+                {documentation}
+                pub fn {method_name}_async({method_async_params})
+                    -> impl Future<Item={response_type}, Error={error_type}<::reqwest::Error>>
+                {{
+                    {local_vars}
+                    let params = vec![
+                        {token}
+                        {param_pairs}
+                    ];
+                    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+                    {send_async_call}
                 }}
 
                 {request}
@@ -169,6 +220,7 @@ impl Method {
                 response = response,
                 request = self.get_request_struct(&request_struct_name),
                 method_params = method_params,
+                method_async_params = method_async_params,
                 token = if has_token { "Some((\"token\", token))," } else { "" },
                 local_vars = self.params.iter()
                     .filter(|p| p.ty != "auth_token") // passed in method params instead
@@ -182,7 +234,8 @@ impl Method {
                     .map(Param::get_pair)
                     .collect::<Vec<String>>()
                     .join(",\n"),
-                send_call = send_call
+                send_call = send_call,
+                send_async_call = send_async_call,
             )
         }
     }
