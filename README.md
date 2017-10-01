@@ -11,7 +11,7 @@
 Add this to your `Cargo.toml`:
 ```toml
 [dependencies]
-slack_api = "0.17.0"
+slack_api = "0.18.0"
 ```
 
 and this to your crate root:
