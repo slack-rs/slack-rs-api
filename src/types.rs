@@ -603,8 +603,10 @@ pub struct MessageMeMessage {
 #[derive(Clone, Debug, Deserialize)]
 pub struct MessageMessageChanged {
     pub channel: Option<String>,
+    pub event_ts: Option<String>,
     pub hidden: Option<bool>,
     pub message: Option<MessageMessageChangedMessage>,
+    pub previous_message: Option<MessageMessageChangedPreviousMessage>,
     pub subtype: Option<String>,
     pub ts: Option<String>,
     #[serde(rename = "type")]
@@ -613,11 +615,19 @@ pub struct MessageMessageChanged {
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct MessageMessageChangedMessage {
+    pub bot_id: Option<String>,
     pub edited: Option<MessageMessageChangedMessageEdited>,
+    pub last_read: Option<String>,
+    pub parent_user_id: Option<String>,
+    pub replies: Option<Vec<MessageMessageChangedMessageReply>>,
+    pub reply_count: Option<i32>,
+    pub subscribed: Option<bool>,
     pub text: Option<String>,
+    pub thread_ts: Option<String>,
     pub ts: Option<String>,
     #[serde(rename = "type")]
     pub ty: Option<String>,
+    pub unread_count: Option<i32>,
     pub user: Option<String>,
 }
 
@@ -629,14 +639,86 @@ pub struct MessageMessageChangedMessageEdited {
 
 
 #[derive(Clone, Debug, Deserialize)]
+pub struct MessageMessageChangedMessageReply {
+    pub ts: Option<String>,
+    pub user: Option<String>,
+}
+
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct MessageMessageChangedPreviousMessage {
+    pub bot_id: Option<String>,
+    pub edited: Option<MessageMessageChangedPreviousMessageEdited>,
+    pub last_read: Option<String>,
+    pub parent_user_id: Option<String>,
+    pub replies: Option<Vec<MessageMessageChangedPreviousMessageReply>>,
+    pub reply_count: Option<i32>,
+    pub subscribed: Option<bool>,
+    pub text: Option<String>,
+    pub thread_ts: Option<String>,
+    pub ts: Option<String>,
+    #[serde(rename = "type")]
+    pub ty: Option<String>,
+    pub unread_count: Option<i32>,
+    pub user: Option<String>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct MessageMessageChangedPreviousMessageEdited {
+    pub ts: Option<String>,
+    pub user: Option<String>,
+}
+
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct MessageMessageChangedPreviousMessageReply {
+    pub ts: Option<String>,
+    pub user: Option<String>,
+}
+
+
+#[derive(Clone, Debug, Deserialize)]
 pub struct MessageMessageDeleted {
     pub channel: Option<String>,
     pub deleted_ts: Option<String>,
+    pub event_ts: Option<String>,
     pub hidden: Option<bool>,
+    pub previous_message: Option<MessageMessageDeletedPreviousMessage>,
     pub subtype: Option<String>,
     pub ts: Option<String>,
     #[serde(rename = "type")]
     pub ty: Option<String>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct MessageMessageDeletedPreviousMessage {
+    pub bot_id: Option<String>,
+    pub edited: Option<MessageMessageDeletedPreviousMessageEdited>,
+    pub last_read: Option<String>,
+    pub parent_user_id: Option<String>,
+    pub replies: Option<Vec<MessageMessageDeletedPreviousMessageReply>>,
+    pub reply_count: Option<i32>,
+    pub subscribed: Option<bool>,
+    pub text: Option<String>,
+    pub thread_ts: Option<String>,
+    pub ts: Option<String>,
+    #[serde(rename = "type")]
+    pub ty: Option<String>,
+    pub unread_count: Option<i32>,
+    pub user: Option<String>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct MessageMessageDeletedPreviousMessageEdited {
+    pub ts: Option<String>,
+    pub user: Option<String>,
+}
+
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct MessageMessageDeletedPreviousMessageReply {
+    pub ts: Option<String>,
+    pub user: Option<String>,
 }
 
 
@@ -647,6 +729,7 @@ pub struct MessageMessageReplied {
     pub hidden: Option<bool>,
     pub message: Option<MessageMessageRepliedMessage>,
     pub subtype: Option<String>,
+    pub thread_ts: Option<String>,
     pub ts: Option<String>,
     #[serde(rename = "type")]
     pub ty: Option<String>,
@@ -654,15 +737,28 @@ pub struct MessageMessageReplied {
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct MessageMessageRepliedMessage {
+    pub bot_id: Option<String>,
+    pub edited: Option<MessageMessageRepliedMessageEdited>,
+    pub last_read: Option<String>,
+    pub parent_user_id: Option<String>,
     pub replies: Option<Vec<MessageMessageRepliedMessageReply>>,
     pub reply_count: Option<i32>,
+    pub subscribed: Option<bool>,
     pub text: Option<String>,
     pub thread_ts: Option<String>,
     pub ts: Option<String>,
     #[serde(rename = "type")]
     pub ty: Option<String>,
+    pub unread_count: Option<i32>,
     pub user: Option<String>,
 }
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct MessageMessageRepliedMessageEdited {
+    pub ts: Option<String>,
+    pub user: Option<String>,
+}
+
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct MessageMessageRepliedMessageReply {
@@ -720,9 +816,15 @@ pub struct MessageReplyBroadcastAttachment {
 #[derive(Clone, Debug, Deserialize)]
 pub struct MessageStandard {
     pub attachments: Option<Vec<MessageStandardAttachment>>,
+    pub bot_id: Option<String>,
     pub channel: Option<String>,
     pub edited: Option<MessageStandardEdited>,
+    pub event_ts: Option<String>,
+    pub reply_broadcast: Option<bool>,
+    pub source_team: Option<String>,
+    pub team: Option<String>,
     pub text: Option<String>,
+    pub thread_ts: Option<String>,
     pub ts: Option<String>,
     #[serde(rename = "type")]
     pub ty: Option<String>,
