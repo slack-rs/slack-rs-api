@@ -15,8 +15,7 @@ futures = "0.1.16"
 
 [dependencies.reqwest]
 optional = true
-git = "https://github.com/seanmonstar/reqwest"
-rev = "a646bb56deccf7004d7069e5b13bbbf8042598d7"
+version = "0.8.0"
 features = ["unstable"]
 
 [features]
