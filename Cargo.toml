@@ -11,12 +11,15 @@ version = "0.18.0"
 serde = "1.0"
 serde_derive = "1.0"
 serde_json = "1.0"
-futures = "0.1.16"
 
 [dependencies.reqwest]
 optional = true
 version = "0.8.0"
 features = ["unstable"]
 
+[dependencies.futures]
+optional = true
+version = "0.1.16"
+
 [features]
-default = ["reqwest"]
+default = ["reqwest", "futures"]
