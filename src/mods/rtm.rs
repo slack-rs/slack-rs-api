@@ -196,6 +196,15 @@ where
         request.no_latest.map(|no_latest| {
             ("no_latest", if no_latest { "1" } else { "0" })
         }),
+        request.batch_presence_aware.map(|batch_presence_aware| {
+            (
+                "batch_presence_aware",
+                if batch_presence_aware { "1" } else { "0" },
+            )
+        }),
+        request.include_locale.map(|include_locale| {
+            ("include_locale", if include_locale { "1" } else { "0" })
+        }),
     ];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = ::get_slack_url_for_method("rtm.start");
@@ -216,6 +225,10 @@ pub struct StartRequest {
     pub mpim_aware: Option<bool>,
     /// Exclude latest timestamps for channels, groups, mpims, and ims. Automatically sets no_unreads to 1
     pub no_latest: Option<bool>,
+    /// Only deliver presence events when requested by subscription. See [presence subscriptions](/docs/presence-and-status#subscriptions).
+    pub batch_presence_aware: Option<bool>,
+    /// Set this to `true` to receive the locale for users and channels. Defaults to `false`
+    pub include_locale: Option<bool>,
 }
 
 #[derive(Clone, Debug, Deserialize)]

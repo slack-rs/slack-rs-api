@@ -18,6 +18,7 @@ pub struct BotIcons {
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct Channel {
+    pub accepted_user: Option<String>,
     pub created: Option<i32>,
     pub creator: Option<String>,
     pub id: Option<String>,
@@ -25,12 +26,24 @@ pub struct Channel {
     pub is_channel: Option<bool>,
     pub is_general: Option<bool>,
     pub is_member: Option<bool>,
+    pub is_moved: Option<i32>,
+    pub is_mpim: Option<bool>,
+    pub is_org_shared: Option<bool>,
+    pub is_pending_ext_shared: Option<bool>,
+    pub is_private: Option<bool>,
+    pub is_read_only: Option<bool>,
+    pub is_shared: Option<bool>,
     pub last_read: Option<String>,
     pub latest: Option<::Message>,
     pub members: Option<Vec<String>>,
     pub name: Option<String>,
+    pub name_normalized: Option<String>,
+    pub num_members: Option<i32>,
+    pub previous_names: Option<Vec<String>>,
+    pub priority: Option<i32>,
     pub purpose: Option<ChannelPurpose>,
     pub topic: Option<ChannelTopic>,
+    pub unlinked: Option<i32>,
     pub unread_count: Option<i32>,
     pub unread_count_display: Option<i32>,
 }
@@ -955,13 +968,22 @@ pub struct User {
     pub has_2fa: Option<bool>,
     pub id: Option<String>,
     pub is_admin: Option<bool>,
+    pub is_app_user: Option<bool>,
+    pub is_bot: Option<bool>,
     pub is_owner: Option<bool>,
     pub is_primary_owner: Option<bool>,
     pub is_restricted: Option<bool>,
     pub is_ultra_restricted: Option<bool>,
+    pub locale: Option<String>,
     pub name: Option<String>,
     pub profile: Option<::UserProfile>,
+    pub real_name: Option<String>,
+    pub team_id: Option<String>,
     pub two_factor_type: Option<String>,
+    pub tz: Option<String>,
+    pub tz_label: Option<String>,
+    pub tz_offset: Option<f32>,
+    pub updated: Option<f32>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -992,12 +1014,15 @@ pub struct UsergroupPrefs {
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct UserProfile {
+    pub avatar_hash: Option<String>,
+    pub display_name: Option<String>,
+    pub display_name_normalized: Option<String>,
     pub email: Option<String>,
     #[serde(deserialize_with = "::optional_struct_or_empty_array")]
     #[serde(default)]
     pub fields: Option<HashMap<String, UserProfileFields>>,
     pub first_name: Option<String>,
-    pub image_1024: Option<String>,
+    pub guest_channels: Option<String>,
     pub image_192: Option<String>,
     pub image_24: Option<String>,
     pub image_32: Option<String>,
@@ -1007,7 +1032,13 @@ pub struct UserProfile {
     pub image_original: Option<String>,
     pub last_name: Option<String>,
     pub phone: Option<String>,
+    pub real_name: Option<String>,
+    pub real_name_normalized: Option<String>,
     pub skype: Option<String>,
+    pub status_emoji: Option<String>,
+    pub status_text: Option<String>,
+    pub team: Option<String>,
+    pub title: Option<String>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
