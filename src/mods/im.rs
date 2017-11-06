@@ -376,11 +376,21 @@ impl<E: Error> Error for HistoryError<E> {
 ///
 /// Wraps https://api.slack.com/methods/im.list
 
-pub fn list<R>(client: &R, token: &str) -> Result<ListResponse, ListError<R::Error>>
+pub fn list<R>(
+    client: &R,
+    token: &str,
+    request: &ListRequest,
+) -> Result<ListResponse, ListError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = &[("token", token)];
+    let limit = request.limit.map(|limit| limit.to_string());
+    let params = vec![
+        Some(("token", token)),
+        request.cursor.map(|cursor| ("cursor", cursor)),
+        limit.as_ref().map(|limit| ("limit", &limit[..])),
+    ];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = ::get_slack_url_for_method("im.list");
     client
         .send(&url, &params[..])
@@ -389,6 +399,14 @@ where
             serde_json::from_str::<ListResponse>(&result).map_err(ListError::MalformedResponse)
         })
         .and_then(|o| o.into())
+}
+
+#[derive(Clone, Default, Debug)]
+pub struct ListRequest<'a> {
+    /// Paginate through collections of data by setting the `cursor` parameter to a `next_cursor` attribute returned by a previous request's `response_metadata`. Default value fetches the first "page" of the collection. See pagination for more detail.
+    pub cursor: Option<&'a str>,
+    /// The maximum number of items to return. Fewer than the requested number of items may be returned, even if the end of the users list hasn't been reached.
+    pub limit: Option<u32>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
