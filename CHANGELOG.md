@@ -1,3 +1,6 @@
+# 0.19.0
+* Updates to API to include fields mainly in user/user_profile and channel info
+
 # 0.18.0
 * Serde 1.0.0 **breaking change, your serde must also be ~1.0.0**
 * Updates to API to include fields for "Threading messages" and a couple of other missing fields in messages
