@@ -192,6 +192,7 @@ pub enum Message {
     PinnedItem(MessagePinnedItem),
     ReplyBroadcast(MessageReplyBroadcast),
     UnpinnedItem(MessageUnpinnedItem),
+    SlackbotResponse(MessageSlackbotResponse),
 }
 
 impl<'de> ::serde::Deserialize<'de> for Message {
@@ -228,6 +229,7 @@ impl<'de> ::serde::Deserialize<'de> for Message {
             "pinned_item",
             "reply_broadcast",
             "unpinned_item",
+            "slackbot_response",
         ];
 
         let value = ::serde_json::Value::deserialize(deserializer)?;
@@ -362,6 +364,11 @@ impl<'de> ::serde::Deserialize<'de> for Message {
                     "unpinned_item" => {
                         ::serde_json::from_value::<MessageUnpinnedItem>(value.clone())
                             .map(Message::UnpinnedItem)
+                            .map_err(|e| D::Error::custom(&format!("{}", e)))
+                    }
+                    "slackbot_response" => {
+                        ::serde_json::from_value::<MessageSlackbotResponse>(value.clone())
+                            .map(Message::SlackbotResponse)
                             .map_err(|e| D::Error::custom(&format!("{}", e)))
                     }
                     _ => Err(D::Error::unknown_variant(ty, VARIANTS)),
@@ -860,6 +867,7 @@ pub struct MessageStandardAttachment {
     pub thumb_url: Option<String>,
     pub title: Option<String>,
     pub title_link: Option<String>,
+    #[serde(skip)] // This field is sometimes a String, sometimes an integer
     pub ts: Option<f32>,
 }
 
@@ -893,6 +901,15 @@ pub struct MessageUnpinnedItem {
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct MessageUnpinnedItemItem {}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct MessageSlackbotResponse {
+    pub text: Option<String>,
+    pub ts: Option<String>,
+    #[serde(rename = "type")]
+    pub ty: Option<String>,
+    pub user: Option<String>,
+}
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct Mpim {
