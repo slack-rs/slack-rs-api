@@ -254,8 +254,6 @@ pub enum Message {
     PinnedItem(MessagePinnedItem),
     ReplyBroadcast(MessageReplyBroadcast),
     UnpinnedItem(MessageUnpinnedItem),
-    SlackbotResponse(MessageSlackbotResponse),
-    ThreadBroadcast(MessageThreadBroadcast),
 }
 
 impl<'de> ::serde::Deserialize<'de> for Message {
@@ -268,8 +266,6 @@ impl<'de> ::serde::Deserialize<'de> for Message {
         const VARIANTS: &'static [&'static str] = &[
             "standard",
             "bot_message",
-            //"bot_add",
-            //"bot_remove",
             "channel_archive",
             "channel_join",
             "channel_leave",
@@ -430,7 +426,8 @@ impl<'de> ::serde::Deserialize<'de> for Message {
                             .map(Message::UnpinnedItem)
                             .map_err(|e| D::Error::custom(&format!("{}", e)))
                     }
-               }
+                    _ => Err(D::Error::unknown_variant(ty, VARIANTS)),
+                }
             } else {
                 Err(D::Error::invalid_type(
                     ::serde::de::Unexpected::Unit,
@@ -961,6 +958,7 @@ pub struct MessageUnpinnedItem {
 #[derive(Clone, Debug, Deserialize)]
 pub struct MessageUnpinnedItemItem {}
 
+#[derive(Clone, Debug, Deserialize)]
 pub struct Mpim {
     pub created: Option<i32>,
     pub creator: Option<String>,
