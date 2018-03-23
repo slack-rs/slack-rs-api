@@ -28,7 +28,7 @@ pub fn deserialize_timestamp<'d, D: Deserializer<'d>>(d: D) -> Result<Option<Tim
 	impl<'d> Visitor<'d> for TimestampVisitor {
         type Value = Option<Timestamp>;
 
-		fn expecting(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        fn expecting(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
             write!(fmt, "an f64, u64, or parseable string")
         }
 
