@@ -220,6 +220,8 @@ pub struct Im {
 pub enum Message {
     Standard(MessageStandard),
     BotMessage(MessageBotMessage),
+    //BotAdd(MessageBotAdd),
+    //BotRemove(MessageBotRemove), // TODO: I aasume this must be here, but I've never actually seen one
     ChannelArchive(MessageChannelArchive),
     ChannelJoin(MessageChannelJoin),
     ChannelLeave(MessageChannelLeave),
@@ -256,6 +258,8 @@ impl<'de> ::serde::Deserialize<'de> for Message {
         const VARIANTS: &'static [&'static str] = &[
             "standard",
             "bot_message",
+            //"bot_add",
+            //"bot_remove",
             "channel_archive",
             "channel_join",
             "channel_leave",
@@ -280,7 +284,7 @@ impl<'de> ::serde::Deserialize<'de> for Message {
             "pinned_item",
             "reply_broadcast",
             "unpinned_item",
-        ];
+       ];
 
         let value = ::serde_json::Value::deserialize(deserializer)?;
         if let Some(ty_val) = value.get("subtype") {
@@ -416,7 +420,7 @@ impl<'de> ::serde::Deserialize<'de> for Message {
                             .map(Message::UnpinnedItem)
                             .map_err(|e| D::Error::custom(&format!("{}", e)))
                     }
-                    _ => Err(D::Error::unknown_variant(ty, VARIANTS)),
+                   _ => Err(D::Error::unknown_variant(ty, VARIANTS)),
                 }
             } else {
                 Err(D::Error::invalid_type(
@@ -948,7 +952,6 @@ pub struct MessageUnpinnedItem {
 #[derive(Clone, Debug, Deserialize)]
 pub struct MessageUnpinnedItemItem {}
 
-#[derive(Clone, Debug, Deserialize)]
 pub struct Mpim {
     pub created: Option<i32>,
     pub creator: Option<String>,
