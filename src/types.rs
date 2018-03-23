@@ -220,6 +220,8 @@ pub struct Im {
 pub enum Message {
     Standard(MessageStandard),
     BotMessage(MessageBotMessage),
+    //BotAdd(MessageBotAdd),
+    //BotRemove(MessageBotRemove), // TODO: I aasume this must be here, but I've never actually seen one
     ChannelArchive(MessageChannelArchive),
     ChannelJoin(MessageChannelJoin),
     ChannelLeave(MessageChannelLeave),
@@ -245,6 +247,7 @@ pub enum Message {
     ReplyBroadcast(MessageReplyBroadcast),
     UnpinnedItem(MessageUnpinnedItem),
     SlackbotResponse(MessageSlackbotResponse),
+    ThreadBroadcast(MessageThreadBroadcast),
 }
 
 impl<'de> ::serde::Deserialize<'de> for Message {
@@ -257,6 +260,8 @@ impl<'de> ::serde::Deserialize<'de> for Message {
         const VARIANTS: &'static [&'static str] = &[
             "standard",
             "bot_message",
+            //"bot_add",
+            //"bot_remove",
             "channel_archive",
             "channel_join",
             "channel_leave",
@@ -282,6 +287,7 @@ impl<'de> ::serde::Deserialize<'de> for Message {
             "reply_broadcast",
             "unpinned_item",
             "slackbot_response",
+            "thread_broadcast",
         ];
 
         let value = ::serde_json::Value::deserialize(deserializer)?;
@@ -421,6 +427,11 @@ impl<'de> ::serde::Deserialize<'de> for Message {
                     "slackbot_response" => {
                         ::serde_json::from_value::<MessageSlackbotResponse>(value.clone())
                             .map(Message::SlackbotResponse)
+                            .map_err(|e| D::Error::custom(&format!("{}", e)))
+                    }
+                    "thread_broadcast" => {
+                        ::serde_json::from_value::<MessageThreadBroadcast>(value.clone())
+                            .map(Message::ThreadBroadcast)
                             .map_err(|e| D::Error::custom(&format!("{}", e)))
                     }
                     _ => Err(D::Error::unknown_variant(ty, VARIANTS)),
@@ -962,6 +973,17 @@ pub struct MessageSlackbotResponse {
     #[serde(rename = "type")]
     pub ty: Option<String>,
     pub user: Option<String>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct MessageThreadBroadcast {
+    pub text: Option<String>,
+    #[serde(rename = "type")]
+    pub ty: Option<String>,
+    pub thread_ts: Option<String>,
+    pub root: Option<MessageStandard>,
+    pub user: Option<String>,
+    pub ts: Option<String>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
