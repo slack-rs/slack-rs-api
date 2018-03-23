@@ -8,18 +8,18 @@ use serde::de::{Visitor, Error, Unexpected};
 #[derive(Clone, Debug)]
 pub struct Timestamp {
     string_repr: String,
-    f32_repr: f32,
+    float_repr: f64,
 }
 
 impl cmp::PartialEq for Timestamp {
     fn eq(&self, other: &Timestamp) -> bool {
-        self.f32_repr.eq(&other.f32_repr)
+        self.float_repr.eq(&other.float_repr)
     }
 }
 
 impl cmp::PartialOrd for Timestamp {
     fn partial_cmp(&self, other: &Timestamp) -> Option<cmp::Ordering> {
-        self.f32_repr.partial_cmp(&other.f32_repr)
+        self.float_repr.partial_cmp(&other.float_repr)
     }
 }
 
@@ -30,23 +30,31 @@ pub fn deserialize_timestamp<'d, D: Deserializer<'d>>(d: D) -> Result<Option<Tim
 		type Value = Option<Timestamp>;
 
 		fn expecting(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-			write!(fmt, "an f32 or parseable string")
+			write!(fmt, "an f64, u32, or parseable string")
 		}
 
-		fn visit_f32<E: Error>(self, v: f32) -> Result<Option<Timestamp>, E> {
+		fn visit_f64<E: Error>(self, v: f64) -> Result<Option<Timestamp>, E> {
             Ok(Some(Timestamp {
                 string_repr: v.to_string(),
-                f32_repr: v,
+                float_repr: v,
             }))
         }
 
 		fn visit_str<E: Error>(self, v: &str) -> Result<Option<Timestamp>, E> {
 		    Ok(Some(Timestamp {
                 string_repr: v.to_string(),
-                f32_repr: v.parse::<f32>().map_err(|_| E::invalid_value(Unexpected::Str(v), &self))?
+                float_repr: v.parse::<f64>().map_err(|_| E::invalid_value(Unexpected::Str(v), &self))?
             }))
         }
-	}
+	    
+        fn visit_u32<E: Error>(self, v: u32) -> Result<Option<Timestamp>, E> {
+            Ok(Some(Timestamp {
+                string_repr: f64::from(v).to_string(),
+                float_repr: f64::from(v),
+            }))
+        }
+    
+    }
 
 	d.deserialize_any(TimestampVisitor)
 }
