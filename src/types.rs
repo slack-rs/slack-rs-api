@@ -25,12 +25,12 @@ impl cmp::PartialOrd for Timestamp {
 
 /// Deserialize a maybe-string timestamp into a Timestamp.
 pub fn deserialize_timestamp<'d, D: Deserializer<'d>>(d: D) -> Result<Option<Timestamp>, D::Error> {
-	struct TimestampVisitor;
+    struct TimestampVisitor;
 	impl<'d> Visitor<'d> for TimestampVisitor {
 		type Value = Option<Timestamp>;
 
 		fn expecting(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-			write!(fmt, "an f64, u32, or parseable string")
+			write!(fmt, "an f64, u64, or parseable string")
 		}
 
 		fn visit_f64<E: Error>(self, v: f64) -> Result<Option<Timestamp>, E> {
@@ -47,10 +47,10 @@ pub fn deserialize_timestamp<'d, D: Deserializer<'d>>(d: D) -> Result<Option<Tim
             }))
         }
 	    
-        fn visit_u32<E: Error>(self, v: u32) -> Result<Option<Timestamp>, E> {
+        fn visit_u64<E: Error>(self, v: u64) -> Result<Option<Timestamp>, E> {
             Ok(Some(Timestamp {
-                string_repr: f64::from(v).to_string(),
-                float_repr: f64::from(v),
+                string_repr: (v as f64).to_string(),
+                float_repr: v as f64,
             }))
         }
     
