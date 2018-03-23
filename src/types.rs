@@ -1,5 +1,57 @@
 use std::collections::HashMap;
 
+use std::fmt;
+use std::cmp;
+use serde::*;
+use serde::de::{Visitor, Error, Unexpected};
+
+#[derive(Clone, Debug)]
+pub struct Timestamp {
+    string_repr: String,
+    f32_repr: f32,
+}
+
+impl cmp::PartialEq for Timestamp {
+    fn eq(&self, other: &Timestamp) -> bool {
+        self.f32_repr.eq(&other.f32_repr)
+    }
+}
+
+impl cmp::PartialOrd for Timestamp {
+    fn partial_cmp(&self, other: &Timestamp) -> Option<cmp::Ordering> {
+        self.f32_repr.partial_cmp(&other.f32_repr)
+    }
+}
+
+/// Deserialize a maybe-string timestamp into a Timestamp.
+pub fn deserialize_timestamp<'d, D: Deserializer<'d>>(d: D) -> Result<Option<Timestamp>, D::Error> {
+	struct TimestampVisitor;
+	impl<'d> Visitor<'d> for TimestampVisitor {
+		type Value = Option<Timestamp>;
+
+		fn expecting(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+			write!(fmt, "an f32 or parseable string")
+		}
+
+		fn visit_f32<E: Error>(self, v: f32) -> Result<Option<Timestamp>, E> {
+            Ok(Some(Timestamp {
+                string_repr: v.to_string(),
+                f32_repr: v,
+            }))
+        }
+
+		fn visit_str<E: Error>(self, v: &str) -> Result<Option<Timestamp>, E> {
+		    Ok(Some(Timestamp {
+                string_repr: v.to_string(),
+                f32_repr: v.parse::<f32>().map_err(|_| E::invalid_value(Unexpected::Str(v), &self))?
+            }))
+        }
+	}
+
+	d.deserialize_any(TimestampVisitor)
+}
+
+
 #[derive(Clone, Debug, Deserialize)]
 pub struct Bot {
     pub app_id: Option<String>,
@@ -867,8 +919,9 @@ pub struct MessageStandardAttachment {
     pub thumb_url: Option<String>,
     pub title: Option<String>,
     pub title_link: Option<String>,
-    #[serde(skip)] // This field is sometimes a String, sometimes an integer
-    pub ts: Option<f32>,
+    #[serde(deserialize_with = "deserialize_timestamp")]
+    #[serde(default)]
+    pub ts: Option<Timestamp>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
