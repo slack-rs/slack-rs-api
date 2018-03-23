@@ -254,6 +254,8 @@ pub enum Message {
     PinnedItem(MessagePinnedItem),
     ReplyBroadcast(MessageReplyBroadcast),
     UnpinnedItem(MessageUnpinnedItem),
+    SlackbotResponse(MessageSlackbotResponse),
+    ThreadBroadcast(MessageThreadBroadcast),
 }
 
 impl<'de> ::serde::Deserialize<'de> for Message {
@@ -292,7 +294,7 @@ impl<'de> ::serde::Deserialize<'de> for Message {
             "pinned_item",
             "reply_broadcast",
             "unpinned_item",
-       ];
+        ];
 
         let value = ::serde_json::Value::deserialize(deserializer)?;
         if let Some(ty_val) = value.get("subtype") {
@@ -428,8 +430,7 @@ impl<'de> ::serde::Deserialize<'de> for Message {
                             .map(Message::UnpinnedItem)
                             .map_err(|e| D::Error::custom(&format!("{}", e)))
                     }
-                   _ => Err(D::Error::unknown_variant(ty, VARIANTS)),
-                }
+               }
             } else {
                 Err(D::Error::invalid_type(
                     ::serde::de::Unexpected::Unit,
