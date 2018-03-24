@@ -910,6 +910,7 @@ pub struct MessageStandardAttachment {
     pub title: Option<String>,
     pub title_link: Option<String>,
     #[serde(deserialize_with = "deserialize_timestamp")]
+    #[serde(default)]
     pub ts: Option<Timestamp>,
 }
 
