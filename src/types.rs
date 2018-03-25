@@ -4,7 +4,7 @@ use serde::de::{Visitor, Error, Unexpected, Deserializer};
 
 #[derive(Clone, Debug, PartialEq, PartialOrd)]
 pub struct Timestamp {
-    repr: f32,
+    repr: f64,
 }
 
 impl fmt::Display for Timestamp {
@@ -25,19 +25,19 @@ pub fn deserialize_timestamp<'d, D: Deserializer<'d>>(d: D) -> Result<Option<Tim
 
         fn visit_f64<E: Error>(self, v: f64) -> Result<Option<Timestamp>, E> {
             Ok(Some(Timestamp {
-                repr: v as f32,
+                repr: v,
             }))
         }
 
         fn visit_str<E: Error>(self, v: &str) -> Result<Option<Timestamp>, E> {
             Ok(Some(Timestamp {
-                repr: v.parse::<f32>().map_err(|_| E::invalid_value(Unexpected::Str(v), &self))?
+                repr: v.parse::<f64>().map_err(|_| E::invalid_value(Unexpected::Str(v), &self))?
             }))
         }
 	    
         fn visit_u64<E: Error>(self, v: u64) -> Result<Option<Timestamp>, E> {
             Ok(Some(Timestamp {
-                repr: v as f32,
+                repr: v as f64,
             }))
         }
     }
