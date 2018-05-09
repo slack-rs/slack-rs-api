@@ -1,11 +1,10 @@
 extern crate slack_api as slack;
-extern crate reqwest;
 
 use std::env;
 
 fn main() {
     let token = env::var("SLACK_API_TOKEN").expect("SLACK_API_TOKEN not set.");
-    let client = reqwest::Client::new().unwrap();
+    let client = slack::default_client().unwrap();
 
     let response = slack::channels::history(&client,
                                             &token,
