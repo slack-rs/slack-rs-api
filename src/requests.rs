@@ -17,10 +17,7 @@ pub trait SlackWebRequestSender {
 #[cfg(feature = "reqwest")]
 mod reqwest_support {
     extern crate reqwest;
-    pub use self::reqwest::Client;
-    pub use self::reqwest::Error;
-
-    use std::io::Read;
+    pub use self::reqwest::{Client, Error};
 
     use super::SlackWebRequestSender;
 
@@ -32,11 +29,7 @@ mod reqwest_support {
 
             url.query_pairs_mut().extend_pairs(params);
 
-            let mut response = self.get(url).send()?;
-            let mut res_str = String::new();
-            response.read_to_string(&mut res_str).map_err(reqwest::HyperError::from)?;
-
-            Ok(res_str)
+            self.get(url).send()?.text()
         }
     }
 
@@ -50,7 +43,7 @@ mod reqwest_support {
     /// let response = slack_api::channels::list(&client, &token, &Default::default());
     /// ```
     pub fn default_client() -> Result<reqwest::Client, reqwest::Error> {
-        reqwest::Client::new()
+        Ok(reqwest::Client::new())
     }
 }
 
