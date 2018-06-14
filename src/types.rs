@@ -40,7 +40,7 @@ pub struct Channel {
     pub name_normalized: Option<String>,
     pub num_members: Option<i32>,
     pub previous_names: Option<Vec<String>>,
-    pub priority: Option<i32>,
+    pub priority: Option<f64>,
     pub purpose: Option<ChannelPurpose>,
     pub topic: Option<ChannelTopic>,
     pub unlinked: Option<i32>,
