@@ -1,3 +1,8 @@
+# 0.20.0
+* Updates to API
+  * channel.priority is an f64
+* Optional Reqwest updated to 0.8.5
+
 # 0.19.0
 * Updates to API to include fields mainly in user/user_profile and channel info
 
