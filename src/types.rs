@@ -382,10 +382,14 @@ impl<'de> ::serde::Deserialize<'de> for Message {
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct MessageBotMessage {
+    pub attachments: Option<Vec<MessageBotMessageAttachment>>,
     pub bot_id: Option<String>,
+    pub channel: Option<String>,
     pub icons: Option<MessageBotMessageIcons>,
     pub subtype: Option<String>,
+    pub team: Option<String>,
     pub text: Option<String>,
+    pub thread_ts: Option<String>,
     pub ts: Option<String>,
     #[serde(rename = "type")]
     pub ty: Option<String>,
@@ -393,9 +397,38 @@ pub struct MessageBotMessage {
 }
 
 #[derive(Clone, Debug, Deserialize)]
+pub struct MessageBotMessageAttachment {
+    pub author_icon: Option<String>,
+    pub author_link: Option<String>,
+    pub author_name: Option<String>,
+    pub color: Option<String>,
+    pub fallback: Option<String>,
+    pub fields: Option<Vec<MessageBotMessageAttachmentField>>,
+    pub footer: Option<String>,
+    pub footer_icon: Option<String>,
+    pub image_url: Option<String>,
+    pub pretext: Option<String>,
+    pub text: Option<String>,
+    pub thumb_url: Option<String>,
+    pub title: Option<String>,
+    pub title_link: Option<String>,
+    pub ts: Option<f32>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct MessageBotMessageAttachmentField {
+    pub short: Option<bool>,
+    pub title: Option<String>,
+    pub value: Option<String>,
+}
+
+
+#[derive(Clone, Debug, Deserialize)]
 pub struct MessageBotMessageIcons {
+    pub emoji: Option<String>,
     pub image_36: Option<String>,
     pub image_48: Option<String>,
+    pub image_64: Option<String>,
     pub image_72: Option<String>,
 }
 
