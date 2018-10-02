@@ -1,3 +1,9 @@
+# 0.21.0
+* Updates to API
+  * Missing fields from bot messages
+  * Bot messages can have attachments
+* Optional Reqwest updated to 0.9.0
+
 # 0.20.0
 * Updates to API
   * channel.priority is an f64
