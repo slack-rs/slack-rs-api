@@ -1,19 +1,15 @@
 use std::collections::HashMap;
+use optional_struct_or_empty_array;
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct Bot {
     pub app_id: Option<String>,
     pub deleted: Option<bool>,
-    pub icons: Option<BotIcons>,
+    #[serde(deserialize_with = "optional_struct_or_empty_array")]
+    #[serde(default)]
+    pub icons: Option<HashMap<String, String>>,
     pub id: Option<String>,
     pub name: Option<String>,
-}
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct BotIcons {
-    pub image_36: Option<String>,
-    pub image_48: Option<String>,
-    pub image_72: Option<String>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
