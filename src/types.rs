@@ -385,6 +385,8 @@ pub struct MessageBotMessage {
     pub attachments: Option<Vec<MessageBotMessageAttachment>>,
     pub bot_id: Option<String>,
     pub channel: Option<String>,
+    #[serde(deserialize_with = "::optional_struct_or_empty_array")]
+    #[serde(default)]
     pub icons: Option<MessageBotMessageIcons>,
     pub subtype: Option<String>,
     pub team: Option<String>,
