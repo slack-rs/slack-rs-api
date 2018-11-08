@@ -1,51 +1,25 @@
 use std::collections::HashMap;
-use optional_struct_or_empty_array;
 
 #[derive(Clone, Debug, Deserialize)]
-pub struct Bot {
-    pub app_id: Option<String>,
-    pub deleted: Option<bool>,
-    #[serde(deserialize_with = "optional_struct_or_empty_array")]
-    #[serde(default)]
-    pub icons: Option<HashMap<String, String>>,
-    pub id: Option<String>,
-    pub name: Option<String>,
-}
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct Channel {
-    pub accepted_user: Option<String>,
+pub struct Group {
     pub created: Option<i32>,
     pub creator: Option<String>,
     pub id: Option<String>,
     pub is_archived: Option<bool>,
-    pub is_channel: Option<bool>,
-    pub is_general: Option<bool>,
-    pub is_member: Option<bool>,
-    pub is_moved: Option<i32>,
+    pub is_group: Option<bool>,
     pub is_mpim: Option<bool>,
-    pub is_org_shared: Option<bool>,
-    pub is_pending_ext_shared: Option<bool>,
-    pub is_private: Option<bool>,
-    pub is_read_only: Option<bool>,
-    pub is_shared: Option<bool>,
     pub last_read: Option<String>,
     pub latest: Option<::Message>,
     pub members: Option<Vec<String>>,
     pub name: Option<String>,
-    pub name_normalized: Option<String>,
-    pub num_members: Option<i32>,
-    pub previous_names: Option<Vec<String>>,
-    pub priority: Option<f32>,
-    pub purpose: Option<ChannelPurpose>,
-    pub topic: Option<ChannelTopic>,
-    pub unlinked: Option<i32>,
+    pub purpose: Option<GroupPurpose>,
+    pub topic: Option<GroupTopic>,
     pub unread_count: Option<i32>,
     pub unread_count_display: Option<i32>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
-pub struct ChannelPurpose {
+pub struct GroupPurpose {
     pub creator: Option<String>,
     pub last_set: Option<i32>,
     pub value: Option<String>,
@@ -53,10 +27,68 @@ pub struct ChannelPurpose {
 
 
 #[derive(Clone, Debug, Deserialize)]
-pub struct ChannelTopic {
+pub struct GroupTopic {
     pub creator: Option<String>,
     pub last_set: Option<i32>,
     pub value: Option<String>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct Im {
+    pub created: Option<i32>,
+    pub id: Option<String>,
+    pub is_im: Option<bool>,
+    pub is_user_deleted: Option<bool>,
+    pub user: Option<String>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct UserProfile {
+    pub avatar_hash: Option<String>,
+    pub display_name: Option<String>,
+    pub display_name_normalized: Option<String>,
+    pub email: Option<String>,
+    #[serde(deserialize_with = "::optional_struct_or_empty_array")]
+    #[serde(default)]
+    pub fields: Option<HashMap<String, UserProfileFields>>,
+    pub first_name: Option<String>,
+    pub guest_channels: Option<String>,
+    pub image_192: Option<String>,
+    pub image_24: Option<String>,
+    pub image_32: Option<String>,
+    pub image_48: Option<String>,
+    pub image_512: Option<String>,
+    pub image_72: Option<String>,
+    pub image_original: Option<String>,
+    pub last_name: Option<String>,
+    pub phone: Option<String>,
+    pub real_name: Option<String>,
+    pub real_name_normalized: Option<String>,
+    pub skype: Option<String>,
+    pub status_emoji: Option<String>,
+    pub status_text: Option<String>,
+    pub team: Option<String>,
+    pub title: Option<String>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct UserProfileFields {
+    pub alt: Option<String>,
+    pub label: Option<String>,
+    pub value: Option<String>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct ThreadInfo {
+    pub complete: Option<bool>,
+    pub count: Option<i32>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct Reaction {
+    pub count: Option<i32>,
+    pub name: Option<String>,
+    pub users: Option<Vec<String>>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -110,6 +142,88 @@ pub struct File {
 }
 
 #[derive(Clone, Debug, Deserialize)]
+pub struct Team {
+    pub domain: Option<String>,
+    pub email_domain: Option<String>,
+    pub icon: Option<TeamIcon>,
+    pub id: Option<String>,
+    pub name: Option<String>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct TeamIcon {
+    pub image_102: Option<String>,
+    pub image_132: Option<String>,
+    pub image_34: Option<String>,
+    pub image_44: Option<String>,
+    pub image_68: Option<String>,
+    pub image_88: Option<String>,
+    pub image_default: Option<bool>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct Usergroup {
+    pub auto_type: Option<String>,
+    pub created_by: Option<String>,
+    pub date_create: Option<i32>,
+    pub date_delete: Option<i32>,
+    pub date_update: Option<i32>,
+    pub deleted_by: Option<String>,
+    pub description: Option<String>,
+    pub handle: Option<String>,
+    pub id: Option<String>,
+    pub is_external: Option<bool>,
+    pub is_usergroup: Option<bool>,
+    pub name: Option<String>,
+    pub prefs: Option<UsergroupPrefs>,
+    pub team_id: Option<String>,
+    pub updated_by: Option<String>,
+    pub user_count: Option<String>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct UsergroupPrefs {
+    pub channels: Option<Vec<String>>,
+    pub groups: Option<Vec<String>>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct User {
+    pub color: Option<String>,
+    pub deleted: Option<bool>,
+    pub has_2fa: Option<bool>,
+    pub id: Option<String>,
+    pub is_admin: Option<bool>,
+    pub is_app_user: Option<bool>,
+    pub is_bot: Option<bool>,
+    pub is_owner: Option<bool>,
+    pub is_primary_owner: Option<bool>,
+    pub is_restricted: Option<bool>,
+    pub is_ultra_restricted: Option<bool>,
+    pub locale: Option<String>,
+    pub name: Option<String>,
+    pub profile: Option<::UserProfile>,
+    pub real_name: Option<String>,
+    pub team_id: Option<String>,
+    pub two_factor_type: Option<String>,
+    pub tz: Option<String>,
+    pub tz_label: Option<String>,
+    pub tz_offset: Option<f32>,
+    pub updated: Option<f32>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct Reminder {
+    pub complete_ts: Option<f32>,
+    pub creator: Option<String>,
+    pub id: Option<String>,
+    pub recurring: Option<bool>,
+    pub text: Option<String>,
+    pub time: Option<f32>,
+    pub user: Option<String>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
 pub struct FileComment {
     pub comment: Option<String>,
     pub id: Option<String>,
@@ -119,45 +233,73 @@ pub struct FileComment {
 }
 
 #[derive(Clone, Debug, Deserialize)]
-pub struct Group {
+pub struct Paging {
+    pub count: Option<i32>,
+    pub page: Option<i32>,
+    pub pages: Option<i32>,
+    pub total: Option<i32>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct Mpim {
     pub created: Option<i32>,
     pub creator: Option<String>,
     pub id: Option<String>,
-    pub is_archived: Option<bool>,
     pub is_group: Option<bool>,
     pub is_mpim: Option<bool>,
     pub last_read: Option<String>,
     pub latest: Option<::Message>,
     pub members: Option<Vec<String>>,
     pub name: Option<String>,
-    pub purpose: Option<GroupPurpose>,
-    pub topic: Option<GroupTopic>,
     pub unread_count: Option<i32>,
     pub unread_count_display: Option<i32>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
-pub struct GroupPurpose {
-    pub creator: Option<String>,
-    pub last_set: Option<i32>,
-    pub value: Option<String>,
-}
-
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct GroupTopic {
-    pub creator: Option<String>,
-    pub last_set: Option<i32>,
-    pub value: Option<String>,
-}
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct Im {
+pub struct Channel {
+    pub accepted_user: Option<String>,
     pub created: Option<i32>,
+    pub creator: Option<String>,
     pub id: Option<String>,
-    pub is_im: Option<bool>,
-    pub is_user_deleted: Option<bool>,
-    pub user: Option<String>,
+    pub is_archived: Option<bool>,
+    pub is_channel: Option<bool>,
+    pub is_general: Option<bool>,
+    pub is_member: Option<bool>,
+    pub is_moved: Option<i32>,
+    pub is_mpim: Option<bool>,
+    pub is_org_shared: Option<bool>,
+    pub is_pending_ext_shared: Option<bool>,
+    pub is_private: Option<bool>,
+    pub is_read_only: Option<bool>,
+    pub is_shared: Option<bool>,
+    pub last_read: Option<String>,
+    pub latest: Option<::Message>,
+    pub members: Option<Vec<String>>,
+    pub name: Option<String>,
+    pub name_normalized: Option<String>,
+    pub num_members: Option<i32>,
+    pub previous_names: Option<Vec<String>>,
+    pub priority: Option<f32>,
+    pub purpose: Option<ChannelPurpose>,
+    pub topic: Option<ChannelTopic>,
+    pub unlinked: Option<i32>,
+    pub unread_count: Option<i32>,
+    pub unread_count_display: Option<i32>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct ChannelPurpose {
+    pub creator: Option<String>,
+    pub last_set: Option<i32>,
+    pub value: Option<String>,
+}
+
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct ChannelTopic {
+    pub creator: Option<String>,
+    pub last_set: Option<i32>,
+    pub value: Option<String>,
 }
 
 #[derive(Clone, Debug)]
@@ -924,155 +1066,12 @@ pub struct MessageUnpinnedItem {
 pub struct MessageUnpinnedItemItem {}
 
 #[derive(Clone, Debug, Deserialize)]
-pub struct Mpim {
-    pub created: Option<i32>,
-    pub creator: Option<String>,
-    pub id: Option<String>,
-    pub is_group: Option<bool>,
-    pub is_mpim: Option<bool>,
-    pub last_read: Option<String>,
-    pub latest: Option<::Message>,
-    pub members: Option<Vec<String>>,
-    pub name: Option<String>,
-    pub unread_count: Option<i32>,
-    pub unread_count_display: Option<i32>,
-}
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct Paging {
-    pub count: Option<i32>,
-    pub page: Option<i32>,
-    pub pages: Option<i32>,
-    pub total: Option<i32>,
-}
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct Reaction {
-    pub count: Option<i32>,
-    pub name: Option<String>,
-    pub users: Option<Vec<String>>,
-}
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct Reminder {
-    pub complete_ts: Option<f32>,
-    pub creator: Option<String>,
-    pub id: Option<String>,
-    pub recurring: Option<bool>,
-    pub text: Option<String>,
-    pub time: Option<f32>,
-    pub user: Option<String>,
-}
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct Team {
-    pub domain: Option<String>,
-    pub email_domain: Option<String>,
-    pub icon: Option<TeamIcon>,
-    pub id: Option<String>,
-    pub name: Option<String>,
-}
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct TeamIcon {
-    pub image_102: Option<String>,
-    pub image_132: Option<String>,
-    pub image_34: Option<String>,
-    pub image_44: Option<String>,
-    pub image_68: Option<String>,
-    pub image_88: Option<String>,
-    pub image_default: Option<bool>,
-}
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct ThreadInfo {
-    pub complete: Option<bool>,
-    pub count: Option<i32>,
-}
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct User {
-    pub color: Option<String>,
+pub struct Bot {
+    pub app_id: Option<String>,
     pub deleted: Option<bool>,
-    pub has_2fa: Option<bool>,
-    pub id: Option<String>,
-    pub is_admin: Option<bool>,
-    pub is_app_user: Option<bool>,
-    pub is_bot: Option<bool>,
-    pub is_owner: Option<bool>,
-    pub is_primary_owner: Option<bool>,
-    pub is_restricted: Option<bool>,
-    pub is_ultra_restricted: Option<bool>,
-    pub locale: Option<String>,
-    pub name: Option<String>,
-    pub profile: Option<::UserProfile>,
-    pub real_name: Option<String>,
-    pub team_id: Option<String>,
-    pub two_factor_type: Option<String>,
-    pub tz: Option<String>,
-    pub tz_label: Option<String>,
-    pub tz_offset: Option<f32>,
-    pub updated: Option<f32>,
-}
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct Usergroup {
-    pub auto_type: Option<String>,
-    pub created_by: Option<String>,
-    pub date_create: Option<i32>,
-    pub date_delete: Option<i32>,
-    pub date_update: Option<i32>,
-    pub deleted_by: Option<String>,
-    pub description: Option<String>,
-    pub handle: Option<String>,
-    pub id: Option<String>,
-    pub is_external: Option<bool>,
-    pub is_usergroup: Option<bool>,
-    pub name: Option<String>,
-    pub prefs: Option<UsergroupPrefs>,
-    pub team_id: Option<String>,
-    pub updated_by: Option<String>,
-    pub user_count: Option<String>,
-}
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct UsergroupPrefs {
-    pub channels: Option<Vec<String>>,
-    pub groups: Option<Vec<String>>,
-}
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct UserProfile {
-    pub avatar_hash: Option<String>,
-    pub display_name: Option<String>,
-    pub display_name_normalized: Option<String>,
-    pub email: Option<String>,
     #[serde(deserialize_with = "::optional_struct_or_empty_array")]
     #[serde(default)]
-    pub fields: Option<HashMap<String, UserProfileFields>>,
-    pub first_name: Option<String>,
-    pub guest_channels: Option<String>,
-    pub image_192: Option<String>,
-    pub image_24: Option<String>,
-    pub image_32: Option<String>,
-    pub image_48: Option<String>,
-    pub image_512: Option<String>,
-    pub image_72: Option<String>,
-    pub image_original: Option<String>,
-    pub last_name: Option<String>,
-    pub phone: Option<String>,
-    pub real_name: Option<String>,
-    pub real_name_normalized: Option<String>,
-    pub skype: Option<String>,
-    pub status_emoji: Option<String>,
-    pub status_text: Option<String>,
-    pub team: Option<String>,
-    pub title: Option<String>,
-}
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct UserProfileFields {
-    pub alt: Option<String>,
-    pub label: Option<String>,
-    pub value: Option<String>,
+    pub icons: Option<HashMap<String, String>>,
+    pub id: Option<String>,
+    pub name: Option<String>,
 }

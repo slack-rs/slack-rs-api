@@ -158,10 +158,15 @@ impl PropType {
                                     if name == "UserProfile" && field_name == "fields" {
                                         deserialize_with = Some("::optional_struct_or_empty_array");
                                         default = true;
+                                    } else if name == "Bot" && field_name == "icons" {
+                                        deserialize_with = Some("::optional_struct_or_empty_array");
+                                        default = true;
+                                        ty = PropType::Optional(Box::new(PropType::Map(Box::new(PropType::Str))));
                                     } else {
                                         deserialize_with = None;
                                         default = false;
                                     }
+
                                     JsonObjectFieldInfo {
                                         name: field_name.into(),
                                         ty: ty,
