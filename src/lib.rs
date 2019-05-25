@@ -36,7 +36,7 @@ fn get_slack_url_for_method(method: &str) -> String {
 }
 
 fn optional_struct_or_empty_array<'de, T, D>(deserializer: D) -> Result<Option<T>, D::Error>
-    where T: serde::Deserialize<'de> + Default,
+    where T: serde::Deserialize<'de>,
           D: serde::Deserializer<'de>
 {
     use std::marker::PhantomData;
@@ -45,7 +45,7 @@ fn optional_struct_or_empty_array<'de, T, D>(deserializer: D) -> Result<Option<T
     struct StructOrEmptyArray<T>(PhantomData<T>);
 
     impl<'de, T> de::Visitor<'de> for StructOrEmptyArray<T>
-        where T: de::Deserialize<'de> + Default
+        where T: de::Deserialize<'de>
     {
         type Value = Option<T>;
 
@@ -58,7 +58,7 @@ fn optional_struct_or_empty_array<'de, T, D>(deserializer: D) -> Result<Option<T
         {
             match seq.next_element::<T>()? {
                 Some(_) => Err(de::Error::custom("non-empty array is not valid")),
-                None => Ok(Some(T::default())),
+                None => Ok(None),
             }
         }
 
@@ -86,7 +86,7 @@ mod tests {
     #[test]
     fn test_user_profile_fields_empty_array_deserialize() {
         let user_profile: UserProfile = serde_json::from_str(r#"{"fields": []}"#).unwrap();
-        assert_eq!(0, user_profile.fields.unwrap().len());
+        assert!(user_profile.fields.is_none());
     }
 
     #[test]

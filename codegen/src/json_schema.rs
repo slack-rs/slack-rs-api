@@ -158,6 +158,9 @@ impl PropType {
                                     if name == "UserProfile" && field_name == "fields" {
                                         deserialize_with = Some("::optional_struct_or_empty_array");
                                         default = true;
+                                    } else if name == "MessageBotMessage" && field_name == "icons" {
+                                        deserialize_with = Some("::optional_struct_or_empty_array");
+                                        default = true;
                                     } else {
                                         deserialize_with = None;
                                         default = false;
