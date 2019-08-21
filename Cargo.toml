@@ -15,6 +15,9 @@ serde_json = "1.0"
 [dependencies.reqwest]
 optional = true
 version = "^0.9"
+default-features = false
 
 [features]
-default = ["reqwest"]
+default = ["reqwest", "with_native_tls"]
+with_rustls = ["reqwest/rustls-tls"]
+with_native_tls = ["reqwest/default-tls"]
