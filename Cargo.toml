@@ -14,7 +14,7 @@ serde_json = "1.0"
 
 [dependencies.reqwest]
 optional = true
-version = "^0.9"
+version = "0.9.6"
 default-features = false
 
 [features]
