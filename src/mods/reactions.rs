@@ -661,7 +661,6 @@ pub struct ListResponseItemFileComment {
 #[derive(Clone, Debug, Deserialize)]
 pub struct ListResponseItemMessage {
     pub channel: String,
-    pub message: ::Message,
     #[serde(rename = "type")]
     pub ty: String,
 }
