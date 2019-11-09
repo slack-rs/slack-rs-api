@@ -8,7 +8,7 @@ use std::fmt;
 
 use serde_json;
 
-use requests::SlackWebRequestSender;
+use crate::requests::SlackWebRequestSender;
 
 /// Ends the current user's Do Not Disturb session immediately.
 ///
@@ -19,7 +19,7 @@ where
     R: SlackWebRequestSender,
 {
     let params = &[("token", token)];
-    let url = ::get_slack_url_for_method("dnd.endDnd");
+    let url = crate::get_slack_url_for_method("dnd.endDnd");
     client
         .send(&url, &params[..])
         .map_err(EndDndError::Client)
@@ -103,7 +103,7 @@ impl<'a, E: Error> From<&'a str> for EndDndError<E> {
 }
 
 impl<E: Error> fmt::Display for EndDndError<E> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.description())
     }
 }
@@ -130,7 +130,7 @@ EndDndError::RequestTimeout => "request_timeout: The method was called via a POS
                     }
     }
 
-    fn cause(&self) -> Option<&Error> {
+    fn cause(&self) -> Option<&dyn Error> {
         match *self {
             EndDndError::MalformedResponse(ref e) => Some(e),
             EndDndError::Client(ref inner) => Some(inner),
@@ -148,7 +148,7 @@ where
     R: SlackWebRequestSender,
 {
     let params = &[("token", token)];
-    let url = ::get_slack_url_for_method("dnd.endSnooze");
+    let url = crate::get_slack_url_for_method("dnd.endSnooze");
     client
         .send(&url, &params[..])
         .map_err(EndSnoozeError::Client)
@@ -240,7 +240,7 @@ impl<'a, E: Error> From<&'a str> for EndSnoozeError<E> {
 }
 
 impl<E: Error> fmt::Display for EndSnoozeError<E> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.description())
     }
 }
@@ -268,7 +268,7 @@ EndSnoozeError::RequestTimeout => "request_timeout: The method was called via a 
                     }
     }
 
-    fn cause(&self) -> Option<&Error> {
+    fn cause(&self) -> Option<&dyn Error> {
         match *self {
             EndSnoozeError::MalformedResponse(ref e) => Some(e),
             EndSnoozeError::Client(ref inner) => Some(inner),
@@ -284,7 +284,7 @@ EndSnoozeError::RequestTimeout => "request_timeout: The method was called via a 
 pub fn info<R>(
     client: &R,
     token: &str,
-    request: &InfoRequest,
+    request: &InfoRequest<'_>,
 ) -> Result<InfoResponse, InfoError<R::Error>>
 where
     R: SlackWebRequestSender,
@@ -294,7 +294,7 @@ where
         request.user.map(|user| ("user", user)),
     ];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    let url = ::get_slack_url_for_method("dnd.info");
+    let url = crate::get_slack_url_for_method("dnd.info");
     client
         .send(&url, &params[..])
         .map_err(InfoError::Client)
@@ -387,7 +387,7 @@ impl<'a, E: Error> From<&'a str> for InfoError<E> {
 }
 
 impl<E: Error> fmt::Display for InfoError<E> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.description())
     }
 }
@@ -413,7 +413,7 @@ InfoError::RequestTimeout => "request_timeout: The method was called via a POST 
                     }
     }
 
-    fn cause(&self) -> Option<&Error> {
+    fn cause(&self) -> Option<&dyn Error> {
         match *self {
             InfoError::MalformedResponse(ref e) => Some(e),
             InfoError::Client(ref inner) => Some(inner),
@@ -440,7 +440,7 @@ where
         Some(("num_minutes", &num_minutes[..])),
     ];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    let url = ::get_slack_url_for_method("dnd.setSnooze");
+    let url = crate::get_slack_url_for_method("dnd.setSnooze");
     client
         .send(&url, &params[..])
         .map_err(SetSnoozeError::Client)
@@ -537,7 +537,7 @@ impl<'a, E: Error> From<&'a str> for SetSnoozeError<E> {
 }
 
 impl<E: Error> fmt::Display for SetSnoozeError<E> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.description())
     }
 }
@@ -565,7 +565,7 @@ SetSnoozeError::RequestTimeout => "request_timeout: The method was called via a 
                     }
     }
 
-    fn cause(&self) -> Option<&Error> {
+    fn cause(&self) -> Option<&dyn Error> {
         match *self {
             SetSnoozeError::MalformedResponse(ref e) => Some(e),
             SetSnoozeError::Client(ref inner) => Some(inner),
@@ -581,7 +581,7 @@ SetSnoozeError::RequestTimeout => "request_timeout: The method was called via a 
 pub fn team_info<R>(
     client: &R,
     token: &str,
-    request: &TeamInfoRequest,
+    request: &TeamInfoRequest<'_>,
 ) -> Result<TeamInfoResponse, TeamInfoError<R::Error>>
 where
     R: SlackWebRequestSender,
@@ -591,7 +591,7 @@ where
         request.users.map(|users| ("users", users)),
     ];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    let url = ::get_slack_url_for_method("dnd.teamInfo");
+    let url = crate::get_slack_url_for_method("dnd.teamInfo");
     client
         .send(&url, &params[..])
         .map_err(TeamInfoError::Client)
@@ -677,7 +677,7 @@ impl<'a, E: Error> From<&'a str> for TeamInfoError<E> {
 }
 
 impl<E: Error> fmt::Display for TeamInfoError<E> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.description())
     }
 }
@@ -702,7 +702,7 @@ TeamInfoError::RequestTimeout => "request_timeout: The method was called via a P
                     }
     }
 
-    fn cause(&self) -> Option<&Error> {
+    fn cause(&self) -> Option<&dyn Error> {
         match *self {
             TeamInfoError::MalformedResponse(ref e) => Some(e),
             TeamInfoError::Client(ref inner) => Some(inner),

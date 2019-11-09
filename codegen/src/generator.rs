@@ -1,6 +1,6 @@
 use inflector::Inflector;
 
-use json_schema::*;
+use crate::json_schema::*;
 
 #[derive(Deserialize, Clone, Debug)]
 pub struct Module {
@@ -22,7 +22,7 @@ impl Module {
 
             use serde_json;
 
-            use ::requests::SlackWebRequestSender;
+            use crate::requests::SlackWebRequestSender;
 
             {methods}",
             docs = self.description.as_ref().map(|d| format_docs("//!", d)).unwrap_or_default(),
@@ -66,7 +66,7 @@ impl Method {
 
         let send_call = {
             let mut base_call = format!("\
-                let url = ::get_slack_url_for_method(\"{name}\");
+                let url = crate::get_slack_url_for_method(\"{name}\");
                 client.send(&url, &params[..])
                     .map_err({error_type}::Client)
                     .and_then(|result| {{
@@ -135,10 +135,11 @@ impl Method {
             )
         } else {
             let has_token = self.params.iter().any(|p| p.ty == "auth_token");
+            let lifetime = if self.has_lifetime() { "<'_>" } else { "" };
             let method_params = if has_token {
-                format!("client: &R, token: &str, request: &{}", request_struct_name)
+                format!("client: &R, token: &str, request: &{}{}", request_struct_name, lifetime)
             } else {
-                format!("client: &R, request: &{}", request_struct_name)
+                format!("client: &R, request: &{}{}", request_struct_name, lifetime)
             };
             format!("\
                 {documentation}
@@ -187,6 +188,12 @@ impl Method {
         }
     }
 
+    fn has_lifetime(&self) -> bool {
+        !self.params.iter()
+            .filter(|p| p.ty != "auth_token")
+            .all(|p| p.ty == "integer" || p.ty == "boolean")
+    }
+
     fn get_request_struct(&self, ty_name: &str) -> String {
         format!("\
             #[derive(Clone, Default, Debug)]
@@ -198,9 +205,7 @@ impl Method {
                 .filter(|p| p.ty != "auth_token") // passed in method params instead
                 .filter(|p| p.name != "simple_latest") // HACK: simple_latest breaks deserialization
                 .map(Param::generate).collect::<Vec<String>>().join("\n"),
-            lifetime = if self.params.iter()
-                .filter(|p| p.ty != "auth_token")
-                .all(|p| p.ty == "integer" || p.ty == "boolean") { "" } else { "<'a>" }
+            lifetime = if self.has_lifetime() { "<'a>" } else { "" }
         )
     }
 }
@@ -353,7 +358,7 @@ impl Response {
             }}
 
             impl<E: Error> fmt::Display for {error_type}<E> {{
-                fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {{
+                fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {{
                      write!(f, \"{{}}\", self.description())
                 }}
             }}
@@ -368,7 +373,7 @@ impl Response {
                     }}
                 }}
 
-                fn cause(&self) -> Option<&Error> {{
+                fn cause(&self) -> Option<&dyn Error> {{
                     match *self {{
                         {error_type}::MalformedResponse(ref e) => Some(e),
                         {error_type}::Client(ref inner) => Some(inner),

@@ -7,7 +7,7 @@ use std::fmt;
 
 use serde_json;
 
-use requests::SlackWebRequestSender;
+use crate::requests::SlackWebRequestSender;
 
 /// Adds a star to an item.
 ///
@@ -16,7 +16,7 @@ use requests::SlackWebRequestSender;
 pub fn add<R>(
     client: &R,
     token: &str,
-    request: &AddRequest,
+    request: &AddRequest<'_>,
 ) -> Result<AddResponse, AddError<R::Error>>
 where
     R: SlackWebRequestSender,
@@ -31,7 +31,7 @@ where
         request.timestamp.map(|timestamp| ("timestamp", timestamp)),
     ];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    let url = ::get_slack_url_for_method("stars.add");
+    let url = crate::get_slack_url_for_method("stars.add");
     client
         .send(&url, &params[..])
         .map_err(AddError::Client)
@@ -142,7 +142,7 @@ impl<'a, E: Error> From<&'a str> for AddError<E> {
 }
 
 impl<E: Error> fmt::Display for AddError<E> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.description())
     }
 }
@@ -174,7 +174,7 @@ AddError::RequestTimeout => "request_timeout: The method was called via a POST r
                     }
     }
 
-    fn cause(&self) -> Option<&Error> {
+    fn cause(&self) -> Option<&dyn Error> {
         match *self {
             AddError::MalformedResponse(ref e) => Some(e),
             AddError::Client(ref inner) => Some(inner),
@@ -203,7 +203,7 @@ where
         page.as_ref().map(|page| ("page", &page[..])),
     ];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    let url = ::get_slack_url_for_method("stars.list");
+    let url = crate::get_slack_url_for_method("stars.list");
     client
         .send(&url, &params[..])
         .map_err(ListError::Client)
@@ -227,7 +227,7 @@ pub struct ListResponse {
     pub items: Option<Vec<ListResponseItem>>,
     #[serde(default)]
     ok: bool,
-    pub paging: Option<::Paging>,
+    pub paging: Option<crate::Paging>,
 }
 
 #[derive(Clone, Debug)]
@@ -297,15 +297,15 @@ pub struct ListResponseItemChannel {
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct ListResponseItemFile {
-    pub file: ::File,
+    pub file: crate::File,
     #[serde(rename = "type")]
     pub ty: String,
 }
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct ListResponseItemFileComment {
-    pub comment: ::FileComment,
-    pub file: ::File,
+    pub comment: crate::FileComment,
+    pub file: crate::File,
     #[serde(rename = "type")]
     pub ty: String,
 }
@@ -327,7 +327,7 @@ pub struct ListResponseItemIm {
 #[derive(Clone, Debug, Deserialize)]
 pub struct ListResponseItemMessage {
     pub channel: String,
-    pub message: ::Message,
+    pub message: crate::Message,
     #[serde(rename = "type")]
     pub ty: String,
 }
@@ -402,7 +402,7 @@ impl<'a, E: Error> From<&'a str> for ListError<E> {
 }
 
 impl<E: Error> fmt::Display for ListError<E> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.description())
     }
 }
@@ -430,7 +430,7 @@ ListError::RequestTimeout => "request_timeout: The method was called via a POST 
                     }
     }
 
-    fn cause(&self) -> Option<&Error> {
+    fn cause(&self) -> Option<&dyn Error> {
         match *self {
             ListError::MalformedResponse(ref e) => Some(e),
             ListError::Client(ref inner) => Some(inner),
@@ -446,7 +446,7 @@ ListError::RequestTimeout => "request_timeout: The method was called via a POST 
 pub fn remove<R>(
     client: &R,
     token: &str,
-    request: &RemoveRequest,
+    request: &RemoveRequest<'_>,
 ) -> Result<RemoveResponse, RemoveError<R::Error>>
 where
     R: SlackWebRequestSender,
@@ -461,7 +461,7 @@ where
         request.timestamp.map(|timestamp| ("timestamp", timestamp)),
     ];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    let url = ::get_slack_url_for_method("stars.remove");
+    let url = crate::get_slack_url_for_method("stars.remove");
     client
         .send(&url, &params[..])
         .map_err(RemoveError::Client)
@@ -572,7 +572,7 @@ impl<'a, E: Error> From<&'a str> for RemoveError<E> {
 }
 
 impl<E: Error> fmt::Display for RemoveError<E> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.description())
     }
 }
@@ -604,7 +604,7 @@ RemoveError::RequestTimeout => "request_timeout: The method was called via a POS
                     }
     }
 
-    fn cause(&self) -> Option<&Error> {
+    fn cause(&self) -> Option<&dyn Error> {
         match *self {
             RemoveError::MalformedResponse(ref e) => Some(e),
             RemoveError::Client(ref inner) => Some(inner),

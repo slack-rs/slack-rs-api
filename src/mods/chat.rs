@@ -8,7 +8,7 @@ use std::fmt;
 
 use serde_json;
 
-use requests::SlackWebRequestSender;
+use crate::requests::SlackWebRequestSender;
 
 /// Deletes a message.
 ///
@@ -17,7 +17,7 @@ use requests::SlackWebRequestSender;
 pub fn delete<R>(
     client: &R,
     token: &str,
-    request: &DeleteRequest,
+    request: &DeleteRequest<'_>,
 ) -> Result<DeleteResponse, DeleteError<R::Error>>
 where
     R: SlackWebRequestSender,
@@ -31,7 +31,7 @@ where
             .map(|as_user| ("as_user", if as_user { "1" } else { "0" })),
     ];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    let url = ::get_slack_url_for_method("chat.delete");
+    let url = crate::get_slack_url_for_method("chat.delete");
     client
         .send(&url, &params[..])
         .map_err(DeleteError::Client)
@@ -133,7 +133,7 @@ impl<'a, E: Error> From<&'a str> for DeleteError<E> {
 }
 
 impl<E: Error> fmt::Display for DeleteError<E> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.description())
     }
 }
@@ -162,7 +162,7 @@ DeleteError::RequestTimeout => "request_timeout: The method was called via a POS
                     }
     }
 
-    fn cause(&self) -> Option<&Error> {
+    fn cause(&self) -> Option<&dyn Error> {
         match *self {
             DeleteError::MalformedResponse(ref e) => Some(e),
             DeleteError::Client(ref inner) => Some(inner),
@@ -178,7 +178,7 @@ DeleteError::RequestTimeout => "request_timeout: The method was called via a POS
 pub fn me_message<R>(
     client: &R,
     token: &str,
-    request: &MeMessageRequest,
+    request: &MeMessageRequest<'_>,
 ) -> Result<MeMessageResponse, MeMessageError<R::Error>>
 where
     R: SlackWebRequestSender,
@@ -189,7 +189,7 @@ where
         Some(("text", request.text)),
     ];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    let url = ::get_slack_url_for_method("chat.meMessage");
+    let url = crate::get_slack_url_for_method("chat.meMessage");
     client
         .send(&url, &params[..])
         .map_err(MeMessageError::Client)
@@ -296,7 +296,7 @@ impl<'a, E: Error> From<&'a str> for MeMessageError<E> {
 }
 
 impl<E: Error> fmt::Display for MeMessageError<E> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.description())
     }
 }
@@ -327,7 +327,7 @@ MeMessageError::RequestTimeout => "request_timeout: The method was called via a 
                     }
     }
 
-    fn cause(&self) -> Option<&Error> {
+    fn cause(&self) -> Option<&dyn Error> {
         match *self {
             MeMessageError::MalformedResponse(ref e) => Some(e),
             MeMessageError::Client(ref inner) => Some(inner),
@@ -343,7 +343,7 @@ MeMessageError::RequestTimeout => "request_timeout: The method was called via a 
 pub fn post_message<R>(
     client: &R,
     token: &str,
-    request: &PostMessageRequest,
+    request: &PostMessageRequest<'_>,
 ) -> Result<PostMessageResponse, PostMessageError<R::Error>>
 where
     R: SlackWebRequestSender,
@@ -379,7 +379,7 @@ where
             .map(|reply_broadcast| ("reply_broadcast", if reply_broadcast { "1" } else { "0" })),
     ];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    let url = ::get_slack_url_for_method("chat.postMessage");
+    let url = crate::get_slack_url_for_method("chat.postMessage");
     client
         .send(&url, &params[..])
         .map_err(PostMessageError::Client)
@@ -424,7 +424,7 @@ pub struct PostMessageRequest<'a> {
 pub struct PostMessageResponse {
     pub channel: Option<String>,
     error: Option<String>,
-    pub message: Option<::Message>,
+    pub message: Option<crate::Message>,
     #[serde(default)]
     ok: bool,
     pub ts: Option<String>,
@@ -512,7 +512,7 @@ impl<'a, E: Error> From<&'a str> for PostMessageError<E> {
 }
 
 impl<E: Error> fmt::Display for PostMessageError<E> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.description())
     }
 }
@@ -544,7 +544,7 @@ PostMessageError::RequestTimeout => "request_timeout: The method was called via 
                     }
     }
 
-    fn cause(&self) -> Option<&Error> {
+    fn cause(&self) -> Option<&dyn Error> {
         match *self {
             PostMessageError::MalformedResponse(ref e) => Some(e),
             PostMessageError::Client(ref inner) => Some(inner),
@@ -560,7 +560,7 @@ PostMessageError::RequestTimeout => "request_timeout: The method was called via 
 pub fn unfurl<R>(
     client: &R,
     token: &str,
-    request: &UnfurlRequest,
+    request: &UnfurlRequest<'_>,
 ) -> Result<UnfurlResponse, UnfurlError<R::Error>>
 where
     R: SlackWebRequestSender,
@@ -578,7 +578,7 @@ where
         }),
     ];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    let url = ::get_slack_url_for_method("chat.unfurl");
+    let url = crate::get_slack_url_for_method("chat.unfurl");
     client
         .send(&url, &params[..])
         .map_err(UnfurlError::Client)
@@ -671,7 +671,7 @@ impl<'a, E: Error> From<&'a str> for UnfurlError<E> {
 }
 
 impl<E: Error> fmt::Display for UnfurlError<E> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.description())
     }
 }
@@ -697,7 +697,7 @@ UnfurlError::RequestTimeout => "request_timeout: The method was called via a POS
                     }
     }
 
-    fn cause(&self) -> Option<&Error> {
+    fn cause(&self) -> Option<&dyn Error> {
         match *self {
             UnfurlError::MalformedResponse(ref e) => Some(e),
             UnfurlError::Client(ref inner) => Some(inner),
@@ -713,7 +713,7 @@ UnfurlError::RequestTimeout => "request_timeout: The method was called via a POS
 pub fn update<R>(
     client: &R,
     token: &str,
-    request: &UpdateRequest,
+    request: &UpdateRequest<'_>,
 ) -> Result<UpdateResponse, UpdateError<R::Error>>
 where
     R: SlackWebRequestSender,
@@ -735,7 +735,7 @@ where
             .map(|as_user| ("as_user", if as_user { "1" } else { "0" })),
     ];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    let url = ::get_slack_url_for_method("chat.update");
+    let url = crate::get_slack_url_for_method("chat.update");
     client
         .send(&url, &params[..])
         .map_err(UpdateError::Client)
@@ -855,7 +855,7 @@ impl<'a, E: Error> From<&'a str> for UpdateError<E> {
 }
 
 impl<E: Error> fmt::Display for UpdateError<E> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.description())
     }
 }
@@ -887,7 +887,7 @@ UpdateError::RequestTimeout => "request_timeout: The method was called via a POS
                     }
     }
 
-    fn cause(&self) -> Option<&Error> {
+    fn cause(&self) -> Option<&dyn Error> {
         match *self {
             UpdateError::MalformedResponse(ref e) => Some(e),
             UpdateError::Client(ref inner) => Some(inner),

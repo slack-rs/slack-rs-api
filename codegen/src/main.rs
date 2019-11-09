@@ -1,9 +1,9 @@
 #[macro_use]
 extern crate serde_derive;
-extern crate serde;
-extern crate serde_json;
-extern crate inflector;
-extern crate clap;
+
+use serde_json;
+
+
 
 use std::fs::{self, File, OpenOptions};
 use std::io::{self, Read, Write};
@@ -14,10 +14,10 @@ use inflector::Inflector;
 use clap::{Arg, App};
 
 mod json_schema;
-use json_schema::{JsonSchema, PropType};
+use crate::json_schema::{JsonSchema, PropType};
 
 mod generator;
-use generator::*;
+use crate::generator::*;
 
 const SCHEMA_DIR: &'static str = concat!(env!("CARGO_MANIFEST_DIR"), "/slack-api-schemas");
 const DEFAULT_OUT_DIR: &'static str = concat!(env!("CARGO_MANIFEST_DIR"), "/../src");

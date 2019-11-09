@@ -7,7 +7,7 @@ use std::fmt;
 
 use serde_json;
 
-use requests::SlackWebRequestSender;
+use crate::requests::SlackWebRequestSender;
 
 /// Add a comment to an existing file.
 ///
@@ -16,7 +16,7 @@ use requests::SlackWebRequestSender;
 pub fn add<R>(
     client: &R,
     token: &str,
-    request: &AddRequest,
+    request: &AddRequest<'_>,
 ) -> Result<AddResponse, AddError<R::Error>>
 where
     R: SlackWebRequestSender,
@@ -27,7 +27,7 @@ where
         Some(("comment", request.comment)),
     ];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    let url = ::get_slack_url_for_method("files.comments.add");
+    let url = crate::get_slack_url_for_method("files.comments.add");
     client
         .send(&url, &params[..])
         .map_err(AddError::Client)
@@ -47,7 +47,7 @@ pub struct AddRequest<'a> {
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct AddResponse {
-    pub comment: Option<::FileComment>,
+    pub comment: Option<crate::FileComment>,
     error: Option<String>,
     #[serde(default)]
     ok: bool,
@@ -123,7 +123,7 @@ impl<'a, E: Error> From<&'a str> for AddError<E> {
 }
 
 impl<E: Error> fmt::Display for AddError<E> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.description())
     }
 }
@@ -151,7 +151,7 @@ AddError::RequestTimeout => "request_timeout: The method was called via a POST r
                     }
     }
 
-    fn cause(&self) -> Option<&Error> {
+    fn cause(&self) -> Option<&dyn Error> {
         match *self {
             AddError::MalformedResponse(ref e) => Some(e),
             AddError::Client(ref inner) => Some(inner),
@@ -167,7 +167,7 @@ AddError::RequestTimeout => "request_timeout: The method was called via a POST r
 pub fn delete<R>(
     client: &R,
     token: &str,
-    request: &DeleteRequest,
+    request: &DeleteRequest<'_>,
 ) -> Result<DeleteResponse, DeleteError<R::Error>>
 where
     R: SlackWebRequestSender,
@@ -178,7 +178,7 @@ where
         Some(("id", request.id)),
     ];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    let url = ::get_slack_url_for_method("files.comments.delete");
+    let url = crate::get_slack_url_for_method("files.comments.delete");
     client
         .send(&url, &params[..])
         .map_err(DeleteError::Client)
@@ -273,7 +273,7 @@ impl<'a, E: Error> From<&'a str> for DeleteError<E> {
 }
 
 impl<E: Error> fmt::Display for DeleteError<E> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.description())
     }
 }
@@ -301,7 +301,7 @@ DeleteError::RequestTimeout => "request_timeout: The method was called via a POS
                     }
     }
 
-    fn cause(&self) -> Option<&Error> {
+    fn cause(&self) -> Option<&dyn Error> {
         match *self {
             DeleteError::MalformedResponse(ref e) => Some(e),
             DeleteError::Client(ref inner) => Some(inner),
@@ -317,7 +317,7 @@ DeleteError::RequestTimeout => "request_timeout: The method was called via a POS
 pub fn edit<R>(
     client: &R,
     token: &str,
-    request: &EditRequest,
+    request: &EditRequest<'_>,
 ) -> Result<EditResponse, EditError<R::Error>>
 where
     R: SlackWebRequestSender,
@@ -329,7 +329,7 @@ where
         Some(("comment", request.comment)),
     ];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    let url = ::get_slack_url_for_method("files.comments.edit");
+    let url = crate::get_slack_url_for_method("files.comments.edit");
     client
         .send(&url, &params[..])
         .map_err(EditError::Client)
@@ -351,7 +351,7 @@ pub struct EditRequest<'a> {
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct EditResponse {
-    pub comment: Option<::FileComment>,
+    pub comment: Option<crate::FileComment>,
     error: Option<String>,
     #[serde(default)]
     ok: bool,
@@ -433,7 +433,7 @@ impl<'a, E: Error> From<&'a str> for EditError<E> {
 }
 
 impl<E: Error> fmt::Display for EditError<E> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.description())
     }
 }
@@ -463,7 +463,7 @@ EditError::RequestTimeout => "request_timeout: The method was called via a POST 
                     }
     }
 
-    fn cause(&self) -> Option<&Error> {
+    fn cause(&self) -> Option<&dyn Error> {
         match *self {
             EditError::MalformedResponse(ref e) => Some(e),
             EditError::Client(ref inner) => Some(inner),

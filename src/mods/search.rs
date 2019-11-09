@@ -8,7 +8,7 @@ use std::fmt;
 
 use serde_json;
 
-use requests::SlackWebRequestSender;
+use crate::requests::SlackWebRequestSender;
 
 /// Searches for messages and files matching a query.
 ///
@@ -17,7 +17,7 @@ use requests::SlackWebRequestSender;
 pub fn all<R>(
     client: &R,
     token: &str,
-    request: &AllRequest,
+    request: &AllRequest<'_>,
 ) -> Result<AllResponse, AllError<R::Error>>
 where
     R: SlackWebRequestSender,
@@ -36,7 +36,7 @@ where
         page.as_ref().map(|page| ("page", &page[..])),
     ];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    let url = ::get_slack_url_for_method("search.all");
+    let url = crate::get_slack_url_for_method("search.all");
     client
         .send(&url, &params[..])
         .map_err(AllError::Client)
@@ -74,14 +74,14 @@ pub struct AllResponse {
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct AllResponseFiles {
-    pub matches: Vec<::File>,
-    pub paging: ::Paging,
+    pub matches: Vec<crate::File>,
+    pub paging: crate::Paging,
 }
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct AllResponseMessages {
-    pub matches: Vec<::Message>,
-    pub paging: ::Paging,
+    pub matches: Vec<crate::Message>,
+    pub paging: crate::Paging,
 }
 
 impl<E: Error> Into<Result<AllResponse, AllError<E>>> for AllResponse {
@@ -148,7 +148,7 @@ impl<'a, E: Error> From<&'a str> for AllError<E> {
 }
 
 impl<E: Error> fmt::Display for AllError<E> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.description())
     }
 }
@@ -174,7 +174,7 @@ AllError::RequestTimeout => "request_timeout: The method was called via a POST r
                     }
     }
 
-    fn cause(&self) -> Option<&Error> {
+    fn cause(&self) -> Option<&dyn Error> {
         match *self {
             AllError::MalformedResponse(ref e) => Some(e),
             AllError::Client(ref inner) => Some(inner),
@@ -190,7 +190,7 @@ AllError::RequestTimeout => "request_timeout: The method was called via a POST r
 pub fn files<R>(
     client: &R,
     token: &str,
-    request: &FilesRequest,
+    request: &FilesRequest<'_>,
 ) -> Result<FilesResponse, FilesError<R::Error>>
 where
     R: SlackWebRequestSender,
@@ -209,7 +209,7 @@ where
         page.as_ref().map(|page| ("page", &page[..])),
     ];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    let url = ::get_slack_url_for_method("search.files");
+    let url = crate::get_slack_url_for_method("search.files");
     client
         .send(&url, &params[..])
         .map_err(FilesError::Client)
@@ -246,8 +246,8 @@ pub struct FilesResponse {
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct FilesResponseFiles {
-    pub matches: Option<Vec<::File>>,
-    pub paging: Option<::Paging>,
+    pub matches: Option<Vec<crate::File>>,
+    pub paging: Option<crate::Paging>,
     pub total: Option<i32>,
 }
 
@@ -315,7 +315,7 @@ impl<'a, E: Error> From<&'a str> for FilesError<E> {
 }
 
 impl<E: Error> fmt::Display for FilesError<E> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.description())
     }
 }
@@ -341,7 +341,7 @@ FilesError::RequestTimeout => "request_timeout: The method was called via a POST
                     }
     }
 
-    fn cause(&self) -> Option<&Error> {
+    fn cause(&self) -> Option<&dyn Error> {
         match *self {
             FilesError::MalformedResponse(ref e) => Some(e),
             FilesError::Client(ref inner) => Some(inner),
@@ -357,7 +357,7 @@ FilesError::RequestTimeout => "request_timeout: The method was called via a POST
 pub fn messages<R>(
     client: &R,
     token: &str,
-    request: &MessagesRequest,
+    request: &MessagesRequest<'_>,
 ) -> Result<MessagesResponse, MessagesError<R::Error>>
 where
     R: SlackWebRequestSender,
@@ -376,7 +376,7 @@ where
         page.as_ref().map(|page| ("page", &page[..])),
     ];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    let url = ::get_slack_url_for_method("search.messages");
+    let url = crate::get_slack_url_for_method("search.messages");
     client
         .send(&url, &params[..])
         .map_err(MessagesError::Client)
@@ -414,8 +414,8 @@ pub struct MessagesResponse {
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct MessagesResponseMessages {
-    pub matches: Option<Vec<::Message>>,
-    pub paging: Option<::Paging>,
+    pub matches: Option<Vec<crate::Message>>,
+    pub paging: Option<crate::Paging>,
     pub total: Option<i32>,
 }
 
@@ -483,7 +483,7 @@ impl<'a, E: Error> From<&'a str> for MessagesError<E> {
 }
 
 impl<E: Error> fmt::Display for MessagesError<E> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.description())
     }
 }
@@ -509,7 +509,7 @@ MessagesError::RequestTimeout => "request_timeout: The method was called via a P
                     }
     }
 
-    fn cause(&self) -> Option<&Error> {
+    fn cause(&self) -> Option<&dyn Error> {
         match *self {
             MessagesError::MalformedResponse(ref e) => Some(e),
             MessagesError::Client(ref inner) => Some(inner),

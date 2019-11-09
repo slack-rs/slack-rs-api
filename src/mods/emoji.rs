@@ -7,7 +7,7 @@ use std::fmt;
 
 use serde_json;
 
-use requests::SlackWebRequestSender;
+use crate::requests::SlackWebRequestSender;
 
 /// Lists custom emoji for a team.
 ///
@@ -18,7 +18,7 @@ where
     R: SlackWebRequestSender,
 {
     let params = &[("token", token)];
-    let url = ::get_slack_url_for_method("emoji.list");
+    let url = crate::get_slack_url_for_method("emoji.list");
     client
         .send(&url, &params[..])
         .map_err(ListError::Client)
@@ -97,7 +97,7 @@ impl<'a, E: Error> From<&'a str> for ListError<E> {
 }
 
 impl<E: Error> fmt::Display for ListError<E> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.description())
     }
 }
@@ -122,7 +122,7 @@ ListError::RequestTimeout => "request_timeout: The method was called via a POST 
                     }
     }
 
-    fn cause(&self) -> Option<&Error> {
+    fn cause(&self) -> Option<&dyn Error> {
         match *self {
             ListError::MalformedResponse(ref e) => Some(e),
             ListError::Client(ref inner) => Some(inner),

@@ -7,7 +7,7 @@ use std::fmt;
 
 use serde_json;
 
-use requests::SlackWebRequestSender;
+use crate::requests::SlackWebRequestSender;
 
 /// Gets information about a bot user.
 ///
@@ -16,14 +16,14 @@ use requests::SlackWebRequestSender;
 pub fn info<R>(
     client: &R,
     token: &str,
-    request: &InfoRequest,
+    request: &InfoRequest<'_>,
 ) -> Result<InfoResponse, InfoError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
     let params = vec![Some(("token", token)), request.bot.map(|bot| ("bot", bot))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    let url = ::get_slack_url_for_method("bots.info");
+    let url = crate::get_slack_url_for_method("bots.info");
     client
         .send(&url, &params[..])
         .map_err(InfoError::Client)
@@ -130,7 +130,7 @@ impl<'a, E: Error> From<&'a str> for InfoError<E> {
 }
 
 impl<E: Error> fmt::Display for InfoError<E> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.description())
     }
 }
@@ -157,7 +157,7 @@ InfoError::RequestTimeout => "request_timeout: The method was called via a POST 
                     }
     }
 
-    fn cause(&self) -> Option<&Error> {
+    fn cause(&self) -> Option<&dyn Error> {
         match *self {
             InfoError::MalformedResponse(ref e) => Some(e),
             InfoError::Client(ref inner) => Some(inner),

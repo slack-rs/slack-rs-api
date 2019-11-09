@@ -8,7 +8,7 @@ use std::fmt;
 
 use serde_json;
 
-use requests::SlackWebRequestSender;
+use crate::requests::SlackWebRequestSender;
 
 /// Deletes a file.
 ///
@@ -17,14 +17,14 @@ use requests::SlackWebRequestSender;
 pub fn delete<R>(
     client: &R,
     token: &str,
-    request: &DeleteRequest,
+    request: &DeleteRequest<'_>,
 ) -> Result<DeleteResponse, DeleteError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
     let params = vec![Some(("token", token)), Some(("file", request.file))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    let url = ::get_slack_url_for_method("files.delete");
+    let url = crate::get_slack_url_for_method("files.delete");
     client
         .send(&url, &params[..])
         .map_err(DeleteError::Client)
@@ -117,7 +117,7 @@ impl<'a, E: Error> From<&'a str> for DeleteError<E> {
 }
 
 impl<E: Error> fmt::Display for DeleteError<E> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.description())
     }
 }
@@ -145,7 +145,7 @@ DeleteError::RequestTimeout => "request_timeout: The method was called via a POS
                     }
     }
 
-    fn cause(&self) -> Option<&Error> {
+    fn cause(&self) -> Option<&dyn Error> {
         match *self {
             DeleteError::MalformedResponse(ref e) => Some(e),
             DeleteError::Client(ref inner) => Some(inner),
@@ -161,7 +161,7 @@ DeleteError::RequestTimeout => "request_timeout: The method was called via a POS
 pub fn info<R>(
     client: &R,
     token: &str,
-    request: &InfoRequest,
+    request: &InfoRequest<'_>,
 ) -> Result<InfoResponse, InfoError<R::Error>>
 where
     R: SlackWebRequestSender,
@@ -175,7 +175,7 @@ where
         page.as_ref().map(|page| ("page", &page[..])),
     ];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    let url = ::get_slack_url_for_method("files.info");
+    let url = crate::get_slack_url_for_method("files.info");
     client
         .send(&url, &params[..])
         .map_err(InfoError::Client)
@@ -197,12 +197,12 @@ pub struct InfoRequest<'a> {
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct InfoResponse {
-    pub comments: Option<Vec<::FileComment>>,
+    pub comments: Option<Vec<crate::FileComment>>,
     error: Option<String>,
-    pub file: Option<::File>,
+    pub file: Option<crate::File>,
     #[serde(default)]
     ok: bool,
-    pub paging: Option<::Paging>,
+    pub paging: Option<crate::Paging>,
 }
 
 impl<E: Error> Into<Result<InfoResponse, InfoError<E>>> for InfoResponse {
@@ -272,7 +272,7 @@ impl<'a, E: Error> From<&'a str> for InfoError<E> {
 }
 
 impl<E: Error> fmt::Display for InfoError<E> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.description())
     }
 }
@@ -299,7 +299,7 @@ InfoError::RequestTimeout => "request_timeout: The method was called via a POST 
                     }
     }
 
-    fn cause(&self) -> Option<&Error> {
+    fn cause(&self) -> Option<&dyn Error> {
         match *self {
             InfoError::MalformedResponse(ref e) => Some(e),
             InfoError::Client(ref inner) => Some(inner),
@@ -315,7 +315,7 @@ InfoError::RequestTimeout => "request_timeout: The method was called via a POST 
 pub fn list<R>(
     client: &R,
     token: &str,
-    request: &ListRequest,
+    request: &ListRequest<'_>,
 ) -> Result<ListResponse, ListError<R::Error>>
 where
     R: SlackWebRequestSender,
@@ -335,7 +335,7 @@ where
         page.as_ref().map(|page| ("page", &page[..])),
     ];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    let url = ::get_slack_url_for_method("files.list");
+    let url = crate::get_slack_url_for_method("files.list");
     client
         .send(&url, &params[..])
         .map_err(ListError::Client)
@@ -378,10 +378,10 @@ pub struct ListRequest<'a> {
 #[derive(Clone, Debug, Deserialize)]
 pub struct ListResponse {
     error: Option<String>,
-    pub files: Option<Vec<::File>>,
+    pub files: Option<Vec<crate::File>>,
     #[serde(default)]
     ok: bool,
-    pub paging: Option<::Paging>,
+    pub paging: Option<crate::Paging>,
 }
 
 impl<E: Error> Into<Result<ListResponse, ListError<E>>> for ListResponse {
@@ -454,7 +454,7 @@ impl<'a, E: Error> From<&'a str> for ListError<E> {
 }
 
 impl<E: Error> fmt::Display for ListError<E> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.description())
     }
 }
@@ -482,7 +482,7 @@ ListError::RequestTimeout => "request_timeout: The method was called via a POST 
                     }
     }
 
-    fn cause(&self) -> Option<&Error> {
+    fn cause(&self) -> Option<&dyn Error> {
         match *self {
             ListError::MalformedResponse(ref e) => Some(e),
             ListError::Client(ref inner) => Some(inner),
@@ -498,14 +498,14 @@ ListError::RequestTimeout => "request_timeout: The method was called via a POST 
 pub fn revoke_public_url<R>(
     client: &R,
     token: &str,
-    request: &RevokePublicURLRequest,
+    request: &RevokePublicURLRequest<'_>,
 ) -> Result<RevokePublicURLResponse, RevokePublicURLError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
     let params = vec![Some(("token", token)), Some(("file", request.file))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    let url = ::get_slack_url_for_method("files.revokePublicURL");
+    let url = crate::get_slack_url_for_method("files.revokePublicURL");
     client
         .send(&url, &params[..])
         .map_err(RevokePublicURLError::Client)
@@ -525,7 +525,7 @@ pub struct RevokePublicURLRequest<'a> {
 #[derive(Clone, Debug, Deserialize)]
 pub struct RevokePublicURLResponse {
     error: Option<String>,
-    pub file: Option<::File>,
+    pub file: Option<crate::File>,
     #[serde(default)]
     ok: bool,
 }
@@ -602,7 +602,7 @@ impl<'a, E: Error> From<&'a str> for RevokePublicURLError<E> {
 }
 
 impl<E: Error> fmt::Display for RevokePublicURLError<E> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.description())
     }
 }
@@ -630,7 +630,7 @@ RevokePublicURLError::RequestTimeout => "request_timeout: The method was called 
                     }
     }
 
-    fn cause(&self) -> Option<&Error> {
+    fn cause(&self) -> Option<&dyn Error> {
         match *self {
             RevokePublicURLError::MalformedResponse(ref e) => Some(e),
             RevokePublicURLError::Client(ref inner) => Some(inner),
@@ -646,14 +646,14 @@ RevokePublicURLError::RequestTimeout => "request_timeout: The method was called 
 pub fn shared_public_url<R>(
     client: &R,
     token: &str,
-    request: &SharedPublicURLRequest,
+    request: &SharedPublicURLRequest<'_>,
 ) -> Result<SharedPublicURLResponse, SharedPublicURLError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
     let params = vec![Some(("token", token)), Some(("file", request.file))];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    let url = ::get_slack_url_for_method("files.sharedPublicURL");
+    let url = crate::get_slack_url_for_method("files.sharedPublicURL");
     client
         .send(&url, &params[..])
         .map_err(SharedPublicURLError::Client)
@@ -673,7 +673,7 @@ pub struct SharedPublicURLRequest<'a> {
 #[derive(Clone, Debug, Deserialize)]
 pub struct SharedPublicURLResponse {
     error: Option<String>,
-    pub file: Option<::File>,
+    pub file: Option<crate::File>,
     #[serde(default)]
     ok: bool,
 }
@@ -753,7 +753,7 @@ impl<'a, E: Error> From<&'a str> for SharedPublicURLError<E> {
 }
 
 impl<E: Error> fmt::Display for SharedPublicURLError<E> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.description())
     }
 }
@@ -782,7 +782,7 @@ SharedPublicURLError::RequestTimeout => "request_timeout: The method was called 
                     }
     }
 
-    fn cause(&self) -> Option<&Error> {
+    fn cause(&self) -> Option<&dyn Error> {
         match *self {
             SharedPublicURLError::MalformedResponse(ref e) => Some(e),
             SharedPublicURLError::Client(ref inner) => Some(inner),

@@ -7,13 +7,13 @@ use std::fmt;
 
 use serde_json;
 
-use requests::SlackWebRequestSender;
+use crate::requests::SlackWebRequestSender;
 
 /// Checks API calling code.
 ///
 /// Wraps https://api.slack.com/methods/api.test
 
-pub fn test<R>(client: &R, request: &TestRequest) -> Result<TestResponse, TestError<R::Error>>
+pub fn test<R>(client: &R, request: &TestRequest<'_>) -> Result<TestResponse, TestError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
@@ -22,7 +22,7 @@ where
         request.foo.map(|foo| ("foo", foo)),
     ];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    let url = ::get_slack_url_for_method("api.test");
+    let url = crate::get_slack_url_for_method("api.test");
     client
         .send(&url, &params[..])
         .map_err(TestError::Client)
@@ -100,7 +100,7 @@ impl<'a, E: Error> From<&'a str> for TestError<E> {
 }
 
 impl<E: Error> fmt::Display for TestError<E> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.description())
     }
 }
@@ -122,7 +122,7 @@ TestError::RequestTimeout => "request_timeout: The method was called via a POST 
                     }
     }
 
-    fn cause(&self) -> Option<&Error> {
+    fn cause(&self) -> Option<&dyn Error> {
         match *self {
             TestError::MalformedResponse(ref e) => Some(e),
             TestError::Client(ref inner) => Some(inner),

@@ -7,7 +7,7 @@ use std::fmt;
 
 use serde_json;
 
-use requests::SlackWebRequestSender;
+use crate::requests::SlackWebRequestSender;
 
 /// Exchanges a temporary OAuth code for an API token.
 ///
@@ -15,7 +15,7 @@ use requests::SlackWebRequestSender;
 
 pub fn access<R>(
     client: &R,
-    request: &AccessRequest,
+    request: &AccessRequest<'_>,
 ) -> Result<AccessResponse, AccessError<R::Error>>
 where
     R: SlackWebRequestSender,
@@ -29,7 +29,7 @@ where
             .map(|redirect_uri| ("redirect_uri", redirect_uri)),
     ];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    let url = ::get_slack_url_for_method("oauth.access");
+    let url = crate::get_slack_url_for_method("oauth.access");
     client
         .send(&url, &params[..])
         .map_err(AccessError::Client)
@@ -111,7 +111,7 @@ impl<'a, E: Error> From<&'a str> for AccessError<E> {
 }
 
 impl<E: Error> fmt::Display for AccessError<E> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.description())
     }
 }
@@ -137,7 +137,7 @@ AccessError::RequestTimeout => "request_timeout: The method was called via a POS
                     }
     }
 
-    fn cause(&self) -> Option<&Error> {
+    fn cause(&self) -> Option<&dyn Error> {
         match *self {
             AccessError::MalformedResponse(ref e) => Some(e),
             AccessError::Client(ref inner) => Some(inner),

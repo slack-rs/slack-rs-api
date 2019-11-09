@@ -7,7 +7,7 @@ use std::fmt;
 
 use serde_json;
 
-use requests::SlackWebRequestSender;
+use crate::requests::SlackWebRequestSender;
 
 /// Gets the access logs for the current team.
 ///
@@ -31,7 +31,7 @@ where
         before.as_ref().map(|before| ("before", &before[..])),
     ];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    let url = ::get_slack_url_for_method("team.accessLogs");
+    let url = crate::get_slack_url_for_method("team.accessLogs");
     client
         .send(&url, &params[..])
         .map_err(AccessLogsError::Client)
@@ -58,7 +58,7 @@ pub struct AccessLogsResponse {
     pub logins: Option<Vec<AccessLogsResponseLogin>>,
     #[serde(default)]
     ok: bool,
-    pub paging: Option<::Paging>,
+    pub paging: Option<crate::Paging>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -145,7 +145,7 @@ impl<'a, E: Error> From<&'a str> for AccessLogsError<E> {
 }
 
 impl<E: Error> fmt::Display for AccessLogsError<E> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.description())
     }
 }
@@ -173,7 +173,7 @@ AccessLogsError::RequestTimeout => "request_timeout: The method was called via a
                     }
     }
 
-    fn cause(&self) -> Option<&Error> {
+    fn cause(&self) -> Option<&dyn Error> {
         match *self {
             AccessLogsError::MalformedResponse(ref e) => Some(e),
             AccessLogsError::Client(ref inner) => Some(inner),
@@ -189,7 +189,7 @@ AccessLogsError::RequestTimeout => "request_timeout: The method was called via a
 pub fn billable_info<R>(
     client: &R,
     token: &str,
-    request: &BillableInfoRequest,
+    request: &BillableInfoRequest<'_>,
 ) -> Result<BillableInfoResponse, BillableInfoError<R::Error>>
 where
     R: SlackWebRequestSender,
@@ -199,7 +199,7 @@ where
         request.user.map(|user| ("user", user)),
     ];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    let url = ::get_slack_url_for_method("team.billableInfo");
+    let url = crate::get_slack_url_for_method("team.billableInfo");
     client
         .send(&url, &params[..])
         .map_err(BillableInfoError::Client)
@@ -291,7 +291,7 @@ impl<'a, E: Error> From<&'a str> for BillableInfoError<E> {
 }
 
 impl<E: Error> fmt::Display for BillableInfoError<E> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.description())
     }
 }
@@ -318,7 +318,7 @@ BillableInfoError::RequestTimeout => "request_timeout: The method was called via
                     }
     }
 
-    fn cause(&self) -> Option<&Error> {
+    fn cause(&self) -> Option<&dyn Error> {
         match *self {
             BillableInfoError::MalformedResponse(ref e) => Some(e),
             BillableInfoError::Client(ref inner) => Some(inner),
@@ -336,7 +336,7 @@ where
     R: SlackWebRequestSender,
 {
     let params = &[("token", token)];
-    let url = ::get_slack_url_for_method("team.info");
+    let url = crate::get_slack_url_for_method("team.info");
     client
         .send(&url, &params[..])
         .map_err(InfoError::Client)
@@ -351,7 +351,7 @@ pub struct InfoResponse {
     error: Option<String>,
     #[serde(default)]
     ok: bool,
-    pub team: Option<::Team>,
+    pub team: Option<crate::Team>,
 }
 
 impl<E: Error> Into<Result<InfoResponse, InfoError<E>>> for InfoResponse {
@@ -415,7 +415,7 @@ impl<'a, E: Error> From<&'a str> for InfoError<E> {
 }
 
 impl<E: Error> fmt::Display for InfoError<E> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.description())
     }
 }
@@ -440,7 +440,7 @@ InfoError::RequestTimeout => "request_timeout: The method was called via a POST 
                     }
     }
 
-    fn cause(&self) -> Option<&Error> {
+    fn cause(&self) -> Option<&dyn Error> {
         match *self {
             InfoError::MalformedResponse(ref e) => Some(e),
             InfoError::Client(ref inner) => Some(inner),
@@ -456,7 +456,7 @@ InfoError::RequestTimeout => "request_timeout: The method was called via a POST 
 pub fn integration_logs<R>(
     client: &R,
     token: &str,
-    request: &IntegrationLogsRequest,
+    request: &IntegrationLogsRequest<'_>,
 ) -> Result<IntegrationLogsResponse, IntegrationLogsError<R::Error>>
 where
     R: SlackWebRequestSender,
@@ -477,7 +477,7 @@ where
         page.as_ref().map(|page| ("page", &page[..])),
     ];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    let url = ::get_slack_url_for_method("team.integrationLogs");
+    let url = crate::get_slack_url_for_method("team.integrationLogs");
     client
         .send(&url, &params[..])
         .map_err(IntegrationLogsError::Client)
@@ -510,7 +510,7 @@ pub struct IntegrationLogsResponse {
     pub logs: Option<Vec<IntegrationLogsResponseLog>>,
     #[serde(default)]
     ok: bool,
-    pub paging: Option<::Paging>,
+    pub paging: Option<crate::Paging>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -594,7 +594,7 @@ impl<'a, E: Error> From<&'a str> for IntegrationLogsError<E> {
 }
 
 impl<E: Error> fmt::Display for IntegrationLogsError<E> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.description())
     }
 }
@@ -620,7 +620,7 @@ IntegrationLogsError::RequestTimeout => "request_timeout: The method was called 
                     }
     }
 
-    fn cause(&self) -> Option<&Error> {
+    fn cause(&self) -> Option<&dyn Error> {
         match *self {
             IntegrationLogsError::MalformedResponse(ref e) => Some(e),
             IntegrationLogsError::Client(ref inner) => Some(inner),

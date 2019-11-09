@@ -16,7 +16,7 @@ pub trait SlackWebRequestSender {
 
 #[cfg(feature = "reqwest")]
 mod reqwest_support {
-    extern crate reqwest;
+    use reqwest;
     pub use self::reqwest::{Client, Error};
 
     use super::SlackWebRequestSender;

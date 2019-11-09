@@ -7,7 +7,7 @@ use std::fmt;
 
 use serde_json;
 
-use requests::SlackWebRequestSender;
+use crate::requests::SlackWebRequestSender;
 
 /// Revokes a token.
 ///
@@ -28,7 +28,7 @@ where
             .map(|test| ("test", if test { "1" } else { "0" })),
     ];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    let url = ::get_slack_url_for_method("auth.revoke");
+    let url = crate::get_slack_url_for_method("auth.revoke");
     client
         .send(&url, &params[..])
         .map_err(RevokeError::Client)
@@ -113,7 +113,7 @@ impl<'a, E: Error> From<&'a str> for RevokeError<E> {
 }
 
 impl<E: Error> fmt::Display for RevokeError<E> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.description())
     }
 }
@@ -138,7 +138,7 @@ RevokeError::RequestTimeout => "request_timeout: The method was called via a POS
                     }
     }
 
-    fn cause(&self) -> Option<&Error> {
+    fn cause(&self) -> Option<&dyn Error> {
         match *self {
             RevokeError::MalformedResponse(ref e) => Some(e),
             RevokeError::Client(ref inner) => Some(inner),
@@ -156,7 +156,7 @@ where
     R: SlackWebRequestSender,
 {
     let params = &[("token", token)];
-    let url = ::get_slack_url_for_method("auth.test");
+    let url = crate::get_slack_url_for_method("auth.test");
     client
         .send(&url, &params[..])
         .map_err(TestError::Client)
@@ -239,7 +239,7 @@ impl<'a, E: Error> From<&'a str> for TestError<E> {
 }
 
 impl<E: Error> fmt::Display for TestError<E> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.description())
     }
 }
@@ -264,7 +264,7 @@ TestError::RequestTimeout => "request_timeout: The method was called via a POST 
                     }
     }
 
-    fn cause(&self) -> Option<&Error> {
+    fn cause(&self) -> Option<&dyn Error> {
         match *self {
             TestError::MalformedResponse(ref e) => Some(e),
             TestError::Client(ref inner) => Some(inner),

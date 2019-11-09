@@ -7,7 +7,7 @@ use std::fmt;
 
 use serde_json;
 
-use requests::SlackWebRequestSender;
+use crate::requests::SlackWebRequestSender;
 
 /// Starts a Real Time Messaging session.
 ///
@@ -18,7 +18,7 @@ where
     R: SlackWebRequestSender,
 {
     let params = &[("token", token)];
-    let url = ::get_slack_url_for_method("rtm.connect");
+    let url = crate::get_slack_url_for_method("rtm.connect");
     client
         .send(&url, &params[..])
         .map_err(ConnectError::Client)
@@ -116,7 +116,7 @@ impl<'a, E: Error> From<&'a str> for ConnectError<E> {
 }
 
 impl<E: Error> fmt::Display for ConnectError<E> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.description())
     }
 }
@@ -141,7 +141,7 @@ ConnectError::RequestTimeout => "request_timeout: The method was called via a PO
                     }
     }
 
-    fn cause(&self) -> Option<&Error> {
+    fn cause(&self) -> Option<&dyn Error> {
         match *self {
             ConnectError::MalformedResponse(ref e) => Some(e),
             ConnectError::Client(ref inner) => Some(inner),
@@ -184,7 +184,7 @@ where
             .map(|include_locale| ("include_locale", if include_locale { "1" } else { "0" })),
     ];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    let url = ::get_slack_url_for_method("rtm.start");
+    let url = crate::get_slack_url_for_method("rtm.start");
     client
         .send(&url, &params[..])
         .map_err(StartError::Client)
@@ -210,19 +210,19 @@ pub struct StartRequest {
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct StartResponse {
-    pub bots: Option<Vec<::Bot>>,
-    pub channels: Option<Vec<::Channel>>,
+    pub bots: Option<Vec<crate::Bot>>,
+    pub channels: Option<Vec<crate::Channel>>,
     error: Option<String>,
-    pub groups: Option<Vec<::Group>>,
-    pub ims: Option<Vec<::Im>>,
-    pub mpims: Option<Vec<::Mpim>>,
+    pub groups: Option<Vec<crate::Group>>,
+    pub ims: Option<Vec<crate::Im>>,
+    pub mpims: Option<Vec<crate::Mpim>>,
     #[serde(default)]
     ok: bool,
     #[serde(rename = "self")]
-    pub slf: Option<::User>,
-    pub team: Option<::Team>,
+    pub slf: Option<crate::User>,
+    pub team: Option<crate::Team>,
     pub url: Option<String>,
-    pub users: Option<Vec<::User>>,
+    pub users: Option<Vec<crate::User>>,
 }
 
 impl<E: Error> Into<Result<StartResponse, StartError<E>>> for StartResponse {
@@ -289,7 +289,7 @@ impl<'a, E: Error> From<&'a str> for StartError<E> {
 }
 
 impl<E: Error> fmt::Display for StartError<E> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.description())
     }
 }
@@ -315,7 +315,7 @@ StartError::RequestTimeout => "request_timeout: The method was called via a POST
                     }
     }
 
-    fn cause(&self) -> Option<&Error> {
+    fn cause(&self) -> Option<&dyn Error> {
         match *self {
             StartError::MalformedResponse(ref e) => Some(e),
             StartError::Client(ref inner) => Some(inner),

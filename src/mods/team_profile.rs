@@ -7,7 +7,7 @@ use std::fmt;
 
 use serde_json;
 
-use requests::SlackWebRequestSender;
+use crate::requests::SlackWebRequestSender;
 
 /// Retrieve a team's profile.
 ///
@@ -16,7 +16,7 @@ use requests::SlackWebRequestSender;
 pub fn get<R>(
     client: &R,
     token: &str,
-    request: &GetRequest,
+    request: &GetRequest<'_>,
 ) -> Result<GetResponse, GetError<R::Error>>
 where
     R: SlackWebRequestSender,
@@ -28,7 +28,7 @@ where
             .map(|visibility| ("visibility", visibility)),
     ];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    let url = ::get_slack_url_for_method("team.profile.get");
+    let url = crate::get_slack_url_for_method("team.profile.get");
     client
         .send(&url, &params[..])
         .map_err(GetError::Client)
@@ -134,7 +134,7 @@ impl<'a, E: Error> From<&'a str> for GetError<E> {
 }
 
 impl<E: Error> fmt::Display for GetError<E> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.description())
     }
 }
@@ -160,7 +160,7 @@ GetError::RequestTimeout => "request_timeout: The method was called via a POST r
                     }
     }
 
-    fn cause(&self) -> Option<&Error> {
+    fn cause(&self) -> Option<&dyn Error> {
         match *self {
             GetError::MalformedResponse(ref e) => Some(e),
             GetError::Client(ref inner) => Some(inner),

@@ -34,7 +34,7 @@ pub struct Channel {
     pub is_read_only: Option<bool>,
     pub is_shared: Option<bool>,
     pub last_read: Option<String>,
-    pub latest: Option<::Message>,
+    pub latest: Option<crate::Message>,
     pub members: Option<Vec<String>>,
     pub name: Option<String>,
     pub name_normalized: Option<String>,
@@ -75,7 +75,7 @@ pub struct File {
     pub groups: Option<Vec<String>>,
     pub id: Option<String>,
     pub ims: Option<Vec<String>>,
-    pub initial_comment: Option<::FileComment>,
+    pub initial_comment: Option<crate::FileComment>,
     pub is_external: Option<bool>,
     pub is_public: Option<bool>,
     pub is_starred: Option<bool>,
@@ -92,7 +92,7 @@ pub struct File {
     pub preview: Option<String>,
     pub preview_highlight: Option<String>,
     pub public_url_shared: Option<bool>,
-    pub reactions: Option<Vec<::Reaction>>,
+    pub reactions: Option<Vec<crate::Reaction>>,
     pub size: Option<i32>,
     pub thumb_160: Option<String>,
     pub thumb_360: Option<String>,
@@ -116,7 +116,7 @@ pub struct File {
 pub struct FileComment {
     pub comment: Option<String>,
     pub id: Option<String>,
-    pub reactions: Option<Vec<::Reaction>>,
+    pub reactions: Option<Vec<crate::Reaction>>,
     pub timestamp: Option<i32>,
     pub user: Option<String>,
 }
@@ -130,7 +130,7 @@ pub struct Group {
     pub is_group: Option<bool>,
     pub is_mpim: Option<bool>,
     pub last_read: Option<String>,
-    pub latest: Option<::Message>,
+    pub latest: Option<crate::Message>,
     pub members: Option<Vec<String>>,
     pub name: Option<String>,
     pub purpose: Option<GroupPurpose>,
@@ -357,7 +357,7 @@ pub struct MessageBotMessage {
     pub attachments: Option<Vec<MessageBotMessageAttachment>>,
     pub bot_id: Option<String>,
     pub channel: Option<String>,
-    #[serde(deserialize_with = "::optional_struct_or_empty_array")]
+    #[serde(deserialize_with = "crate::optional_struct_or_empty_array")]
     #[serde(default)]
     pub icons: Option<MessageBotMessageIcons>,
     pub subtype: Option<String>,
@@ -482,8 +482,8 @@ pub struct MessageChannelUnarchive {
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct MessageFileComment {
-    pub comment: Option<::FileComment>,
-    pub file: Option<::File>,
+    pub comment: Option<crate::FileComment>,
+    pub file: Option<crate::File>,
     pub subtype: Option<String>,
     pub text: Option<String>,
     pub ts: Option<String>,
@@ -493,7 +493,7 @@ pub struct MessageFileComment {
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct MessageFileMention {
-    pub file: Option<::File>,
+    pub file: Option<crate::File>,
     pub subtype: Option<String>,
     pub text: Option<String>,
     pub ts: Option<String>,
@@ -504,7 +504,7 @@ pub struct MessageFileMention {
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct MessageFileShare {
-    pub file: Option<::File>,
+    pub file: Option<crate::File>,
     pub subtype: Option<String>,
     pub text: Option<String>,
     pub ts: Option<String>,
@@ -877,7 +877,7 @@ pub struct Mpim {
     pub is_group: Option<bool>,
     pub is_mpim: Option<bool>,
     pub last_read: Option<String>,
-    pub latest: Option<::Message>,
+    pub latest: Option<crate::Message>,
     pub members: Option<Vec<String>>,
     pub name: Option<String>,
     pub unread_count: Option<i32>,
@@ -951,7 +951,7 @@ pub struct User {
     pub is_ultra_restricted: Option<bool>,
     pub locale: Option<String>,
     pub name: Option<String>,
-    pub profile: Option<::UserProfile>,
+    pub profile: Option<crate::UserProfile>,
     pub real_name: Option<String>,
     pub team_id: Option<String>,
     pub two_factor_type: Option<String>,
@@ -993,7 +993,7 @@ pub struct UserProfile {
     pub display_name: Option<String>,
     pub display_name_normalized: Option<String>,
     pub email: Option<String>,
-    #[serde(deserialize_with = "::optional_struct_or_empty_array")]
+    #[serde(deserialize_with = "crate::optional_struct_or_empty_array")]
     #[serde(default)]
     pub fields: Option<HashMap<String, UserProfileFields>>,
     pub first_name: Option<String>,

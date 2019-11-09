@@ -7,7 +7,7 @@ use std::fmt;
 
 use serde_json;
 
-use requests::SlackWebRequestSender;
+use crate::requests::SlackWebRequestSender;
 
 /// Retrieves a user's profile information.
 ///
@@ -16,7 +16,7 @@ use requests::SlackWebRequestSender;
 pub fn get<R>(
     client: &R,
     token: &str,
-    request: &GetRequest,
+    request: &GetRequest<'_>,
 ) -> Result<GetResponse, GetError<R::Error>>
 where
     R: SlackWebRequestSender,
@@ -29,7 +29,7 @@ where
             .map(|include_labels| ("include_labels", if include_labels { "1" } else { "0" })),
     ];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    let url = ::get_slack_url_for_method("users.profile.get");
+    let url = crate::get_slack_url_for_method("users.profile.get");
     client
         .send(&url, &params[..])
         .map_err(GetError::Client)
@@ -52,7 +52,7 @@ pub struct GetResponse {
     error: Option<String>,
     #[serde(default)]
     ok: bool,
-    pub profile: Option<::UserProfile>,
+    pub profile: Option<crate::UserProfile>,
 }
 
 impl<E: Error> Into<Result<GetResponse, GetError<E>>> for GetResponse {
@@ -122,7 +122,7 @@ impl<'a, E: Error> From<&'a str> for GetError<E> {
 }
 
 impl<E: Error> fmt::Display for GetError<E> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.description())
     }
 }
@@ -149,7 +149,7 @@ GetError::RequestTimeout => "request_timeout: The method was called via a POST r
                     }
     }
 
-    fn cause(&self) -> Option<&Error> {
+    fn cause(&self) -> Option<&dyn Error> {
         match *self {
             GetError::MalformedResponse(ref e) => Some(e),
             GetError::Client(ref inner) => Some(inner),
@@ -165,7 +165,7 @@ GetError::RequestTimeout => "request_timeout: The method was called via a POST r
 pub fn set<R>(
     client: &R,
     token: &str,
-    request: &SetRequest,
+    request: &SetRequest<'_>,
 ) -> Result<SetResponse, SetError<R::Error>>
 where
     R: SlackWebRequestSender,
@@ -178,7 +178,7 @@ where
         request.value.map(|value| ("value", value)),
     ];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    let url = ::get_slack_url_for_method("users.profile.set");
+    let url = crate::get_slack_url_for_method("users.profile.set");
     client
         .send(&url, &params[..])
         .map_err(SetError::Client)
@@ -205,7 +205,7 @@ pub struct SetResponse {
     error: Option<String>,
     #[serde(default)]
     ok: bool,
-    pub profile: Option<::UserProfile>,
+    pub profile: Option<crate::UserProfile>,
 }
 
 impl<E: Error> Into<Result<SetResponse, SetError<E>>> for SetResponse {
@@ -290,7 +290,7 @@ impl<'a, E: Error> From<&'a str> for SetError<E> {
 }
 
 impl<E: Error> fmt::Display for SetError<E> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.description())
     }
 }
@@ -322,7 +322,7 @@ SetError::RequestTimeout => "request_timeout: The method was called via a POST r
                     }
     }
 
-    fn cause(&self) -> Option<&Error> {
+    fn cause(&self) -> Option<&dyn Error> {
         match *self {
             SetError::MalformedResponse(ref e) => Some(e),
             SetError::Client(ref inner) => Some(inner),
