@@ -1,5 +1,4 @@
 
-
 #[allow(unused_imports)]
 use std::collections::HashMap;
 use std::convert::From;
@@ -18,7 +17,6 @@ pub fn test<R>(client: &R, request: &TestRequest) -> Result<TestResponse, TestEr
 where
     R: SlackWebRequestSender,
 {
-
     let params = vec![
         request.error.map(|error| ("error", error)),
         request.foo.map(|foo| ("foo", foo)),
@@ -49,7 +47,6 @@ pub struct TestResponse {
     #[serde(default)]
     ok: bool,
 }
-
 
 impl<E: Error> Into<Result<TestResponse, TestError<E>>> for TestResponse {
     fn into(self) -> Result<TestResponse, TestError<E>> {
@@ -111,34 +108,18 @@ impl<E: Error> fmt::Display for TestError<E> {
 impl<E: Error> Error for TestError<E> {
     fn description(&self) -> &str {
         match *self {
-            TestError::InvalidArgName => {
-                "invalid_arg_name: The method was passed an argument whose name falls outside the bounds of common decency. This includes very long names and names with non-alphanumeric characters other than _. If you get this error, it is typically an indication that you have made a very malformed API call."
-            }
-            TestError::InvalidArrayArg => {
-                "invalid_array_arg: The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API."
-            }
-            TestError::InvalidCharset => {
-                "invalid_charset: The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1."
-            }
-            TestError::InvalidFormData => {
-                "invalid_form_data: The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid."
-            }
-            TestError::InvalidPostType => {
-                "invalid_post_type: The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/x-www-form-urlencoded multipart/form-data text/plain."
-            }
-            TestError::MissingPostType => {
-                "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header."
-            }
-            TestError::TeamAddedToOrg => {
-                "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete."
-            }
-            TestError::RequestTimeout => {
-                "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated."
-            }
-            TestError::MalformedResponse(ref e) => e.description(),
-            TestError::Unknown(ref s) => s,
-            TestError::Client(ref inner) => inner.description(),
-        }
+                        TestError::InvalidArgName => "invalid_arg_name: The method was passed an argument whose name falls outside the bounds of common decency. This includes very long names and names with non-alphanumeric characters other than _. If you get this error, it is typically an indication that you have made a very malformed API call.",
+TestError::InvalidArrayArg => "invalid_array_arg: The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API.",
+TestError::InvalidCharset => "invalid_charset: The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1.",
+TestError::InvalidFormData => "invalid_form_data: The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid.",
+TestError::InvalidPostType => "invalid_post_type: The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/x-www-form-urlencoded multipart/form-data text/plain.",
+TestError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
+TestError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
+TestError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
+                        TestError::MalformedResponse(ref e) => e.description(),
+                        TestError::Unknown(ref s) => s,
+                        TestError::Client(ref inner) => inner.description()
+                    }
     }
 
     fn cause(&self) -> Option<&Error> {

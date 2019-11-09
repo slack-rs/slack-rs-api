@@ -1,5 +1,4 @@
 
-
 #[allow(unused_imports)]
 use std::collections::HashMap;
 use std::convert::From;
@@ -21,14 +20,13 @@ pub fn access<R>(
 where
     R: SlackWebRequestSender,
 {
-
     let params = vec![
         Some(("client_id", request.client_id)),
         Some(("client_secret", request.client_secret)),
         Some(("code", request.code)),
-        request.redirect_uri.map(|redirect_uri| {
-            ("redirect_uri", redirect_uri)
-        }),
+        request
+            .redirect_uri
+            .map(|redirect_uri| ("redirect_uri", redirect_uri)),
     ];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = ::get_slack_url_for_method("oauth.access");
@@ -57,8 +55,6 @@ pub struct AccessResponse {
     pub access_token: Option<String>,
     pub scope: Option<String>,
 }
-
-
 
 #[derive(Debug)]
 pub enum AccessError<E: Error> {
@@ -123,44 +119,22 @@ impl<E: Error> fmt::Display for AccessError<E> {
 impl<E: Error> Error for AccessError<E> {
     fn description(&self) -> &str {
         match *self {
-            AccessError::InvalidClientId => {
-                "invalid_client_id: Value passed for client_id was invalid."
-            }
-            AccessError::BadClientSecret => {
-                "bad_client_secret: Value passed for client_secret was invalid."
-            }
-            AccessError::InvalidCode => "invalid_code: Value passed for code was invalid.",
-            AccessError::BadRedirectUri => {
-                "bad_redirect_uri: Value passed for redirect_uri did not match the redirect_uri in the original request."
-            }
-            AccessError::InvalidArgName => {
-                "invalid_arg_name: The method was passed an argument whose name falls outside the bounds of common decency. This includes very long names and names with non-alphanumeric characters other than _. If you get this error, it is typically an indication that you have made a very malformed API call."
-            }
-            AccessError::InvalidArrayArg => {
-                "invalid_array_arg: The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API."
-            }
-            AccessError::InvalidCharset => {
-                "invalid_charset: The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1."
-            }
-            AccessError::InvalidFormData => {
-                "invalid_form_data: The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid."
-            }
-            AccessError::InvalidPostType => {
-                "invalid_post_type: The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/x-www-form-urlencoded multipart/form-data text/plain."
-            }
-            AccessError::MissingPostType => {
-                "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header."
-            }
-            AccessError::TeamAddedToOrg => {
-                "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete."
-            }
-            AccessError::RequestTimeout => {
-                "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated."
-            }
-            AccessError::MalformedResponse(ref e) => e.description(),
-            AccessError::Unknown(ref s) => s,
-            AccessError::Client(ref inner) => inner.description(),
-        }
+                        AccessError::InvalidClientId => "invalid_client_id: Value passed for client_id was invalid.",
+AccessError::BadClientSecret => "bad_client_secret: Value passed for client_secret was invalid.",
+AccessError::InvalidCode => "invalid_code: Value passed for code was invalid.",
+AccessError::BadRedirectUri => "bad_redirect_uri: Value passed for redirect_uri did not match the redirect_uri in the original request.",
+AccessError::InvalidArgName => "invalid_arg_name: The method was passed an argument whose name falls outside the bounds of common decency. This includes very long names and names with non-alphanumeric characters other than _. If you get this error, it is typically an indication that you have made a very malformed API call.",
+AccessError::InvalidArrayArg => "invalid_array_arg: The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API.",
+AccessError::InvalidCharset => "invalid_charset: The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1.",
+AccessError::InvalidFormData => "invalid_form_data: The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid.",
+AccessError::InvalidPostType => "invalid_post_type: The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/x-www-form-urlencoded multipart/form-data text/plain.",
+AccessError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
+AccessError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
+AccessError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
+                        AccessError::MalformedResponse(ref e) => e.description(),
+                        AccessError::Unknown(ref s) => s,
+                        AccessError::Client(ref inner) => inner.description()
+                    }
     }
 
     fn cause(&self) -> Option<&Error> {
