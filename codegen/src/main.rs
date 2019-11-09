@@ -4,11 +4,11 @@ extern crate serde;
 extern crate serde_json;
 extern crate inflector;
 extern crate clap;
-extern crate rustfmt;
 
 use std::fs::{self, File, OpenOptions};
 use std::io::{self, Read, Write};
 use std::path::Path;
+use std::process::Command;
 
 use inflector::Inflector;
 use clap::{Arg, App};
@@ -59,11 +59,7 @@ fn generate_types(output_path: &Path) -> io::Result<()> {
         }
     }
 
-    {
-        let mut rustfmt_config = rustfmt::config::Config::default();
-        rustfmt_config.set().write_mode(rustfmt::config::WriteMode::Overwrite);
-        let _ = rustfmt::run(rustfmt::Input::File(codegen_filepath), &rustfmt_config);
-    }
+    Command::new("rustfmt").arg(codegen_filepath).output()?;
 
     Ok(())
 }
@@ -87,19 +83,17 @@ fn generate_modules(output_path: &Path) -> io::Result<()> {
 
                 let out_filepath = output_path.join(format!("{}.rs", module.get_safe_name()));
 
-                let mut out_file = OpenOptions::new()
-                    .write(true)
-                    .truncate(true)
-                    .create(true)
-                    .open(&out_filepath)?;
+                {                    
+                    let mut out_file = OpenOptions::new()
+                        .write(true)
+                        .truncate(true)
+                        .create(true)
+                        .open(&out_filepath)?;
 
-                out_file.write_all(module.generate().as_bytes())?;
-
-                {
-                    let mut rustfmt_config = rustfmt::config::Config::default();
-                    rustfmt_config.set().write_mode(rustfmt::config::WriteMode::Overwrite);
-                    let _ = rustfmt::run(rustfmt::Input::File(out_filepath), &rustfmt_config);
+                    out_file.write_all(module.generate().as_bytes())?;
                 }
+
+                Command::new("rustfmt").arg(out_filepath).output()?;
             }
         }
     }
