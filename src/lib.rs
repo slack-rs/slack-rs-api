@@ -15,21 +15,21 @@
 //! Low-level, direct interface for the [Slack Web
 //! API](https://api.slack.com/methods).
 
-extern crate serde;
+use serde;
 #[macro_use]
 extern crate serde_derive;
-extern crate serde_json;
+
 
 mod mods;
-pub use mods::*;
+pub use crate::mods::*;
 
 mod types;
-pub use types::*;
+pub use crate::types::*;
 
 pub mod requests;
 
 #[cfg(feature = "reqwest")]
-pub use requests::default_client;
+pub use crate::requests::default_client;
 
 fn get_slack_url_for_method(method: &str) -> String {
     format!("https://slack.com/api/{}", method)
@@ -49,7 +49,7 @@ fn optional_struct_or_empty_array<'de, T, D>(deserializer: D) -> Result<Option<T
     {
         type Value = Option<T>;
 
-        fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+        fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
             formatter.write_str("struct or empty array")
         }
 

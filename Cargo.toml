@@ -6,6 +6,7 @@ license = "Apache-2.0"
 name = "slack_api"
 repository = "https://github.com/slack-rs/slack-rs-api.git"
 version = "0.21.0"
+edition = "2018"
 
 [dependencies]
 serde = "1.0"

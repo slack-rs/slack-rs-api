@@ -34,7 +34,7 @@ pub struct Channel {
     pub is_read_only: Option<bool>,
     pub is_shared: Option<bool>,
     pub last_read: Option<String>,
-    pub latest: Option<::Message>,
+    pub latest: Option<crate::Message>,
     pub members: Option<Vec<String>>,
     pub name: Option<String>,
     pub name_normalized: Option<String>,
@@ -54,7 +54,6 @@ pub struct ChannelPurpose {
     pub last_set: Option<i32>,
     pub value: Option<String>,
 }
-
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct ChannelTopic {
@@ -76,7 +75,7 @@ pub struct File {
     pub groups: Option<Vec<String>>,
     pub id: Option<String>,
     pub ims: Option<Vec<String>>,
-    pub initial_comment: Option<::FileComment>,
+    pub initial_comment: Option<crate::FileComment>,
     pub is_external: Option<bool>,
     pub is_public: Option<bool>,
     pub is_starred: Option<bool>,
@@ -93,7 +92,7 @@ pub struct File {
     pub preview: Option<String>,
     pub preview_highlight: Option<String>,
     pub public_url_shared: Option<bool>,
-    pub reactions: Option<Vec<::Reaction>>,
+    pub reactions: Option<Vec<crate::Reaction>>,
     pub size: Option<i32>,
     pub thumb_160: Option<String>,
     pub thumb_360: Option<String>,
@@ -117,7 +116,7 @@ pub struct File {
 pub struct FileComment {
     pub comment: Option<String>,
     pub id: Option<String>,
-    pub reactions: Option<Vec<::Reaction>>,
+    pub reactions: Option<Vec<crate::Reaction>>,
     pub timestamp: Option<i32>,
     pub user: Option<String>,
 }
@@ -131,7 +130,7 @@ pub struct Group {
     pub is_group: Option<bool>,
     pub is_mpim: Option<bool>,
     pub last_read: Option<String>,
-    pub latest: Option<::Message>,
+    pub latest: Option<crate::Message>,
     pub members: Option<Vec<String>>,
     pub name: Option<String>,
     pub purpose: Option<GroupPurpose>,
@@ -146,7 +145,6 @@ pub struct GroupPurpose {
     pub last_set: Option<i32>,
     pub value: Option<String>,
 }
-
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct GroupTopic {
@@ -234,36 +232,28 @@ impl<'de> ::serde::Deserialize<'de> for Message {
         if let Some(ty_val) = value.get("subtype") {
             if let Some(ty) = ty_val.as_str() {
                 match ty {
-                    "standard" => {
-                        ::serde_json::from_value::<MessageStandard>(value.clone())
-                            .map(Message::Standard)
-                            .map_err(|e| D::Error::custom(&format!("{}", e)))
-                    }
-                    "bot_message" => {
-                        ::serde_json::from_value::<MessageBotMessage>(value.clone())
-                            .map(Message::BotMessage)
-                            .map_err(|e| D::Error::custom(&format!("{}", e)))
-                    }
+                    "standard" => ::serde_json::from_value::<MessageStandard>(value.clone())
+                        .map(Message::Standard)
+                        .map_err(|e| D::Error::custom(&format!("{}", e))),
+                    "bot_message" => ::serde_json::from_value::<MessageBotMessage>(value.clone())
+                        .map(Message::BotMessage)
+                        .map_err(|e| D::Error::custom(&format!("{}", e))),
                     "channel_archive" => {
                         ::serde_json::from_value::<MessageChannelArchive>(value.clone())
                             .map(Message::ChannelArchive)
                             .map_err(|e| D::Error::custom(&format!("{}", e)))
                     }
-                    "channel_join" => {
-                        ::serde_json::from_value::<MessageChannelJoin>(value.clone())
-                            .map(Message::ChannelJoin)
-                            .map_err(|e| D::Error::custom(&format!("{}", e)))
-                    }
+                    "channel_join" => ::serde_json::from_value::<MessageChannelJoin>(value.clone())
+                        .map(Message::ChannelJoin)
+                        .map_err(|e| D::Error::custom(&format!("{}", e))),
                     "channel_leave" => {
                         ::serde_json::from_value::<MessageChannelLeave>(value.clone())
                             .map(Message::ChannelLeave)
                             .map_err(|e| D::Error::custom(&format!("{}", e)))
                     }
-                    "channel_name" => {
-                        ::serde_json::from_value::<MessageChannelName>(value.clone())
-                            .map(Message::ChannelName)
-                            .map_err(|e| D::Error::custom(&format!("{}", e)))
-                    }
+                    "channel_name" => ::serde_json::from_value::<MessageChannelName>(value.clone())
+                        .map(Message::ChannelName)
+                        .map_err(|e| D::Error::custom(&format!("{}", e))),
                     "channel_purpose" => {
                         ::serde_json::from_value::<MessageChannelPurpose>(value.clone())
                             .map(Message::ChannelPurpose)
@@ -279,61 +269,45 @@ impl<'de> ::serde::Deserialize<'de> for Message {
                             .map(Message::ChannelUnarchive)
                             .map_err(|e| D::Error::custom(&format!("{}", e)))
                     }
-                    "file_comment" => {
-                        ::serde_json::from_value::<MessageFileComment>(value.clone())
-                            .map(Message::FileComment)
-                            .map_err(|e| D::Error::custom(&format!("{}", e)))
-                    }
-                    "file_mention" => {
-                        ::serde_json::from_value::<MessageFileMention>(value.clone())
-                            .map(Message::FileMention)
-                            .map_err(|e| D::Error::custom(&format!("{}", e)))
-                    }
-                    "file_share" => {
-                        ::serde_json::from_value::<MessageFileShare>(value.clone())
-                            .map(Message::FileShare)
-                            .map_err(|e| D::Error::custom(&format!("{}", e)))
-                    }
+                    "file_comment" => ::serde_json::from_value::<MessageFileComment>(value.clone())
+                        .map(Message::FileComment)
+                        .map_err(|e| D::Error::custom(&format!("{}", e))),
+                    "file_mention" => ::serde_json::from_value::<MessageFileMention>(value.clone())
+                        .map(Message::FileMention)
+                        .map_err(|e| D::Error::custom(&format!("{}", e))),
+                    "file_share" => ::serde_json::from_value::<MessageFileShare>(value.clone())
+                        .map(Message::FileShare)
+                        .map_err(|e| D::Error::custom(&format!("{}", e))),
                     "group_archive" => {
                         ::serde_json::from_value::<MessageGroupArchive>(value.clone())
                             .map(Message::GroupArchive)
                             .map_err(|e| D::Error::custom(&format!("{}", e)))
                     }
-                    "group_join" => {
-                        ::serde_json::from_value::<MessageGroupJoin>(value.clone())
-                            .map(Message::GroupJoin)
-                            .map_err(|e| D::Error::custom(&format!("{}", e)))
-                    }
-                    "group_leave" => {
-                        ::serde_json::from_value::<MessageGroupLeave>(value.clone())
-                            .map(Message::GroupLeave)
-                            .map_err(|e| D::Error::custom(&format!("{}", e)))
-                    }
-                    "group_name" => {
-                        ::serde_json::from_value::<MessageGroupName>(value.clone())
-                            .map(Message::GroupName)
-                            .map_err(|e| D::Error::custom(&format!("{}", e)))
-                    }
+                    "group_join" => ::serde_json::from_value::<MessageGroupJoin>(value.clone())
+                        .map(Message::GroupJoin)
+                        .map_err(|e| D::Error::custom(&format!("{}", e))),
+                    "group_leave" => ::serde_json::from_value::<MessageGroupLeave>(value.clone())
+                        .map(Message::GroupLeave)
+                        .map_err(|e| D::Error::custom(&format!("{}", e))),
+                    "group_name" => ::serde_json::from_value::<MessageGroupName>(value.clone())
+                        .map(Message::GroupName)
+                        .map_err(|e| D::Error::custom(&format!("{}", e))),
                     "group_purpose" => {
                         ::serde_json::from_value::<MessageGroupPurpose>(value.clone())
                             .map(Message::GroupPurpose)
                             .map_err(|e| D::Error::custom(&format!("{}", e)))
                     }
-                    "group_topic" => {
-                        ::serde_json::from_value::<MessageGroupTopic>(value.clone())
-                            .map(Message::GroupTopic)
-                            .map_err(|e| D::Error::custom(&format!("{}", e)))
-                    }
+                    "group_topic" => ::serde_json::from_value::<MessageGroupTopic>(value.clone())
+                        .map(Message::GroupTopic)
+                        .map_err(|e| D::Error::custom(&format!("{}", e))),
                     "group_unarchive" => {
                         ::serde_json::from_value::<MessageGroupUnarchive>(value.clone())
                             .map(Message::GroupUnarchive)
                             .map_err(|e| D::Error::custom(&format!("{}", e)))
                     }
-                    "me_message" => {
-                        ::serde_json::from_value::<MessageMeMessage>(value.clone())
-                            .map(Message::MeMessage)
-                            .map_err(|e| D::Error::custom(&format!("{}", e)))
-                    }
+                    "me_message" => ::serde_json::from_value::<MessageMeMessage>(value.clone())
+                        .map(Message::MeMessage)
+                        .map_err(|e| D::Error::custom(&format!("{}", e))),
                     "message_changed" => {
                         ::serde_json::from_value::<MessageMessageChanged>(value.clone())
                             .map(Message::MessageChanged)
@@ -349,11 +323,9 @@ impl<'de> ::serde::Deserialize<'de> for Message {
                             .map(Message::MessageReplied)
                             .map_err(|e| D::Error::custom(&format!("{}", e)))
                     }
-                    "pinned_item" => {
-                        ::serde_json::from_value::<MessagePinnedItem>(value.clone())
-                            .map(Message::PinnedItem)
-                            .map_err(|e| D::Error::custom(&format!("{}", e)))
-                    }
+                    "pinned_item" => ::serde_json::from_value::<MessagePinnedItem>(value.clone())
+                        .map(Message::PinnedItem)
+                        .map_err(|e| D::Error::custom(&format!("{}", e))),
                     "reply_broadcast" => {
                         ::serde_json::from_value::<MessageReplyBroadcast>(value.clone())
                             .map(Message::ReplyBroadcast)
@@ -385,7 +357,7 @@ pub struct MessageBotMessage {
     pub attachments: Option<Vec<MessageBotMessageAttachment>>,
     pub bot_id: Option<String>,
     pub channel: Option<String>,
-    #[serde(deserialize_with = "::optional_struct_or_empty_array")]
+    #[serde(deserialize_with = "crate::optional_struct_or_empty_array")]
     #[serde(default)]
     pub icons: Option<MessageBotMessageIcons>,
     pub subtype: Option<String>,
@@ -424,7 +396,6 @@ pub struct MessageBotMessageAttachmentField {
     pub value: Option<String>,
 }
 
-
 #[derive(Clone, Debug, Deserialize)]
 pub struct MessageBotMessageIcons {
     pub emoji: Option<String>,
@@ -433,7 +404,6 @@ pub struct MessageBotMessageIcons {
     pub image_64: Option<String>,
     pub image_72: Option<String>,
 }
-
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct MessageChannelArchive {
@@ -446,7 +416,6 @@ pub struct MessageChannelArchive {
     pub user: Option<String>,
 }
 
-
 #[derive(Clone, Debug, Deserialize)]
 pub struct MessageChannelJoin {
     pub subtype: Option<String>,
@@ -457,7 +426,6 @@ pub struct MessageChannelJoin {
     pub user: Option<String>,
 }
 
-
 #[derive(Clone, Debug, Deserialize)]
 pub struct MessageChannelLeave {
     pub subtype: Option<String>,
@@ -467,7 +435,6 @@ pub struct MessageChannelLeave {
     pub ty: Option<String>,
     pub user: Option<String>,
 }
-
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct MessageChannelName {
@@ -481,7 +448,6 @@ pub struct MessageChannelName {
     pub user: Option<String>,
 }
 
-
 #[derive(Clone, Debug, Deserialize)]
 pub struct MessageChannelPurpose {
     pub purpose: Option<String>,
@@ -492,7 +458,6 @@ pub struct MessageChannelPurpose {
     pub ty: Option<String>,
     pub user: Option<String>,
 }
-
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct MessageChannelTopic {
@@ -505,7 +470,6 @@ pub struct MessageChannelTopic {
     pub user: Option<String>,
 }
 
-
 #[derive(Clone, Debug, Deserialize)]
 pub struct MessageChannelUnarchive {
     pub subtype: Option<String>,
@@ -516,11 +480,10 @@ pub struct MessageChannelUnarchive {
     pub user: Option<String>,
 }
 
-
 #[derive(Clone, Debug, Deserialize)]
 pub struct MessageFileComment {
-    pub comment: Option<::FileComment>,
-    pub file: Option<::File>,
+    pub comment: Option<crate::FileComment>,
+    pub file: Option<crate::File>,
     pub subtype: Option<String>,
     pub text: Option<String>,
     pub ts: Option<String>,
@@ -528,10 +491,9 @@ pub struct MessageFileComment {
     pub ty: Option<String>,
 }
 
-
 #[derive(Clone, Debug, Deserialize)]
 pub struct MessageFileMention {
-    pub file: Option<::File>,
+    pub file: Option<crate::File>,
     pub subtype: Option<String>,
     pub text: Option<String>,
     pub ts: Option<String>,
@@ -540,10 +502,9 @@ pub struct MessageFileMention {
     pub user: Option<String>,
 }
 
-
 #[derive(Clone, Debug, Deserialize)]
 pub struct MessageFileShare {
-    pub file: Option<::File>,
+    pub file: Option<crate::File>,
     pub subtype: Option<String>,
     pub text: Option<String>,
     pub ts: Option<String>,
@@ -552,7 +513,6 @@ pub struct MessageFileShare {
     pub upload: Option<bool>,
     pub user: Option<String>,
 }
-
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct MessageGroupArchive {
@@ -565,7 +525,6 @@ pub struct MessageGroupArchive {
     pub user: Option<String>,
 }
 
-
 #[derive(Clone, Debug, Deserialize)]
 pub struct MessageGroupJoin {
     pub subtype: Option<String>,
@@ -576,7 +535,6 @@ pub struct MessageGroupJoin {
     pub user: Option<String>,
 }
 
-
 #[derive(Clone, Debug, Deserialize)]
 pub struct MessageGroupLeave {
     pub subtype: Option<String>,
@@ -586,7 +544,6 @@ pub struct MessageGroupLeave {
     pub ty: Option<String>,
     pub user: Option<String>,
 }
-
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct MessageGroupName {
@@ -600,7 +557,6 @@ pub struct MessageGroupName {
     pub user: Option<String>,
 }
 
-
 #[derive(Clone, Debug, Deserialize)]
 pub struct MessageGroupPurpose {
     pub purpose: Option<String>,
@@ -611,7 +567,6 @@ pub struct MessageGroupPurpose {
     pub ty: Option<String>,
     pub user: Option<String>,
 }
-
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct MessageGroupTopic {
@@ -624,7 +579,6 @@ pub struct MessageGroupTopic {
     pub user: Option<String>,
 }
 
-
 #[derive(Clone, Debug, Deserialize)]
 pub struct MessageGroupUnarchive {
     pub subtype: Option<String>,
@@ -634,7 +588,6 @@ pub struct MessageGroupUnarchive {
     pub ty: Option<String>,
     pub user: Option<String>,
 }
-
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct MessageMeMessage {
@@ -646,7 +599,6 @@ pub struct MessageMeMessage {
     pub ty: Option<String>,
     pub user: Option<String>,
 }
-
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct MessageMessageChanged {
@@ -685,13 +637,11 @@ pub struct MessageMessageChangedMessageEdited {
     pub user: Option<String>,
 }
 
-
 #[derive(Clone, Debug, Deserialize)]
 pub struct MessageMessageChangedMessageReply {
     pub ts: Option<String>,
     pub user: Option<String>,
 }
-
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct MessageMessageChangedPreviousMessage {
@@ -717,13 +667,11 @@ pub struct MessageMessageChangedPreviousMessageEdited {
     pub user: Option<String>,
 }
 
-
 #[derive(Clone, Debug, Deserialize)]
 pub struct MessageMessageChangedPreviousMessageReply {
     pub ts: Option<String>,
     pub user: Option<String>,
 }
-
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct MessageMessageDeleted {
@@ -762,13 +710,11 @@ pub struct MessageMessageDeletedPreviousMessageEdited {
     pub user: Option<String>,
 }
 
-
 #[derive(Clone, Debug, Deserialize)]
 pub struct MessageMessageDeletedPreviousMessageReply {
     pub ts: Option<String>,
     pub user: Option<String>,
 }
-
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct MessageMessageReplied {
@@ -807,13 +753,11 @@ pub struct MessageMessageRepliedMessageEdited {
     pub user: Option<String>,
 }
 
-
 #[derive(Clone, Debug, Deserialize)]
 pub struct MessageMessageRepliedMessageReply {
     pub ts: Option<String>,
     pub user: Option<String>,
 }
-
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct MessagePinnedItem {
@@ -830,7 +774,6 @@ pub struct MessagePinnedItem {
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct MessagePinnedItemItem {}
-
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct MessageReplyBroadcast {
@@ -859,7 +802,6 @@ pub struct MessageReplyBroadcastAttachment {
     pub text: Option<String>,
     pub ts: Option<String>,
 }
-
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct MessageStandard {
@@ -905,13 +847,11 @@ pub struct MessageStandardAttachmentField {
     pub value: Option<String>,
 }
 
-
 #[derive(Clone, Debug, Deserialize)]
 pub struct MessageStandardEdited {
     pub ts: Option<String>,
     pub user: Option<String>,
 }
-
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct MessageUnpinnedItem {
@@ -937,7 +877,7 @@ pub struct Mpim {
     pub is_group: Option<bool>,
     pub is_mpim: Option<bool>,
     pub last_read: Option<String>,
-    pub latest: Option<::Message>,
+    pub latest: Option<crate::Message>,
     pub members: Option<Vec<String>>,
     pub name: Option<String>,
     pub unread_count: Option<i32>,
@@ -1011,7 +951,7 @@ pub struct User {
     pub is_ultra_restricted: Option<bool>,
     pub locale: Option<String>,
     pub name: Option<String>,
-    pub profile: Option<::UserProfile>,
+    pub profile: Option<crate::UserProfile>,
     pub real_name: Option<String>,
     pub team_id: Option<String>,
     pub two_factor_type: Option<String>,
@@ -1053,7 +993,7 @@ pub struct UserProfile {
     pub display_name: Option<String>,
     pub display_name_normalized: Option<String>,
     pub email: Option<String>,
-    #[serde(deserialize_with = "::optional_struct_or_empty_array")]
+    #[serde(deserialize_with = "crate::optional_struct_or_empty_array")]
     #[serde(default)]
     pub fields: Option<HashMap<String, UserProfileFields>>,
     pub first_name: Option<String>,

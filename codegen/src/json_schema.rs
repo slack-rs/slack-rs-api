@@ -156,10 +156,10 @@ impl PropType {
                                     let default;
                                     let deserialize_with;
                                     if name == "UserProfile" && field_name == "fields" {
-                                        deserialize_with = Some("::optional_struct_or_empty_array");
+                                        deserialize_with = Some("crate::optional_struct_or_empty_array");
                                         default = true;
                                     } else if name == "MessageBotMessage" && field_name == "icons" {
-                                        deserialize_with = Some("::optional_struct_or_empty_array");
+                                        deserialize_with = Some("crate::optional_struct_or_empty_array");
                                         default = true;
                                     } else {
                                         deserialize_with = None;
@@ -195,7 +195,7 @@ impl PropType {
             PropType::Bool => "bool".into(),
             PropType::Null => "()".into(),
             PropType::Obj(ref obj) => obj.name.clone(),
-            PropType::Ref(ref name) => format!("::{}", name),
+            PropType::Ref(ref name) => format!("crate::{}", name),
             PropType::Arr(ref prop) => format!("Vec<{}>", prop.to_rs_type()),
             PropType::Map(ref prop) => format!("HashMap<String, {}>", prop.to_rs_type()),
             PropType::Optional(ref prop) => format!("Option<{}>", prop.to_rs_type()),
