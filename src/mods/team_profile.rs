@@ -33,7 +33,8 @@ where
         .send(&url, &params[..])
         .map_err(GetError::Client)
         .and_then(|result| {
-            serde_json::from_str::<GetResponse>(&result).map_err(GetError::MalformedResponse)
+            serde_json::from_str::<GetResponse>(&result)
+                .map_err(|e| GetError::MalformedResponse(result, e))
         })
         .and_then(|o| o.into())
 }
@@ -106,7 +107,7 @@ pub enum GetError<E: Error> {
     /// The method was called via a POST request, but the POST data was either missing or truncated.
     RequestTimeout,
     /// The response was not parseable as the expected object
-    MalformedResponse(serde_json::error::Error),
+    MalformedResponse(String, serde_json::error::Error),
     /// The response returned an error that was unknown to the library
     Unknown(String),
     /// The client had an error sending the request to Slack
@@ -154,7 +155,7 @@ GetError::InvalidPostType => "invalid_post_type: The method was called via a POS
 GetError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
 GetError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
 GetError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        GetError::MalformedResponse(ref e) => e.description(),
+                        GetError::MalformedResponse(_, ref e) => e.description(),
                         GetError::Unknown(ref s) => s,
                         GetError::Client(ref inner) => inner.description()
                     }
@@ -162,7 +163,7 @@ GetError::RequestTimeout => "request_timeout: The method was called via a POST r
 
     fn cause(&self) -> Option<&dyn Error> {
         match *self {
-            GetError::MalformedResponse(ref e) => Some(e),
+            GetError::MalformedResponse(_, ref e) => Some(e),
             GetError::Client(ref inner) => Some(inner),
             _ => None,
         }

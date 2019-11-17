@@ -71,7 +71,7 @@ impl Method {
                     .map_err({error_type}::Client)
                     .and_then(|result| {{
                         serde_json::from_str::<{response_type}>(&result)
-                            .map_err({error_type}::MalformedResponse)
+                            .map_err(|e| {error_type}::MalformedResponse(result, e))
                     }})",
                 name = self.name,
                 response_type = response_struct_name,
@@ -341,7 +341,7 @@ impl Response {
             pub enum {error_type}<E: Error> {{
                 {variants}
                 /// The response was not parseable as the expected object
-                MalformedResponse(serde_json::error::Error),
+                MalformedResponse(String, serde_json::error::Error),
                 /// The response returned an error that was unknown to the library
                 Unknown(String),
                 /// The client had an error sending the request to Slack
@@ -367,7 +367,7 @@ impl Response {
                 fn description(&self) -> &str {{
                     match *self {{
                         {description_matches}
-                        {error_type}::MalformedResponse(ref e) => e.description(),
+                        {error_type}::MalformedResponse(_, ref e) => e.description(),
                         {error_type}::Unknown(ref s) => s,
                         {error_type}::Client(ref inner) => inner.description()
                     }}
@@ -375,7 +375,7 @@ impl Response {
 
                 fn cause(&self) -> Option<&dyn Error> {{
                     match *self {{
-                        {error_type}::MalformedResponse(ref e) => Some(e),
+                        {error_type}::MalformedResponse(_, ref e) => Some(e),
                         {error_type}::Client(ref inner) => Some(inner),
                         _ => None
                     }}
