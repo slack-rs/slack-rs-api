@@ -5,7 +5,7 @@ documentation = "https://docs.rs/slack_api"
 license = "Apache-2.0"
 name = "slack_api"
 repository = "https://github.com/slack-rs/slack-rs-api.git"
-version = "0.21.0"
+version = "0.22.0-alpha.1"
 edition = "2018"
 
 [dependencies]
@@ -15,10 +15,12 @@ serde_json = "1.0"
 
 [dependencies.reqwest]
 optional = true
-version = "0.9.6"
+git = "https://github.com/seanmonstar/reqwest.git"
+branch = "release-0.10.0"
 default-features = false
 
 [features]
-default = ["reqwest", "with_native_tls"]
+default = ["reqwest", "with_native_tls", "blocking"]
 with_rustls = ["reqwest/rustls-tls"]
 with_native_tls = ["reqwest/default-tls"]
+blocking = ["reqwest/blocking"]
