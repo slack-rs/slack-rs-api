@@ -542,6 +542,10 @@ impl JsonEnumVariant {
 
 impl JsonEnum {
     pub fn to_code(&self) -> String {
+        if self.name == "Timestamp" {
+            return String::new()
+        }
+
         // Hack to work around message having a different identifier here
         let (variant_field, on_missing_field) = if self.name == "Message" {
             ("subtype", "::serde_json::from_value::<MessageStandard>(value.clone())

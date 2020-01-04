@@ -164,8 +164,8 @@ where
 pub struct EndSnoozeResponse {
     pub dnd_enabled: Option<bool>,
     error: Option<String>,
-    pub next_dnd_end_ts: Option<f32>,
-    pub next_dnd_start_ts: Option<f32>,
+    pub next_dnd_end_ts: Option<crate::Timestamp>,
+    pub next_dnd_start_ts: Option<crate::Timestamp>,
     #[serde(default)]
     ok: bool,
     pub snooze_enabled: Option<bool>,
@@ -316,12 +316,12 @@ pub struct InfoRequest<'a> {
 pub struct InfoResponse {
     pub dnd_enabled: Option<bool>,
     error: Option<String>,
-    pub next_dnd_end_ts: Option<f32>,
-    pub next_dnd_start_ts: Option<f32>,
+    pub next_dnd_end_ts: Option<crate::Timestamp>,
+    pub next_dnd_start_ts: Option<crate::Timestamp>,
     #[serde(default)]
     ok: bool,
     pub snooze_enabled: Option<bool>,
-    pub snooze_endtime: Option<f32>,
+    pub snooze_endtime: Option<crate::Timestamp>,
     pub snooze_remaining: Option<f32>,
 }
 
@@ -465,7 +465,7 @@ pub struct SetSnoozeResponse {
     #[serde(default)]
     ok: bool,
     pub snooze_enabled: Option<bool>,
-    pub snooze_endtime: Option<f32>,
+    pub snooze_endtime: Option<crate::Timestamp>,
     pub snooze_remaining: Option<f32>,
 }
 
