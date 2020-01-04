@@ -442,6 +442,8 @@ impl Param {
 
     pub fn lifted(&self) -> Option<String> {
         match (&self.ty[..], self.optional) {
+            ("timestamp", true) => Some(format!("let {name} = request.{name}.as_ref().map(|t| t.to_param_value());", name = self.name)),
+            ("timestamp", false) => Some(format!("let {name} = request.{name}.to_param_value();", name = self.name)),
             ("integer", true) => Some(format!("let {name} = request.{name}.map(|{name}| {name}.to_string());", name = self.name)),
             ("integer", false) => Some(format!("let {name} = request.{name}.to_string();", name = self.name)),
             _ => None
@@ -464,6 +466,14 @@ impl Param {
                 // lifted into local variable, using {name} instead of request.{name}
                 format!("Some((\"{name}\", &{name}[..]))", name = self.name)
             },
+            ("timestamp", true) => {
+                // lifted into local variable, using {name} instead of request.{name}
+                format!("{name}.as_ref().map(|{name}| (\"{name}\", &{name}[..]))", name = self.name)
+            },
+            ("timestamp", false) => {
+                // lifted into local variable, using {name} instead of request.{name}
+                format!("Some((\"{name}\", &{name}[..]))", name = self.name)
+            },
             (_, true) => {
                 format!("request.{name}.map(|{name}| (\"{name}\", {name}))", name = self.name)
             },
@@ -475,6 +485,7 @@ impl Param {
 
     fn get_rust_type(&self) -> String {
         let ty = match &self.ty[..] {
+            "timestamp" => "crate::Timestamp",
             "boolean" => "bool",
             "integer" => "u32",
             _ => "&'a str",
