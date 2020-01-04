@@ -42,7 +42,7 @@ pub struct TestRequest<'a> {
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct TestResponse {
-    pub args: Option<HashMap<String, bool>>,
+    pub args: Option<HashMap<String, String>>,
     error: Option<String>,
     #[serde(default)]
     ok: bool,
