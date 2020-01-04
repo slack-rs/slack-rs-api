@@ -16,12 +16,12 @@ pub trait SlackWebRequestSender {
 
 #[cfg(feature = "reqwest")]
 mod reqwest_support {
-    use reqwest;
-    pub use self::reqwest::{Client, Error};
+    use reqwest_ as reqwest;
+    pub use self::reqwest::Error;
 
     use super::SlackWebRequestSender;
 
-    impl SlackWebRequestSender for reqwest::Client {
+    impl SlackWebRequestSender for reqwest::blocking::Client {
         type Error = reqwest::Error;
 
         fn send(&self, method_url: &str, params: &[(&str, &str)]) -> Result<String, Self::Error> {
@@ -42,8 +42,8 @@ mod reqwest_support {
     /// let client = slack_api::requests::default_client().unwrap();
     /// let response = slack_api::channels::list(&client, &token, &Default::default());
     /// ```
-    pub fn default_client() -> Result<reqwest::Client, reqwest::Error> {
-        Ok(reqwest::Client::new())
+    pub fn default_client() -> Result<reqwest::blocking::Client, reqwest::Error> {
+        Ok(reqwest::blocking::Client::new())
     }
 }
 
