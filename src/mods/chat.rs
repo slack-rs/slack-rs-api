@@ -22,9 +22,10 @@ pub fn delete<R>(
 where
     R: SlackWebRequestSender,
 {
+    let ts = request.ts.to_param_value();
     let params = vec![
         Some(("token", token)),
-        Some(("ts", request.ts)),
+        Some(("ts", &ts[..])),
         Some(("channel", request.channel)),
         request
             .as_user
@@ -44,7 +45,7 @@ where
 #[derive(Clone, Default, Debug)]
 pub struct DeleteRequest<'a> {
     /// Timestamp of the message to be deleted.
-    pub ts: &'a str,
+    pub ts: crate::Timestamp,
     /// Channel containing the message to be deleted.
     pub channel: &'a str,
     /// Pass true to delete the message as the authed user. Bot users in this context are considered authed users.
@@ -348,6 +349,7 @@ pub fn post_message<R>(
 where
     R: SlackWebRequestSender,
 {
+    let thread_ts = request.thread_ts.as_ref().map(|t| t.to_param_value());
     let params = vec![
         Some(("token", token)),
         Some(("channel", request.channel)),
@@ -373,7 +375,9 @@ where
         request
             .icon_emoji
             .map(|icon_emoji| ("icon_emoji", icon_emoji)),
-        request.thread_ts.map(|thread_ts| ("thread_ts", thread_ts)),
+        thread_ts
+            .as_ref()
+            .map(|thread_ts| ("thread_ts", &thread_ts[..])),
         request
             .reply_broadcast
             .map(|reply_broadcast| ("reply_broadcast", if reply_broadcast { "1" } else { "0" })),
@@ -415,7 +419,7 @@ pub struct PostMessageRequest<'a> {
     /// Emoji to use as the icon for this message. Overrides icon_url. Must be used in conjunction with as_user set to false, otherwise ignored. See authorship below.
     pub icon_emoji: Option<&'a str>,
     /// Provide another message's ts value to make this message a reply. Avoid using a reply's ts value; use its parent instead.
-    pub thread_ts: Option<&'a str>,
+    pub thread_ts: Option<crate::Timestamp>,
     /// Used in conjunction with thread_ts and indicates whether reply should be made visible to everyone in the channel or conversation. Defaults to false.
     pub reply_broadcast: Option<bool>,
 }
@@ -718,9 +722,10 @@ pub fn update<R>(
 where
     R: SlackWebRequestSender,
 {
+    let ts = request.ts.to_param_value();
     let params = vec![
         Some(("token", token)),
-        Some(("ts", request.ts)),
+        Some(("ts", &ts[..])),
         Some(("channel", request.channel)),
         Some(("text", request.text)),
         request
@@ -748,7 +753,7 @@ where
 #[derive(Clone, Default, Debug)]
 pub struct UpdateRequest<'a> {
     /// Timestamp of the message to be updated.
-    pub ts: &'a str,
+    pub ts: crate::Timestamp,
     /// Channel containing the message to be updated.
     pub channel: &'a str,
     /// New text for the message, using the default formatting rules.

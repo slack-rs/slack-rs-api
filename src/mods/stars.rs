@@ -21,6 +21,7 @@ pub fn add<R>(
 where
     R: SlackWebRequestSender,
 {
+    let timestamp = request.timestamp.as_ref().map(|t| t.to_param_value());
     let params = vec![
         Some(("token", token)),
         request.file.map(|file| ("file", file)),
@@ -28,7 +29,9 @@ where
             .file_comment
             .map(|file_comment| ("file_comment", file_comment)),
         request.channel.map(|channel| ("channel", channel)),
-        request.timestamp.map(|timestamp| ("timestamp", timestamp)),
+        timestamp
+            .as_ref()
+            .map(|timestamp| ("timestamp", &timestamp[..])),
     ];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("stars.add");
@@ -50,7 +53,7 @@ pub struct AddRequest<'a> {
     /// Channel to add star to, or channel where the message to add star to was posted (used with timestamp).
     pub channel: Option<&'a str>,
     /// Timestamp of the message to add star to.
-    pub timestamp: Option<&'a str>,
+    pub timestamp: Option<crate::Timestamp>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -451,6 +454,7 @@ pub fn remove<R>(
 where
     R: SlackWebRequestSender,
 {
+    let timestamp = request.timestamp.as_ref().map(|t| t.to_param_value());
     let params = vec![
         Some(("token", token)),
         request.file.map(|file| ("file", file)),
@@ -458,7 +462,9 @@ where
             .file_comment
             .map(|file_comment| ("file_comment", file_comment)),
         request.channel.map(|channel| ("channel", channel)),
-        request.timestamp.map(|timestamp| ("timestamp", timestamp)),
+        timestamp
+            .as_ref()
+            .map(|timestamp| ("timestamp", &timestamp[..])),
     ];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("stars.remove");
@@ -480,7 +486,7 @@ pub struct RemoveRequest<'a> {
     /// Channel to remove star from, or channel where the message to remove star from was posted (used with timestamp).
     pub channel: Option<&'a str>,
     /// Timestamp of the message to remove star from.
-    pub timestamp: Option<&'a str>,
+    pub timestamp: Option<crate::Timestamp>,
 }
 
 #[derive(Clone, Debug, Deserialize)]

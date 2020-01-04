@@ -650,12 +650,14 @@ pub fn history<R>(
 where
     R: SlackWebRequestSender,
 {
+    let latest = request.latest.as_ref().map(|t| t.to_param_value());
+    let oldest = request.oldest.as_ref().map(|t| t.to_param_value());
     let count = request.count.map(|count| count.to_string());
     let params = vec![
         Some(("token", token)),
         Some(("channel", request.channel)),
-        request.latest.map(|latest| ("latest", latest)),
-        request.oldest.map(|oldest| ("oldest", oldest)),
+        latest.as_ref().map(|latest| ("latest", &latest[..])),
+        oldest.as_ref().map(|oldest| ("oldest", &oldest[..])),
         request
             .inclusive
             .map(|inclusive| ("inclusive", if inclusive { "1" } else { "0" })),
@@ -681,9 +683,9 @@ pub struct HistoryRequest<'a> {
     /// Private channel to fetch history for.
     pub channel: &'a str,
     /// End of time range of messages to include in results.
-    pub latest: Option<&'a str>,
+    pub latest: Option<crate::Timestamp>,
     /// Start of time range of messages to include in results.
-    pub oldest: Option<&'a str>,
+    pub oldest: Option<crate::Timestamp>,
     /// Include messages with latest or oldest timestamp in results.
     pub inclusive: Option<bool>,
     /// Number of messages to return, between 1 and 1000.
@@ -1581,10 +1583,11 @@ pub fn mark<R>(
 where
     R: SlackWebRequestSender,
 {
+    let ts = request.ts.to_param_value();
     let params = vec![
         Some(("token", token)),
         Some(("channel", request.channel)),
-        Some(("ts", request.ts)),
+        Some(("ts", &ts[..])),
     ];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("groups.mark");
@@ -1602,7 +1605,7 @@ pub struct MarkRequest<'a> {
     /// Private channel to set reading cursor in.
     pub channel: &'a str,
     /// Timestamp of the most recently seen message.
-    pub ts: &'a str,
+    pub ts: crate::Timestamp,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -2051,10 +2054,11 @@ pub fn replies<R>(
 where
     R: SlackWebRequestSender,
 {
+    let thread_ts = request.thread_ts.to_param_value();
     let params = vec![
         Some(("token", token)),
         Some(("channel", request.channel)),
-        Some(("thread_ts", request.thread_ts)),
+        Some(("thread_ts", &thread_ts[..])),
     ];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("groups.replies");
@@ -2073,7 +2077,7 @@ pub struct RepliesRequest<'a> {
     /// Private channel to fetch thread from
     pub channel: &'a str,
     /// Unique identifier of a thread's parent message
-    pub thread_ts: &'a str,
+    pub thread_ts: crate::Timestamp,
 }
 
 #[derive(Clone, Debug, Deserialize)]

@@ -21,6 +21,7 @@ pub fn add<R>(
 where
     R: SlackWebRequestSender,
 {
+    let timestamp = request.timestamp.as_ref().map(|t| t.to_param_value());
     let params = vec![
         Some(("token", token)),
         Some(("channel", request.channel)),
@@ -28,7 +29,9 @@ where
         request
             .file_comment
             .map(|file_comment| ("file_comment", file_comment)),
-        request.timestamp.map(|timestamp| ("timestamp", timestamp)),
+        timestamp
+            .as_ref()
+            .map(|timestamp| ("timestamp", &timestamp[..])),
     ];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("pins.add");
@@ -50,7 +53,7 @@ pub struct AddRequest<'a> {
     /// File comment to pin.
     pub file_comment: Option<&'a str>,
     /// Timestamp of the message to pin.
-    pub timestamp: Option<&'a str>,
+    pub timestamp: Option<crate::Timestamp>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -414,6 +417,7 @@ pub fn remove<R>(
 where
     R: SlackWebRequestSender,
 {
+    let timestamp = request.timestamp.as_ref().map(|t| t.to_param_value());
     let params = vec![
         Some(("token", token)),
         Some(("channel", request.channel)),
@@ -421,7 +425,9 @@ where
         request
             .file_comment
             .map(|file_comment| ("file_comment", file_comment)),
-        request.timestamp.map(|timestamp| ("timestamp", timestamp)),
+        timestamp
+            .as_ref()
+            .map(|timestamp| ("timestamp", &timestamp[..])),
     ];
     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("pins.remove");
@@ -443,7 +449,7 @@ pub struct RemoveRequest<'a> {
     /// File comment to un-pin.
     pub file_comment: Option<&'a str>,
     /// Timestamp of the message to un-pin.
-    pub timestamp: Option<&'a str>,
+    pub timestamp: Option<crate::Timestamp>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
