@@ -12,6 +12,7 @@ fn get_setup(
 }
 
 #[test]
+#[ignore]
 fn smoke_test() -> Result<(), Box<dyn std::error::Error>> {
     let (_, client) = get_setup()?;
 
@@ -30,6 +31,7 @@ fn smoke_test() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 #[test]
+#[ignore]
 fn smoke_channels() -> Result<(), Box<dyn std::error::Error>> {
     let (token, client) = get_setup()?;
 
