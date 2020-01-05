@@ -1,6 +1,6 @@
 use serde;
 
-#[derive(Clone, Debug)]
+#[derive(Debug, Clone, Copy, Default)]
 pub struct Timestamp(f64);
 impl From<f64> for Timestamp {
     fn from(t: f64) -> Self {
@@ -36,12 +36,6 @@ impl<'de> ::serde::Deserialize<'de> for Timestamp {
                 format!("expected a timestamp but got: {}", value.to_string()),
             ))
         }
-    }
-}
-
-impl Default for Timestamp {
-    fn default() -> Self {
-        0_f64.into()
     }
 }
 
