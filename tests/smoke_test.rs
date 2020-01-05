@@ -50,7 +50,7 @@ fn smoke_channels() -> Result<(), Box<dyn std::error::Error>> {
     for channel in &all_channels[..10] {
         let channel_id = channel.id.as_ref().ok_or("expected channel id")?;
 
-        let _channel_info = slack::channels::info(
+        let channel_info = slack::channels::info(
             &client,
             &token,
             &slack::channels::InfoRequest {
@@ -60,6 +60,8 @@ fn smoke_channels() -> Result<(), Box<dyn std::error::Error>> {
         )?
         .channel
         .ok_or("Expected some channel")?;
+
+        dbg!(channel_info.name);
 
         let _channel_history = slack::channels::history(
             &client,
