@@ -165,6 +165,10 @@ pub struct Im {
 #[derive(Clone, Debug)]
 pub enum Message {
     Standard(MessageStandard),
+    BotAdd(MessageBotAdd),
+    BotDisable(MessageBotDisable),
+    BotEnable(MessageBotEnable),
+    BotRemove(MessageBotRemove),
     BotMessage(MessageBotMessage),
     ChannelArchive(MessageChannelArchive),
     ChannelJoin(MessageChannelJoin),
@@ -188,8 +192,12 @@ pub enum Message {
     MessageDeleted(MessageMessageDeleted),
     MessageReplied(MessageMessageReplied),
     PinnedItem(MessagePinnedItem),
+    ReminderAdd(MessageReminderAdd),
     ReplyBroadcast(MessageReplyBroadcast),
+    ThreadBroadcast(MessageThreadBroadcast),
     UnpinnedItem(MessageUnpinnedItem),
+    ShRoomCreated(MessageShRoomCreated),
+    SlackbotResponse(MessageSlackbotResponse),
 }
 
 impl<'de> ::serde::Deserialize<'de> for Message {
@@ -201,6 +209,10 @@ impl<'de> ::serde::Deserialize<'de> for Message {
 
         const VARIANTS: &'static [&'static str] = &[
             "standard",
+            "bot_add",
+            "bot_disable",
+            "bot_enable",
+            "bot_remove",
             "bot_message",
             "channel_archive",
             "channel_join",
@@ -224,8 +236,12 @@ impl<'de> ::serde::Deserialize<'de> for Message {
             "message_deleted",
             "message_replied",
             "pinned_item",
+            "reminder_add",
             "reply_broadcast",
+            "thread_broadcast",
             "unpinned_item",
+            "sh_room_created",
+            "slackbot_response",
         ];
 
         let value = ::serde_json::Value::deserialize(deserializer)?;
@@ -234,6 +250,18 @@ impl<'de> ::serde::Deserialize<'de> for Message {
                 match ty {
                     "standard" => ::serde_json::from_value::<MessageStandard>(value.clone())
                         .map(Message::Standard)
+                        .map_err(|e| D::Error::custom(&format!("{}", e))),
+                    "bot_add" => ::serde_json::from_value::<MessageBotAdd>(value.clone())
+                        .map(Message::BotAdd)
+                        .map_err(|e| D::Error::custom(&format!("{}", e))),
+                    "bot_disable" => ::serde_json::from_value::<MessageBotDisable>(value.clone())
+                        .map(Message::BotDisable)
+                        .map_err(|e| D::Error::custom(&format!("{}", e))),
+                    "bot_enable" => ::serde_json::from_value::<MessageBotEnable>(value.clone())
+                        .map(Message::BotEnable)
+                        .map_err(|e| D::Error::custom(&format!("{}", e))),
+                    "bot_remove" => ::serde_json::from_value::<MessageBotRemove>(value.clone())
+                        .map(Message::BotRemove)
                         .map_err(|e| D::Error::custom(&format!("{}", e))),
                     "bot_message" => ::serde_json::from_value::<MessageBotMessage>(value.clone())
                         .map(Message::BotMessage)
@@ -326,14 +354,32 @@ impl<'de> ::serde::Deserialize<'de> for Message {
                     "pinned_item" => ::serde_json::from_value::<MessagePinnedItem>(value.clone())
                         .map(Message::PinnedItem)
                         .map_err(|e| D::Error::custom(&format!("{}", e))),
+                    "reminder_add" => ::serde_json::from_value::<MessageReminderAdd>(value.clone())
+                        .map(Message::ReminderAdd)
+                        .map_err(|e| D::Error::custom(&format!("{}", e))),
                     "reply_broadcast" => {
                         ::serde_json::from_value::<MessageReplyBroadcast>(value.clone())
                             .map(Message::ReplyBroadcast)
                             .map_err(|e| D::Error::custom(&format!("{}", e)))
                     }
+                    "thread_broadcast" => {
+                        ::serde_json::from_value::<MessageThreadBroadcast>(value.clone())
+                            .map(Message::ThreadBroadcast)
+                            .map_err(|e| D::Error::custom(&format!("{}", e)))
+                    }
                     "unpinned_item" => {
                         ::serde_json::from_value::<MessageUnpinnedItem>(value.clone())
                             .map(Message::UnpinnedItem)
+                            .map_err(|e| D::Error::custom(&format!("{}", e)))
+                    }
+                    "sh_room_created" => {
+                        ::serde_json::from_value::<MessageShRoomCreated>(value.clone())
+                            .map(Message::ShRoomCreated)
+                            .map_err(|e| D::Error::custom(&format!("{}", e)))
+                    }
+                    "slackbot_response" => {
+                        ::serde_json::from_value::<MessageSlackbotResponse>(value.clone())
+                            .map(Message::SlackbotResponse)
                             .map_err(|e| D::Error::custom(&format!("{}", e)))
                     }
                     _ => Err(D::Error::unknown_variant(ty, VARIANTS)),
@@ -350,6 +396,48 @@ impl<'de> ::serde::Deserialize<'de> for Message {
                 .map_err(|e| D::Error::custom(&format!("{}", e)))
         }
     }
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct MessageBotAdd {
+    pub bot_id: Option<String>,
+    pub bot_link: Option<String>,
+    pub channel: Option<String>,
+    pub subtype: Option<String>,
+    pub team: Option<String>,
+    pub text: Option<String>,
+    pub ts: Option<crate::Timestamp>,
+    #[serde(rename = "type")]
+    pub ty: Option<String>,
+    pub user: Option<String>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct MessageBotDisable {
+    pub bot_id: Option<String>,
+    pub bot_link: Option<String>,
+    pub channel: Option<String>,
+    pub subtype: Option<String>,
+    pub team: Option<String>,
+    pub text: Option<String>,
+    pub ts: Option<crate::Timestamp>,
+    #[serde(rename = "type")]
+    pub ty: Option<String>,
+    pub user: Option<String>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct MessageBotEnable {
+    pub bot_id: Option<String>,
+    pub bot_link: Option<String>,
+    pub channel: Option<String>,
+    pub subtype: Option<String>,
+    pub team: Option<String>,
+    pub text: Option<String>,
+    pub ts: Option<crate::Timestamp>,
+    #[serde(rename = "type")]
+    pub ty: Option<String>,
+    pub user: Option<String>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -406,6 +494,20 @@ pub struct MessageBotMessageIcons {
 }
 
 #[derive(Clone, Debug, Deserialize)]
+pub struct MessageBotRemove {
+    pub bot_id: Option<String>,
+    pub bot_link: Option<String>,
+    pub channel: Option<String>,
+    pub subtype: Option<String>,
+    pub team: Option<String>,
+    pub text: Option<String>,
+    pub ts: Option<crate::Timestamp>,
+    #[serde(rename = "type")]
+    pub ty: Option<String>,
+    pub user: Option<String>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
 pub struct MessageChannelArchive {
     pub members: Option<Vec<String>>,
     pub subtype: Option<String>,
@@ -418,6 +520,7 @@ pub struct MessageChannelArchive {
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct MessageChannelJoin {
+    pub inviter: Option<String>,
     pub subtype: Option<String>,
     pub text: Option<String>,
     pub ts: Option<crate::Timestamp>,
@@ -776,6 +879,18 @@ pub struct MessagePinnedItem {
 pub struct MessagePinnedItemItem {}
 
 #[derive(Clone, Debug, Deserialize)]
+pub struct MessageReminderAdd {
+    pub channel: Option<String>,
+    pub subtype: Option<String>,
+    pub team: Option<String>,
+    pub text: Option<String>,
+    pub ts: Option<crate::Timestamp>,
+    #[serde(rename = "type")]
+    pub ty: Option<String>,
+    pub user: Option<String>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
 pub struct MessageReplyBroadcast {
     pub attachments: Option<Vec<MessageReplyBroadcastAttachment>>,
     pub channel: Option<String>,
@@ -801,6 +916,57 @@ pub struct MessageReplyBroadcastAttachment {
     pub mrkdwn_in: Option<Vec<String>>,
     pub text: Option<String>,
     pub ts: Option<crate::Timestamp>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct MessageShRoomCreated {
+    pub channel: Option<String>,
+    pub no_notifications: Option<bool>,
+    pub permalink: Option<String>,
+    pub root: Option<MessageShRoomCreatedRoot>,
+    pub subtype: Option<String>,
+    pub text: Option<String>,
+    pub ts: Option<crate::Timestamp>,
+    #[serde(rename = "type")]
+    pub ty: Option<String>,
+    pub user: Option<String>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct MessageShRoomCreatedRoot {
+    pub app_id: Option<String>,
+    pub channels: Option<Vec<String>>,
+    pub created_by: Option<String>,
+    pub date_end: Option<crate::Timestamp>,
+    pub date_start: Option<crate::Timestamp>,
+    pub display_id: Option<String>,
+    pub external_unique_id: Option<String>,
+    pub has_ended: Option<bool>,
+    pub id: Option<String>,
+    pub is_dm_call: Option<bool>,
+    pub media_server: Option<String>,
+    pub name: Option<String>,
+    pub participant_history: Option<Vec<String>>,
+    pub participants: Option<Vec<String>>,
+    pub participants_camera_off: Option<Vec<String>>,
+    pub participants_camera_on: Option<Vec<String>>,
+    pub participants_screenshare_off: Option<Vec<String>>,
+    pub participants_screenshare_on: Option<Vec<String>>,
+    pub was_accepted: Option<bool>,
+    pub was_missed: Option<bool>,
+    pub was_rejected: Option<bool>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct MessageSlackbotResponse {
+    pub channel: Option<String>,
+    pub subtype: Option<String>,
+    pub text: Option<String>,
+    pub thread_ts: Option<crate::Timestamp>,
+    pub ts: Option<crate::Timestamp>,
+    #[serde(rename = "type")]
+    pub ty: Option<String>,
+    pub user: Option<String>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -849,6 +1015,38 @@ pub struct MessageStandardAttachmentField {
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct MessageStandardEdited {
+    pub ts: Option<crate::Timestamp>,
+    pub user: Option<String>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct MessageThreadBroadcast {
+    pub root: Option<MessageThreadBroadcastRoot>,
+    pub subtype: Option<String>,
+    pub thread_ts: Option<crate::Timestamp>,
+    pub ts: Option<crate::Timestamp>,
+    #[serde(rename = "type")]
+    pub ty: Option<String>,
+    pub user: Option<String>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct MessageThreadBroadcastRoot {
+    pub latest_reply: Option<crate::Timestamp>,
+    pub replies: Option<Vec<MessageThreadBroadcastRootReply>>,
+    pub reply_count: Option<i32>,
+    pub reply_users: Option<Vec<String>>,
+    pub reply_users_count: Option<i32>,
+    pub subscriped: Option<bool>,
+    pub text: Option<String>,
+    pub thread_ts: Option<crate::Timestamp>,
+    pub ts: Option<crate::Timestamp>,
+    #[serde(rename = "type")]
+    pub ty: Option<String>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct MessageThreadBroadcastRootReply {
     pub ts: Option<crate::Timestamp>,
     pub user: Option<String>,
 }

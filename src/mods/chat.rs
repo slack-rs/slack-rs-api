@@ -59,7 +59,7 @@ pub struct DeleteResponse {
     error: Option<String>,
     #[serde(default)]
     ok: bool,
-    pub ts: Option<String>,
+    pub ts: Option<crate::Timestamp>,
 }
 
 impl<E: Error> Into<Result<DeleteResponse, DeleteError<E>>> for DeleteResponse {
@@ -216,7 +216,7 @@ pub struct MeMessageResponse {
     error: Option<String>,
     #[serde(default)]
     ok: bool,
-    pub ts: Option<String>,
+    pub ts: Option<crate::Timestamp>,
 }
 
 impl<E: Error> Into<Result<MeMessageResponse, MeMessageError<E>>> for MeMessageResponse {
@@ -432,7 +432,7 @@ pub struct PostMessageResponse {
     pub message: Option<crate::Message>,
     #[serde(default)]
     ok: bool,
-    pub ts: Option<String>,
+    pub ts: Option<crate::Timestamp>,
 }
 
 impl<E: Error> Into<Result<PostMessageResponse, PostMessageError<E>>> for PostMessageResponse {
@@ -778,7 +778,7 @@ pub struct UpdateResponse {
     #[serde(default)]
     ok: bool,
     pub text: Option<String>,
-    pub ts: Option<String>,
+    pub ts: Option<crate::Timestamp>,
 }
 
 impl<E: Error> Into<Result<UpdateResponse, UpdateError<E>>> for UpdateResponse {
