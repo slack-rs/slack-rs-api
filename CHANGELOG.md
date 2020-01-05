@@ -1,3 +1,11 @@
+# 0.22.0
+* Updates to API
+  * #68 Bot icons are sometimes an array
+* request 0.10.0 using blocking client
+  - if you passed a `reqwest::Client` before you will need to pass `reqwest::blocking::Client`
+* reqwest native-tls feature
+* 2018 edition code
+
 # 0.21.0
 * Updates to API
   * Missing fields from bot messages
