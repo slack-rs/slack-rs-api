@@ -69,10 +69,17 @@ fn smoke_channels() -> Result<(), Box<dyn std::error::Error>> {
             &slack::channels::HistoryRequest {
                 channel: &channel_id,
                 oldest: Some(1234567890.1234.into()),
-                count: Some(1),
                 ..Default::default()
             },
-        )?
+        )
+        .map_err(|e| {
+            if let slack::channels::HistoryError::MalformedResponse(r, inner_e) = e {
+                println!("{}", r);
+                Box::new(inner_e) as Box<dyn std::error::Error>
+            } else {
+                Box::new(e)
+            }
+        })?
         .messages
         .ok_or("Expected some messages")?;
     }
