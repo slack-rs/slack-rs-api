@@ -1,6 +1,6 @@
 //! Functionality for sending requests to Slack.
 
-use std::error;
+use std::{borrow::Borrow, error};
 
 /// Functionality for sending authenticated and unauthenticated requests to Slack via HTTP.
 ///
@@ -11,21 +11,35 @@ pub trait SlackWebRequestSender {
 
     /// Make an API call to Slack. Takes a map of parameters that get appended to the request as query
     /// params.
-    fn send(&self, method: &str, params: &[(&str, &str)]) -> Result<String, Self::Error>;
+    fn send<I, K, V, S>(&self, method: S, params: I) -> Result<String, Self::Error>
+    where
+        I: IntoIterator,
+        K: AsRef<str>,
+        V: AsRef<str>,
+        I::Item: Borrow<(K, V)>,
+        S: AsRef<str>;
 }
 
 #[cfg(feature = "reqwest")]
 mod reqwest_support {
-    use reqwest_ as reqwest;
     pub use self::reqwest::Error;
+    use reqwest_ as reqwest;
+    use std::borrow::Borrow;
 
     use super::SlackWebRequestSender;
 
     impl SlackWebRequestSender for reqwest::blocking::Client {
         type Error = reqwest::Error;
 
-        fn send(&self, method_url: &str, params: &[(&str, &str)]) -> Result<String, Self::Error> {
-            let mut url = reqwest::Url::parse(method_url).expect("Unable to parse url");
+        fn send<I, K, V, S>(&self, method_url: S, params: I) -> Result<String, Self::Error>
+        where
+            I: IntoIterator,
+            K: AsRef<str>,
+            V: AsRef<str>,
+            I::Item: Borrow<(K, V)>,
+            S: AsRef<str>,
+        {
+            let mut url = reqwest::Url::parse(method_url.as_ref()).expect("Unable to parse url");
 
             url.query_pairs_mut().extend_pairs(params);
 

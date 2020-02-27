@@ -1,4 +1,3 @@
-
 #[allow(unused_imports)]
 use std::collections::HashMap;
 use std::convert::From;
@@ -243,49 +242,12 @@ pub struct GetRequest<'a> {
     pub full: Option<bool>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Deserialize)]
+#[serde(tag = "type", rename_all = "snake_case")]
 pub enum GetResponse {
     Message(GetResponseMessage),
     File(GetResponseFile),
     FileComment(GetResponseFileComment),
-}
-
-impl<'de> ::serde::Deserialize<'de> for GetResponse {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: ::serde::Deserializer<'de>,
-    {
-        use serde::de::Error as SerdeError;
-
-        const VARIANTS: &'static [&'static str] = &["message", "file", "file_comment"];
-
-        let value = ::serde_json::Value::deserialize(deserializer)?;
-        if let Some(ty_val) = value.get("type") {
-            if let Some(ty) = ty_val.as_str() {
-                match ty {
-                    "message" => ::serde_json::from_value::<GetResponseMessage>(value.clone())
-                        .map(GetResponse::Message)
-                        .map_err(|e| D::Error::custom(&format!("{}", e))),
-                    "file" => ::serde_json::from_value::<GetResponseFile>(value.clone())
-                        .map(GetResponse::File)
-                        .map_err(|e| D::Error::custom(&format!("{}", e))),
-                    "file_comment" => {
-                        ::serde_json::from_value::<GetResponseFileComment>(value.clone())
-                            .map(GetResponse::FileComment)
-                            .map_err(|e| D::Error::custom(&format!("{}", e)))
-                    }
-                    _ => Err(D::Error::unknown_variant(ty, VARIANTS)),
-                }
-            } else {
-                Err(D::Error::invalid_type(
-                    ::serde::de::Unexpected::Unit,
-                    &"a string",
-                ))
-            }
-        } else {
-            Err(D::Error::missing_field("type"))
-        }
-    }
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -527,49 +489,12 @@ pub struct ListResponse {
     pub paging: Option<crate::Paging>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Deserialize)]
+#[serde(tag = "type", rename_all = "snake_case")]
 pub enum ListResponseItem {
     Message(ListResponseItemMessage),
     File(ListResponseItemFile),
     FileComment(ListResponseItemFileComment),
-}
-
-impl<'de> ::serde::Deserialize<'de> for ListResponseItem {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: ::serde::Deserializer<'de>,
-    {
-        use serde::de::Error as SerdeError;
-
-        const VARIANTS: &'static [&'static str] = &["message", "file", "file_comment"];
-
-        let value = ::serde_json::Value::deserialize(deserializer)?;
-        if let Some(ty_val) = value.get("type") {
-            if let Some(ty) = ty_val.as_str() {
-                match ty {
-                    "message" => ::serde_json::from_value::<ListResponseItemMessage>(value.clone())
-                        .map(ListResponseItem::Message)
-                        .map_err(|e| D::Error::custom(&format!("{}", e))),
-                    "file" => ::serde_json::from_value::<ListResponseItemFile>(value.clone())
-                        .map(ListResponseItem::File)
-                        .map_err(|e| D::Error::custom(&format!("{}", e))),
-                    "file_comment" => {
-                        ::serde_json::from_value::<ListResponseItemFileComment>(value.clone())
-                            .map(ListResponseItem::FileComment)
-                            .map_err(|e| D::Error::custom(&format!("{}", e)))
-                    }
-                    _ => Err(D::Error::unknown_variant(ty, VARIANTS)),
-                }
-            } else {
-                Err(D::Error::invalid_type(
-                    ::serde::de::Unexpected::Unit,
-                    &"a string",
-                ))
-            }
-        } else {
-            Err(D::Error::missing_field("type"))
-        }
-    }
 }
 
 #[derive(Clone, Debug, Deserialize)]
