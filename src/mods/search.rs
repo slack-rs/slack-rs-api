@@ -14,7 +14,7 @@ use crate::requests::SlackWebRequestSender;
 ///
 /// Wraps https://api.slack.com/methods/search.all
 
-pub fn all<R>(
+pub async fn all<R>(
     client: &R,
     token: &str,
     request: &AllRequest<'_>,
@@ -39,6 +39,7 @@ where
     let url = crate::get_slack_url_for_method("search.all");
     client
         .send(&url, &params[..])
+        .await
         .map_err(AllError::Client)
         .and_then(|result| {
             serde_json::from_str::<AllResponse>(&result).map_err(AllError::MalformedResponse)
@@ -187,7 +188,7 @@ AllError::RequestTimeout => "request_timeout: The method was called via a POST r
 ///
 /// Wraps https://api.slack.com/methods/search.files
 
-pub fn files<R>(
+pub async fn files<R>(
     client: &R,
     token: &str,
     request: &FilesRequest<'_>,
@@ -212,6 +213,7 @@ where
     let url = crate::get_slack_url_for_method("search.files");
     client
         .send(&url, &params[..])
+        .await
         .map_err(FilesError::Client)
         .and_then(|result| {
             serde_json::from_str::<FilesResponse>(&result).map_err(FilesError::MalformedResponse)
@@ -354,7 +356,7 @@ FilesError::RequestTimeout => "request_timeout: The method was called via a POST
 ///
 /// Wraps https://api.slack.com/methods/search.messages
 
-pub fn messages<R>(
+pub async fn messages<R>(
     client: &R,
     token: &str,
     request: &MessagesRequest<'_>,
@@ -379,6 +381,7 @@ where
     let url = crate::get_slack_url_for_method("search.messages");
     client
         .send(&url, &params[..])
+        .await
         .map_err(MessagesError::Client)
         .and_then(|result| {
             serde_json::from_str::<MessagesResponse>(&result)

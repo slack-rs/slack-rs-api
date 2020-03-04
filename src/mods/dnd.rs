@@ -14,7 +14,7 @@ use crate::requests::SlackWebRequestSender;
 ///
 /// Wraps https://api.slack.com/methods/dnd.endDnd
 
-pub fn end_dnd<R>(client: &R, token: &str) -> Result<EndDndResponse, EndDndError<R::Error>>
+pub async fn end_dnd<R>(client: &R, token: &str) -> Result<EndDndResponse, EndDndError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
@@ -22,6 +22,7 @@ where
     let url = crate::get_slack_url_for_method("dnd.endDnd");
     client
         .send(&url, &params[..])
+        .await
         .map_err(EndDndError::Client)
         .and_then(|result| {
             serde_json::from_str::<EndDndResponse>(&result).map_err(EndDndError::MalformedResponse)
@@ -143,7 +144,10 @@ EndDndError::RequestTimeout => "request_timeout: The method was called via a POS
 ///
 /// Wraps https://api.slack.com/methods/dnd.endSnooze
 
-pub fn end_snooze<R>(client: &R, token: &str) -> Result<EndSnoozeResponse, EndSnoozeError<R::Error>>
+pub async fn end_snooze<R>(
+    client: &R,
+    token: &str,
+) -> Result<EndSnoozeResponse, EndSnoozeError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
@@ -151,6 +155,7 @@ where
     let url = crate::get_slack_url_for_method("dnd.endSnooze");
     client
         .send(&url, &params[..])
+        .await
         .map_err(EndSnoozeError::Client)
         .and_then(|result| {
             serde_json::from_str::<EndSnoozeResponse>(&result)
@@ -281,7 +286,7 @@ EndSnoozeError::RequestTimeout => "request_timeout: The method was called via a 
 ///
 /// Wraps https://api.slack.com/methods/dnd.info
 
-pub fn info<R>(
+pub async fn info<R>(
     client: &R,
     token: &str,
     request: &InfoRequest<'_>,
@@ -297,6 +302,7 @@ where
     let url = crate::get_slack_url_for_method("dnd.info");
     client
         .send(&url, &params[..])
+        .await
         .map_err(InfoError::Client)
         .and_then(|result| {
             serde_json::from_str::<InfoResponse>(&result).map_err(InfoError::MalformedResponse)
@@ -426,7 +432,7 @@ InfoError::RequestTimeout => "request_timeout: The method was called via a POST 
 ///
 /// Wraps https://api.slack.com/methods/dnd.setSnooze
 
-pub fn set_snooze<R>(
+pub async fn set_snooze<R>(
     client: &R,
     token: &str,
     request: &SetSnoozeRequest,
@@ -443,6 +449,7 @@ where
     let url = crate::get_slack_url_for_method("dnd.setSnooze");
     client
         .send(&url, &params[..])
+        .await
         .map_err(SetSnoozeError::Client)
         .and_then(|result| {
             serde_json::from_str::<SetSnoozeResponse>(&result)
@@ -578,7 +585,7 @@ SetSnoozeError::RequestTimeout => "request_timeout: The method was called via a 
 ///
 /// Wraps https://api.slack.com/methods/dnd.teamInfo
 
-pub fn team_info<R>(
+pub async fn team_info<R>(
     client: &R,
     token: &str,
     request: &TeamInfoRequest<'_>,
@@ -594,6 +601,7 @@ where
     let url = crate::get_slack_url_for_method("dnd.teamInfo");
     client
         .send(&url, &params[..])
+        .await
         .map_err(TeamInfoError::Client)
         .and_then(|result| {
             serde_json::from_str::<TeamInfoResponse>(&result)

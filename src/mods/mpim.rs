@@ -14,7 +14,7 @@ use crate::requests::SlackWebRequestSender;
 ///
 /// Wraps https://api.slack.com/methods/mpim.close
 
-pub fn close<R>(
+pub async fn close<R>(
     client: &R,
     token: &str,
     request: &CloseRequest<'_>,
@@ -27,6 +27,7 @@ where
     let url = crate::get_slack_url_for_method("mpim.close");
     client
         .send(&url, &params[..])
+        .await
         .map_err(CloseError::Client)
         .and_then(|result| {
             serde_json::from_str::<CloseResponse>(&result).map_err(CloseError::MalformedResponse)
@@ -150,7 +151,7 @@ CloseError::RequestTimeout => "request_timeout: The method was called via a POST
 ///
 /// Wraps https://api.slack.com/methods/mpim.history
 
-pub fn history<R>(
+pub async fn history<R>(
     client: &R,
     token: &str,
     request: &HistoryRequest<'_>,
@@ -176,6 +177,7 @@ where
     let url = crate::get_slack_url_for_method("mpim.history");
     client
         .send(&url, &params[..])
+        .await
         .map_err(HistoryError::Client)
         .and_then(|result| {
             serde_json::from_str::<HistoryResponse>(&result)
@@ -321,7 +323,7 @@ HistoryError::RequestTimeout => "request_timeout: The method was called via a PO
 ///
 /// Wraps https://api.slack.com/methods/mpim.list
 
-pub fn list<R>(client: &R, token: &str) -> Result<ListResponse, ListError<R::Error>>
+pub async fn list<R>(client: &R, token: &str) -> Result<ListResponse, ListError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
@@ -329,6 +331,7 @@ where
     let url = crate::get_slack_url_for_method("mpim.list");
     client
         .send(&url, &params[..])
+        .await
         .map_err(ListError::Client)
         .and_then(|result| {
             serde_json::from_str::<ListResponse>(&result).map_err(ListError::MalformedResponse)
@@ -443,7 +446,7 @@ ListError::RequestTimeout => "request_timeout: The method was called via a POST 
 ///
 /// Wraps https://api.slack.com/methods/mpim.mark
 
-pub fn mark<R>(
+pub async fn mark<R>(
     client: &R,
     token: &str,
     request: &MarkRequest<'_>,
@@ -460,6 +463,7 @@ where
     let url = crate::get_slack_url_for_method("mpim.mark");
     client
         .send(&url, &params[..])
+        .await
         .map_err(MarkError::Client)
         .and_then(|result| {
             serde_json::from_str::<MarkResponse>(&result).map_err(MarkError::MalformedResponse)
@@ -589,7 +593,7 @@ MarkError::RequestTimeout => "request_timeout: The method was called via a POST 
 ///
 /// Wraps https://api.slack.com/methods/mpim.open
 
-pub fn open<R>(
+pub async fn open<R>(
     client: &R,
     token: &str,
     request: &OpenRequest<'_>,
@@ -602,6 +606,7 @@ where
     let url = crate::get_slack_url_for_method("mpim.open");
     client
         .send(&url, &params[..])
+        .await
         .map_err(OpenError::Client)
         .and_then(|result| {
             serde_json::from_str::<OpenResponse>(&result).map_err(OpenError::MalformedResponse)
@@ -734,7 +739,7 @@ OpenError::RequestTimeout => "request_timeout: The method was called via a POST 
 ///
 /// Wraps https://api.slack.com/methods/mpim.replies
 
-pub fn replies<R>(
+pub async fn replies<R>(
     client: &R,
     token: &str,
     request: &RepliesRequest<'_>,
@@ -751,6 +756,7 @@ where
     let url = crate::get_slack_url_for_method("mpim.replies");
     client
         .send(&url, &params[..])
+        .await
         .map_err(RepliesError::Client)
         .and_then(|result| {
             serde_json::from_str::<RepliesResponse>(&result)

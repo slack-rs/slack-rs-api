@@ -1,4 +1,3 @@
-
 #[allow(unused_imports)]
 use std::collections::HashMap;
 use std::convert::From;
@@ -13,7 +12,7 @@ use crate::requests::SlackWebRequestSender;
 ///
 /// Wraps https://api.slack.com/methods/files.comments.add
 
-pub fn add<R>(
+pub async fn add<R>(
     client: &R,
     token: &str,
     request: &AddRequest<'_>,
@@ -30,6 +29,7 @@ where
     let url = crate::get_slack_url_for_method("files.comments.add");
     client
         .send(&url, &params[..])
+        .await
         .map_err(AddError::Client)
         .and_then(|result| {
             serde_json::from_str::<AddResponse>(&result).map_err(AddError::MalformedResponse)
@@ -164,7 +164,7 @@ AddError::RequestTimeout => "request_timeout: The method was called via a POST r
 ///
 /// Wraps https://api.slack.com/methods/files.comments.delete
 
-pub fn delete<R>(
+pub async fn delete<R>(
     client: &R,
     token: &str,
     request: &DeleteRequest<'_>,
@@ -181,6 +181,7 @@ where
     let url = crate::get_slack_url_for_method("files.comments.delete");
     client
         .send(&url, &params[..])
+        .await
         .map_err(DeleteError::Client)
         .and_then(|result| {
             serde_json::from_str::<DeleteResponse>(&result).map_err(DeleteError::MalformedResponse)
@@ -314,7 +315,7 @@ DeleteError::RequestTimeout => "request_timeout: The method was called via a POS
 ///
 /// Wraps https://api.slack.com/methods/files.comments.edit
 
-pub fn edit<R>(
+pub async fn edit<R>(
     client: &R,
     token: &str,
     request: &EditRequest<'_>,
@@ -332,6 +333,7 @@ where
     let url = crate::get_slack_url_for_method("files.comments.edit");
     client
         .send(&url, &params[..])
+        .await
         .map_err(EditError::Client)
         .and_then(|result| {
             serde_json::from_str::<EditResponse>(&result).map_err(EditError::MalformedResponse)

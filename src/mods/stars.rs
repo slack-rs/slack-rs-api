@@ -12,7 +12,7 @@ use crate::requests::SlackWebRequestSender;
 ///
 /// Wraps https://api.slack.com/methods/stars.add
 
-pub fn add<R>(
+pub async fn add<R>(
     client: &R,
     token: &str,
     request: &AddRequest<'_>,
@@ -33,6 +33,7 @@ where
     let url = crate::get_slack_url_for_method("stars.add");
     client
         .send(&url, &params[..])
+        .await
         .map_err(AddError::Client)
         .and_then(|result| {
             serde_json::from_str::<AddResponse>(&result).map_err(AddError::MalformedResponse)
@@ -186,7 +187,7 @@ AddError::RequestTimeout => "request_timeout: The method was called via a POST r
 ///
 /// Wraps https://api.slack.com/methods/stars.list
 
-pub fn list<R>(
+pub async fn list<R>(
     client: &R,
     token: &str,
     request: &ListRequest,
@@ -205,6 +206,7 @@ where
     let url = crate::get_slack_url_for_method("stars.list");
     client
         .send(&url, &params[..])
+        .await
         .map_err(ListError::Client)
         .and_then(|result| {
             serde_json::from_str::<ListResponse>(&result).map_err(ListError::MalformedResponse)
@@ -395,7 +397,7 @@ ListError::RequestTimeout => "request_timeout: The method was called via a POST 
 ///
 /// Wraps https://api.slack.com/methods/stars.remove
 
-pub fn remove<R>(
+pub async fn remove<R>(
     client: &R,
     token: &str,
     request: &RemoveRequest<'_>,
@@ -416,6 +418,7 @@ where
     let url = crate::get_slack_url_for_method("stars.remove");
     client
         .send(&url, &params[..])
+        .await
         .map_err(RemoveError::Client)
         .and_then(|result| {
             serde_json::from_str::<RemoveResponse>(&result).map_err(RemoveError::MalformedResponse)

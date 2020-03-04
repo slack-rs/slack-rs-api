@@ -14,7 +14,7 @@ use crate::requests::SlackWebRequestSender;
 ///
 /// Wraps https://api.slack.com/methods/users.deletePhoto
 
-pub fn delete_photo<R>(
+pub async fn delete_photo<R>(
     client: &R,
     token: &str,
 ) -> Result<DeletePhotoResponse, DeletePhotoError<R::Error>>
@@ -25,6 +25,7 @@ where
     let url = crate::get_slack_url_for_method("users.deletePhoto");
     client
         .send(&url, &params[..])
+        .await
         .map_err(DeletePhotoError::Client)
         .and_then(|result| {
             serde_json::from_str::<DeletePhotoResponse>(&result)
@@ -143,7 +144,7 @@ DeletePhotoError::RequestTimeout => "request_timeout: The method was called via 
 ///
 /// Wraps https://api.slack.com/methods/users.getPresence
 
-pub fn get_presence<R>(
+pub async fn get_presence<R>(
     client: &R,
     token: &str,
     request: &GetPresenceRequest<'_>,
@@ -156,6 +157,7 @@ where
     let url = crate::get_slack_url_for_method("users.getPresence");
     client
         .send(&url, &params[..])
+        .await
         .map_err(GetPresenceError::Client)
         .and_then(|result| {
             serde_json::from_str::<GetPresenceResponse>(&result)
@@ -277,7 +279,10 @@ GetPresenceError::RequestTimeout => "request_timeout: The method was called via 
 ///
 /// Wraps https://api.slack.com/methods/users.identity
 
-pub fn identity<R>(client: &R, token: &str) -> Result<IdentityResponse, IdentityError<R::Error>>
+pub async fn identity<R>(
+    client: &R,
+    token: &str,
+) -> Result<IdentityResponse, IdentityError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
@@ -285,6 +290,7 @@ where
     let url = crate::get_slack_url_for_method("users.identity");
     client
         .send(&url, &params[..])
+        .await
         .map_err(IdentityError::Client)
         .and_then(|result| {
             serde_json::from_str::<IdentityResponse>(&result)
@@ -405,7 +411,7 @@ IdentityError::RequestTimeout => "request_timeout: The method was called via a P
 ///
 /// Wraps https://api.slack.com/methods/users.info
 
-pub fn info<R>(
+pub async fn info<R>(
     client: &R,
     token: &str,
     request: &InfoRequest<'_>,
@@ -418,6 +424,7 @@ where
     let url = crate::get_slack_url_for_method("users.info");
     client
         .send(&url, &params[..])
+        .await
         .map_err(InfoError::Client)
         .and_then(|result| {
             serde_json::from_str::<InfoResponse>(&result).map_err(InfoError::MalformedResponse)
@@ -546,7 +553,7 @@ InfoError::RequestTimeout => "request_timeout: The method was called via a POST 
 ///
 /// Wraps https://api.slack.com/methods/users.list
 
-pub fn list<R>(
+pub async fn list<R>(
     client: &R,
     token: &str,
     request: &ListRequest,
@@ -564,6 +571,7 @@ where
     let url = crate::get_slack_url_for_method("users.list");
     client
         .send(&url, &params[..])
+        .await
         .map_err(ListError::Client)
         .and_then(|result| {
             serde_json::from_str::<ListResponse>(&result).map_err(ListError::MalformedResponse)
@@ -684,7 +692,10 @@ ListError::RequestTimeout => "request_timeout: The method was called via a POST 
 ///
 /// Wraps https://api.slack.com/methods/users.setActive
 
-pub fn set_active<R>(client: &R, token: &str) -> Result<SetActiveResponse, SetActiveError<R::Error>>
+pub async fn set_active<R>(
+    client: &R,
+    token: &str,
+) -> Result<SetActiveResponse, SetActiveError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
@@ -692,6 +703,7 @@ where
     let url = crate::get_slack_url_for_method("users.setActive");
     client
         .send(&url, &params[..])
+        .await
         .map_err(SetActiveError::Client)
         .and_then(|result| {
             serde_json::from_str::<SetActiveResponse>(&result)
@@ -806,7 +818,7 @@ SetActiveError::RequestTimeout => "request_timeout: The method was called via a 
 ///
 /// Wraps https://api.slack.com/methods/users.setPresence
 
-pub fn set_presence<R>(
+pub async fn set_presence<R>(
     client: &R,
     token: &str,
     request: &SetPresenceRequest<'_>,
@@ -819,6 +831,7 @@ where
     let url = crate::get_slack_url_for_method("users.setPresence");
     client
         .send(&url, &params[..])
+        .await
         .map_err(SetPresenceError::Client)
         .and_then(|result| {
             serde_json::from_str::<SetPresenceResponse>(&result)

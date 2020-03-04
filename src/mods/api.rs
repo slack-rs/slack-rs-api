@@ -1,4 +1,3 @@
-
 #[allow(unused_imports)]
 use std::collections::HashMap;
 use std::convert::From;
@@ -13,7 +12,10 @@ use crate::requests::SlackWebRequestSender;
 ///
 /// Wraps https://api.slack.com/methods/api.test
 
-pub fn test<R>(client: &R, request: &TestRequest<'_>) -> Result<TestResponse, TestError<R::Error>>
+pub async fn test<R>(
+    client: &R,
+    request: &TestRequest<'_>,
+) -> Result<TestResponse, TestError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
@@ -25,6 +27,7 @@ where
     let url = crate::get_slack_url_for_method("api.test");
     client
         .send(&url, &params[..])
+        .await
         .map_err(TestError::Client)
         .and_then(|result| {
             serde_json::from_str::<TestResponse>(&result).map_err(TestError::MalformedResponse)

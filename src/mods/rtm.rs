@@ -1,4 +1,3 @@
-
 #[allow(unused_imports)]
 use std::collections::HashMap;
 use std::convert::From;
@@ -13,7 +12,7 @@ use crate::requests::SlackWebRequestSender;
 ///
 /// Wraps https://api.slack.com/methods/rtm.connect
 
-pub fn connect<R>(client: &R, token: &str) -> Result<ConnectResponse, ConnectError<R::Error>>
+pub async fn connect<R>(client: &R, token: &str) -> Result<ConnectResponse, ConnectError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
@@ -21,6 +20,7 @@ where
     let url = crate::get_slack_url_for_method("rtm.connect");
     client
         .send(&url, &params[..])
+        .await
         .map_err(ConnectError::Client)
         .and_then(|result| {
             serde_json::from_str::<ConnectResponse>(&result)
@@ -154,7 +154,7 @@ ConnectError::RequestTimeout => "request_timeout: The method was called via a PO
 ///
 /// Wraps https://api.slack.com/methods/rtm.start
 
-pub fn start<R>(
+pub async fn start<R>(
     client: &R,
     token: &str,
     request: &StartRequest,
@@ -187,6 +187,7 @@ where
     let url = crate::get_slack_url_for_method("rtm.start");
     client
         .send(&url, &params[..])
+        .await
         .map_err(StartError::Client)
         .and_then(|result| {
             serde_json::from_str::<StartResponse>(&result).map_err(StartError::MalformedResponse)

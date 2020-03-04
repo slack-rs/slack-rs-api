@@ -1,4 +1,3 @@
-
 #[allow(unused_imports)]
 use std::collections::HashMap;
 use std::convert::From;
@@ -13,7 +12,7 @@ use crate::requests::SlackWebRequestSender;
 ///
 /// Wraps https://api.slack.com/methods/oauth.access
 
-pub fn access<R>(
+pub async fn access<R>(
     client: &R,
     request: &AccessRequest<'_>,
 ) -> Result<AccessResponse, AccessError<R::Error>>
@@ -32,6 +31,7 @@ where
     let url = crate::get_slack_url_for_method("oauth.access");
     client
         .send(&url, &params[..])
+        .await
         .map_err(AccessError::Client)
         .and_then(|result| {
             serde_json::from_str::<AccessResponse>(&result).map_err(AccessError::MalformedResponse)

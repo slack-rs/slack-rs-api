@@ -1,4 +1,3 @@
-
 #[allow(unused_imports)]
 use std::collections::HashMap;
 use std::convert::From;
@@ -13,7 +12,7 @@ use crate::requests::SlackWebRequestSender;
 ///
 /// Wraps https://api.slack.com/methods/team.profile.get
 
-pub fn get<R>(
+pub async fn get<R>(
     client: &R,
     token: &str,
     request: &GetRequest<'_>,
@@ -31,6 +30,7 @@ where
     let url = crate::get_slack_url_for_method("team.profile.get");
     client
         .send(&url, &params[..])
+        .await
         .map_err(GetError::Client)
         .and_then(|result| {
             serde_json::from_str::<GetResponse>(&result).map_err(GetError::MalformedResponse)

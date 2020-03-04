@@ -14,7 +14,7 @@ use crate::requests::SlackWebRequestSender;
 ///
 /// Wraps https://api.slack.com/methods/usergroups.create
 
-pub fn create<R>(
+pub async fn create<R>(
     client: &R,
     token: &str,
     request: &CreateRequest<'_>,
@@ -38,6 +38,7 @@ where
     let url = crate::get_slack_url_for_method("usergroups.create");
     client
         .send(&url, &params[..])
+        .await
         .map_err(CreateError::Client)
         .and_then(|result| {
             serde_json::from_str::<CreateResponse>(&result).map_err(CreateError::MalformedResponse)
@@ -174,7 +175,7 @@ CreateError::RequestTimeout => "request_timeout: The method was called via a POS
 ///
 /// Wraps https://api.slack.com/methods/usergroups.disable
 
-pub fn disable<R>(
+pub async fn disable<R>(
     client: &R,
     token: &str,
     request: &DisableRequest<'_>,
@@ -193,6 +194,7 @@ where
     let url = crate::get_slack_url_for_method("usergroups.disable");
     client
         .send(&url, &params[..])
+        .await
         .map_err(DisableError::Client)
         .and_then(|result| {
             serde_json::from_str::<DisableResponse>(&result)
@@ -324,7 +326,7 @@ DisableError::RequestTimeout => "request_timeout: The method was called via a PO
 ///
 /// Wraps https://api.slack.com/methods/usergroups.enable
 
-pub fn enable<R>(
+pub async fn enable<R>(
     client: &R,
     token: &str,
     request: &EnableRequest<'_>,
@@ -343,6 +345,7 @@ where
     let url = crate::get_slack_url_for_method("usergroups.enable");
     client
         .send(&url, &params[..])
+        .await
         .map_err(EnableError::Client)
         .and_then(|result| {
             serde_json::from_str::<EnableResponse>(&result).map_err(EnableError::MalformedResponse)
@@ -473,7 +476,7 @@ EnableError::RequestTimeout => "request_timeout: The method was called via a POS
 ///
 /// Wraps https://api.slack.com/methods/usergroups.list
 
-pub fn list<R>(
+pub async fn list<R>(
     client: &R,
     token: &str,
     request: &ListRequest,
@@ -497,6 +500,7 @@ where
     let url = crate::get_slack_url_for_method("usergroups.list");
     client
         .send(&url, &params[..])
+        .await
         .map_err(ListError::Client)
         .and_then(|result| {
             serde_json::from_str::<ListResponse>(&result).map_err(ListError::MalformedResponse)
@@ -629,7 +633,7 @@ ListError::RequestTimeout => "request_timeout: The method was called via a POST 
 ///
 /// Wraps https://api.slack.com/methods/usergroups.update
 
-pub fn update<R>(
+pub async fn update<R>(
     client: &R,
     token: &str,
     request: &UpdateRequest<'_>,
@@ -654,6 +658,7 @@ where
     let url = crate::get_slack_url_for_method("usergroups.update");
     client
         .send(&url, &params[..])
+        .await
         .map_err(UpdateError::Client)
         .and_then(|result| {
             serde_json::from_str::<UpdateResponse>(&result).map_err(UpdateError::MalformedResponse)
