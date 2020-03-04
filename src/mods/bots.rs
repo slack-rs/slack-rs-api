@@ -28,7 +28,8 @@ where
         .send(&url, &params[..])
         .map_err(InfoError::Client)
         .and_then(|result| {
-            serde_json::from_str::<InfoResponse>(&result).map_err(InfoError::MalformedResponse)
+            serde_json::from_str::<InfoResponse>(&result)
+                .map_err(|e| InfoError::MalformedResponse(result, e))
         })
         .and_then(|o| o.into())
 }
@@ -101,7 +102,7 @@ pub enum InfoError<E: Error> {
     /// The method was called via a POST request, but the POST data was either missing or truncated.
     RequestTimeout,
     /// The response was not parseable as the expected object
-    MalformedResponse(serde_json::error::Error),
+    MalformedResponse(String, serde_json::error::Error),
     /// The response returned an error that was unknown to the library
     Unknown(String),
     /// The client had an error sending the request to Slack
@@ -151,7 +152,7 @@ InfoError::InvalidPostType => "invalid_post_type: The method was called via a PO
 InfoError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
 InfoError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
 InfoError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        InfoError::MalformedResponse(ref e) => e.description(),
+                        InfoError::MalformedResponse(_, ref e) => e.description(),
                         InfoError::Unknown(ref s) => s,
                         InfoError::Client(ref inner) => inner.description()
                     }
@@ -159,7 +160,7 @@ InfoError::RequestTimeout => "request_timeout: The method was called via a POST 
 
     fn cause(&self) -> Option<&dyn Error> {
         match *self {
-            InfoError::MalformedResponse(ref e) => Some(e),
+            InfoError::MalformedResponse(_, ref e) => Some(e),
             InfoError::Client(ref inner) => Some(inner),
             _ => None,
         }

@@ -91,7 +91,11 @@ impl PropType {
                     .map(|o| {
                         // TODO: Have this just check title. id is not reliable
                         let variant_name =
-                            o.title.as_ref().or_else(|| o.id.as_ref()).unwrap().to_pascal_case();
+                            o.title.as_ref()
+                                .or_else(|| o.id.as_ref())
+                                .or_else(|| o.ty.as_ref())
+                                .expect("variant name")
+                                .to_pascal_case();
                         let obj_name = name.to_owned() + &variant_name;
                         JsonEnumVariant {
                             name: variant_name.clone(),

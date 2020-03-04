@@ -104,7 +104,7 @@ pub struct File {
     pub thumb_480_w: Option<i32>,
     pub thumb_64: Option<String>,
     pub thumb_80: Option<String>,
-    pub timestamp: Option<i32>,
+    pub timestamp: Option<crate::Timestamp>,
     pub title: Option<String>,
     pub url_private: Option<String>,
     pub url_private_download: Option<String>,
@@ -117,7 +117,7 @@ pub struct FileComment {
     pub comment: Option<String>,
     pub id: Option<String>,
     pub reactions: Option<Vec<crate::Reaction>>,
-    pub timestamp: Option<i32>,
+    pub timestamp: Option<crate::Timestamp>,
     pub user: Option<String>,
 }
 
@@ -363,8 +363,8 @@ pub struct MessageBotMessage {
     pub subtype: Option<String>,
     pub team: Option<String>,
     pub text: Option<String>,
-    pub thread_ts: Option<String>,
-    pub ts: Option<String>,
+    pub thread_ts: Option<crate::Timestamp>,
+    pub ts: Option<crate::Timestamp>,
     #[serde(rename = "type")]
     pub ty: Option<String>,
     pub username: Option<String>,
@@ -386,7 +386,7 @@ pub struct MessageBotMessageAttachment {
     pub thumb_url: Option<String>,
     pub title: Option<String>,
     pub title_link: Option<String>,
-    pub ts: Option<f32>,
+    pub ts: Option<crate::Timestamp>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -410,7 +410,7 @@ pub struct MessageChannelArchive {
     pub members: Option<Vec<String>>,
     pub subtype: Option<String>,
     pub text: Option<String>,
-    pub ts: Option<String>,
+    pub ts: Option<crate::Timestamp>,
     #[serde(rename = "type")]
     pub ty: Option<String>,
     pub user: Option<String>,
@@ -420,7 +420,7 @@ pub struct MessageChannelArchive {
 pub struct MessageChannelJoin {
     pub subtype: Option<String>,
     pub text: Option<String>,
-    pub ts: Option<String>,
+    pub ts: Option<crate::Timestamp>,
     #[serde(rename = "type")]
     pub ty: Option<String>,
     pub user: Option<String>,
@@ -430,7 +430,7 @@ pub struct MessageChannelJoin {
 pub struct MessageChannelLeave {
     pub subtype: Option<String>,
     pub text: Option<String>,
-    pub ts: Option<String>,
+    pub ts: Option<crate::Timestamp>,
     #[serde(rename = "type")]
     pub ty: Option<String>,
     pub user: Option<String>,
@@ -442,7 +442,7 @@ pub struct MessageChannelName {
     pub old_name: Option<String>,
     pub subtype: Option<String>,
     pub text: Option<String>,
-    pub ts: Option<String>,
+    pub ts: Option<crate::Timestamp>,
     #[serde(rename = "type")]
     pub ty: Option<String>,
     pub user: Option<String>,
@@ -453,7 +453,7 @@ pub struct MessageChannelPurpose {
     pub purpose: Option<String>,
     pub subtype: Option<String>,
     pub text: Option<String>,
-    pub ts: Option<String>,
+    pub ts: Option<crate::Timestamp>,
     #[serde(rename = "type")]
     pub ty: Option<String>,
     pub user: Option<String>,
@@ -464,7 +464,7 @@ pub struct MessageChannelTopic {
     pub subtype: Option<String>,
     pub text: Option<String>,
     pub topic: Option<String>,
-    pub ts: Option<String>,
+    pub ts: Option<crate::Timestamp>,
     #[serde(rename = "type")]
     pub ty: Option<String>,
     pub user: Option<String>,
@@ -474,7 +474,7 @@ pub struct MessageChannelTopic {
 pub struct MessageChannelUnarchive {
     pub subtype: Option<String>,
     pub text: Option<String>,
-    pub ts: Option<String>,
+    pub ts: Option<crate::Timestamp>,
     #[serde(rename = "type")]
     pub ty: Option<String>,
     pub user: Option<String>,
@@ -486,7 +486,7 @@ pub struct MessageFileComment {
     pub file: Option<crate::File>,
     pub subtype: Option<String>,
     pub text: Option<String>,
-    pub ts: Option<String>,
+    pub ts: Option<crate::Timestamp>,
     #[serde(rename = "type")]
     pub ty: Option<String>,
 }
@@ -496,7 +496,7 @@ pub struct MessageFileMention {
     pub file: Option<crate::File>,
     pub subtype: Option<String>,
     pub text: Option<String>,
-    pub ts: Option<String>,
+    pub ts: Option<crate::Timestamp>,
     #[serde(rename = "type")]
     pub ty: Option<String>,
     pub user: Option<String>,
@@ -507,7 +507,7 @@ pub struct MessageFileShare {
     pub file: Option<crate::File>,
     pub subtype: Option<String>,
     pub text: Option<String>,
-    pub ts: Option<String>,
+    pub ts: Option<crate::Timestamp>,
     #[serde(rename = "type")]
     pub ty: Option<String>,
     pub upload: Option<bool>,
@@ -519,7 +519,7 @@ pub struct MessageGroupArchive {
     pub members: Option<Vec<String>>,
     pub subtype: Option<String>,
     pub text: Option<String>,
-    pub ts: Option<String>,
+    pub ts: Option<crate::Timestamp>,
     #[serde(rename = "type")]
     pub ty: Option<String>,
     pub user: Option<String>,
@@ -529,7 +529,7 @@ pub struct MessageGroupArchive {
 pub struct MessageGroupJoin {
     pub subtype: Option<String>,
     pub text: Option<String>,
-    pub ts: Option<String>,
+    pub ts: Option<crate::Timestamp>,
     #[serde(rename = "type")]
     pub ty: Option<String>,
     pub user: Option<String>,
@@ -539,7 +539,7 @@ pub struct MessageGroupJoin {
 pub struct MessageGroupLeave {
     pub subtype: Option<String>,
     pub text: Option<String>,
-    pub ts: Option<String>,
+    pub ts: Option<crate::Timestamp>,
     #[serde(rename = "type")]
     pub ty: Option<String>,
     pub user: Option<String>,
@@ -551,7 +551,7 @@ pub struct MessageGroupName {
     pub old_name: Option<String>,
     pub subtype: Option<String>,
     pub text: Option<String>,
-    pub ts: Option<String>,
+    pub ts: Option<crate::Timestamp>,
     #[serde(rename = "type")]
     pub ty: Option<String>,
     pub user: Option<String>,
@@ -562,7 +562,7 @@ pub struct MessageGroupPurpose {
     pub purpose: Option<String>,
     pub subtype: Option<String>,
     pub text: Option<String>,
-    pub ts: Option<String>,
+    pub ts: Option<crate::Timestamp>,
     #[serde(rename = "type")]
     pub ty: Option<String>,
     pub user: Option<String>,
@@ -573,7 +573,7 @@ pub struct MessageGroupTopic {
     pub subtype: Option<String>,
     pub text: Option<String>,
     pub topic: Option<String>,
-    pub ts: Option<String>,
+    pub ts: Option<crate::Timestamp>,
     #[serde(rename = "type")]
     pub ty: Option<String>,
     pub user: Option<String>,
@@ -583,7 +583,7 @@ pub struct MessageGroupTopic {
 pub struct MessageGroupUnarchive {
     pub subtype: Option<String>,
     pub text: Option<String>,
-    pub ts: Option<String>,
+    pub ts: Option<crate::Timestamp>,
     #[serde(rename = "type")]
     pub ty: Option<String>,
     pub user: Option<String>,
@@ -594,7 +594,7 @@ pub struct MessageMeMessage {
     pub channel: Option<String>,
     pub subtype: Option<String>,
     pub text: Option<String>,
-    pub ts: Option<String>,
+    pub ts: Option<crate::Timestamp>,
     #[serde(rename = "type")]
     pub ty: Option<String>,
     pub user: Option<String>,
@@ -603,12 +603,12 @@ pub struct MessageMeMessage {
 #[derive(Clone, Debug, Deserialize)]
 pub struct MessageMessageChanged {
     pub channel: Option<String>,
-    pub event_ts: Option<String>,
+    pub event_ts: Option<crate::Timestamp>,
     pub hidden: Option<bool>,
     pub message: Option<MessageMessageChangedMessage>,
     pub previous_message: Option<MessageMessageChangedPreviousMessage>,
     pub subtype: Option<String>,
-    pub ts: Option<String>,
+    pub ts: Option<crate::Timestamp>,
     #[serde(rename = "type")]
     pub ty: Option<String>,
 }
@@ -623,8 +623,8 @@ pub struct MessageMessageChangedMessage {
     pub reply_count: Option<i32>,
     pub subscribed: Option<bool>,
     pub text: Option<String>,
-    pub thread_ts: Option<String>,
-    pub ts: Option<String>,
+    pub thread_ts: Option<crate::Timestamp>,
+    pub ts: Option<crate::Timestamp>,
     #[serde(rename = "type")]
     pub ty: Option<String>,
     pub unread_count: Option<i32>,
@@ -633,13 +633,13 @@ pub struct MessageMessageChangedMessage {
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct MessageMessageChangedMessageEdited {
-    pub ts: Option<String>,
+    pub ts: Option<crate::Timestamp>,
     pub user: Option<String>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct MessageMessageChangedMessageReply {
-    pub ts: Option<String>,
+    pub ts: Option<crate::Timestamp>,
     pub user: Option<String>,
 }
 
@@ -653,8 +653,8 @@ pub struct MessageMessageChangedPreviousMessage {
     pub reply_count: Option<i32>,
     pub subscribed: Option<bool>,
     pub text: Option<String>,
-    pub thread_ts: Option<String>,
-    pub ts: Option<String>,
+    pub thread_ts: Option<crate::Timestamp>,
+    pub ts: Option<crate::Timestamp>,
     #[serde(rename = "type")]
     pub ty: Option<String>,
     pub unread_count: Option<i32>,
@@ -663,25 +663,25 @@ pub struct MessageMessageChangedPreviousMessage {
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct MessageMessageChangedPreviousMessageEdited {
-    pub ts: Option<String>,
+    pub ts: Option<crate::Timestamp>,
     pub user: Option<String>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct MessageMessageChangedPreviousMessageReply {
-    pub ts: Option<String>,
+    pub ts: Option<crate::Timestamp>,
     pub user: Option<String>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct MessageMessageDeleted {
     pub channel: Option<String>,
-    pub deleted_ts: Option<String>,
-    pub event_ts: Option<String>,
+    pub deleted_ts: Option<crate::Timestamp>,
+    pub event_ts: Option<crate::Timestamp>,
     pub hidden: Option<bool>,
     pub previous_message: Option<MessageMessageDeletedPreviousMessage>,
     pub subtype: Option<String>,
-    pub ts: Option<String>,
+    pub ts: Option<crate::Timestamp>,
     #[serde(rename = "type")]
     pub ty: Option<String>,
 }
@@ -696,8 +696,8 @@ pub struct MessageMessageDeletedPreviousMessage {
     pub reply_count: Option<i32>,
     pub subscribed: Option<bool>,
     pub text: Option<String>,
-    pub thread_ts: Option<String>,
-    pub ts: Option<String>,
+    pub thread_ts: Option<crate::Timestamp>,
+    pub ts: Option<crate::Timestamp>,
     #[serde(rename = "type")]
     pub ty: Option<String>,
     pub unread_count: Option<i32>,
@@ -706,25 +706,25 @@ pub struct MessageMessageDeletedPreviousMessage {
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct MessageMessageDeletedPreviousMessageEdited {
-    pub ts: Option<String>,
+    pub ts: Option<crate::Timestamp>,
     pub user: Option<String>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct MessageMessageDeletedPreviousMessageReply {
-    pub ts: Option<String>,
+    pub ts: Option<crate::Timestamp>,
     pub user: Option<String>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct MessageMessageReplied {
     pub channel: Option<String>,
-    pub event_ts: Option<String>,
+    pub event_ts: Option<crate::Timestamp>,
     pub hidden: Option<bool>,
     pub message: Option<MessageMessageRepliedMessage>,
     pub subtype: Option<String>,
-    pub thread_ts: Option<String>,
-    pub ts: Option<String>,
+    pub thread_ts: Option<crate::Timestamp>,
+    pub ts: Option<crate::Timestamp>,
     #[serde(rename = "type")]
     pub ty: Option<String>,
 }
@@ -739,8 +739,8 @@ pub struct MessageMessageRepliedMessage {
     pub reply_count: Option<i32>,
     pub subscribed: Option<bool>,
     pub text: Option<String>,
-    pub thread_ts: Option<String>,
-    pub ts: Option<String>,
+    pub thread_ts: Option<crate::Timestamp>,
+    pub ts: Option<crate::Timestamp>,
     #[serde(rename = "type")]
     pub ty: Option<String>,
     pub unread_count: Option<i32>,
@@ -749,13 +749,13 @@ pub struct MessageMessageRepliedMessage {
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct MessageMessageRepliedMessageEdited {
-    pub ts: Option<String>,
+    pub ts: Option<crate::Timestamp>,
     pub user: Option<String>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct MessageMessageRepliedMessageReply {
-    pub ts: Option<String>,
+    pub ts: Option<crate::Timestamp>,
     pub user: Option<String>,
 }
 
@@ -766,7 +766,7 @@ pub struct MessagePinnedItem {
     pub item_type: Option<String>,
     pub subtype: Option<String>,
     pub text: Option<String>,
-    pub ts: Option<String>,
+    pub ts: Option<crate::Timestamp>,
     #[serde(rename = "type")]
     pub ty: Option<String>,
     pub user: Option<String>,
@@ -779,9 +779,9 @@ pub struct MessagePinnedItemItem {}
 pub struct MessageReplyBroadcast {
     pub attachments: Option<Vec<MessageReplyBroadcastAttachment>>,
     pub channel: Option<String>,
-    pub event_ts: Option<String>,
+    pub event_ts: Option<crate::Timestamp>,
     pub subtype: Option<String>,
-    pub ts: Option<String>,
+    pub ts: Option<crate::Timestamp>,
     #[serde(rename = "type")]
     pub ty: Option<String>,
     pub user: Option<String>,
@@ -800,7 +800,7 @@ pub struct MessageReplyBroadcastAttachment {
     pub id: Option<i32>,
     pub mrkdwn_in: Option<Vec<String>>,
     pub text: Option<String>,
-    pub ts: Option<String>,
+    pub ts: Option<crate::Timestamp>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -809,13 +809,13 @@ pub struct MessageStandard {
     pub bot_id: Option<String>,
     pub channel: Option<String>,
     pub edited: Option<MessageStandardEdited>,
-    pub event_ts: Option<String>,
+    pub event_ts: Option<crate::Timestamp>,
     pub reply_broadcast: Option<bool>,
     pub source_team: Option<String>,
     pub team: Option<String>,
     pub text: Option<String>,
-    pub thread_ts: Option<String>,
-    pub ts: Option<String>,
+    pub thread_ts: Option<crate::Timestamp>,
+    pub ts: Option<crate::Timestamp>,
     #[serde(rename = "type")]
     pub ty: Option<String>,
     pub user: Option<String>,
@@ -837,7 +837,7 @@ pub struct MessageStandardAttachment {
     pub thumb_url: Option<String>,
     pub title: Option<String>,
     pub title_link: Option<String>,
-    pub ts: Option<f32>,
+    pub ts: Option<crate::Timestamp>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -849,7 +849,7 @@ pub struct MessageStandardAttachmentField {
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct MessageStandardEdited {
-    pub ts: Option<String>,
+    pub ts: Option<crate::Timestamp>,
     pub user: Option<String>,
 }
 
@@ -860,7 +860,7 @@ pub struct MessageUnpinnedItem {
     pub item_type: Option<String>,
     pub subtype: Option<String>,
     pub text: Option<String>,
-    pub ts: Option<String>,
+    pub ts: Option<crate::Timestamp>,
     #[serde(rename = "type")]
     pub ty: Option<String>,
     pub user: Option<String>,
@@ -901,12 +901,12 @@ pub struct Reaction {
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct Reminder {
-    pub complete_ts: Option<f32>,
+    pub complete_ts: Option<crate::Timestamp>,
     pub creator: Option<String>,
     pub id: Option<String>,
     pub recurring: Option<bool>,
     pub text: Option<String>,
-    pub time: Option<f32>,
+    pub time: Option<crate::Timestamp>,
     pub user: Option<String>,
 }
 

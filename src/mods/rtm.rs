@@ -24,7 +24,7 @@ where
         .map_err(ConnectError::Client)
         .and_then(|result| {
             serde_json::from_str::<ConnectResponse>(&result)
-                .map_err(ConnectError::MalformedResponse)
+                .map_err(|e| ConnectError::MalformedResponse(result, e))
         })
         .and_then(|o| o.into())
 }
@@ -89,7 +89,7 @@ pub enum ConnectError<E: Error> {
     /// The method was called via a POST request, but the POST data was either missing or truncated.
     RequestTimeout,
     /// The response was not parseable as the expected object
-    MalformedResponse(serde_json::error::Error),
+    MalformedResponse(String, serde_json::error::Error),
     /// The response returned an error that was unknown to the library
     Unknown(String),
     /// The client had an error sending the request to Slack
@@ -135,7 +135,7 @@ ConnectError::InvalidPostType => "invalid_post_type: The method was called via a
 ConnectError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
 ConnectError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
 ConnectError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        ConnectError::MalformedResponse(ref e) => e.description(),
+                        ConnectError::MalformedResponse(_, ref e) => e.description(),
                         ConnectError::Unknown(ref s) => s,
                         ConnectError::Client(ref inner) => inner.description()
                     }
@@ -143,7 +143,7 @@ ConnectError::RequestTimeout => "request_timeout: The method was called via a PO
 
     fn cause(&self) -> Option<&dyn Error> {
         match *self {
-            ConnectError::MalformedResponse(ref e) => Some(e),
+            ConnectError::MalformedResponse(_, ref e) => Some(e),
             ConnectError::Client(ref inner) => Some(inner),
             _ => None,
         }
@@ -189,7 +189,8 @@ where
         .send(&url, &params[..])
         .map_err(StartError::Client)
         .and_then(|result| {
-            serde_json::from_str::<StartResponse>(&result).map_err(StartError::MalformedResponse)
+            serde_json::from_str::<StartResponse>(&result)
+                .map_err(|e| StartError::MalformedResponse(result, e))
         })
         .and_then(|o| o.into())
 }
@@ -261,7 +262,7 @@ pub enum StartError<E: Error> {
     /// The method was called via a POST request, but the POST data was either missing or truncated.
     RequestTimeout,
     /// The response was not parseable as the expected object
-    MalformedResponse(serde_json::error::Error),
+    MalformedResponse(String, serde_json::error::Error),
     /// The response returned an error that was unknown to the library
     Unknown(String),
     /// The client had an error sending the request to Slack
@@ -309,7 +310,7 @@ StartError::InvalidPostType => "invalid_post_type: The method was called via a P
 StartError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
 StartError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
 StartError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        StartError::MalformedResponse(ref e) => e.description(),
+                        StartError::MalformedResponse(_, ref e) => e.description(),
                         StartError::Unknown(ref s) => s,
                         StartError::Client(ref inner) => inner.description()
                     }
@@ -317,7 +318,7 @@ StartError::RequestTimeout => "request_timeout: The method was called via a POST
 
     fn cause(&self) -> Option<&dyn Error> {
         match *self {
-            StartError::MalformedResponse(ref e) => Some(e),
+            StartError::MalformedResponse(_, ref e) => Some(e),
             StartError::Client(ref inner) => Some(inner),
             _ => None,
         }
