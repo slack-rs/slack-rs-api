@@ -3,7 +3,8 @@ use slack_api as slack;
 use std::default::Default;
 use std::env;
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // You can generate a legacy token to quickly test these apis
     // https://api.slack.com/custom-integrations/legacy-tokens
     let token = env::var("SLACK_API_TOKEN").map_err(|_| "SLACK_API_TOKEN env var must be set")?;
@@ -12,7 +13,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     {
         let request = slack::rtm::StartRequest::default();
-        let response = slack::rtm::start(&client, &token, &request);
+        let response = slack::rtm::start(&client, &token, &request).await;
 
         if let Ok(response) = response {
             if let Some(channels) = response.channels {

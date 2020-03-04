@@ -25,6 +25,11 @@ package = "async-trait"
 version = "0.1"
 optional = true
 
+[dev-dependencies.tokio]
+package = "tokio"
+version = "0.2"
+features = ["full"]
+
 [features]
 default = ["reqwest", "with_native_tls"]
 reqwest = ["reqwest_", "async-trait"]
