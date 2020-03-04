@@ -16,8 +16,8 @@ pub trait SlackWebRequestSender {
     async fn send<I, K, V, S>(&self, method: S, params: I) -> Result<String, Self::Error>
     where
         I: IntoIterator + Send,
-        K: AsRef<str> + Send,
-        V: AsRef<str> + Send,
+        K: AsRef<str>,
+        V: AsRef<str>,
         I::Item: Borrow<(K, V)>,
         S: AsRef<str> + Send;
 }
@@ -38,8 +38,8 @@ mod reqwest_support {
         async fn send<I, K, V, S>(&self, method_url: S, params: I) -> Result<String, Self::Error>
         where
             I: IntoIterator + Send,
-            K: AsRef<str> + Send,
-            V: AsRef<str> + Send,
+            K: AsRef<str>,
+            V: AsRef<str>,
             I::Item: Borrow<(K, V)>,
             S: AsRef<str> + Send,
         {
