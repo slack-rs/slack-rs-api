@@ -1,3 +1,16 @@
+//=============================================================================
+//
+//                    WARNING: This file is AUTO-GENERATED
+//
+// Do not make changes directly to this file.
+//
+// If you would like to make a change to the library, please update the schema
+// definitions at https://github.com/slack-rs/slack-api-schemas
+//
+// If you would like to make a change how the library was generated,
+// please edit https://github.com/slack-rs/slack-rs-api/tree/master/codegen
+//
+//=============================================================================
 
 #[allow(unused_imports)]
 use std::collections::HashMap;
@@ -33,7 +46,8 @@ where
         .await
         .map_err(AddError::Client)
         .and_then(|result| {
-            serde_json::from_str::<AddResponse>(&result).map_err(AddError::MalformedResponse)
+            serde_json::from_str::<AddResponse>(&result)
+                .map_err(|e| AddError::MalformedResponse(result, e))
         })
         .and_then(|o| o.into())
 }
@@ -94,7 +108,7 @@ pub enum AddError<E: Error> {
     /// The method was called via a POST request, but the POST data was either missing or truncated.
     RequestTimeout,
     /// The response was not parseable as the expected object
-    MalformedResponse(serde_json::error::Error),
+    MalformedResponse(String, serde_json::error::Error),
     /// The response returned an error that was unknown to the library
     Unknown(String),
     /// The client had an error sending the request to Slack
@@ -146,7 +160,7 @@ AddError::InvalidPostType => "invalid_post_type: The method was called via a POS
 AddError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
 AddError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
 AddError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        AddError::MalformedResponse(ref e) => e.description(),
+                        AddError::MalformedResponse(_, ref e) => e.description(),
                         AddError::Unknown(ref s) => s,
                         AddError::Client(ref inner) => inner.description()
                     }
@@ -154,7 +168,7 @@ AddError::RequestTimeout => "request_timeout: The method was called via a POST r
 
     fn cause(&self) -> Option<&dyn Error> {
         match *self {
-            AddError::MalformedResponse(ref e) => Some(e),
+            AddError::MalformedResponse(_, ref e) => Some(e),
             AddError::Client(ref inner) => Some(inner),
             _ => None,
         }
@@ -185,7 +199,8 @@ where
         .await
         .map_err(DeleteError::Client)
         .and_then(|result| {
-            serde_json::from_str::<DeleteResponse>(&result).map_err(DeleteError::MalformedResponse)
+            serde_json::from_str::<DeleteResponse>(&result)
+                .map_err(|e| DeleteError::MalformedResponse(result, e))
         })
         .and_then(|o| o.into())
 }
@@ -245,7 +260,7 @@ pub enum DeleteError<E: Error> {
     /// The method was called via a POST request, but the POST data was either missing or truncated.
     RequestTimeout,
     /// The response was not parseable as the expected object
-    MalformedResponse(serde_json::error::Error),
+    MalformedResponse(String, serde_json::error::Error),
     /// The response returned an error that was unknown to the library
     Unknown(String),
     /// The client had an error sending the request to Slack
@@ -297,7 +312,7 @@ DeleteError::InvalidPostType => "invalid_post_type: The method was called via a 
 DeleteError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
 DeleteError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
 DeleteError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        DeleteError::MalformedResponse(ref e) => e.description(),
+                        DeleteError::MalformedResponse(_, ref e) => e.description(),
                         DeleteError::Unknown(ref s) => s,
                         DeleteError::Client(ref inner) => inner.description()
                     }
@@ -305,7 +320,7 @@ DeleteError::RequestTimeout => "request_timeout: The method was called via a POS
 
     fn cause(&self) -> Option<&dyn Error> {
         match *self {
-            DeleteError::MalformedResponse(ref e) => Some(e),
+            DeleteError::MalformedResponse(_, ref e) => Some(e),
             DeleteError::Client(ref inner) => Some(inner),
             _ => None,
         }
@@ -337,7 +352,8 @@ where
         .await
         .map_err(EditError::Client)
         .and_then(|result| {
-            serde_json::from_str::<EditResponse>(&result).map_err(EditError::MalformedResponse)
+            serde_json::from_str::<EditResponse>(&result)
+                .map_err(|e| EditError::MalformedResponse(result, e))
         })
         .and_then(|o| o.into())
 }
@@ -404,7 +420,7 @@ pub enum EditError<E: Error> {
     /// The method was called via a POST request, but the POST data was either missing or truncated.
     RequestTimeout,
     /// The response was not parseable as the expected object
-    MalformedResponse(serde_json::error::Error),
+    MalformedResponse(String, serde_json::error::Error),
     /// The response returned an error that was unknown to the library
     Unknown(String),
     /// The client had an error sending the request to Slack
@@ -460,7 +476,7 @@ EditError::InvalidPostType => "invalid_post_type: The method was called via a PO
 EditError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
 EditError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
 EditError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        EditError::MalformedResponse(ref e) => e.description(),
+                        EditError::MalformedResponse(_, ref e) => e.description(),
                         EditError::Unknown(ref s) => s,
                         EditError::Client(ref inner) => inner.description()
                     }
@@ -468,7 +484,7 @@ EditError::RequestTimeout => "request_timeout: The method was called via a POST 
 
     fn cause(&self) -> Option<&dyn Error> {
         match *self {
-            EditError::MalformedResponse(ref e) => Some(e),
+            EditError::MalformedResponse(_, ref e) => Some(e),
             EditError::Client(ref inner) => Some(inner),
             _ => None,
         }

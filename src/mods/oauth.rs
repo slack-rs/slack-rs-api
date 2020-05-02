@@ -1,3 +1,16 @@
+//=============================================================================
+//
+//                    WARNING: This file is AUTO-GENERATED
+//
+// Do not make changes directly to this file.
+//
+// If you would like to make a change to the library, please update the schema
+// definitions at https://github.com/slack-rs/slack-api-schemas
+//
+// If you would like to make a change how the library was generated,
+// please edit https://github.com/slack-rs/slack-rs-api/tree/master/codegen
+//
+//=============================================================================
 
 #[allow(unused_imports)]
 use std::collections::HashMap;
@@ -35,7 +48,8 @@ where
         .await
         .map_err(AccessError::Client)
         .and_then(|result| {
-            serde_json::from_str::<AccessResponse>(&result).map_err(AccessError::MalformedResponse)
+            serde_json::from_str::<AccessResponse>(&result)
+                .map_err(|e| AccessError::MalformedResponse(result, e))
         })
 }
 
@@ -84,7 +98,7 @@ pub enum AccessError<E: Error> {
     /// The method was called via a POST request, but the POST data was either missing or truncated.
     RequestTimeout,
     /// The response was not parseable as the expected object
-    MalformedResponse(serde_json::error::Error),
+    MalformedResponse(String, serde_json::error::Error),
     /// The response returned an error that was unknown to the library
     Unknown(String),
     /// The client had an error sending the request to Slack
@@ -132,7 +146,7 @@ AccessError::InvalidPostType => "invalid_post_type: The method was called via a 
 AccessError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
 AccessError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
 AccessError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        AccessError::MalformedResponse(ref e) => e.description(),
+                        AccessError::MalformedResponse(_, ref e) => e.description(),
                         AccessError::Unknown(ref s) => s,
                         AccessError::Client(ref inner) => inner.description()
                     }
@@ -140,7 +154,7 @@ AccessError::RequestTimeout => "request_timeout: The method was called via a POS
 
     fn cause(&self) -> Option<&dyn Error> {
         match *self {
-            AccessError::MalformedResponse(ref e) => Some(e),
+            AccessError::MalformedResponse(_, ref e) => Some(e),
             AccessError::Client(ref inner) => Some(inner),
             _ => None,
         }

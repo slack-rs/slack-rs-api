@@ -1,3 +1,17 @@
+//=============================================================================
+//
+//                    WARNING: This file is AUTO-GENERATED
+//
+// Do not make changes directly to this file.
+//
+// If you would like to make a change to the library, please update the schema
+// definitions at https://github.com/slack-rs/slack-api-schemas
+//
+// If you would like to make a change how the library was generated,
+// please edit https://github.com/slack-rs/slack-rs-api/tree/master/codegen
+//
+//=============================================================================
+
 //! Post chat messages to Slack.
 
 #[allow(unused_imports)]
@@ -22,9 +36,10 @@ pub async fn delete<R>(
 where
     R: SlackWebRequestSender,
 {
+    let ts = request.ts.to_param_value();
     let params = vec![
         Some(("token", token)),
-        Some(("ts", request.ts)),
+        Some(("ts", &ts[..])),
         Some(("channel", request.channel)),
         request
             .as_user
@@ -37,7 +52,8 @@ where
         .await
         .map_err(DeleteError::Client)
         .and_then(|result| {
-            serde_json::from_str::<DeleteResponse>(&result).map_err(DeleteError::MalformedResponse)
+            serde_json::from_str::<DeleteResponse>(&result)
+                .map_err(|e| DeleteError::MalformedResponse(result, e))
         })
         .and_then(|o| o.into())
 }
@@ -45,7 +61,7 @@ where
 #[derive(Clone, Default, Debug)]
 pub struct DeleteRequest<'a> {
     /// Timestamp of the message to be deleted.
-    pub ts: &'a str,
+    pub ts: crate::Timestamp,
     /// Channel containing the message to be deleted.
     pub channel: &'a str,
     /// Pass true to delete the message as the authed user. Bot users in this context are considered authed users.
@@ -58,7 +74,7 @@ pub struct DeleteResponse {
     error: Option<String>,
     #[serde(default)]
     ok: bool,
-    pub ts: Option<String>,
+    pub ts: Option<crate::Timestamp>,
 }
 
 impl<E: Error> Into<Result<DeleteResponse, DeleteError<E>>> for DeleteResponse {
@@ -103,7 +119,7 @@ pub enum DeleteError<E: Error> {
     /// The method was called via a POST request, but the POST data was either missing or truncated.
     RequestTimeout,
     /// The response was not parseable as the expected object
-    MalformedResponse(serde_json::error::Error),
+    MalformedResponse(String, serde_json::error::Error),
     /// The response returned an error that was unknown to the library
     Unknown(String),
     /// The client had an error sending the request to Slack
@@ -157,7 +173,7 @@ DeleteError::InvalidPostType => "invalid_post_type: The method was called via a 
 DeleteError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
 DeleteError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
 DeleteError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        DeleteError::MalformedResponse(ref e) => e.description(),
+                        DeleteError::MalformedResponse(_, ref e) => e.description(),
                         DeleteError::Unknown(ref s) => s,
                         DeleteError::Client(ref inner) => inner.description()
                     }
@@ -165,7 +181,7 @@ DeleteError::RequestTimeout => "request_timeout: The method was called via a POS
 
     fn cause(&self) -> Option<&dyn Error> {
         match *self {
-            DeleteError::MalformedResponse(ref e) => Some(e),
+            DeleteError::MalformedResponse(_, ref e) => Some(e),
             DeleteError::Client(ref inner) => Some(inner),
             _ => None,
         }
@@ -197,7 +213,7 @@ where
         .map_err(MeMessageError::Client)
         .and_then(|result| {
             serde_json::from_str::<MeMessageResponse>(&result)
-                .map_err(MeMessageError::MalformedResponse)
+                .map_err(|e| MeMessageError::MalformedResponse(result, e))
         })
         .and_then(|o| o.into())
 }
@@ -216,7 +232,7 @@ pub struct MeMessageResponse {
     error: Option<String>,
     #[serde(default)]
     ok: bool,
-    pub ts: Option<String>,
+    pub ts: Option<crate::Timestamp>,
 }
 
 impl<E: Error> Into<Result<MeMessageResponse, MeMessageError<E>>> for MeMessageResponse {
@@ -265,7 +281,7 @@ pub enum MeMessageError<E: Error> {
     /// The method was called via a POST request, but the POST data was either missing or truncated.
     RequestTimeout,
     /// The response was not parseable as the expected object
-    MalformedResponse(serde_json::error::Error),
+    MalformedResponse(String, serde_json::error::Error),
     /// The response returned an error that was unknown to the library
     Unknown(String),
     /// The client had an error sending the request to Slack
@@ -323,7 +339,7 @@ MeMessageError::InvalidPostType => "invalid_post_type: The method was called via
 MeMessageError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
 MeMessageError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
 MeMessageError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        MeMessageError::MalformedResponse(ref e) => e.description(),
+                        MeMessageError::MalformedResponse(_, ref e) => e.description(),
                         MeMessageError::Unknown(ref s) => s,
                         MeMessageError::Client(ref inner) => inner.description()
                     }
@@ -331,7 +347,7 @@ MeMessageError::RequestTimeout => "request_timeout: The method was called via a 
 
     fn cause(&self) -> Option<&dyn Error> {
         match *self {
-            MeMessageError::MalformedResponse(ref e) => Some(e),
+            MeMessageError::MalformedResponse(_, ref e) => Some(e),
             MeMessageError::Client(ref inner) => Some(inner),
             _ => None,
         }
@@ -350,6 +366,7 @@ pub async fn post_message<R>(
 where
     R: SlackWebRequestSender,
 {
+    let thread_ts = request.thread_ts.as_ref().map(|t| t.to_param_value());
     let params = vec![
         Some(("token", token)),
         Some(("channel", request.channel)),
@@ -375,7 +392,9 @@ where
         request
             .icon_emoji
             .map(|icon_emoji| ("icon_emoji", icon_emoji)),
-        request.thread_ts.map(|thread_ts| ("thread_ts", thread_ts)),
+        thread_ts
+            .as_ref()
+            .map(|thread_ts| ("thread_ts", &thread_ts[..])),
         request
             .reply_broadcast
             .map(|reply_broadcast| ("reply_broadcast", if reply_broadcast { "1" } else { "0" })),
@@ -388,7 +407,7 @@ where
         .map_err(PostMessageError::Client)
         .and_then(|result| {
             serde_json::from_str::<PostMessageResponse>(&result)
-                .map_err(PostMessageError::MalformedResponse)
+                .map_err(|e| PostMessageError::MalformedResponse(result, e))
         })
         .and_then(|o| o.into())
 }
@@ -418,7 +437,7 @@ pub struct PostMessageRequest<'a> {
     /// Emoji to use as the icon for this message. Overrides icon_url. Must be used in conjunction with as_user set to false, otherwise ignored. See authorship below.
     pub icon_emoji: Option<&'a str>,
     /// Provide another message's ts value to make this message a reply. Avoid using a reply's ts value; use its parent instead.
-    pub thread_ts: Option<&'a str>,
+    pub thread_ts: Option<crate::Timestamp>,
     /// Used in conjunction with thread_ts and indicates whether reply should be made visible to everyone in the channel or conversation. Defaults to false.
     pub reply_broadcast: Option<bool>,
 }
@@ -430,7 +449,7 @@ pub struct PostMessageResponse {
     pub message: Option<crate::Message>,
     #[serde(default)]
     ok: bool,
-    pub ts: Option<String>,
+    pub ts: Option<crate::Timestamp>,
 }
 
 impl<E: Error> Into<Result<PostMessageResponse, PostMessageError<E>>> for PostMessageResponse {
@@ -481,7 +500,7 @@ pub enum PostMessageError<E: Error> {
     /// The method was called via a POST request, but the POST data was either missing or truncated.
     RequestTimeout,
     /// The response was not parseable as the expected object
-    MalformedResponse(serde_json::error::Error),
+    MalformedResponse(String, serde_json::error::Error),
     /// The response returned an error that was unknown to the library
     Unknown(String),
     /// The client had an error sending the request to Slack
@@ -541,7 +560,7 @@ PostMessageError::InvalidPostType => "invalid_post_type: The method was called v
 PostMessageError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
 PostMessageError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
 PostMessageError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        PostMessageError::MalformedResponse(ref e) => e.description(),
+                        PostMessageError::MalformedResponse(_, ref e) => e.description(),
                         PostMessageError::Unknown(ref s) => s,
                         PostMessageError::Client(ref inner) => inner.description()
                     }
@@ -549,7 +568,7 @@ PostMessageError::RequestTimeout => "request_timeout: The method was called via 
 
     fn cause(&self) -> Option<&dyn Error> {
         match *self {
-            PostMessageError::MalformedResponse(ref e) => Some(e),
+            PostMessageError::MalformedResponse(_, ref e) => Some(e),
             PostMessageError::Client(ref inner) => Some(inner),
             _ => None,
         }
@@ -587,7 +606,8 @@ where
         .await
         .map_err(UnfurlError::Client)
         .and_then(|result| {
-            serde_json::from_str::<UnfurlResponse>(&result).map_err(UnfurlError::MalformedResponse)
+            serde_json::from_str::<UnfurlResponse>(&result)
+                .map_err(|e| UnfurlError::MalformedResponse(result, e))
         })
         .and_then(|o| o.into())
 }
@@ -647,7 +667,7 @@ pub enum UnfurlError<E: Error> {
     /// The method was called via a POST request, but the POST data was either missing or truncated.
     RequestTimeout,
     /// The response was not parseable as the expected object
-    MalformedResponse(serde_json::error::Error),
+    MalformedResponse(String, serde_json::error::Error),
     /// The response returned an error that was unknown to the library
     Unknown(String),
     /// The client had an error sending the request to Slack
@@ -695,7 +715,7 @@ UnfurlError::InvalidPostType => "invalid_post_type: The method was called via a 
 UnfurlError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
 UnfurlError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
 UnfurlError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        UnfurlError::MalformedResponse(ref e) => e.description(),
+                        UnfurlError::MalformedResponse(_, ref e) => e.description(),
                         UnfurlError::Unknown(ref s) => s,
                         UnfurlError::Client(ref inner) => inner.description()
                     }
@@ -703,7 +723,7 @@ UnfurlError::RequestTimeout => "request_timeout: The method was called via a POS
 
     fn cause(&self) -> Option<&dyn Error> {
         match *self {
-            UnfurlError::MalformedResponse(ref e) => Some(e),
+            UnfurlError::MalformedResponse(_, ref e) => Some(e),
             UnfurlError::Client(ref inner) => Some(inner),
             _ => None,
         }
@@ -722,9 +742,10 @@ pub async fn update<R>(
 where
     R: SlackWebRequestSender,
 {
+    let ts = request.ts.to_param_value();
     let params = vec![
         Some(("token", token)),
-        Some(("ts", request.ts)),
+        Some(("ts", &ts[..])),
         Some(("channel", request.channel)),
         Some(("text", request.text)),
         request
@@ -745,7 +766,8 @@ where
         .await
         .map_err(UpdateError::Client)
         .and_then(|result| {
-            serde_json::from_str::<UpdateResponse>(&result).map_err(UpdateError::MalformedResponse)
+            serde_json::from_str::<UpdateResponse>(&result)
+                .map_err(|e| UpdateError::MalformedResponse(result, e))
         })
         .and_then(|o| o.into())
 }
@@ -753,7 +775,7 @@ where
 #[derive(Clone, Default, Debug)]
 pub struct UpdateRequest<'a> {
     /// Timestamp of the message to be updated.
-    pub ts: &'a str,
+    pub ts: crate::Timestamp,
     /// Channel containing the message to be updated.
     pub channel: &'a str,
     /// New text for the message, using the default formatting rules.
@@ -775,7 +797,7 @@ pub struct UpdateResponse {
     #[serde(default)]
     ok: bool,
     pub text: Option<String>,
-    pub ts: Option<String>,
+    pub ts: Option<crate::Timestamp>,
 }
 
 impl<E: Error> Into<Result<UpdateResponse, UpdateError<E>>> for UpdateResponse {
@@ -826,7 +848,7 @@ pub enum UpdateError<E: Error> {
     /// The method was called via a POST request, but the POST data was either missing or truncated.
     RequestTimeout,
     /// The response was not parseable as the expected object
-    MalformedResponse(serde_json::error::Error),
+    MalformedResponse(String, serde_json::error::Error),
     /// The response returned an error that was unknown to the library
     Unknown(String),
     /// The client had an error sending the request to Slack
@@ -886,7 +908,7 @@ UpdateError::InvalidPostType => "invalid_post_type: The method was called via a 
 UpdateError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
 UpdateError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
 UpdateError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        UpdateError::MalformedResponse(ref e) => e.description(),
+                        UpdateError::MalformedResponse(_, ref e) => e.description(),
                         UpdateError::Unknown(ref s) => s,
                         UpdateError::Client(ref inner) => inner.description()
                     }
@@ -894,7 +916,7 @@ UpdateError::RequestTimeout => "request_timeout: The method was called via a POS
 
     fn cause(&self) -> Option<&dyn Error> {
         match *self {
-            UpdateError::MalformedResponse(ref e) => Some(e),
+            UpdateError::MalformedResponse(_, ref e) => Some(e),
             UpdateError::Client(ref inner) => Some(inner),
             _ => None,
         }

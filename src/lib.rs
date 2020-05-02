@@ -19,6 +19,8 @@ use serde;
 #[macro_use]
 extern crate serde_derive;
 
+mod timestamp;
+pub use crate::timestamp::*;
 
 mod mods;
 pub use crate::mods::*;
@@ -111,5 +113,10 @@ mod tests {
     fn test_user_profile_fields_undefined_deserialize() {
         let user_profile: UserProfile = serde_json::from_str(r#"{}"#).unwrap();
         assert!(user_profile.fields.is_none());
+    }
+
+    #[test]
+    fn test_timestamp_to_param_value() {
+        assert_eq!(crate::Timestamp::from(1234567.0).to_param_value(), "1234567.0");
     }
 }

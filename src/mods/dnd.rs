@@ -1,3 +1,17 @@
+//=============================================================================
+//
+//                    WARNING: This file is AUTO-GENERATED
+//
+// Do not make changes directly to this file.
+//
+// If you would like to make a change to the library, please update the schema
+// definitions at https://github.com/slack-rs/slack-api-schemas
+//
+// If you would like to make a change how the library was generated,
+// please edit https://github.com/slack-rs/slack-rs-api/tree/master/codegen
+//
+//=============================================================================
+
 //! Adjust and view Do Not Disturb settings for team members.
 
 #[allow(unused_imports)]
@@ -25,7 +39,8 @@ where
         .await
         .map_err(EndDndError::Client)
         .and_then(|result| {
-            serde_json::from_str::<EndDndResponse>(&result).map_err(EndDndError::MalformedResponse)
+            serde_json::from_str::<EndDndResponse>(&result)
+                .map_err(|e| EndDndError::MalformedResponse(result, e))
         })
         .and_then(|o| o.into())
 }
@@ -75,7 +90,7 @@ pub enum EndDndError<E: Error> {
     /// The method was called via a POST request, but the POST data was either missing or truncated.
     RequestTimeout,
     /// The response was not parseable as the expected object
-    MalformedResponse(serde_json::error::Error),
+    MalformedResponse(String, serde_json::error::Error),
     /// The response returned an error that was unknown to the library
     Unknown(String),
     /// The client had an error sending the request to Slack
@@ -125,7 +140,7 @@ EndDndError::InvalidPostType => "invalid_post_type: The method was called via a 
 EndDndError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
 EndDndError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
 EndDndError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        EndDndError::MalformedResponse(ref e) => e.description(),
+                        EndDndError::MalformedResponse(_, ref e) => e.description(),
                         EndDndError::Unknown(ref s) => s,
                         EndDndError::Client(ref inner) => inner.description()
                     }
@@ -133,7 +148,7 @@ EndDndError::RequestTimeout => "request_timeout: The method was called via a POS
 
     fn cause(&self) -> Option<&dyn Error> {
         match *self {
-            EndDndError::MalformedResponse(ref e) => Some(e),
+            EndDndError::MalformedResponse(_, ref e) => Some(e),
             EndDndError::Client(ref inner) => Some(inner),
             _ => None,
         }
@@ -159,7 +174,7 @@ where
         .map_err(EndSnoozeError::Client)
         .and_then(|result| {
             serde_json::from_str::<EndSnoozeResponse>(&result)
-                .map_err(EndSnoozeError::MalformedResponse)
+                .map_err(|e| EndSnoozeError::MalformedResponse(result, e))
         })
         .and_then(|o| o.into())
 }
@@ -168,8 +183,8 @@ where
 pub struct EndSnoozeResponse {
     pub dnd_enabled: Option<bool>,
     error: Option<String>,
-    pub next_dnd_end_ts: Option<f32>,
-    pub next_dnd_start_ts: Option<f32>,
+    pub next_dnd_end_ts: Option<crate::Timestamp>,
+    pub next_dnd_start_ts: Option<crate::Timestamp>,
     #[serde(default)]
     ok: bool,
     pub snooze_enabled: Option<bool>,
@@ -215,7 +230,7 @@ pub enum EndSnoozeError<E: Error> {
     /// The method was called via a POST request, but the POST data was either missing or truncated.
     RequestTimeout,
     /// The response was not parseable as the expected object
-    MalformedResponse(serde_json::error::Error),
+    MalformedResponse(String, serde_json::error::Error),
     /// The response returned an error that was unknown to the library
     Unknown(String),
     /// The client had an error sending the request to Slack
@@ -267,7 +282,7 @@ EndSnoozeError::InvalidPostType => "invalid_post_type: The method was called via
 EndSnoozeError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
 EndSnoozeError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
 EndSnoozeError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        EndSnoozeError::MalformedResponse(ref e) => e.description(),
+                        EndSnoozeError::MalformedResponse(_, ref e) => e.description(),
                         EndSnoozeError::Unknown(ref s) => s,
                         EndSnoozeError::Client(ref inner) => inner.description()
                     }
@@ -275,7 +290,7 @@ EndSnoozeError::RequestTimeout => "request_timeout: The method was called via a 
 
     fn cause(&self) -> Option<&dyn Error> {
         match *self {
-            EndSnoozeError::MalformedResponse(ref e) => Some(e),
+            EndSnoozeError::MalformedResponse(_, ref e) => Some(e),
             EndSnoozeError::Client(ref inner) => Some(inner),
             _ => None,
         }
@@ -305,7 +320,8 @@ where
         .await
         .map_err(InfoError::Client)
         .and_then(|result| {
-            serde_json::from_str::<InfoResponse>(&result).map_err(InfoError::MalformedResponse)
+            serde_json::from_str::<InfoResponse>(&result)
+                .map_err(|e| InfoError::MalformedResponse(result, e))
         })
         .and_then(|o| o.into())
 }
@@ -320,12 +336,12 @@ pub struct InfoRequest<'a> {
 pub struct InfoResponse {
     pub dnd_enabled: Option<bool>,
     error: Option<String>,
-    pub next_dnd_end_ts: Option<f32>,
-    pub next_dnd_start_ts: Option<f32>,
+    pub next_dnd_end_ts: Option<crate::Timestamp>,
+    pub next_dnd_start_ts: Option<crate::Timestamp>,
     #[serde(default)]
     ok: bool,
     pub snooze_enabled: Option<bool>,
-    pub snooze_endtime: Option<f32>,
+    pub snooze_endtime: Option<crate::Timestamp>,
     pub snooze_remaining: Option<f32>,
 }
 
@@ -365,7 +381,7 @@ pub enum InfoError<E: Error> {
     /// The method was called via a POST request, but the POST data was either missing or truncated.
     RequestTimeout,
     /// The response was not parseable as the expected object
-    MalformedResponse(serde_json::error::Error),
+    MalformedResponse(String, serde_json::error::Error),
     /// The response returned an error that was unknown to the library
     Unknown(String),
     /// The client had an error sending the request to Slack
@@ -413,7 +429,7 @@ InfoError::InvalidPostType => "invalid_post_type: The method was called via a PO
 InfoError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
 InfoError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
 InfoError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        InfoError::MalformedResponse(ref e) => e.description(),
+                        InfoError::MalformedResponse(_, ref e) => e.description(),
                         InfoError::Unknown(ref s) => s,
                         InfoError::Client(ref inner) => inner.description()
                     }
@@ -421,7 +437,7 @@ InfoError::RequestTimeout => "request_timeout: The method was called via a POST 
 
     fn cause(&self) -> Option<&dyn Error> {
         match *self {
-            InfoError::MalformedResponse(ref e) => Some(e),
+            InfoError::MalformedResponse(_, ref e) => Some(e),
             InfoError::Client(ref inner) => Some(inner),
             _ => None,
         }
@@ -453,7 +469,7 @@ where
         .map_err(SetSnoozeError::Client)
         .and_then(|result| {
             serde_json::from_str::<SetSnoozeResponse>(&result)
-                .map_err(SetSnoozeError::MalformedResponse)
+                .map_err(|e| SetSnoozeError::MalformedResponse(result, e))
         })
         .and_then(|o| o.into())
 }
@@ -470,7 +486,7 @@ pub struct SetSnoozeResponse {
     #[serde(default)]
     ok: bool,
     pub snooze_enabled: Option<bool>,
-    pub snooze_endtime: Option<f32>,
+    pub snooze_endtime: Option<crate::Timestamp>,
     pub snooze_remaining: Option<f32>,
 }
 
@@ -514,7 +530,7 @@ pub enum SetSnoozeError<E: Error> {
     /// The method was called via a POST request, but the POST data was either missing or truncated.
     RequestTimeout,
     /// The response was not parseable as the expected object
-    MalformedResponse(serde_json::error::Error),
+    MalformedResponse(String, serde_json::error::Error),
     /// The response returned an error that was unknown to the library
     Unknown(String),
     /// The client had an error sending the request to Slack
@@ -566,7 +582,7 @@ SetSnoozeError::InvalidPostType => "invalid_post_type: The method was called via
 SetSnoozeError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
 SetSnoozeError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
 SetSnoozeError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        SetSnoozeError::MalformedResponse(ref e) => e.description(),
+                        SetSnoozeError::MalformedResponse(_, ref e) => e.description(),
                         SetSnoozeError::Unknown(ref s) => s,
                         SetSnoozeError::Client(ref inner) => inner.description()
                     }
@@ -574,7 +590,7 @@ SetSnoozeError::RequestTimeout => "request_timeout: The method was called via a 
 
     fn cause(&self) -> Option<&dyn Error> {
         match *self {
-            SetSnoozeError::MalformedResponse(ref e) => Some(e),
+            SetSnoozeError::MalformedResponse(_, ref e) => Some(e),
             SetSnoozeError::Client(ref inner) => Some(inner),
             _ => None,
         }
@@ -605,7 +621,7 @@ where
         .map_err(TeamInfoError::Client)
         .and_then(|result| {
             serde_json::from_str::<TeamInfoResponse>(&result)
-                .map_err(TeamInfoError::MalformedResponse)
+                .map_err(|e| TeamInfoError::MalformedResponse(result, e))
         })
         .and_then(|o| o.into())
 }
@@ -658,7 +674,7 @@ pub enum TeamInfoError<E: Error> {
     /// The method was called via a POST request, but the POST data was either missing or truncated.
     RequestTimeout,
     /// The response was not parseable as the expected object
-    MalformedResponse(serde_json::error::Error),
+    MalformedResponse(String, serde_json::error::Error),
     /// The response returned an error that was unknown to the library
     Unknown(String),
     /// The client had an error sending the request to Slack
@@ -704,7 +720,7 @@ TeamInfoError::InvalidPostType => "invalid_post_type: The method was called via 
 TeamInfoError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
 TeamInfoError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
 TeamInfoError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        TeamInfoError::MalformedResponse(ref e) => e.description(),
+                        TeamInfoError::MalformedResponse(_, ref e) => e.description(),
                         TeamInfoError::Unknown(ref s) => s,
                         TeamInfoError::Client(ref inner) => inner.description()
                     }
@@ -712,7 +728,7 @@ TeamInfoError::RequestTimeout => "request_timeout: The method was called via a P
 
     fn cause(&self) -> Option<&dyn Error> {
         match *self {
-            TeamInfoError::MalformedResponse(ref e) => Some(e),
+            TeamInfoError::MalformedResponse(_, ref e) => Some(e),
             TeamInfoError::Client(ref inner) => Some(inner),
             _ => None,
         }

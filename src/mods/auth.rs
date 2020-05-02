@@ -1,3 +1,16 @@
+//=============================================================================
+//
+//                    WARNING: This file is AUTO-GENERATED
+//
+// Do not make changes directly to this file.
+//
+// If you would like to make a change to the library, please update the schema
+// definitions at https://github.com/slack-rs/slack-api-schemas
+//
+// If you would like to make a change how the library was generated,
+// please edit https://github.com/slack-rs/slack-rs-api/tree/master/codegen
+//
+//=============================================================================
 
 #[allow(unused_imports)]
 use std::collections::HashMap;
@@ -34,7 +47,8 @@ where
         .await
         .map_err(RevokeError::Client)
         .and_then(|result| {
-            serde_json::from_str::<RevokeResponse>(&result).map_err(RevokeError::MalformedResponse)
+            serde_json::from_str::<RevokeResponse>(&result)
+                .map_err(|e| RevokeError::MalformedResponse(result, e))
         })
         .and_then(|o| o.into())
 }
@@ -87,7 +101,7 @@ pub enum RevokeError<E: Error> {
     /// The method was called via a POST request, but the POST data was either missing or truncated.
     RequestTimeout,
     /// The response was not parseable as the expected object
-    MalformedResponse(serde_json::error::Error),
+    MalformedResponse(String, serde_json::error::Error),
     /// The response returned an error that was unknown to the library
     Unknown(String),
     /// The client had an error sending the request to Slack
@@ -133,7 +147,7 @@ RevokeError::InvalidPostType => "invalid_post_type: The method was called via a 
 RevokeError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
 RevokeError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
 RevokeError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        RevokeError::MalformedResponse(ref e) => e.description(),
+                        RevokeError::MalformedResponse(_, ref e) => e.description(),
                         RevokeError::Unknown(ref s) => s,
                         RevokeError::Client(ref inner) => inner.description()
                     }
@@ -141,7 +155,7 @@ RevokeError::RequestTimeout => "request_timeout: The method was called via a POS
 
     fn cause(&self) -> Option<&dyn Error> {
         match *self {
-            RevokeError::MalformedResponse(ref e) => Some(e),
+            RevokeError::MalformedResponse(_, ref e) => Some(e),
             RevokeError::Client(ref inner) => Some(inner),
             _ => None,
         }
@@ -163,7 +177,8 @@ where
         .await
         .map_err(TestError::Client)
         .and_then(|result| {
-            serde_json::from_str::<TestResponse>(&result).map_err(TestError::MalformedResponse)
+            serde_json::from_str::<TestResponse>(&result)
+                .map_err(|e| TestError::MalformedResponse(result, e))
         })
         .and_then(|o| o.into())
 }
@@ -214,7 +229,7 @@ pub enum TestError<E: Error> {
     /// The method was called via a POST request, but the POST data was either missing or truncated.
     RequestTimeout,
     /// The response was not parseable as the expected object
-    MalformedResponse(serde_json::error::Error),
+    MalformedResponse(String, serde_json::error::Error),
     /// The response returned an error that was unknown to the library
     Unknown(String),
     /// The client had an error sending the request to Slack
@@ -260,7 +275,7 @@ TestError::InvalidPostType => "invalid_post_type: The method was called via a PO
 TestError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
 TestError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
 TestError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        TestError::MalformedResponse(ref e) => e.description(),
+                        TestError::MalformedResponse(_, ref e) => e.description(),
                         TestError::Unknown(ref s) => s,
                         TestError::Client(ref inner) => inner.description()
                     }
@@ -268,7 +283,7 @@ TestError::RequestTimeout => "request_timeout: The method was called via a POST 
 
     fn cause(&self) -> Option<&dyn Error> {
         match *self {
-            TestError::MalformedResponse(ref e) => Some(e),
+            TestError::MalformedResponse(_, ref e) => Some(e),
             TestError::Client(ref inner) => Some(inner),
             _ => None,
         }

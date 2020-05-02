@@ -2,6 +2,23 @@ use inflector::Inflector;
 
 use crate::json_schema::*;
 
+pub static AUTOGEN_HEADER: &str = "
+//=============================================================================
+// 
+//                    WARNING: This file is AUTO-GENERATED
+// 
+// Do not make changes directly to this file.
+//
+// If you would like to make a change to the library, please update the schema
+// definitions at https://github.com/slack-rs/slack-api-schemas
+//
+// If you would like to make a change how the library was generated,
+// please edit https://github.com/slack-rs/slack-rs-api/tree/master/codegen
+// 
+//=============================================================================
+
+";
+
 #[derive(Deserialize, Clone, Debug)]
 pub struct Module {
     pub name: String,
@@ -12,7 +29,9 @@ pub struct Module {
 impl Module {
     pub fn generate(&self) -> String {
         format!(
-            "{docs}
+            "{header}
+
+            {docs}
 
             #[allow(unused_imports)]
             use std::collections::HashMap;
@@ -25,6 +44,7 @@ impl Module {
             use crate::requests::SlackWebRequestSender;
 
             {methods}",
+            header = AUTOGEN_HEADER,
             docs = self
                 .description
                 .as_ref()
@@ -80,7 +100,7 @@ impl Method {
                     .map_err({error_type}::Client)
                     .and_then(|result| {{
                         serde_json::from_str::<{response_type}>(&result)
-                            .map_err({error_type}::MalformedResponse)
+                            .map_err(|e| {error_type}::MalformedResponse(result, e))
                     }})",
                 name = self.name,
                 response_type = response_struct_name,
@@ -387,7 +407,7 @@ impl Response {
             pub enum {error_type}<E: Error> {{
                 {variants}
                 /// The response was not parseable as the expected object
-                MalformedResponse(serde_json::error::Error),
+                MalformedResponse(String, serde_json::error::Error),
                 /// The response returned an error that was unknown to the library
                 Unknown(String),
                 /// The client had an error sending the request to Slack
@@ -413,7 +433,7 @@ impl Response {
                 fn description(&self) -> &str {{
                     match *self {{
                         {description_matches}
-                        {error_type}::MalformedResponse(ref e) => e.description(),
+                        {error_type}::MalformedResponse(_, ref e) => e.description(),
                         {error_type}::Unknown(ref s) => s,
                         {error_type}::Client(ref inner) => inner.description()
                     }}
@@ -421,7 +441,7 @@ impl Response {
 
                 fn cause(&self) -> Option<&dyn Error> {{
                     match *self {{
-                        {error_type}::MalformedResponse(ref e) => Some(e),
+                        {error_type}::MalformedResponse(_, ref e) => Some(e),
                         {error_type}::Client(ref inner) => Some(inner),
                         _ => None
                     }}
@@ -492,6 +512,14 @@ impl Param {
 
     pub fn lifted(&self) -> Option<String> {
         match (&self.ty[..], self.optional) {
+            ("timestamp", true) => Some(format!(
+                "let {name} = request.{name}.as_ref().map(|t| t.to_param_value());",
+                name = self.name
+            )),
+            ("timestamp", false) => Some(format!(
+                "let {name} = request.{name}.to_param_value();",
+                name = self.name
+            )),
             ("integer", true) => Some(format!(
                 "let {name} = request.{name}.map(|{name}| {name}.to_string());",
                 name = self.name
@@ -525,6 +553,17 @@ impl Param {
                 // lifted into local variable, using {name} instead of request.{name}
                 format!("Some((\"{name}\", &{name}[..]))", name = self.name)
             }
+            ("timestamp", true) => {
+                // lifted into local variable, using {name} instead of request.{name}
+                format!(
+                    "{name}.as_ref().map(|{name}| (\"{name}\", &{name}[..]))",
+                    name = self.name
+                )
+            }
+            ("timestamp", false) => {
+                // lifted into local variable, using {name} instead of request.{name}
+                format!("Some((\"{name}\", &{name}[..]))", name = self.name)
+            }
             (_, true) => format!(
                 "request.{name}.map(|{name}| (\"{name}\", {name}))",
                 name = self.name
@@ -535,6 +574,7 @@ impl Param {
 
     fn get_rust_type(&self) -> String {
         let ty = match &self.ty[..] {
+            "timestamp" => "crate::Timestamp",
             "boolean" => "bool",
             "integer" => "u32",
             _ => "&'a str",
@@ -591,6 +631,10 @@ impl JsonEnumVariant {
 
 impl JsonEnum {
     pub fn to_code(&self) -> String {
+        if self.name == "Timestamp" {
+            return String::new();
+        }
+
         // Hack to work around message having a different identifier here
         let (variant_field, on_missing_field) = if self.name == "Message" {
             (
