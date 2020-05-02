@@ -58,7 +58,8 @@ mod reqwest_support {
     /// ```
     /// # let token = "some_token";
     /// let client = slack_api::requests::default_client().unwrap();
-    /// let response = slack_api::channels::list(&client, &token, &Default::default());
+    /// let params = Default::default();
+    /// let response = slack_api::channels::list(&client, &token, &params);
     /// ```
     pub fn default_client() -> Result<reqwest::Client, reqwest::Error> {
         Ok(reqwest::Client::new())
