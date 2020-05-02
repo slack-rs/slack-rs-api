@@ -11,6 +11,9 @@ pub static AUTOGEN_HEADER: &str = "
 //
 // If you would like to make a change to the library, please update the schema
 // definitions at https://github.com/slack-rs/slack-api-schemas
+//
+// If you would like to make a change how the library was generated,
+// please edit https://github.com/slack-rs/slack-rs-api/tree/master/codegen
 // 
 //=============================================================================
 
