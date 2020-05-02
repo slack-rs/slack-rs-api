@@ -3,15 +3,13 @@ extern crate serde_derive;
 
 use serde_json;
 
-
-
 use std::fs::{self, File, OpenOptions};
 use std::io::{self, Read, Write};
 use std::path::Path;
 use std::process::Command;
 
+use clap::{App, Arg};
 use inflector::Inflector;
-use clap::{Arg, App};
 
 mod json_schema;
 use crate::json_schema::{JsonSchema, PropType};
@@ -44,8 +42,10 @@ fn generate_types(output_path: &Path) -> io::Result<()> {
                 let mut schema_contents = String::new();
                 schema_file.read_to_string(&mut schema_contents)?;
 
-                let schema = serde_json::from_str::<JsonSchema>(&schema_contents)
-                    .expect(&format!("Could not parse object schema for {}", path.display()));
+                let schema = serde_json::from_str::<JsonSchema>(&schema_contents).expect(&format!(
+                    "Could not parse object schema for {}",
+                    path.display()
+                ));
 
                 let ty_name = path.file_stem().unwrap().to_str().unwrap().to_pascal_case();
 
@@ -78,13 +78,15 @@ fn generate_modules(output_path: &Path) -> io::Result<()> {
                 let mut schema_contents = String::new();
                 schema_file.read_to_string(&mut schema_contents)?;
 
-                let module = serde_json::from_str::<Module>(&schema_contents)
-                    .expect(&format!("Could not parse module schema for {}", path.display()));
+                let module = serde_json::from_str::<Module>(&schema_contents).expect(&format!(
+                    "Could not parse module schema for {}",
+                    path.display()
+                ));
                 mods.push(module.get_safe_name());
 
                 let out_filepath = output_path.join(format!("{}.rs", module.get_safe_name()));
 
-                {                    
+                {
                     let mut out_file = OpenOptions::new()
                         .write(true)
                         .truncate(true)
@@ -105,26 +107,34 @@ fn generate_modules(output_path: &Path) -> io::Result<()> {
         .create(true)
         .open(output_path.join("mod.rs"))?;
 
-    mod_file.write_all(mods.iter().map(|modname| format!("pub mod {};", modname)).collect::<Vec<_>>().join("\n").as_bytes())?;
+    mod_file.write_all(
+        mods.iter()
+            .map(|modname| format!("pub mod {};", modname))
+            .collect::<Vec<_>>()
+            .join("\n")
+            .as_bytes(),
+    )?;
 
     Ok(())
 }
 
 fn main() {
     let matches = App::new("slack-rs API Code Generator")
-        .arg(Arg::with_name("out_dir")
-            .short("o")
-            .long("outdir")
-            .value_name("DIR")
-            .help("Sets the output directory for the generated code.")
-            .default_value(DEFAULT_OUT_DIR)
-            .validator_os(|dir| {
-                let outdir = Path::new(dir);
-                if outdir.exists() && !outdir.is_dir() {
-                    return Err("must be a directory".into());
-                }
-                Ok(())
-            }))
+        .arg(
+            Arg::with_name("out_dir")
+                .short("o")
+                .long("outdir")
+                .value_name("DIR")
+                .help("Sets the output directory for the generated code.")
+                .default_value(DEFAULT_OUT_DIR)
+                .validator_os(|dir| {
+                    let outdir = Path::new(dir);
+                    if outdir.exists() && !outdir.is_dir() {
+                        return Err("must be a directory".into());
+                    }
+                    Ok(())
+                }),
+        )
         .get_matches();
 
     let outdir = Path::new(matches.value_of_os("out_dir").unwrap());

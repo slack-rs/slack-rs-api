@@ -45,8 +45,13 @@ impl Module {
 
             {methods}",
             header = AUTOGEN_HEADER,
-            docs = self.description.as_ref().map(|d| format_docs("//!", d)).unwrap_or_default(),
-            methods = self.methods
+            docs = self
+                .description
+                .as_ref()
+                .map(|d| format_docs("//!", d))
+                .unwrap_or_default(),
+            methods = self
+                .methods
                 .iter()
                 .map(Method::generate)
                 .collect::<Vec<String>>()
@@ -81,11 +86,14 @@ impl Method {
         let request_struct_name = type_prefix.clone() + "Request";
         let response_struct_name = type_prefix.clone() + "Response";
         let error_enum_name = type_prefix.clone() + "Error";
-        let response = self.response.generate(&response_struct_name, &error_enum_name);
+        let response = self
+            .response
+            .generate(&response_struct_name, &error_enum_name);
         let response_type = self.response.get_response_type(&response_struct_name);
 
         let send_call = {
-            let mut base_call = format!("\
+            let mut base_call = format!(
+                "\
                 let url = crate::get_slack_url_for_method(\"{name}\");
                 client.send(&url, &params[..])
                     .map_err({error_type}::Client)
@@ -99,9 +107,20 @@ impl Method {
             );
 
             match response_type {
-                PropType::Obj(ref o) => if o.has_ok() { base_call.push_str(".and_then(|o| o.into())") },
-                PropType::Enum(ref e) => if e.has_ok() { base_call.push_str(".and_then(|o| o.into())") },
-                _ => panic!("Top-level response for {} is not an object or enum.", fn_name)
+                PropType::Obj(ref o) => {
+                    if o.has_ok() {
+                        base_call.push_str(".and_then(|o| o.into())")
+                    }
+                }
+                PropType::Enum(ref e) => {
+                    if e.has_ok() {
+                        base_call.push_str(".and_then(|o| o.into())")
+                    }
+                }
+                _ => panic!(
+                    "Top-level response for {} is not an object or enum.",
+                    fn_name
+                ),
             }
 
             base_call
@@ -157,7 +176,10 @@ impl Method {
             let has_token = self.params.iter().any(|p| p.ty == "auth_token");
             let lifetime = if self.has_lifetime() { "<'_>" } else { "" };
             let method_params = if has_token {
-                format!("client: &R, token: &str, request: &{}{}", request_struct_name, lifetime)
+                format!(
+                    "client: &R, token: &str, request: &{}{}",
+                    request_struct_name, lifetime
+                )
             } else {
                 format!("client: &R, request: &{}{}", request_struct_name, lifetime)
             };
@@ -209,22 +231,29 @@ impl Method {
     }
 
     fn has_lifetime(&self) -> bool {
-        !self.params.iter()
+        !self
+            .params
+            .iter()
             .filter(|p| p.ty != "auth_token")
             .all(|p| p.ty == "integer" || p.ty == "boolean")
     }
 
     fn get_request_struct(&self, ty_name: &str) -> String {
-        format!("\
+        format!(
+            "\
             #[derive(Clone, Default, Debug)]
             pub struct {request_type}{lifetime} {{
                 {request_params}
             }}",
             request_type = ty_name,
-            request_params = self.params.iter()
+            request_params = self
+                .params
+                .iter()
                 .filter(|p| p.ty != "auth_token") // passed in method params instead
                 .filter(|p| p.name != "simple_latest") // HACK: simple_latest breaks deserialization
-                .map(Param::generate).collect::<Vec<String>>().join("\n"),
+                .map(Param::generate)
+                .collect::<Vec<String>>()
+                .join("\n"),
             lifetime = if self.has_lifetime() { "<'a>" } else { "" }
         )
     }
@@ -245,13 +274,14 @@ impl Okable for JsonEnum {
         self.variants.iter().all(|v| match v.inner {
             PropType::Obj(ref o) => o.has_ok(),
             PropType::Enum(ref e) => e.has_ok(),
-            _ => false
+            _ => false,
         })
     }
 }
 
 fn generate_matches<F>(enm: &JsonEnum, var_name: &str, f: F) -> Vec<String>
-    where F: Fn(&JsonEnumVariant) -> String
+where
+    F: Fn(&JsonEnumVariant) -> String,
 {
     enm.variants
         .iter()
@@ -268,7 +298,8 @@ fn generate_matches<F>(enm: &JsonEnum, var_name: &str, f: F) -> Vec<String>
 
 fn get_obj_to_response_impl(obj: &JsonObject, error_type: &str) -> Option<String> {
     if obj.has_ok() {
-        Some(format!("\
+        Some(format!(
+            "\
             impl<E: Error> Into<Result<{name}, {error_ty}<E>>> for {name} {{
                 fn into(self) -> Result<{name}, {error_ty}<E>> {{
                     if self.ok {{
@@ -288,7 +319,8 @@ fn get_obj_to_response_impl(obj: &JsonObject, error_type: &str) -> Option<String
 
 fn get_enum_to_response_impl(enm: &JsonEnum, error_type: &str) -> Option<String> {
     if enm.has_ok() {
-        Some(format!("\
+        Some(format!(
+            "\
             impl<E: Error> Into<Result<{name}, {error_ty}<E>>> for {name} {{
                 fn into(self) -> Result<{name}, {error_ty}<E>> {{
                     match self {{
@@ -301,13 +333,25 @@ fn get_enum_to_response_impl(enm: &JsonEnum, error_type: &str) -> Option<String>
             error_ty = error_type,
             name = enm.name,
             matches = generate_matches(enm, "inner", |v| {
-                format!("{{ let x: Result<{}, {}<E>> = inner.into(); x.map({}) }}", enm.name.clone() + &v.name, error_type, v.qualified_name)
-            }).join("\n"),
-            inner_impls = enm.variants.iter()
+                format!(
+                    "{{ let x: Result<{}, {}<E>> = inner.into(); x.map({}) }}",
+                    enm.name.clone() + &v.name,
+                    error_type,
+                    v.qualified_name
+                )
+            })
+            .join("\n"),
+            inner_impls = enm
+                .variants
+                .iter()
                 .map(|v| match v.inner {
-                    PropType::Obj(ref o) => get_obj_to_response_impl(o, error_type).expect("Top-level enum inner object did not have \"ok\" field."),
-                    PropType::Enum(ref e) => get_enum_to_response_impl(e, error_type).expect("Top-level enum inner variant did not have \"ok\" field."),
-                    _ => panic!("Top-level enum is does not contain a type that can have an \"ok\" field.")
+                    PropType::Obj(ref o) => get_obj_to_response_impl(o, error_type)
+                        .expect("Top-level enum inner object did not have \"ok\" field."),
+                    PropType::Enum(ref e) => get_enum_to_response_impl(e, error_type)
+                        .expect("Top-level enum inner variant did not have \"ok\" field."),
+                    _ => panic!(
+                        "Top-level enum is does not contain a type that can have an \"ok\" field."
+                    ),
                 })
                 .collect::<Vec<_>>()
                 .join("\n")
@@ -330,18 +374,18 @@ impl Response {
             PropType::Obj(ref o) => {
                 let to_result = get_obj_to_response_impl(o, error_ty);
                 (o.to_code(), to_result)
-            },
+            }
             PropType::Enum(ref e) => {
                 let to_result = get_enum_to_response_impl(e, error_ty);
                 (e.to_code(), to_result)
-            },
-            _ => {
-                panic!("Top level response schema for {} is not an object or enum. {:?}",
-                       ty_name,
-                       self.schema)
             }
+            _ => panic!(
+                "Top level response schema for {} is not an object or enum. {:?}",
+                ty_name, self.schema
+            ),
         };
-        format!("\
+        format!(
+            "\
             {objs}
             {slack_result}
             {errors}",
@@ -356,7 +400,8 @@ impl Response {
     }
 
     fn get_error_enum(&self, error_ty: &str) -> String {
-        format!("\
+        format!(
+            "\
             #[derive(Debug)]
             pub enum {error_type}<E: Error> {{
                 {variants}
@@ -402,7 +447,8 @@ impl Response {
                 }}
             }}",
             error_type = error_ty,
-            variants = self.errors
+            variants = self
+                .errors
                 .iter()
                 .map(|e| {
                     format!(
@@ -413,7 +459,8 @@ impl Response {
                 })
                 .collect::<Vec<String>>()
                 .join("\n"),
-            matches = self.errors
+            matches = self
+                .errors
                 .iter()
                 .map(|e| {
                     format!(
@@ -425,7 +472,8 @@ impl Response {
                 })
                 .collect::<Vec<String>>()
                 .join("\n"),
-            description_matches = self.errors
+            description_matches = self
+                .errors
                 .iter()
                 .map(|e| {
                     format!(
@@ -437,7 +485,8 @@ impl Response {
                     )
                 })
                 .collect::<Vec<String>>()
-                .join("\n"))
+                .join("\n")
+        )
     }
 }
 
@@ -462,44 +511,63 @@ impl Param {
 
     pub fn lifted(&self) -> Option<String> {
         match (&self.ty[..], self.optional) {
-            ("timestamp", true) => Some(format!("let {name} = request.{name}.as_ref().map(|t| t.to_param_value());", name = self.name)),
-            ("timestamp", false) => Some(format!("let {name} = request.{name}.to_param_value();", name = self.name)),
-            ("integer", true) => Some(format!("let {name} = request.{name}.map(|{name}| {name}.to_string());", name = self.name)),
-            ("integer", false) => Some(format!("let {name} = request.{name}.to_string();", name = self.name)),
-            _ => None
+            ("timestamp", true) => Some(format!(
+                "let {name} = request.{name}.as_ref().map(|t| t.to_param_value());",
+                name = self.name
+            )),
+            ("timestamp", false) => Some(format!(
+                "let {name} = request.{name}.to_param_value();",
+                name = self.name
+            )),
+            ("integer", true) => Some(format!(
+                "let {name} = request.{name}.map(|{name}| {name}.to_string());",
+                name = self.name
+            )),
+            ("integer", false) => Some(format!(
+                "let {name} = request.{name}.to_string();",
+                name = self.name
+            )),
+            _ => None,
         }
     }
 
     pub fn get_pair(&self) -> String {
         match (&self.ty[..], self.optional) {
-            ("boolean", true) => {
-                format!("request.{name}.map(|{name}| (\"{name}\", if {name} {{ \"1\" }} else {{ \"0\" }}))", name = self.name)
-            },
-            ("boolean", false) => {
-                format!("Some((\"{name}\", if request.{name} {{ \"1\" }} else {{ \"0\" }}))", name = self.name)
-            },
+            ("boolean", true) => format!(
+                "request.{name}.map(|{name}| (\"{name}\", if {name} {{ \"1\" }} else {{ \"0\" }}))",
+                name = self.name
+            ),
+            ("boolean", false) => format!(
+                "Some((\"{name}\", if request.{name} {{ \"1\" }} else {{ \"0\" }}))",
+                name = self.name
+            ),
             ("integer", true) => {
                 // lifted into local variable, using {name} instead of request.{name}
-                format!("{name}.as_ref().map(|{name}| (\"{name}\", &{name}[..]))", name = self.name)
-            },
+                format!(
+                    "{name}.as_ref().map(|{name}| (\"{name}\", &{name}[..]))",
+                    name = self.name
+                )
+            }
             ("integer", false) => {
                 // lifted into local variable, using {name} instead of request.{name}
                 format!("Some((\"{name}\", &{name}[..]))", name = self.name)
-            },
+            }
             ("timestamp", true) => {
                 // lifted into local variable, using {name} instead of request.{name}
-                format!("{name}.as_ref().map(|{name}| (\"{name}\", &{name}[..]))", name = self.name)
-            },
+                format!(
+                    "{name}.as_ref().map(|{name}| (\"{name}\", &{name}[..]))",
+                    name = self.name
+                )
+            }
             ("timestamp", false) => {
                 // lifted into local variable, using {name} instead of request.{name}
                 format!("Some((\"{name}\", &{name}[..]))", name = self.name)
-            },
-            (_, true) => {
-                format!("request.{name}.map(|{name}| (\"{name}\", {name}))", name = self.name)
-            },
-            (_, false) => {
-                format!("Some((\"{name}\", request.{name}))", name = self.name)
             }
+            (_, true) => format!(
+                "request.{name}.map(|{name}| (\"{name}\", {name}))",
+                name = self.name
+            ),
+            (_, false) => format!("Some((\"{name}\", request.{name}))", name = self.name),
         }
     }
 
@@ -563,14 +631,17 @@ impl JsonEnumVariant {
 impl JsonEnum {
     pub fn to_code(&self) -> String {
         if self.name == "Timestamp" {
-            return String::new()
+            return String::new();
         }
 
         // Hack to work around message having a different identifier here
         let (variant_field, on_missing_field) = if self.name == "Message" {
-            ("subtype", "::serde_json::from_value::<MessageStandard>(value.clone())
+            (
+                "subtype",
+                "::serde_json::from_value::<MessageStandard>(value.clone())
                .map(Message::Standard)
-               .map_err(|e| D::Error::custom(&format!(\"{}\", e)))")
+               .map_err(|e| D::Error::custom(&format!(\"{}\", e)))",
+            )
         } else {
             ("type", "Err(D::Error::missing_field(\"type\"))")
         };
@@ -579,7 +650,8 @@ impl JsonEnum {
 
         subobjs.sort_by_key(|v| v.name.clone());
 
-        let subobjs = subobjs.iter()
+        let subobjs = subobjs
+            .iter()
             .flat_map(|v| obj_recur(&v.inner))
             .collect::<Vec<_>>()
             .join("\n");
@@ -650,9 +722,9 @@ impl JsonEnum {
 fn obj_recur(prop: &PropType) -> Vec<String> {
     match *prop {
         PropType::Obj(ref o) => vec![o.to_code()],
-        PropType::Arr(ref prop) |
-        PropType::Map(ref prop) |
-        PropType::Optional(ref prop) => obj_recur(prop),
+        PropType::Arr(ref prop) | PropType::Map(ref prop) | PropType::Optional(ref prop) => {
+            obj_recur(prop)
+        }
         PropType::Enum(ref e) => vec![e.to_code()],
         _ => vec![],
     }
@@ -660,7 +732,8 @@ fn obj_recur(prop: &PropType) -> Vec<String> {
 
 impl JsonObject {
     pub fn to_code(&self) -> String {
-        let subobjs = self.fields
+        let subobjs = self
+            .fields
             .iter()
             .flat_map(|f| obj_recur(&f.ty))
             .collect::<Vec<_>>();
@@ -668,11 +741,10 @@ impl JsonObject {
         let mut fields = self.fields.clone();
         fields.sort_by_key(|f| f.name.clone());
 
-        let fields = fields.iter()
-            .map(|f| f.to_code())
-            .collect::<Vec<_>>();
+        let fields = fields.iter().map(|f| f.to_code()).collect::<Vec<_>>();
 
-        format!("\
+        format!(
+            "\
             #[derive(Clone, Debug, Deserialize)]
             pub struct {name} {{
                 {fields}

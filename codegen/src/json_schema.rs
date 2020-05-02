@@ -75,27 +75,31 @@ impl PropType {
         if let Some(ref def) = schema.definition_ref {
             // TODO: This ignores `#/` and assumes filenames refer to an existing struct with that
             //       name.
-            return PropType::Ref(Path::new(def)
-                .file_stem()
-                .unwrap()
-                .to_str()
-                .unwrap()
-                .to_owned()
-                .to_pascal_case());
+            return PropType::Ref(
+                Path::new(def)
+                    .file_stem()
+                    .unwrap()
+                    .to_str()
+                    .unwrap()
+                    .to_owned()
+                    .to_pascal_case(),
+            );
         }
 
         if let Some(ref one_of) = schema.one_of {
             return PropType::Enum(JsonEnum {
                 name: name.to_owned(),
-                variants: one_of.iter()
+                variants: one_of
+                    .iter()
                     .map(|o| {
                         // TODO: Have this just check title. id is not reliable
-                        let variant_name =
-                            o.title.as_ref()
-                                .or_else(|| o.id.as_ref())
-                                .or_else(|| o.ty.as_ref())
-                                .expect("variant name")
-                                .to_pascal_case();
+                        let variant_name = o
+                            .title
+                            .as_ref()
+                            .or_else(|| o.id.as_ref())
+                            .or_else(|| o.ty.as_ref())
+                            .expect("variant name")
+                            .to_pascal_case();
                         let obj_name = name.to_owned() + &variant_name;
                         JsonEnumVariant {
                             name: variant_name.clone(),
@@ -120,9 +124,10 @@ impl PropType {
                 } else {
                     name.to_singular()
                 };
-                let item_schema = schema.items
-                    .as_ref()
-                    .expect(&format!("{} is an array but no schema is set for items", item_name));
+                let item_schema = schema.items.as_ref().expect(&format!(
+                    "{} is an array but no schema is set for items",
+                    item_name
+                ));
                 let subobj = Self::from_schema(&item_schema.clone(), &item_name);
                 PropType::Arr(Box::new(subobj))
             }
@@ -132,59 +137,69 @@ impl PropType {
                     let subobj = Self::from_schema(subobj_schema, name);
                     PropType::Map(Box::new(subobj))
                 } else {
-                    PropType::Obj(schema.properties
-                        .clone()
-                        .map(|p| {
-                            if p.is_empty() {
-                                println!("{} is an object but has no properties. Likely an error.",
-                                         &name);
-                            }
-                            let fields = p.iter()
-                                .map(|(orig_name, p)| {
-                                    let (field_name, rename) = match &orig_name[..] {
-                                        "type" => ("ty", Some("type".into())),
-                                        "self" => ("slf", Some("self".into())),
-                                        name => (name, None),
-                                    };
-                                    let field_ty_name = name.to_owned() +
-                                                        &orig_name.to_pascal_case();
-                                    let mut ty = Self::from_schema(p, &field_ty_name);
-                                    if let Some(ref req) = schema.required {
-                                        if !req.contains(orig_name) {
+                    PropType::Obj(
+                        schema
+                            .properties
+                            .clone()
+                            .map(|p| {
+                                if p.is_empty() {
+                                    println!(
+                                        "{} is an object but has no properties. Likely an error.",
+                                        &name
+                                    );
+                                }
+                                let fields = p
+                                    .iter()
+                                    .map(|(orig_name, p)| {
+                                        let (field_name, rename) = match &orig_name[..] {
+                                            "type" => ("ty", Some("type".into())),
+                                            "self" => ("slf", Some("self".into())),
+                                            name => (name, None),
+                                        };
+                                        let field_ty_name =
+                                            name.to_owned() + &orig_name.to_pascal_case();
+                                        let mut ty = Self::from_schema(p, &field_ty_name);
+                                        if let Some(ref req) = schema.required {
+                                            if !req.contains(orig_name) {
+                                                ty = PropType::Optional(Box::new(ty));
+                                            }
+                                        } else {
                                             ty = PropType::Optional(Box::new(ty));
                                         }
-                                    } else {
-                                        ty = PropType::Optional(Box::new(ty));
-                                    }
-                                    // Hack for slack bug which writes empty map as empty array
-                                    let default;
-                                    let deserialize_with;
-                                    if name == "UserProfile" && field_name == "fields" {
-                                        deserialize_with = Some("crate::optional_struct_or_empty_array");
-                                        default = true;
-                                    } else if name == "MessageBotMessage" && field_name == "icons" {
-                                        deserialize_with = Some("crate::optional_struct_or_empty_array");
-                                        default = true;
-                                    } else {
-                                        deserialize_with = None;
-                                        default = false;
-                                    }
-                                    JsonObjectFieldInfo {
-                                        name: field_name.into(),
-                                        ty: ty,
-                                        rename: rename,
-                                        deserialize_with: deserialize_with,
-                                        default: default,
-                                    }
-                                })
-                                .collect();
+                                        // Hack for slack bug which writes empty map as empty array
+                                        let default;
+                                        let deserialize_with;
+                                        if name == "UserProfile" && field_name == "fields" {
+                                            deserialize_with =
+                                                Some("crate::optional_struct_or_empty_array");
+                                            default = true;
+                                        } else if name == "MessageBotMessage"
+                                            && field_name == "icons"
+                                        {
+                                            deserialize_with =
+                                                Some("crate::optional_struct_or_empty_array");
+                                            default = true;
+                                        } else {
+                                            deserialize_with = None;
+                                            default = false;
+                                        }
+                                        JsonObjectFieldInfo {
+                                            name: field_name.into(),
+                                            ty: ty,
+                                            rename: rename,
+                                            deserialize_with: deserialize_with,
+                                            default: default,
+                                        }
+                                    })
+                                    .collect();
 
-                            JsonObject {
-                                name: name.to_owned(),
-                                fields: fields,
-                            }
-                        })
-                        .expect("Failed to get sub object for object"))
+                                JsonObject {
+                                    name: name.to_owned(),
+                                    fields: fields,
+                                }
+                            })
+                            .expect("Failed to get sub object for object"),
+                    )
                 }
             }
             ty => panic!("Unknown JSON type: {:?} for {}", ty, name),
