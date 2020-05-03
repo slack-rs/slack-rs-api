@@ -26,7 +26,7 @@ use crate::requests::SlackWebRequestSender;
 ///
 /// Wraps https://api.slack.com/methods/usergroups.users.list
 
-pub fn list<R>(
+pub async fn list<R>(
     client: &R,
     token: &str,
     request: &ListRequest<'_>,
@@ -45,6 +45,7 @@ where
     let url = crate::get_slack_url_for_method("usergroups.users.list");
     client
         .send(&url, &params[..])
+        .await
         .map_err(ListError::Client)
         .and_then(|result| {
             serde_json::from_str::<ListResponse>(&result)
@@ -176,7 +177,7 @@ ListError::RequestTimeout => "request_timeout: The method was called via a POST 
 ///
 /// Wraps https://api.slack.com/methods/usergroups.users.update
 
-pub fn update<R>(
+pub async fn update<R>(
     client: &R,
     token: &str,
     request: &UpdateRequest<'_>,
@@ -196,6 +197,7 @@ where
     let url = crate::get_slack_url_for_method("usergroups.users.update");
     client
         .send(&url, &params[..])
+        .await
         .map_err(UpdateError::Client)
         .and_then(|result| {
             serde_json::from_str::<UpdateResponse>(&result)

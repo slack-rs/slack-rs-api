@@ -28,7 +28,7 @@ use crate::requests::SlackWebRequestSender;
 ///
 /// Wraps https://api.slack.com/methods/files.delete
 
-pub fn delete<R>(
+pub async fn delete<R>(
     client: &R,
     token: &str,
     request: &DeleteRequest<'_>,
@@ -41,6 +41,7 @@ where
     let url = crate::get_slack_url_for_method("files.delete");
     client
         .send(&url, &params[..])
+        .await
         .map_err(DeleteError::Client)
         .and_then(|result| {
             serde_json::from_str::<DeleteResponse>(&result)
@@ -173,7 +174,7 @@ DeleteError::RequestTimeout => "request_timeout: The method was called via a POS
 ///
 /// Wraps https://api.slack.com/methods/files.info
 
-pub fn info<R>(
+pub async fn info<R>(
     client: &R,
     token: &str,
     request: &InfoRequest<'_>,
@@ -193,6 +194,7 @@ where
     let url = crate::get_slack_url_for_method("files.info");
     client
         .send(&url, &params[..])
+        .await
         .map_err(InfoError::Client)
         .and_then(|result| {
             serde_json::from_str::<InfoResponse>(&result)
@@ -328,7 +330,7 @@ InfoError::RequestTimeout => "request_timeout: The method was called via a POST 
 ///
 /// Wraps https://api.slack.com/methods/files.list
 
-pub fn list<R>(
+pub async fn list<R>(
     client: &R,
     token: &str,
     request: &ListRequest<'_>,
@@ -354,6 +356,7 @@ where
     let url = crate::get_slack_url_for_method("files.list");
     client
         .send(&url, &params[..])
+        .await
         .map_err(ListError::Client)
         .and_then(|result| {
             serde_json::from_str::<ListResponse>(&result)
@@ -512,7 +515,7 @@ ListError::RequestTimeout => "request_timeout: The method was called via a POST 
 ///
 /// Wraps https://api.slack.com/methods/files.revokePublicURL
 
-pub fn revoke_public_url<R>(
+pub async fn revoke_public_url<R>(
     client: &R,
     token: &str,
     request: &RevokePublicURLRequest<'_>,
@@ -525,6 +528,7 @@ where
     let url = crate::get_slack_url_for_method("files.revokePublicURL");
     client
         .send(&url, &params[..])
+        .await
         .map_err(RevokePublicURLError::Client)
         .and_then(|result| {
             serde_json::from_str::<RevokePublicURLResponse>(&result)
@@ -660,7 +664,7 @@ RevokePublicURLError::RequestTimeout => "request_timeout: The method was called 
 ///
 /// Wraps https://api.slack.com/methods/files.sharedPublicURL
 
-pub fn shared_public_url<R>(
+pub async fn shared_public_url<R>(
     client: &R,
     token: &str,
     request: &SharedPublicURLRequest<'_>,
@@ -673,6 +677,7 @@ where
     let url = crate::get_slack_url_for_method("files.sharedPublicURL");
     client
         .send(&url, &params[..])
+        .await
         .map_err(SharedPublicURLError::Client)
         .and_then(|result| {
             serde_json::from_str::<SharedPublicURLResponse>(&result)

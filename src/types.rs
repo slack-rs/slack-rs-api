@@ -219,7 +219,7 @@ impl<'de> ::serde::Deserialize<'de> for Message {
     where
         D: ::serde::Deserializer<'de>,
     {
-        use serde::de::Error as SerdeError;
+        use ::serde::de::Error as SerdeError;
 
         const VARIANTS: &'static [&'static str] = &[
             "standard",

@@ -26,7 +26,7 @@ use crate::requests::SlackWebRequestSender;
 ///
 /// Wraps https://api.slack.com/methods/users.profile.get
 
-pub fn get<R>(
+pub async fn get<R>(
     client: &R,
     token: &str,
     request: &GetRequest<'_>,
@@ -45,6 +45,7 @@ where
     let url = crate::get_slack_url_for_method("users.profile.get");
     client
         .send(&url, &params[..])
+        .await
         .map_err(GetError::Client)
         .and_then(|result| {
             serde_json::from_str::<GetResponse>(&result)
@@ -176,7 +177,7 @@ GetError::RequestTimeout => "request_timeout: The method was called via a POST r
 ///
 /// Wraps https://api.slack.com/methods/users.profile.set
 
-pub fn set<R>(
+pub async fn set<R>(
     client: &R,
     token: &str,
     request: &SetRequest<'_>,
@@ -195,6 +196,7 @@ where
     let url = crate::get_slack_url_for_method("users.profile.set");
     client
         .send(&url, &params[..])
+        .await
         .map_err(SetError::Client)
         .and_then(|result| {
             serde_json::from_str::<SetResponse>(&result)

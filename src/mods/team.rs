@@ -26,7 +26,7 @@ use crate::requests::SlackWebRequestSender;
 ///
 /// Wraps https://api.slack.com/methods/team.accessLogs
 
-pub fn access_logs<R>(
+pub async fn access_logs<R>(
     client: &R,
     token: &str,
     request: &AccessLogsRequest,
@@ -47,6 +47,7 @@ where
     let url = crate::get_slack_url_for_method("team.accessLogs");
     client
         .send(&url, &params[..])
+        .await
         .map_err(AccessLogsError::Client)
         .and_then(|result| {
             serde_json::from_str::<AccessLogsResponse>(&result)
@@ -199,7 +200,7 @@ AccessLogsError::RequestTimeout => "request_timeout: The method was called via a
 ///
 /// Wraps https://api.slack.com/methods/team.billableInfo
 
-pub fn billable_info<R>(
+pub async fn billable_info<R>(
     client: &R,
     token: &str,
     request: &BillableInfoRequest<'_>,
@@ -215,6 +216,7 @@ where
     let url = crate::get_slack_url_for_method("team.billableInfo");
     client
         .send(&url, &params[..])
+        .await
         .map_err(BillableInfoError::Client)
         .and_then(|result| {
             serde_json::from_str::<BillableInfoResponse>(&result)
@@ -344,7 +346,7 @@ BillableInfoError::RequestTimeout => "request_timeout: The method was called via
 ///
 /// Wraps https://api.slack.com/methods/team.info
 
-pub fn info<R>(client: &R, token: &str) -> Result<InfoResponse, InfoError<R::Error>>
+pub async fn info<R>(client: &R, token: &str) -> Result<InfoResponse, InfoError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
@@ -352,6 +354,7 @@ where
     let url = crate::get_slack_url_for_method("team.info");
     client
         .send(&url, &params[..])
+        .await
         .map_err(InfoError::Client)
         .and_then(|result| {
             serde_json::from_str::<InfoResponse>(&result)
@@ -467,7 +470,7 @@ InfoError::RequestTimeout => "request_timeout: The method was called via a POST 
 ///
 /// Wraps https://api.slack.com/methods/team.integrationLogs
 
-pub fn integration_logs<R>(
+pub async fn integration_logs<R>(
     client: &R,
     token: &str,
     request: &IntegrationLogsRequest<'_>,
@@ -494,6 +497,7 @@ where
     let url = crate::get_slack_url_for_method("team.integrationLogs");
     client
         .send(&url, &params[..])
+        .await
         .map_err(IntegrationLogsError::Client)
         .and_then(|result| {
             serde_json::from_str::<IntegrationLogsResponse>(&result)

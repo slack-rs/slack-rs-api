@@ -60,7 +60,10 @@ fn generate_types(output_path: &Path) -> io::Result<()> {
         }
     }
 
-    Command::new("rustfmt").arg(codegen_filepath).output()?;
+    Command::new("rustfmt")
+        .args(&["--edition", "2018"])
+        .arg(codegen_filepath)
+        .output()?;
 
     Ok(())
 }
@@ -96,7 +99,10 @@ fn generate_modules(output_path: &Path) -> io::Result<()> {
                     out_file.write_all(module.generate().as_bytes())?;
                 }
 
-                Command::new("rustfmt").arg(out_filepath).output()?;
+                Command::new("rustfmt")
+                    .args(&["--edition", "2018"])
+                    .arg(out_filepath)
+                    .output()?;
             }
         }
     }

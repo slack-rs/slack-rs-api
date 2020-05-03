@@ -96,6 +96,7 @@ impl Method {
                 "\
                 let url = crate::get_slack_url_for_method(\"{name}\");
                 client.send(&url, &params[..])
+                    .await
                     .map_err({error_type}::Client)
                     .and_then(|result| {{
                         serde_json::from_str::<{response_type}>(&result)
@@ -129,7 +130,7 @@ impl Method {
         if self.params.is_empty() {
             format!("\
                 {documentation}
-                pub fn {method_name}<R>(client: &R) -> Result<{response_type}, {error_type}<R::Error>>
+                pub async fn {method_name}<R>(client: &R) -> Result<{response_type}, {error_type}<R::Error>>
                     where R: SlackWebRequestSender
                 {{
                     let params = &[];
@@ -152,7 +153,7 @@ impl Method {
         } else if self.params.len() == 1 && self.params[0].ty == "auth_token" {
             format!("\
                 {documentation}
-                pub fn {method_name}<R>(client: &R, token: &str) -> Result<{response_type}, {error_type}<R::Error>>
+                pub async fn {method_name}<R>(client: &R, token: &str) -> Result<{response_type}, {error_type}<R::Error>>
                     where R: SlackWebRequestSender
                 {{
                     let params = &[(\"token\", token)];
@@ -185,7 +186,7 @@ impl Method {
             };
             format!("\
                 {documentation}
-                pub fn {method_name}<R>({method_params}) -> Result<{response_type}, {error_type}<R::Error>>
+                pub async fn {method_name}<R>({method_params}) -> Result<{response_type}, {error_type}<R::Error>>
                     where R: SlackWebRequestSender
                 {{
                     {local_vars}

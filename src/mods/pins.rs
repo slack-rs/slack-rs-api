@@ -26,7 +26,7 @@ use crate::requests::SlackWebRequestSender;
 ///
 /// Wraps https://api.slack.com/methods/pins.add
 
-pub fn add<R>(
+pub async fn add<R>(
     client: &R,
     token: &str,
     request: &AddRequest<'_>,
@@ -50,6 +50,7 @@ where
     let url = crate::get_slack_url_for_method("pins.add");
     client
         .send(&url, &params[..])
+        .await
         .map_err(AddError::Client)
         .and_then(|result| {
             serde_json::from_str::<AddResponse>(&result)
@@ -212,7 +213,7 @@ AddError::RequestTimeout => "request_timeout: The method was called via a POST r
 ///
 /// Wraps https://api.slack.com/methods/pins.list
 
-pub fn list<R>(
+pub async fn list<R>(
     client: &R,
     token: &str,
     request: &ListRequest<'_>,
@@ -225,6 +226,7 @@ where
     let url = crate::get_slack_url_for_method("pins.list");
     client
         .send(&url, &params[..])
+        .await
         .map_err(ListError::Client)
         .and_then(|result| {
             serde_json::from_str::<ListResponse>(&result)
@@ -259,7 +261,7 @@ impl<'de> ::serde::Deserialize<'de> for ListResponseItem {
     where
         D: ::serde::Deserializer<'de>,
     {
-        use serde::de::Error as SerdeError;
+        use ::serde::de::Error as SerdeError;
 
         const VARIANTS: &'static [&'static str] = &["message", "file", "file_comment"];
 
@@ -424,7 +426,7 @@ ListError::RequestTimeout => "request_timeout: The method was called via a POST 
 ///
 /// Wraps https://api.slack.com/methods/pins.remove
 
-pub fn remove<R>(
+pub async fn remove<R>(
     client: &R,
     token: &str,
     request: &RemoveRequest<'_>,
@@ -448,6 +450,7 @@ where
     let url = crate::get_slack_url_for_method("pins.remove");
     client
         .send(&url, &params[..])
+        .await
         .map_err(RemoveError::Client)
         .and_then(|result| {
             serde_json::from_str::<RemoveResponse>(&result)

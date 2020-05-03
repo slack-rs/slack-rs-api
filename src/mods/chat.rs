@@ -28,7 +28,7 @@ use crate::requests::SlackWebRequestSender;
 ///
 /// Wraps https://api.slack.com/methods/chat.delete
 
-pub fn delete<R>(
+pub async fn delete<R>(
     client: &R,
     token: &str,
     request: &DeleteRequest<'_>,
@@ -49,6 +49,7 @@ where
     let url = crate::get_slack_url_for_method("chat.delete");
     client
         .send(&url, &params[..])
+        .await
         .map_err(DeleteError::Client)
         .and_then(|result| {
             serde_json::from_str::<DeleteResponse>(&result)
@@ -191,7 +192,7 @@ DeleteError::RequestTimeout => "request_timeout: The method was called via a POS
 ///
 /// Wraps https://api.slack.com/methods/chat.meMessage
 
-pub fn me_message<R>(
+pub async fn me_message<R>(
     client: &R,
     token: &str,
     request: &MeMessageRequest<'_>,
@@ -208,6 +209,7 @@ where
     let url = crate::get_slack_url_for_method("chat.meMessage");
     client
         .send(&url, &params[..])
+        .await
         .map_err(MeMessageError::Client)
         .and_then(|result| {
             serde_json::from_str::<MeMessageResponse>(&result)
@@ -356,7 +358,7 @@ MeMessageError::RequestTimeout => "request_timeout: The method was called via a 
 ///
 /// Wraps https://api.slack.com/methods/chat.postMessage
 
-pub fn post_message<R>(
+pub async fn post_message<R>(
     client: &R,
     token: &str,
     request: &PostMessageRequest<'_>,
@@ -401,6 +403,7 @@ where
     let url = crate::get_slack_url_for_method("chat.postMessage");
     client
         .send(&url, &params[..])
+        .await
         .map_err(PostMessageError::Client)
         .and_then(|result| {
             serde_json::from_str::<PostMessageResponse>(&result)
@@ -576,7 +579,7 @@ PostMessageError::RequestTimeout => "request_timeout: The method was called via 
 ///
 /// Wraps https://api.slack.com/methods/chat.unfurl
 
-pub fn unfurl<R>(
+pub async fn unfurl<R>(
     client: &R,
     token: &str,
     request: &UnfurlRequest<'_>,
@@ -600,6 +603,7 @@ where
     let url = crate::get_slack_url_for_method("chat.unfurl");
     client
         .send(&url, &params[..])
+        .await
         .map_err(UnfurlError::Client)
         .and_then(|result| {
             serde_json::from_str::<UnfurlResponse>(&result)
@@ -730,7 +734,7 @@ UnfurlError::RequestTimeout => "request_timeout: The method was called via a POS
 ///
 /// Wraps https://api.slack.com/methods/chat.update
 
-pub fn update<R>(
+pub async fn update<R>(
     client: &R,
     token: &str,
     request: &UpdateRequest<'_>,
@@ -759,6 +763,7 @@ where
     let url = crate::get_slack_url_for_method("chat.update");
     client
         .send(&url, &params[..])
+        .await
         .map_err(UpdateError::Client)
         .and_then(|result| {
             serde_json::from_str::<UpdateResponse>(&result)

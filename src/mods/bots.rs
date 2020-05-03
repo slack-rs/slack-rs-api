@@ -26,7 +26,7 @@ use crate::requests::SlackWebRequestSender;
 ///
 /// Wraps https://api.slack.com/methods/bots.info
 
-pub fn info<R>(
+pub async fn info<R>(
     client: &R,
     token: &str,
     request: &InfoRequest<'_>,
@@ -39,6 +39,7 @@ where
     let url = crate::get_slack_url_for_method("bots.info");
     client
         .send(&url, &params[..])
+        .await
         .map_err(InfoError::Client)
         .and_then(|result| {
             serde_json::from_str::<InfoResponse>(&result)

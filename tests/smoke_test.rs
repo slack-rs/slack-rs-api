@@ -11,9 +11,9 @@ fn get_setup(
     Ok((token, client))
 }
 
-#[test]
+#[tokio::test]
 #[ignore]
-fn smoke_test() -> Result<(), Box<dyn std::error::Error>> {
+async fn smoke_test() -> Result<(), Box<dyn std::error::Error>> {
     let (_, client) = get_setup()?;
 
     let resp = slack::api::test(
@@ -23,6 +23,7 @@ fn smoke_test() -> Result<(), Box<dyn std::error::Error>> {
             foo: Some("it's me, foo"),
         },
     )
+    .await
     .err()
     .ok_or("Expected error")?;
 
@@ -30,9 +31,9 @@ fn smoke_test() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-#[test]
+#[tokio::test]
 #[ignore]
-fn smoke_channels() -> Result<(), Box<dyn std::error::Error>> {
+async fn smoke_channels() -> Result<(), Box<dyn std::error::Error>> {
     let (token, client) = get_setup()?;
 
     let all_channels = slack::channels::list(
@@ -41,7 +42,8 @@ fn smoke_channels() -> Result<(), Box<dyn std::error::Error>> {
         &slack::channels::ListRequest {
             ..slack::channels::ListRequest::default()
         },
-    )?
+    )
+    .await?
     .channels
     .ok_or("Expected some channels")?;
 
@@ -57,7 +59,8 @@ fn smoke_channels() -> Result<(), Box<dyn std::error::Error>> {
                 channel: &channel_id,
                 ..Default::default()
             },
-        )?
+        )
+        .await?
         .channel
         .ok_or("Expected some channel")?;
 
@@ -72,6 +75,7 @@ fn smoke_channels() -> Result<(), Box<dyn std::error::Error>> {
                 ..Default::default()
             },
         )
+        .await
         .map_err(|e| {
             if let slack::channels::HistoryError::MalformedResponse(r, inner_e) = e {
                 println!("{}", r);

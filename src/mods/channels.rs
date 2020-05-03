@@ -28,7 +28,7 @@ use crate::requests::SlackWebRequestSender;
 ///
 /// Wraps https://api.slack.com/methods/channels.archive
 
-pub fn archive<R>(
+pub async fn archive<R>(
     client: &R,
     token: &str,
     request: &ArchiveRequest<'_>,
@@ -41,6 +41,7 @@ where
     let url = crate::get_slack_url_for_method("channels.archive");
     client
         .send(&url, &params[..])
+        .await
         .map_err(ArchiveError::Client)
         .and_then(|result| {
             serde_json::from_str::<ArchiveResponse>(&result)
@@ -185,7 +186,7 @@ ArchiveError::RequestTimeout => "request_timeout: The method was called via a PO
 ///
 /// Wraps https://api.slack.com/methods/channels.create
 
-pub fn create<R>(
+pub async fn create<R>(
     client: &R,
     token: &str,
     request: &CreateRequest<'_>,
@@ -204,6 +205,7 @@ where
     let url = crate::get_slack_url_for_method("channels.create");
     client
         .send(&url, &params[..])
+        .await
         .map_err(CreateError::Client)
         .and_then(|result| {
             serde_json::from_str::<CreateResponse>(&result)
@@ -367,7 +369,7 @@ CreateError::RequestTimeout => "request_timeout: The method was called via a POS
 ///
 /// Wraps https://api.slack.com/methods/channels.history
 
-pub fn history<R>(
+pub async fn history<R>(
     client: &R,
     token: &str,
     request: &HistoryRequest<'_>,
@@ -395,6 +397,7 @@ where
     let url = crate::get_slack_url_for_method("channels.history");
     client
         .send(&url, &params[..])
+        .await
         .map_err(HistoryError::Client)
         .and_then(|result| {
             serde_json::from_str::<HistoryResponse>(&result)
@@ -540,7 +543,7 @@ HistoryError::RequestTimeout => "request_timeout: The method was called via a PO
 ///
 /// Wraps https://api.slack.com/methods/channels.info
 
-pub fn info<R>(
+pub async fn info<R>(
     client: &R,
     token: &str,
     request: &InfoRequest<'_>,
@@ -553,6 +556,7 @@ where
     let url = crate::get_slack_url_for_method("channels.info");
     client
         .send(&url, &params[..])
+        .await
         .map_err(InfoError::Client)
         .and_then(|result| {
             serde_json::from_str::<InfoResponse>(&result)
@@ -678,7 +682,7 @@ InfoError::RequestTimeout => "request_timeout: The method was called via a POST 
 ///
 /// Wraps https://api.slack.com/methods/channels.invite
 
-pub fn invite<R>(
+pub async fn invite<R>(
     client: &R,
     token: &str,
     request: &InviteRequest<'_>,
@@ -695,6 +699,7 @@ where
     let url = crate::get_slack_url_for_method("channels.invite");
     client
         .send(&url, &params[..])
+        .await
         .map_err(InviteError::Client)
         .and_then(|result| {
             serde_json::from_str::<InviteResponse>(&result)
@@ -858,7 +863,7 @@ InviteError::RequestTimeout => "request_timeout: The method was called via a POS
 ///
 /// Wraps https://api.slack.com/methods/channels.join
 
-pub fn join<R>(
+pub async fn join<R>(
     client: &R,
     token: &str,
     request: &JoinRequest<'_>,
@@ -877,6 +882,7 @@ where
     let url = crate::get_slack_url_for_method("channels.join");
     client
         .send(&url, &params[..])
+        .await
         .map_err(JoinError::Client)
         .and_then(|result| {
             serde_json::from_str::<JoinResponse>(&result)
@@ -1048,7 +1054,7 @@ JoinError::RequestTimeout => "request_timeout: The method was called via a POST 
 ///
 /// Wraps https://api.slack.com/methods/channels.kick
 
-pub fn kick<R>(
+pub async fn kick<R>(
     client: &R,
     token: &str,
     request: &KickRequest<'_>,
@@ -1065,6 +1071,7 @@ where
     let url = crate::get_slack_url_for_method("channels.kick");
     client
         .send(&url, &params[..])
+        .await
         .map_err(KickError::Client)
         .and_then(|result| {
             serde_json::from_str::<KickResponse>(&result)
@@ -1219,7 +1226,7 @@ KickError::RequestTimeout => "request_timeout: The method was called via a POST 
 ///
 /// Wraps https://api.slack.com/methods/channels.leave
 
-pub fn leave<R>(
+pub async fn leave<R>(
     client: &R,
     token: &str,
     request: &LeaveRequest<'_>,
@@ -1232,6 +1239,7 @@ where
     let url = crate::get_slack_url_for_method("channels.leave");
     client
         .send(&url, &params[..])
+        .await
         .map_err(LeaveError::Client)
         .and_then(|result| {
             serde_json::from_str::<LeaveResponse>(&result)
@@ -1372,7 +1380,7 @@ LeaveError::RequestTimeout => "request_timeout: The method was called via a POST
 ///
 /// Wraps https://api.slack.com/methods/channels.list
 
-pub fn list<R>(
+pub async fn list<R>(
     client: &R,
     token: &str,
     request: &ListRequest,
@@ -1393,6 +1401,7 @@ where
     let url = crate::get_slack_url_for_method("channels.list");
     client
         .send(&url, &params[..])
+        .await
         .map_err(ListError::Client)
         .and_then(|result| {
             serde_json::from_str::<ListResponse>(&result)
@@ -1516,7 +1525,7 @@ ListError::RequestTimeout => "request_timeout: The method was called via a POST 
 ///
 /// Wraps https://api.slack.com/methods/channels.mark
 
-pub fn mark<R>(
+pub async fn mark<R>(
     client: &R,
     token: &str,
     request: &MarkRequest<'_>,
@@ -1534,6 +1543,7 @@ where
     let url = crate::get_slack_url_for_method("channels.mark");
     client
         .send(&url, &params[..])
+        .await
         .map_err(MarkError::Client)
         .and_then(|result| {
             serde_json::from_str::<MarkResponse>(&result)
@@ -1668,7 +1678,7 @@ MarkError::RequestTimeout => "request_timeout: The method was called via a POST 
 ///
 /// Wraps https://api.slack.com/methods/channels.rename
 
-pub fn rename<R>(
+pub async fn rename<R>(
     client: &R,
     token: &str,
     request: &RenameRequest<'_>,
@@ -1688,6 +1698,7 @@ where
     let url = crate::get_slack_url_for_method("channels.rename");
     client
         .send(&url, &params[..])
+        .await
         .map_err(RenameError::Client)
         .and_then(|result| {
             serde_json::from_str::<RenameResponse>(&result)
@@ -1865,7 +1876,7 @@ RenameError::RequestTimeout => "request_timeout: The method was called via a POS
 ///
 /// Wraps https://api.slack.com/methods/channels.replies
 
-pub fn replies<R>(
+pub async fn replies<R>(
     client: &R,
     token: &str,
     request: &RepliesRequest<'_>,
@@ -1883,6 +1894,7 @@ where
     let url = crate::get_slack_url_for_method("channels.replies");
     client
         .send(&url, &params[..])
+        .await
         .map_err(RepliesError::Client)
         .and_then(|result| {
             serde_json::from_str::<RepliesResponse>(&result)
@@ -2015,7 +2027,7 @@ RepliesError::RequestTimeout => "request_timeout: The method was called via a PO
 ///
 /// Wraps https://api.slack.com/methods/channels.setPurpose
 
-pub fn set_purpose<R>(
+pub async fn set_purpose<R>(
     client: &R,
     token: &str,
     request: &SetPurposeRequest<'_>,
@@ -2032,6 +2044,7 @@ where
     let url = crate::get_slack_url_for_method("channels.setPurpose");
     client
         .send(&url, &params[..])
+        .await
         .map_err(SetPurposeError::Client)
         .and_then(|result| {
             serde_json::from_str::<SetPurposeResponse>(&result)
@@ -2175,7 +2188,7 @@ SetPurposeError::RequestTimeout => "request_timeout: The method was called via a
 ///
 /// Wraps https://api.slack.com/methods/channels.setTopic
 
-pub fn set_topic<R>(
+pub async fn set_topic<R>(
     client: &R,
     token: &str,
     request: &SetTopicRequest<'_>,
@@ -2192,6 +2205,7 @@ where
     let url = crate::get_slack_url_for_method("channels.setTopic");
     client
         .send(&url, &params[..])
+        .await
         .map_err(SetTopicError::Client)
         .and_then(|result| {
             serde_json::from_str::<SetTopicResponse>(&result)
@@ -2335,7 +2349,7 @@ SetTopicError::RequestTimeout => "request_timeout: The method was called via a P
 ///
 /// Wraps https://api.slack.com/methods/channels.unarchive
 
-pub fn unarchive<R>(
+pub async fn unarchive<R>(
     client: &R,
     token: &str,
     request: &UnarchiveRequest<'_>,
@@ -2348,6 +2362,7 @@ where
     let url = crate::get_slack_url_for_method("channels.unarchive");
     client
         .send(&url, &params[..])
+        .await
         .map_err(UnarchiveError::Client)
         .and_then(|result| {
             serde_json::from_str::<UnarchiveResponse>(&result)

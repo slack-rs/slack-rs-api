@@ -26,7 +26,7 @@ use crate::requests::SlackWebRequestSender;
 ///
 /// Wraps https://api.slack.com/methods/reminders.add
 
-pub fn add<R>(
+pub async fn add<R>(
     client: &R,
     token: &str,
     request: &AddRequest<'_>,
@@ -45,6 +45,7 @@ where
     let url = crate::get_slack_url_for_method("reminders.add");
     client
         .send(&url, &params[..])
+        .await
         .map_err(AddError::Client)
         .and_then(|result| {
             serde_json::from_str::<AddResponse>(&result)
@@ -198,7 +199,7 @@ AddError::RequestTimeout => "request_timeout: The method was called via a POST r
 ///
 /// Wraps https://api.slack.com/methods/reminders.complete
 
-pub fn complete<R>(
+pub async fn complete<R>(
     client: &R,
     token: &str,
     request: &CompleteRequest<'_>,
@@ -211,6 +212,7 @@ where
     let url = crate::get_slack_url_for_method("reminders.complete");
     client
         .send(&url, &params[..])
+        .await
         .map_err(CompleteError::Client)
         .and_then(|result| {
             serde_json::from_str::<CompleteResponse>(&result)
@@ -347,7 +349,7 @@ CompleteError::RequestTimeout => "request_timeout: The method was called via a P
 ///
 /// Wraps https://api.slack.com/methods/reminders.delete
 
-pub fn delete<R>(
+pub async fn delete<R>(
     client: &R,
     token: &str,
     request: &DeleteRequest<'_>,
@@ -360,6 +362,7 @@ where
     let url = crate::get_slack_url_for_method("reminders.delete");
     client
         .send(&url, &params[..])
+        .await
         .map_err(DeleteError::Client)
         .and_then(|result| {
             serde_json::from_str::<DeleteResponse>(&result)
@@ -488,7 +491,7 @@ DeleteError::RequestTimeout => "request_timeout: The method was called via a POS
 ///
 /// Wraps https://api.slack.com/methods/reminders.info
 
-pub fn info<R>(
+pub async fn info<R>(
     client: &R,
     token: &str,
     request: &InfoRequest<'_>,
@@ -501,6 +504,7 @@ where
     let url = crate::get_slack_url_for_method("reminders.info");
     client
         .send(&url, &params[..])
+        .await
         .map_err(InfoError::Client)
         .and_then(|result| {
             serde_json::from_str::<InfoResponse>(&result)
@@ -630,7 +634,7 @@ InfoError::RequestTimeout => "request_timeout: The method was called via a POST 
 ///
 /// Wraps https://api.slack.com/methods/reminders.list
 
-pub fn list<R>(client: &R, token: &str) -> Result<ListResponse, ListError<R::Error>>
+pub async fn list<R>(client: &R, token: &str) -> Result<ListResponse, ListError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
@@ -638,6 +642,7 @@ where
     let url = crate::get_slack_url_for_method("reminders.list");
     client
         .send(&url, &params[..])
+        .await
         .map_err(ListError::Client)
         .and_then(|result| {
             serde_json::from_str::<ListResponse>(&result)

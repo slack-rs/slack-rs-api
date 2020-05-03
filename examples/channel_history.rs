@@ -2,7 +2,8 @@ use slack_api as slack;
 
 use std::env;
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // You can generate a legacy token to quickly test these apis
     // https://api.slack.com/custom-integrations/legacy-tokens
     let token = env::var("SLACK_API_TOKEN").map_err(|_| "SLACK_API_TOKEN env var must be set")?;
@@ -17,7 +18,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .ok_or("must specify channel id as argument e.g. C09123456")?,
             ..slack::channels::HistoryRequest::default()
         },
-    );
+    )
+    .await;
 
     if let Ok(response) = response {
         if let Some(messages) = response.messages {
