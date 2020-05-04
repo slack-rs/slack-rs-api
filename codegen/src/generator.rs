@@ -425,25 +425,22 @@ impl Response {
 
             impl<E: Error> fmt::Display for {error_type}<E> {{
                 fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {{
-                     write!(f, \"{{}}\", self.description())
+                    let d = match *self {{
+                        {description_matches}
+                        {error_type}::MalformedResponse(_, ref e) => return write!(f, \"{{}}\", e),
+                        {error_type}::Unknown(ref s) => return write!(f, \"{{}}\", s),
+                        {error_type}::Client(ref inner) => return write!(f, \"{{}}\", inner),
+                    }};
+                     write!(f, \"{{}}\", d)
                 }}
             }}
 
-            impl<E: Error> Error for {error_type}<E> {{
-                fn description(&self) -> &str {{
-                    match *self {{
-                        {description_matches}
-                        {error_type}::MalformedResponse(_, ref e) => e.description(),
-                        {error_type}::Unknown(ref s) => s,
-                        {error_type}::Client(ref inner) => inner.description()
-                    }}
-                }}
-
-                fn cause(&self) -> Option<&dyn Error> {{
+            impl<E: Error + 'static> Error for {error_type}<E> {{
+                fn source(&self) -> Option<&(dyn Error + 'static)> {{
                     match *self {{
                         {error_type}::MalformedResponse(_, ref e) => Some(e),
                         {error_type}::Client(ref inner) => Some(inner),
-                        _ => None
+                        _ => None,
                     }}
                 }}
             }}",
