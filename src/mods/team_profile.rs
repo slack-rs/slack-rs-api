@@ -150,13 +150,7 @@ impl<'a, E: Error> From<&'a str> for GetError<E> {
 
 impl<E: Error> fmt::Display for GetError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.description())
-    }
-}
-
-impl<E: Error> Error for GetError<E> {
-    fn description(&self) -> &str {
-        match *self {
+        let d = match *self {
                         GetError::NotAuthed => "not_authed: No authentication token provided.",
 GetError::InvalidAuth => "invalid_auth: Invalid authentication token.",
 GetError::AccountInactive => "account_inactive: Authentication token is for a deleted user or team.",
@@ -169,13 +163,16 @@ GetError::InvalidPostType => "invalid_post_type: The method was called via a POS
 GetError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
 GetError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
 GetError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        GetError::MalformedResponse(_, ref e) => e.description(),
-                        GetError::Unknown(ref s) => s,
-                        GetError::Client(ref inner) => inner.description()
-                    }
+                        GetError::MalformedResponse(_, ref e) => return write!(f, "{}", e),
+                        GetError::Unknown(ref s) => return write!(f, "{}", s),
+                        GetError::Client(ref inner) => return write!(f, "{}", inner),
+                    };
+        write!(f, "{}", d)
     }
+}
 
-    fn cause(&self) -> Option<&dyn Error> {
+impl<E: Error + 'static> Error for GetError<E> {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
         match *self {
             GetError::MalformedResponse(_, ref e) => Some(e),
             GetError::Client(ref inner) => Some(inner),

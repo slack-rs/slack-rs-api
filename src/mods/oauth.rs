@@ -127,13 +127,7 @@ impl<'a, E: Error> From<&'a str> for AccessError<E> {
 
 impl<E: Error> fmt::Display for AccessError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.description())
-    }
-}
-
-impl<E: Error> Error for AccessError<E> {
-    fn description(&self) -> &str {
-        match *self {
+        let d = match *self {
                         AccessError::InvalidClientId => "invalid_client_id: Value passed for client_id was invalid.",
 AccessError::BadClientSecret => "bad_client_secret: Value passed for client_secret was invalid.",
 AccessError::InvalidCode => "invalid_code: Value passed for code was invalid.",
@@ -146,13 +140,16 @@ AccessError::InvalidPostType => "invalid_post_type: The method was called via a 
 AccessError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
 AccessError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
 AccessError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        AccessError::MalformedResponse(_, ref e) => e.description(),
-                        AccessError::Unknown(ref s) => s,
-                        AccessError::Client(ref inner) => inner.description()
-                    }
+                        AccessError::MalformedResponse(_, ref e) => return write!(f, "{}", e),
+                        AccessError::Unknown(ref s) => return write!(f, "{}", s),
+                        AccessError::Client(ref inner) => return write!(f, "{}", inner),
+                    };
+        write!(f, "{}", d)
     }
+}
 
-    fn cause(&self) -> Option<&dyn Error> {
+impl<E: Error + 'static> Error for AccessError<E> {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
         match *self {
             AccessError::MalformedResponse(_, ref e) => Some(e),
             AccessError::Client(ref inner) => Some(inner),

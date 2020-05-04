@@ -119,13 +119,7 @@ impl<'a, E: Error> From<&'a str> for TestError<E> {
 
 impl<E: Error> fmt::Display for TestError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.description())
-    }
-}
-
-impl<E: Error> Error for TestError<E> {
-    fn description(&self) -> &str {
-        match *self {
+        let d = match *self {
                         TestError::InvalidArgName => "invalid_arg_name: The method was passed an argument whose name falls outside the bounds of common decency. This includes very long names and names with non-alphanumeric characters other than _. If you get this error, it is typically an indication that you have made a very malformed API call.",
 TestError::InvalidArrayArg => "invalid_array_arg: The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API.",
 TestError::InvalidCharset => "invalid_charset: The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1.",
@@ -134,13 +128,16 @@ TestError::InvalidPostType => "invalid_post_type: The method was called via a PO
 TestError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
 TestError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
 TestError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        TestError::MalformedResponse(_, ref e) => e.description(),
-                        TestError::Unknown(ref s) => s,
-                        TestError::Client(ref inner) => inner.description()
-                    }
+                        TestError::MalformedResponse(_, ref e) => return write!(f, "{}", e),
+                        TestError::Unknown(ref s) => return write!(f, "{}", s),
+                        TestError::Client(ref inner) => return write!(f, "{}", inner),
+                    };
+        write!(f, "{}", d)
     }
+}
 
-    fn cause(&self) -> Option<&dyn Error> {
+impl<E: Error + 'static> Error for TestError<E> {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
         match *self {
             TestError::MalformedResponse(_, ref e) => Some(e),
             TestError::Client(ref inner) => Some(inner),

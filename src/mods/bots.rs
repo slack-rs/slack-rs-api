@@ -146,13 +146,7 @@ impl<'a, E: Error> From<&'a str> for InfoError<E> {
 
 impl<E: Error> fmt::Display for InfoError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.description())
-    }
-}
-
-impl<E: Error> Error for InfoError<E> {
-    fn description(&self) -> &str {
-        match *self {
+        let d = match *self {
                         InfoError::BotNotFound => "bot_not_found: Value passed for bot was invalid.",
 InfoError::NotAuthed => "not_authed: No authentication token provided.",
 InfoError::InvalidAuth => "invalid_auth: Invalid authentication token.",
@@ -166,13 +160,16 @@ InfoError::InvalidPostType => "invalid_post_type: The method was called via a PO
 InfoError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
 InfoError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
 InfoError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        InfoError::MalformedResponse(_, ref e) => e.description(),
-                        InfoError::Unknown(ref s) => s,
-                        InfoError::Client(ref inner) => inner.description()
-                    }
+                        InfoError::MalformedResponse(_, ref e) => return write!(f, "{}", e),
+                        InfoError::Unknown(ref s) => return write!(f, "{}", s),
+                        InfoError::Client(ref inner) => return write!(f, "{}", inner),
+                    };
+        write!(f, "{}", d)
     }
+}
 
-    fn cause(&self) -> Option<&dyn Error> {
+impl<E: Error + 'static> Error for InfoError<E> {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
         match *self {
             InfoError::MalformedResponse(_, ref e) => Some(e),
             InfoError::Client(ref inner) => Some(inner),

@@ -165,13 +165,7 @@ impl<'a, E: Error> From<&'a str> for AllError<E> {
 
 impl<E: Error> fmt::Display for AllError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.description())
-    }
-}
-
-impl<E: Error> Error for AllError<E> {
-    fn description(&self) -> &str {
-        match *self {
+        let d = match *self {
                         AllError::NotAuthed => "not_authed: No authentication token provided.",
 AllError::InvalidAuth => "invalid_auth: Invalid authentication token.",
 AllError::AccountInactive => "account_inactive: Authentication token is for a deleted user or team.",
@@ -184,13 +178,16 @@ AllError::InvalidPostType => "invalid_post_type: The method was called via a POS
 AllError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
 AllError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
 AllError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        AllError::MalformedResponse(_, ref e) => e.description(),
-                        AllError::Unknown(ref s) => s,
-                        AllError::Client(ref inner) => inner.description()
-                    }
+                        AllError::MalformedResponse(_, ref e) => return write!(f, "{}", e),
+                        AllError::Unknown(ref s) => return write!(f, "{}", s),
+                        AllError::Client(ref inner) => return write!(f, "{}", inner),
+                    };
+        write!(f, "{}", d)
     }
+}
 
-    fn cause(&self) -> Option<&dyn Error> {
+impl<E: Error + 'static> Error for AllError<E> {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
         match *self {
             AllError::MalformedResponse(_, ref e) => Some(e),
             AllError::Client(ref inner) => Some(inner),
@@ -334,13 +331,7 @@ impl<'a, E: Error> From<&'a str> for FilesError<E> {
 
 impl<E: Error> fmt::Display for FilesError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.description())
-    }
-}
-
-impl<E: Error> Error for FilesError<E> {
-    fn description(&self) -> &str {
-        match *self {
+        let d = match *self {
                         FilesError::NotAuthed => "not_authed: No authentication token provided.",
 FilesError::InvalidAuth => "invalid_auth: Invalid authentication token.",
 FilesError::AccountInactive => "account_inactive: Authentication token is for a deleted user or team.",
@@ -353,13 +344,16 @@ FilesError::InvalidPostType => "invalid_post_type: The method was called via a P
 FilesError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
 FilesError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
 FilesError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        FilesError::MalformedResponse(_, ref e) => e.description(),
-                        FilesError::Unknown(ref s) => s,
-                        FilesError::Client(ref inner) => inner.description()
-                    }
+                        FilesError::MalformedResponse(_, ref e) => return write!(f, "{}", e),
+                        FilesError::Unknown(ref s) => return write!(f, "{}", s),
+                        FilesError::Client(ref inner) => return write!(f, "{}", inner),
+                    };
+        write!(f, "{}", d)
     }
+}
 
-    fn cause(&self) -> Option<&dyn Error> {
+impl<E: Error + 'static> Error for FilesError<E> {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
         match *self {
             FilesError::MalformedResponse(_, ref e) => Some(e),
             FilesError::Client(ref inner) => Some(inner),
@@ -503,13 +497,7 @@ impl<'a, E: Error> From<&'a str> for MessagesError<E> {
 
 impl<E: Error> fmt::Display for MessagesError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.description())
-    }
-}
-
-impl<E: Error> Error for MessagesError<E> {
-    fn description(&self) -> &str {
-        match *self {
+        let d = match *self {
                         MessagesError::NotAuthed => "not_authed: No authentication token provided.",
 MessagesError::InvalidAuth => "invalid_auth: Invalid authentication token.",
 MessagesError::AccountInactive => "account_inactive: Authentication token is for a deleted user or team.",
@@ -522,13 +510,16 @@ MessagesError::InvalidPostType => "invalid_post_type: The method was called via 
 MessagesError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
 MessagesError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
 MessagesError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        MessagesError::MalformedResponse(_, ref e) => e.description(),
-                        MessagesError::Unknown(ref s) => s,
-                        MessagesError::Client(ref inner) => inner.description()
-                    }
+                        MessagesError::MalformedResponse(_, ref e) => return write!(f, "{}", e),
+                        MessagesError::Unknown(ref s) => return write!(f, "{}", s),
+                        MessagesError::Client(ref inner) => return write!(f, "{}", inner),
+                    };
+        write!(f, "{}", d)
     }
+}
 
-    fn cause(&self) -> Option<&dyn Error> {
+impl<E: Error + 'static> Error for MessagesError<E> {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
         match *self {
             MessagesError::MalformedResponse(_, ref e) => Some(e),
             MessagesError::Client(ref inner) => Some(inner),

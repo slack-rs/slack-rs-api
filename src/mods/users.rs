@@ -120,13 +120,7 @@ impl<'a, E: Error> From<&'a str> for DeletePhotoError<E> {
 
 impl<E: Error> fmt::Display for DeletePhotoError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.description())
-    }
-}
-
-impl<E: Error> Error for DeletePhotoError<E> {
-    fn description(&self) -> &str {
-        match *self {
+        let d = match *self {
                         DeletePhotoError::NotAuthed => "not_authed: No authentication token provided.",
 DeletePhotoError::InvalidAuth => "invalid_auth: Invalid authentication token.",
 DeletePhotoError::AccountInactive => "account_inactive: Authentication token is for a deleted user or team.",
@@ -139,13 +133,16 @@ DeletePhotoError::InvalidPostType => "invalid_post_type: The method was called v
 DeletePhotoError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
 DeletePhotoError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
 DeletePhotoError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        DeletePhotoError::MalformedResponse(_, ref e) => e.description(),
-                        DeletePhotoError::Unknown(ref s) => s,
-                        DeletePhotoError::Client(ref inner) => inner.description()
-                    }
+                        DeletePhotoError::MalformedResponse(_, ref e) => return write!(f, "{}", e),
+                        DeletePhotoError::Unknown(ref s) => return write!(f, "{}", s),
+                        DeletePhotoError::Client(ref inner) => return write!(f, "{}", inner),
+                    };
+        write!(f, "{}", d)
     }
+}
 
-    fn cause(&self) -> Option<&dyn Error> {
+impl<E: Error + 'static> Error for DeletePhotoError<E> {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
         match *self {
             DeletePhotoError::MalformedResponse(_, ref e) => Some(e),
             DeletePhotoError::Client(ref inner) => Some(inner),
@@ -256,13 +253,7 @@ impl<'a, E: Error> From<&'a str> for GetPresenceError<E> {
 
 impl<E: Error> fmt::Display for GetPresenceError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.description())
-    }
-}
-
-impl<E: Error> Error for GetPresenceError<E> {
-    fn description(&self) -> &str {
-        match *self {
+        let d = match *self {
                         GetPresenceError::NotAuthed => "not_authed: No authentication token provided.",
 GetPresenceError::InvalidAuth => "invalid_auth: Invalid authentication token.",
 GetPresenceError::AccountInactive => "account_inactive: Authentication token is for a deleted user or team.",
@@ -274,13 +265,16 @@ GetPresenceError::InvalidPostType => "invalid_post_type: The method was called v
 GetPresenceError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
 GetPresenceError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
 GetPresenceError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        GetPresenceError::MalformedResponse(_, ref e) => e.description(),
-                        GetPresenceError::Unknown(ref s) => s,
-                        GetPresenceError::Client(ref inner) => inner.description()
-                    }
+                        GetPresenceError::MalformedResponse(_, ref e) => return write!(f, "{}", e),
+                        GetPresenceError::Unknown(ref s) => return write!(f, "{}", s),
+                        GetPresenceError::Client(ref inner) => return write!(f, "{}", inner),
+                    };
+        write!(f, "{}", d)
     }
+}
 
-    fn cause(&self) -> Option<&dyn Error> {
+impl<E: Error + 'static> Error for GetPresenceError<E> {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
         match *self {
             GetPresenceError::MalformedResponse(_, ref e) => Some(e),
             GetPresenceError::Client(ref inner) => Some(inner),
@@ -387,13 +381,7 @@ impl<'a, E: Error> From<&'a str> for IdentityError<E> {
 
 impl<E: Error> fmt::Display for IdentityError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.description())
-    }
-}
-
-impl<E: Error> Error for IdentityError<E> {
-    fn description(&self) -> &str {
-        match *self {
+        let d = match *self {
                         IdentityError::NotAuthed => "not_authed: No authentication token provided.",
 IdentityError::InvalidAuth => "invalid_auth: Invalid authentication token.",
 IdentityError::AccountInactive => "account_inactive: Authentication token is for a deleted user or team.",
@@ -406,13 +394,16 @@ IdentityError::InvalidPostType => "invalid_post_type: The method was called via 
 IdentityError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
 IdentityError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
 IdentityError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        IdentityError::MalformedResponse(_, ref e) => e.description(),
-                        IdentityError::Unknown(ref s) => s,
-                        IdentityError::Client(ref inner) => inner.description()
-                    }
+                        IdentityError::MalformedResponse(_, ref e) => return write!(f, "{}", e),
+                        IdentityError::Unknown(ref s) => return write!(f, "{}", s),
+                        IdentityError::Client(ref inner) => return write!(f, "{}", inner),
+                    };
+        write!(f, "{}", d)
     }
+}
 
-    fn cause(&self) -> Option<&dyn Error> {
+impl<E: Error + 'static> Error for IdentityError<E> {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
         match *self {
             IdentityError::MalformedResponse(_, ref e) => Some(e),
             IdentityError::Client(ref inner) => Some(inner),
@@ -529,13 +520,7 @@ impl<'a, E: Error> From<&'a str> for InfoError<E> {
 
 impl<E: Error> fmt::Display for InfoError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.description())
-    }
-}
-
-impl<E: Error> Error for InfoError<E> {
-    fn description(&self) -> &str {
-        match *self {
+        let d = match *self {
                         InfoError::UserNotFound => "user_not_found: Value passed for user was invalid.",
 InfoError::UserNotVisible => "user_not_visible: The requested user is not visible to the calling user",
 InfoError::NotAuthed => "not_authed: No authentication token provided.",
@@ -549,13 +534,16 @@ InfoError::InvalidPostType => "invalid_post_type: The method was called via a PO
 InfoError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
 InfoError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
 InfoError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        InfoError::MalformedResponse(_, ref e) => e.description(),
-                        InfoError::Unknown(ref s) => s,
-                        InfoError::Client(ref inner) => inner.description()
-                    }
+                        InfoError::MalformedResponse(_, ref e) => return write!(f, "{}", e),
+                        InfoError::Unknown(ref s) => return write!(f, "{}", s),
+                        InfoError::Client(ref inner) => return write!(f, "{}", inner),
+                    };
+        write!(f, "{}", d)
     }
+}
 
-    fn cause(&self) -> Option<&dyn Error> {
+impl<E: Error + 'static> Error for InfoError<E> {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
         match *self {
             InfoError::MalformedResponse(_, ref e) => Some(e),
             InfoError::Client(ref inner) => Some(inner),
@@ -671,13 +659,7 @@ impl<'a, E: Error> From<&'a str> for ListError<E> {
 
 impl<E: Error> fmt::Display for ListError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.description())
-    }
-}
-
-impl<E: Error> Error for ListError<E> {
-    fn description(&self) -> &str {
-        match *self {
+        let d = match *self {
                         ListError::NotAuthed => "not_authed: No authentication token provided.",
 ListError::InvalidAuth => "invalid_auth: Invalid authentication token.",
 ListError::AccountInactive => "account_inactive: Authentication token is for a deleted user or team.",
@@ -689,13 +671,16 @@ ListError::InvalidPostType => "invalid_post_type: The method was called via a PO
 ListError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
 ListError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
 ListError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        ListError::MalformedResponse(_, ref e) => e.description(),
-                        ListError::Unknown(ref s) => s,
-                        ListError::Client(ref inner) => inner.description()
-                    }
+                        ListError::MalformedResponse(_, ref e) => return write!(f, "{}", e),
+                        ListError::Unknown(ref s) => return write!(f, "{}", s),
+                        ListError::Client(ref inner) => return write!(f, "{}", inner),
+                    };
+        write!(f, "{}", d)
     }
+}
 
-    fn cause(&self) -> Option<&dyn Error> {
+impl<E: Error + 'static> Error for ListError<E> {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
         match *self {
             ListError::MalformedResponse(_, ref e) => Some(e),
             ListError::Client(ref inner) => Some(inner),
@@ -797,13 +782,7 @@ impl<'a, E: Error> From<&'a str> for SetActiveError<E> {
 
 impl<E: Error> fmt::Display for SetActiveError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.description())
-    }
-}
-
-impl<E: Error> Error for SetActiveError<E> {
-    fn description(&self) -> &str {
-        match *self {
+        let d = match *self {
                         SetActiveError::NotAuthed => "not_authed: No authentication token provided.",
 SetActiveError::InvalidAuth => "invalid_auth: Invalid authentication token.",
 SetActiveError::AccountInactive => "account_inactive: Authentication token is for a deleted user or team.",
@@ -815,13 +794,16 @@ SetActiveError::InvalidPostType => "invalid_post_type: The method was called via
 SetActiveError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
 SetActiveError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
 SetActiveError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        SetActiveError::MalformedResponse(_, ref e) => e.description(),
-                        SetActiveError::Unknown(ref s) => s,
-                        SetActiveError::Client(ref inner) => inner.description()
-                    }
+                        SetActiveError::MalformedResponse(_, ref e) => return write!(f, "{}", e),
+                        SetActiveError::Unknown(ref s) => return write!(f, "{}", s),
+                        SetActiveError::Client(ref inner) => return write!(f, "{}", inner),
+                    };
+        write!(f, "{}", d)
     }
+}
 
-    fn cause(&self) -> Option<&dyn Error> {
+impl<E: Error + 'static> Error for SetActiveError<E> {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
         match *self {
             SetActiveError::MalformedResponse(_, ref e) => Some(e),
             SetActiveError::Client(ref inner) => Some(inner),
@@ -934,13 +916,7 @@ impl<'a, E: Error> From<&'a str> for SetPresenceError<E> {
 
 impl<E: Error> fmt::Display for SetPresenceError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.description())
-    }
-}
-
-impl<E: Error> Error for SetPresenceError<E> {
-    fn description(&self) -> &str {
-        match *self {
+        let d = match *self {
                         SetPresenceError::InvalidPresence => "invalid_presence: Value passed for presence was invalid.",
 SetPresenceError::NotAuthed => "not_authed: No authentication token provided.",
 SetPresenceError::InvalidAuth => "invalid_auth: Invalid authentication token.",
@@ -953,13 +929,16 @@ SetPresenceError::InvalidPostType => "invalid_post_type: The method was called v
 SetPresenceError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
 SetPresenceError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
 SetPresenceError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        SetPresenceError::MalformedResponse(_, ref e) => e.description(),
-                        SetPresenceError::Unknown(ref s) => s,
-                        SetPresenceError::Client(ref inner) => inner.description()
-                    }
+                        SetPresenceError::MalformedResponse(_, ref e) => return write!(f, "{}", e),
+                        SetPresenceError::Unknown(ref s) => return write!(f, "{}", s),
+                        SetPresenceError::Client(ref inner) => return write!(f, "{}", inner),
+                    };
+        write!(f, "{}", d)
     }
+}
 
-    fn cause(&self) -> Option<&dyn Error> {
+impl<E: Error + 'static> Error for SetPresenceError<E> {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
         match *self {
             SetPresenceError::MalformedResponse(_, ref e) => Some(e),
             SetPresenceError::Client(ref inner) => Some(inner),

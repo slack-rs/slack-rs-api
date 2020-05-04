@@ -120,13 +120,7 @@ impl<'a, E: Error> From<&'a str> for EndDndError<E> {
 
 impl<E: Error> fmt::Display for EndDndError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.description())
-    }
-}
-
-impl<E: Error> Error for EndDndError<E> {
-    fn description(&self) -> &str {
-        match *self {
+        let d = match *self {
                         EndDndError::UnknownError => "unknown_error: There was a mysterious problem ending the user's Do Not Disturb session",
 EndDndError::NotAuthed => "not_authed: No authentication token provided.",
 EndDndError::InvalidAuth => "invalid_auth: Invalid authentication token.",
@@ -140,13 +134,16 @@ EndDndError::InvalidPostType => "invalid_post_type: The method was called via a 
 EndDndError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
 EndDndError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
 EndDndError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        EndDndError::MalformedResponse(_, ref e) => e.description(),
-                        EndDndError::Unknown(ref s) => s,
-                        EndDndError::Client(ref inner) => inner.description()
-                    }
+                        EndDndError::MalformedResponse(_, ref e) => return write!(f, "{}", e),
+                        EndDndError::Unknown(ref s) => return write!(f, "{}", s),
+                        EndDndError::Client(ref inner) => return write!(f, "{}", inner),
+                    };
+        write!(f, "{}", d)
     }
+}
 
-    fn cause(&self) -> Option<&dyn Error> {
+impl<E: Error + 'static> Error for EndDndError<E> {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
         match *self {
             EndDndError::MalformedResponse(_, ref e) => Some(e),
             EndDndError::Client(ref inner) => Some(inner),
@@ -261,13 +258,7 @@ impl<'a, E: Error> From<&'a str> for EndSnoozeError<E> {
 
 impl<E: Error> fmt::Display for EndSnoozeError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.description())
-    }
-}
-
-impl<E: Error> Error for EndSnoozeError<E> {
-    fn description(&self) -> &str {
-        match *self {
+        let d = match *self {
                         EndSnoozeError::SnoozeNotActive => "snooze_not_active: Snooze is not active for this user and cannot be ended",
 EndSnoozeError::SnoozeEndFailed => "snooze_end_failed: There was a problem setting the user's Do Not Disturb status",
 EndSnoozeError::NotAuthed => "not_authed: No authentication token provided.",
@@ -282,13 +273,16 @@ EndSnoozeError::InvalidPostType => "invalid_post_type: The method was called via
 EndSnoozeError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
 EndSnoozeError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
 EndSnoozeError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        EndSnoozeError::MalformedResponse(_, ref e) => e.description(),
-                        EndSnoozeError::Unknown(ref s) => s,
-                        EndSnoozeError::Client(ref inner) => inner.description()
-                    }
+                        EndSnoozeError::MalformedResponse(_, ref e) => return write!(f, "{}", e),
+                        EndSnoozeError::Unknown(ref s) => return write!(f, "{}", s),
+                        EndSnoozeError::Client(ref inner) => return write!(f, "{}", inner),
+                    };
+        write!(f, "{}", d)
     }
+}
 
-    fn cause(&self) -> Option<&dyn Error> {
+impl<E: Error + 'static> Error for EndSnoozeError<E> {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
         match *self {
             EndSnoozeError::MalformedResponse(_, ref e) => Some(e),
             EndSnoozeError::Client(ref inner) => Some(inner),
@@ -410,13 +404,7 @@ impl<'a, E: Error> From<&'a str> for InfoError<E> {
 
 impl<E: Error> fmt::Display for InfoError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.description())
-    }
-}
-
-impl<E: Error> Error for InfoError<E> {
-    fn description(&self) -> &str {
-        match *self {
+        let d = match *self {
                         InfoError::UserNotFound => "user_not_found: Value passed for user was invalid.",
 InfoError::NotAuthed => "not_authed: No authentication token provided.",
 InfoError::InvalidAuth => "invalid_auth: Invalid authentication token.",
@@ -429,13 +417,16 @@ InfoError::InvalidPostType => "invalid_post_type: The method was called via a PO
 InfoError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
 InfoError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
 InfoError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        InfoError::MalformedResponse(_, ref e) => e.description(),
-                        InfoError::Unknown(ref s) => s,
-                        InfoError::Client(ref inner) => inner.description()
-                    }
+                        InfoError::MalformedResponse(_, ref e) => return write!(f, "{}", e),
+                        InfoError::Unknown(ref s) => return write!(f, "{}", s),
+                        InfoError::Client(ref inner) => return write!(f, "{}", inner),
+                    };
+        write!(f, "{}", d)
     }
+}
 
-    fn cause(&self) -> Option<&dyn Error> {
+impl<E: Error + 'static> Error for InfoError<E> {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
         match *self {
             InfoError::MalformedResponse(_, ref e) => Some(e),
             InfoError::Client(ref inner) => Some(inner),
@@ -561,13 +552,7 @@ impl<'a, E: Error> From<&'a str> for SetSnoozeError<E> {
 
 impl<E: Error> fmt::Display for SetSnoozeError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.description())
-    }
-}
-
-impl<E: Error> Error for SetSnoozeError<E> {
-    fn description(&self) -> &str {
-        match *self {
+        let d = match *self {
                         SetSnoozeError::MissingDuration => "missing_duration: No value provided for num_minutes",
 SetSnoozeError::SnoozeFailed => "snooze_failed: There was a problem setting the user's Do Not Disturb status",
 SetSnoozeError::NotAuthed => "not_authed: No authentication token provided.",
@@ -582,13 +567,16 @@ SetSnoozeError::InvalidPostType => "invalid_post_type: The method was called via
 SetSnoozeError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
 SetSnoozeError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
 SetSnoozeError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        SetSnoozeError::MalformedResponse(_, ref e) => e.description(),
-                        SetSnoozeError::Unknown(ref s) => s,
-                        SetSnoozeError::Client(ref inner) => inner.description()
-                    }
+                        SetSnoozeError::MalformedResponse(_, ref e) => return write!(f, "{}", e),
+                        SetSnoozeError::Unknown(ref s) => return write!(f, "{}", s),
+                        SetSnoozeError::Client(ref inner) => return write!(f, "{}", inner),
+                    };
+        write!(f, "{}", d)
     }
+}
 
-    fn cause(&self) -> Option<&dyn Error> {
+impl<E: Error + 'static> Error for SetSnoozeError<E> {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
         match *self {
             SetSnoozeError::MalformedResponse(_, ref e) => Some(e),
             SetSnoozeError::Client(ref inner) => Some(inner),
@@ -702,13 +690,7 @@ impl<'a, E: Error> From<&'a str> for TeamInfoError<E> {
 
 impl<E: Error> fmt::Display for TeamInfoError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.description())
-    }
-}
-
-impl<E: Error> Error for TeamInfoError<E> {
-    fn description(&self) -> &str {
-        match *self {
+        let d = match *self {
                         TeamInfoError::NotAuthed => "not_authed: No authentication token provided.",
 TeamInfoError::InvalidAuth => "invalid_auth: Invalid authentication token.",
 TeamInfoError::AccountInactive => "account_inactive: Authentication token is for a deleted user or team.",
@@ -720,13 +702,16 @@ TeamInfoError::InvalidPostType => "invalid_post_type: The method was called via 
 TeamInfoError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
 TeamInfoError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
 TeamInfoError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        TeamInfoError::MalformedResponse(_, ref e) => e.description(),
-                        TeamInfoError::Unknown(ref s) => s,
-                        TeamInfoError::Client(ref inner) => inner.description()
-                    }
+                        TeamInfoError::MalformedResponse(_, ref e) => return write!(f, "{}", e),
+                        TeamInfoError::Unknown(ref s) => return write!(f, "{}", s),
+                        TeamInfoError::Client(ref inner) => return write!(f, "{}", inner),
+                    };
+        write!(f, "{}", d)
     }
+}
 
-    fn cause(&self) -> Option<&dyn Error> {
+impl<E: Error + 'static> Error for TeamInfoError<E> {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
         match *self {
             TeamInfoError::MalformedResponse(_, ref e) => Some(e),
             TeamInfoError::Client(ref inner) => Some(inner),
