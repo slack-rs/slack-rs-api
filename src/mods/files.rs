@@ -134,13 +134,7 @@ impl<'a, E: Error> From<&'a str> for DeleteError<E> {
 
 impl<E: Error> fmt::Display for DeleteError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.description())
-    }
-}
-
-impl<E: Error> Error for DeleteError<E> {
-    fn description(&self) -> &str {
-        match *self {
+        let d = match *self {
                         DeleteError::FileNotFound => "file_not_found: The file does not exist, or is not visible to the calling user.",
 DeleteError::FileDeleted => "file_deleted: The file has already been deleted.",
 DeleteError::CantDeleteFile => "cant_delete_file: Authenticated user does not have permission to delete this file.",
@@ -155,13 +149,16 @@ DeleteError::InvalidPostType => "invalid_post_type: The method was called via a 
 DeleteError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
 DeleteError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
 DeleteError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        DeleteError::MalformedResponse(_, ref e) => e.description(),
-                        DeleteError::Unknown(ref s) => s,
-                        DeleteError::Client(ref inner) => inner.description()
-                    }
+                        DeleteError::MalformedResponse(_, ref e) => return write!(f, "{}", e),
+                        DeleteError::Unknown(ref s) => return write!(f, "{}", s),
+                        DeleteError::Client(ref inner) => return write!(f, "{}", inner),
+                    };
+        write!(f, "{}", d)
     }
+}
 
-    fn cause(&self) -> Option<&dyn Error> {
+impl<E: Error + 'static> Error for DeleteError<E> {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
         match *self {
             DeleteError::MalformedResponse(_, ref e) => Some(e),
             DeleteError::Client(ref inner) => Some(inner),
@@ -291,13 +288,7 @@ impl<'a, E: Error> From<&'a str> for InfoError<E> {
 
 impl<E: Error> fmt::Display for InfoError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.description())
-    }
-}
-
-impl<E: Error> Error for InfoError<E> {
-    fn description(&self) -> &str {
-        match *self {
+        let d = match *self {
                         InfoError::FileNotFound => "file_not_found: Value passed for file was invalid",
 InfoError::FileDeleted => "file_deleted: The requested file has been deleted",
 InfoError::NotAuthed => "not_authed: No authentication token provided.",
@@ -311,13 +302,16 @@ InfoError::InvalidPostType => "invalid_post_type: The method was called via a PO
 InfoError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
 InfoError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
 InfoError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        InfoError::MalformedResponse(_, ref e) => e.description(),
-                        InfoError::Unknown(ref s) => s,
-                        InfoError::Client(ref inner) => inner.description()
-                    }
+                        InfoError::MalformedResponse(_, ref e) => return write!(f, "{}", e),
+                        InfoError::Unknown(ref s) => return write!(f, "{}", s),
+                        InfoError::Client(ref inner) => return write!(f, "{}", inner),
+                    };
+        write!(f, "{}", d)
     }
+}
 
-    fn cause(&self) -> Option<&dyn Error> {
+impl<E: Error + 'static> Error for InfoError<E> {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
         match *self {
             InfoError::MalformedResponse(_, ref e) => Some(e),
             InfoError::Client(ref inner) => Some(inner),
@@ -475,13 +469,7 @@ impl<'a, E: Error> From<&'a str> for ListError<E> {
 
 impl<E: Error> fmt::Display for ListError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.description())
-    }
-}
-
-impl<E: Error> Error for ListError<E> {
-    fn description(&self) -> &str {
-        match *self {
+        let d = match *self {
                         ListError::UserNotFound => "user_not_found: Value passed for user was invalid",
 ListError::UnknownType => "unknown_type: Value passed for types was invalid",
 ListError::NotAuthed => "not_authed: No authentication token provided.",
@@ -496,13 +484,16 @@ ListError::InvalidPostType => "invalid_post_type: The method was called via a PO
 ListError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
 ListError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
 ListError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        ListError::MalformedResponse(_, ref e) => e.description(),
-                        ListError::Unknown(ref s) => s,
-                        ListError::Client(ref inner) => inner.description()
-                    }
+                        ListError::MalformedResponse(_, ref e) => return write!(f, "{}", e),
+                        ListError::Unknown(ref s) => return write!(f, "{}", s),
+                        ListError::Client(ref inner) => return write!(f, "{}", inner),
+                    };
+        write!(f, "{}", d)
     }
+}
 
-    fn cause(&self) -> Option<&dyn Error> {
+impl<E: Error + 'static> Error for ListError<E> {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
         match *self {
             ListError::MalformedResponse(_, ref e) => Some(e),
             ListError::Client(ref inner) => Some(inner),
@@ -624,13 +615,7 @@ impl<'a, E: Error> From<&'a str> for RevokePublicURLError<E> {
 
 impl<E: Error> fmt::Display for RevokePublicURLError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.description())
-    }
-}
-
-impl<E: Error> Error for RevokePublicURLError<E> {
-    fn description(&self) -> &str {
-        match *self {
+        let d = match *self {
                         RevokePublicURLError::FileNotFound => "file_not_found: Value passed for file was invalid",
 RevokePublicURLError::NotAuthed => "not_authed: No authentication token provided.",
 RevokePublicURLError::InvalidAuth => "invalid_auth: Invalid authentication token.",
@@ -645,13 +630,16 @@ RevokePublicURLError::InvalidPostType => "invalid_post_type: The method was call
 RevokePublicURLError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
 RevokePublicURLError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
 RevokePublicURLError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        RevokePublicURLError::MalformedResponse(_, ref e) => e.description(),
-                        RevokePublicURLError::Unknown(ref s) => s,
-                        RevokePublicURLError::Client(ref inner) => inner.description()
-                    }
+                        RevokePublicURLError::MalformedResponse(_, ref e) => return write!(f, "{}", e),
+                        RevokePublicURLError::Unknown(ref s) => return write!(f, "{}", s),
+                        RevokePublicURLError::Client(ref inner) => return write!(f, "{}", inner),
+                    };
+        write!(f, "{}", d)
     }
+}
 
-    fn cause(&self) -> Option<&dyn Error> {
+impl<E: Error + 'static> Error for RevokePublicURLError<E> {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
         match *self {
             RevokePublicURLError::MalformedResponse(_, ref e) => Some(e),
             RevokePublicURLError::Client(ref inner) => Some(inner),
@@ -776,13 +764,7 @@ impl<'a, E: Error> From<&'a str> for SharedPublicURLError<E> {
 
 impl<E: Error> fmt::Display for SharedPublicURLError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.description())
-    }
-}
-
-impl<E: Error> Error for SharedPublicURLError<E> {
-    fn description(&self) -> &str {
-        match *self {
+        let d = match *self {
                         SharedPublicURLError::FileNotFound => "file_not_found: Value passed for file was invalid",
 SharedPublicURLError::NotAllowed => "not_allowed: Public sharing has been disabled for this team",
 SharedPublicURLError::NotAuthed => "not_authed: No authentication token provided.",
@@ -798,13 +780,16 @@ SharedPublicURLError::InvalidPostType => "invalid_post_type: The method was call
 SharedPublicURLError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
 SharedPublicURLError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
 SharedPublicURLError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        SharedPublicURLError::MalformedResponse(_, ref e) => e.description(),
-                        SharedPublicURLError::Unknown(ref s) => s,
-                        SharedPublicURLError::Client(ref inner) => inner.description()
-                    }
+                        SharedPublicURLError::MalformedResponse(_, ref e) => return write!(f, "{}", e),
+                        SharedPublicURLError::Unknown(ref s) => return write!(f, "{}", s),
+                        SharedPublicURLError::Client(ref inner) => return write!(f, "{}", inner),
+                    };
+        write!(f, "{}", d)
     }
+}
 
-    fn cause(&self) -> Option<&dyn Error> {
+impl<E: Error + 'static> Error for SharedPublicURLError<E> {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
         match *self {
             SharedPublicURLError::MalformedResponse(_, ref e) => Some(e),
             SharedPublicURLError::Client(ref inner) => Some(inner),

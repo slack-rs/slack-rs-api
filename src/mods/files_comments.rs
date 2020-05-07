@@ -139,13 +139,7 @@ impl<'a, E: Error> From<&'a str> for AddError<E> {
 
 impl<E: Error> fmt::Display for AddError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.description())
-    }
-}
-
-impl<E: Error> Error for AddError<E> {
-    fn description(&self) -> &str {
-        match *self {
+        let d = match *self {
                         AddError::FileNotFound => "file_not_found: The requested file could not be found.",
 AddError::FileDeleted => "file_deleted: The requested file was previously deleted.",
 AddError::NoComment => "no_comment: The comment field was empty.",
@@ -160,13 +154,16 @@ AddError::InvalidPostType => "invalid_post_type: The method was called via a POS
 AddError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
 AddError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
 AddError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        AddError::MalformedResponse(_, ref e) => e.description(),
-                        AddError::Unknown(ref s) => s,
-                        AddError::Client(ref inner) => inner.description()
-                    }
+                        AddError::MalformedResponse(_, ref e) => return write!(f, "{}", e),
+                        AddError::Unknown(ref s) => return write!(f, "{}", s),
+                        AddError::Client(ref inner) => return write!(f, "{}", inner),
+                    };
+        write!(f, "{}", d)
     }
+}
 
-    fn cause(&self) -> Option<&dyn Error> {
+impl<E: Error + 'static> Error for AddError<E> {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
         match *self {
             AddError::MalformedResponse(_, ref e) => Some(e),
             AddError::Client(ref inner) => Some(inner),
@@ -291,13 +288,7 @@ impl<'a, E: Error> From<&'a str> for DeleteError<E> {
 
 impl<E: Error> fmt::Display for DeleteError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.description())
-    }
-}
-
-impl<E: Error> Error for DeleteError<E> {
-    fn description(&self) -> &str {
-        match *self {
+        let d = match *self {
                         DeleteError::FileNotFound => "file_not_found: The requested file could not be found.",
 DeleteError::FileDeleted => "file_deleted: The requested file was previously deleted.",
 DeleteError::CantDelete => "cant_delete: The requested comment could not be deleted.",
@@ -312,13 +303,16 @@ DeleteError::InvalidPostType => "invalid_post_type: The method was called via a 
 DeleteError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
 DeleteError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
 DeleteError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        DeleteError::MalformedResponse(_, ref e) => e.description(),
-                        DeleteError::Unknown(ref s) => s,
-                        DeleteError::Client(ref inner) => inner.description()
-                    }
+                        DeleteError::MalformedResponse(_, ref e) => return write!(f, "{}", e),
+                        DeleteError::Unknown(ref s) => return write!(f, "{}", s),
+                        DeleteError::Client(ref inner) => return write!(f, "{}", inner),
+                    };
+        write!(f, "{}", d)
     }
+}
 
-    fn cause(&self) -> Option<&dyn Error> {
+impl<E: Error + 'static> Error for DeleteError<E> {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
         match *self {
             DeleteError::MalformedResponse(_, ref e) => Some(e),
             DeleteError::Client(ref inner) => Some(inner),
@@ -453,13 +447,7 @@ impl<'a, E: Error> From<&'a str> for EditError<E> {
 
 impl<E: Error> fmt::Display for EditError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.description())
-    }
-}
-
-impl<E: Error> Error for EditError<E> {
-    fn description(&self) -> &str {
-        match *self {
+        let d = match *self {
                         EditError::FileNotFound => "file_not_found: The requested file could not be found.",
 EditError::FileDeleted => "file_deleted: The requested file was previously deleted.",
 EditError::NoComment => "no_comment: The comment field was empty.",
@@ -476,13 +464,16 @@ EditError::InvalidPostType => "invalid_post_type: The method was called via a PO
 EditError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
 EditError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
 EditError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        EditError::MalformedResponse(_, ref e) => e.description(),
-                        EditError::Unknown(ref s) => s,
-                        EditError::Client(ref inner) => inner.description()
-                    }
+                        EditError::MalformedResponse(_, ref e) => return write!(f, "{}", e),
+                        EditError::Unknown(ref s) => return write!(f, "{}", s),
+                        EditError::Client(ref inner) => return write!(f, "{}", inner),
+                    };
+        write!(f, "{}", d)
     }
+}
 
-    fn cause(&self) -> Option<&dyn Error> {
+impl<E: Error + 'static> Error for EditError<E> {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
         match *self {
             EditError::MalformedResponse(_, ref e) => Some(e),
             EditError::Client(ref inner) => Some(inner),

@@ -131,13 +131,7 @@ impl<'a, E: Error> From<&'a str> for ConnectError<E> {
 
 impl<E: Error> fmt::Display for ConnectError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.description())
-    }
-}
-
-impl<E: Error> Error for ConnectError<E> {
-    fn description(&self) -> &str {
-        match *self {
+        let d = match *self {
                         ConnectError::NotAuthed => "not_authed: No authentication token provided.",
 ConnectError::InvalidAuth => "invalid_auth: Invalid authentication token.",
 ConnectError::AccountInactive => "account_inactive: Authentication token is for a deleted user or team.",
@@ -149,13 +143,16 @@ ConnectError::InvalidPostType => "invalid_post_type: The method was called via a
 ConnectError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
 ConnectError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
 ConnectError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        ConnectError::MalformedResponse(_, ref e) => e.description(),
-                        ConnectError::Unknown(ref s) => s,
-                        ConnectError::Client(ref inner) => inner.description()
-                    }
+                        ConnectError::MalformedResponse(_, ref e) => return write!(f, "{}", e),
+                        ConnectError::Unknown(ref s) => return write!(f, "{}", s),
+                        ConnectError::Client(ref inner) => return write!(f, "{}", inner),
+                    };
+        write!(f, "{}", d)
     }
+}
 
-    fn cause(&self) -> Option<&dyn Error> {
+impl<E: Error + 'static> Error for ConnectError<E> {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
         match *self {
             ConnectError::MalformedResponse(_, ref e) => Some(e),
             ConnectError::Client(ref inner) => Some(inner),
@@ -306,13 +303,7 @@ impl<'a, E: Error> From<&'a str> for StartError<E> {
 
 impl<E: Error> fmt::Display for StartError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.description())
-    }
-}
-
-impl<E: Error> Error for StartError<E> {
-    fn description(&self) -> &str {
-        match *self {
+        let d = match *self {
                         StartError::MigrationInProgress => "migration_in_progress: Team is being migrated between servers. See the team_migration_started event documentation for details.",
 StartError::NotAuthed => "not_authed: No authentication token provided.",
 StartError::InvalidAuth => "invalid_auth: Invalid authentication token.",
@@ -325,13 +316,16 @@ StartError::InvalidPostType => "invalid_post_type: The method was called via a P
 StartError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
 StartError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
 StartError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        StartError::MalformedResponse(_, ref e) => e.description(),
-                        StartError::Unknown(ref s) => s,
-                        StartError::Client(ref inner) => inner.description()
-                    }
+                        StartError::MalformedResponse(_, ref e) => return write!(f, "{}", e),
+                        StartError::Unknown(ref s) => return write!(f, "{}", s),
+                        StartError::Client(ref inner) => return write!(f, "{}", inner),
+                    };
+        write!(f, "{}", d)
     }
+}
 
-    fn cause(&self) -> Option<&dyn Error> {
+impl<E: Error + 'static> Error for StartError<E> {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
         match *self {
             StartError::MalformedResponse(_, ref e) => Some(e),
             StartError::Client(ref inner) => Some(inner),

@@ -160,13 +160,7 @@ impl<'a, E: Error> From<&'a str> for AccessLogsError<E> {
 
 impl<E: Error> fmt::Display for AccessLogsError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.description())
-    }
-}
-
-impl<E: Error> Error for AccessLogsError<E> {
-    fn description(&self) -> &str {
-        match *self {
+        let d = match *self {
                         AccessLogsError::PaidOnly => "paid_only: This is only available to paid teams.",
 AccessLogsError::OverPaginationLimit => "over_pagination_limit: It is not possible to request more than 1000 items per page or more than 100 pages.",
 AccessLogsError::NotAuthed => "not_authed: No authentication token provided.",
@@ -181,13 +175,16 @@ AccessLogsError::InvalidPostType => "invalid_post_type: The method was called vi
 AccessLogsError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
 AccessLogsError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
 AccessLogsError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        AccessLogsError::MalformedResponse(_, ref e) => e.description(),
-                        AccessLogsError::Unknown(ref s) => s,
-                        AccessLogsError::Client(ref inner) => inner.description()
-                    }
+                        AccessLogsError::MalformedResponse(_, ref e) => return write!(f, "{}", e),
+                        AccessLogsError::Unknown(ref s) => return write!(f, "{}", s),
+                        AccessLogsError::Client(ref inner) => return write!(f, "{}", inner),
+                    };
+        write!(f, "{}", d)
     }
+}
 
-    fn cause(&self) -> Option<&dyn Error> {
+impl<E: Error + 'static> Error for AccessLogsError<E> {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
         match *self {
             AccessLogsError::MalformedResponse(_, ref e) => Some(e),
             AccessLogsError::Client(ref inner) => Some(inner),
@@ -307,13 +304,7 @@ impl<'a, E: Error> From<&'a str> for BillableInfoError<E> {
 
 impl<E: Error> fmt::Display for BillableInfoError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.description())
-    }
-}
-
-impl<E: Error> Error for BillableInfoError<E> {
-    fn description(&self) -> &str {
-        match *self {
+        let d = match *self {
                         BillableInfoError::UserNotFound => "user_not_found: Unable to find the requested user.",
 BillableInfoError::NotAuthed => "not_authed: No authentication token provided.",
 BillableInfoError::InvalidAuth => "invalid_auth: Invalid authentication token.",
@@ -327,13 +318,16 @@ BillableInfoError::InvalidPostType => "invalid_post_type: The method was called 
 BillableInfoError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
 BillableInfoError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
 BillableInfoError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        BillableInfoError::MalformedResponse(_, ref e) => e.description(),
-                        BillableInfoError::Unknown(ref s) => s,
-                        BillableInfoError::Client(ref inner) => inner.description()
-                    }
+                        BillableInfoError::MalformedResponse(_, ref e) => return write!(f, "{}", e),
+                        BillableInfoError::Unknown(ref s) => return write!(f, "{}", s),
+                        BillableInfoError::Client(ref inner) => return write!(f, "{}", inner),
+                    };
+        write!(f, "{}", d)
     }
+}
 
-    fn cause(&self) -> Option<&dyn Error> {
+impl<E: Error + 'static> Error for BillableInfoError<E> {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
         match *self {
             BillableInfoError::MalformedResponse(_, ref e) => Some(e),
             BillableInfoError::Client(ref inner) => Some(inner),
@@ -433,13 +427,7 @@ impl<'a, E: Error> From<&'a str> for InfoError<E> {
 
 impl<E: Error> fmt::Display for InfoError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.description())
-    }
-}
-
-impl<E: Error> Error for InfoError<E> {
-    fn description(&self) -> &str {
-        match *self {
+        let d = match *self {
                         InfoError::NotAuthed => "not_authed: No authentication token provided.",
 InfoError::InvalidAuth => "invalid_auth: Invalid authentication token.",
 InfoError::AccountInactive => "account_inactive: Authentication token is for a deleted user or team.",
@@ -451,13 +439,16 @@ InfoError::InvalidPostType => "invalid_post_type: The method was called via a PO
 InfoError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
 InfoError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
 InfoError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        InfoError::MalformedResponse(_, ref e) => e.description(),
-                        InfoError::Unknown(ref s) => s,
-                        InfoError::Client(ref inner) => inner.description()
-                    }
+                        InfoError::MalformedResponse(_, ref e) => return write!(f, "{}", e),
+                        InfoError::Unknown(ref s) => return write!(f, "{}", s),
+                        InfoError::Client(ref inner) => return write!(f, "{}", inner),
+                    };
+        write!(f, "{}", d)
     }
+}
 
-    fn cause(&self) -> Option<&dyn Error> {
+impl<E: Error + 'static> Error for InfoError<E> {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
         match *self {
             InfoError::MalformedResponse(_, ref e) => Some(e),
             InfoError::Client(ref inner) => Some(inner),
@@ -613,13 +604,7 @@ impl<'a, E: Error> From<&'a str> for IntegrationLogsError<E> {
 
 impl<E: Error> fmt::Display for IntegrationLogsError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.description())
-    }
-}
-
-impl<E: Error> Error for IntegrationLogsError<E> {
-    fn description(&self) -> &str {
-        match *self {
+        let d = match *self {
                         IntegrationLogsError::NotAuthed => "not_authed: No authentication token provided.",
 IntegrationLogsError::InvalidAuth => "invalid_auth: Invalid authentication token.",
 IntegrationLogsError::AccountInactive => "account_inactive: Authentication token is for a deleted user or team.",
@@ -632,13 +617,16 @@ IntegrationLogsError::InvalidPostType => "invalid_post_type: The method was call
 IntegrationLogsError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
 IntegrationLogsError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
 IntegrationLogsError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        IntegrationLogsError::MalformedResponse(_, ref e) => e.description(),
-                        IntegrationLogsError::Unknown(ref s) => s,
-                        IntegrationLogsError::Client(ref inner) => inner.description()
-                    }
+                        IntegrationLogsError::MalformedResponse(_, ref e) => return write!(f, "{}", e),
+                        IntegrationLogsError::Unknown(ref s) => return write!(f, "{}", s),
+                        IntegrationLogsError::Client(ref inner) => return write!(f, "{}", inner),
+                    };
+        write!(f, "{}", d)
     }
+}
 
-    fn cause(&self) -> Option<&dyn Error> {
+impl<E: Error + 'static> Error for IntegrationLogsError<E> {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
         match *self {
             IntegrationLogsError::MalformedResponse(_, ref e) => Some(e),
             IntegrationLogsError::Client(ref inner) => Some(inner),

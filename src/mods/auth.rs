@@ -129,13 +129,7 @@ impl<'a, E: Error> From<&'a str> for RevokeError<E> {
 
 impl<E: Error> fmt::Display for RevokeError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.description())
-    }
-}
-
-impl<E: Error> Error for RevokeError<E> {
-    fn description(&self) -> &str {
-        match *self {
+        let d = match *self {
                         RevokeError::NotAuthed => "not_authed: No authentication token provided.",
 RevokeError::InvalidAuth => "invalid_auth: Invalid authentication token.",
 RevokeError::AccountInactive => "account_inactive: Authentication token is for a deleted user or team.",
@@ -147,13 +141,16 @@ RevokeError::InvalidPostType => "invalid_post_type: The method was called via a 
 RevokeError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
 RevokeError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
 RevokeError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        RevokeError::MalformedResponse(_, ref e) => e.description(),
-                        RevokeError::Unknown(ref s) => s,
-                        RevokeError::Client(ref inner) => inner.description()
-                    }
+                        RevokeError::MalformedResponse(_, ref e) => return write!(f, "{}", e),
+                        RevokeError::Unknown(ref s) => return write!(f, "{}", s),
+                        RevokeError::Client(ref inner) => return write!(f, "{}", inner),
+                    };
+        write!(f, "{}", d)
     }
+}
 
-    fn cause(&self) -> Option<&dyn Error> {
+impl<E: Error + 'static> Error for RevokeError<E> {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
         match *self {
             RevokeError::MalformedResponse(_, ref e) => Some(e),
             RevokeError::Client(ref inner) => Some(inner),
@@ -257,13 +254,7 @@ impl<'a, E: Error> From<&'a str> for TestError<E> {
 
 impl<E: Error> fmt::Display for TestError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.description())
-    }
-}
-
-impl<E: Error> Error for TestError<E> {
-    fn description(&self) -> &str {
-        match *self {
+        let d = match *self {
                         TestError::NotAuthed => "not_authed: No authentication token provided.",
 TestError::InvalidAuth => "invalid_auth: Invalid authentication token.",
 TestError::AccountInactive => "account_inactive: Authentication token is for a deleted user or team.",
@@ -275,13 +266,16 @@ TestError::InvalidPostType => "invalid_post_type: The method was called via a PO
 TestError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
 TestError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
 TestError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        TestError::MalformedResponse(_, ref e) => e.description(),
-                        TestError::Unknown(ref s) => s,
-                        TestError::Client(ref inner) => inner.description()
-                    }
+                        TestError::MalformedResponse(_, ref e) => return write!(f, "{}", e),
+                        TestError::Unknown(ref s) => return write!(f, "{}", s),
+                        TestError::Client(ref inner) => return write!(f, "{}", inner),
+                    };
+        write!(f, "{}", d)
     }
+}
 
-    fn cause(&self) -> Option<&dyn Error> {
+impl<E: Error + 'static> Error for TestError<E> {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
         match *self {
             TestError::MalformedResponse(_, ref e) => Some(e),
             TestError::Client(ref inner) => Some(inner),

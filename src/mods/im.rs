@@ -131,13 +131,7 @@ impl<'a, E: Error> From<&'a str> for CloseError<E> {
 
 impl<E: Error> fmt::Display for CloseError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.description())
-    }
-}
-
-impl<E: Error> Error for CloseError<E> {
-    fn description(&self) -> &str {
-        match *self {
+        let d = match *self {
                         CloseError::ChannelNotFound => "channel_not_found: Value passed for channel was invalid.",
 CloseError::UserDoesNotOwnChannel => "user_does_not_own_channel: Calling user does not own this DM channel.",
 CloseError::NotAuthed => "not_authed: No authentication token provided.",
@@ -151,13 +145,16 @@ CloseError::InvalidPostType => "invalid_post_type: The method was called via a P
 CloseError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
 CloseError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
 CloseError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        CloseError::MalformedResponse(_, ref e) => e.description(),
-                        CloseError::Unknown(ref s) => s,
-                        CloseError::Client(ref inner) => inner.description()
-                    }
+                        CloseError::MalformedResponse(_, ref e) => return write!(f, "{}", e),
+                        CloseError::Unknown(ref s) => return write!(f, "{}", s),
+                        CloseError::Client(ref inner) => return write!(f, "{}", inner),
+                    };
+        write!(f, "{}", d)
     }
+}
 
-    fn cause(&self) -> Option<&dyn Error> {
+impl<E: Error + 'static> Error for CloseError<E> {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
         match *self {
             CloseError::MalformedResponse(_, ref e) => Some(e),
             CloseError::Client(ref inner) => Some(inner),
@@ -304,13 +301,7 @@ impl<'a, E: Error> From<&'a str> for HistoryError<E> {
 
 impl<E: Error> fmt::Display for HistoryError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.description())
-    }
-}
-
-impl<E: Error> Error for HistoryError<E> {
-    fn description(&self) -> &str {
-        match *self {
+        let d = match *self {
                         HistoryError::ChannelNotFound => "channel_not_found: Value passed for channel was invalid.",
 HistoryError::InvalidTsLatest => "invalid_ts_latest: Value passed for latest was invalid",
 HistoryError::InvalidTsOldest => "invalid_ts_oldest: Value passed for oldest was invalid",
@@ -325,13 +316,16 @@ HistoryError::InvalidPostType => "invalid_post_type: The method was called via a
 HistoryError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
 HistoryError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
 HistoryError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        HistoryError::MalformedResponse(_, ref e) => e.description(),
-                        HistoryError::Unknown(ref s) => s,
-                        HistoryError::Client(ref inner) => inner.description()
-                    }
+                        HistoryError::MalformedResponse(_, ref e) => return write!(f, "{}", e),
+                        HistoryError::Unknown(ref s) => return write!(f, "{}", s),
+                        HistoryError::Client(ref inner) => return write!(f, "{}", inner),
+                    };
+        write!(f, "{}", d)
     }
+}
 
-    fn cause(&self) -> Option<&dyn Error> {
+impl<E: Error + 'static> Error for HistoryError<E> {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
         match *self {
             HistoryError::MalformedResponse(_, ref e) => Some(e),
             HistoryError::Client(ref inner) => Some(inner),
@@ -449,13 +443,7 @@ impl<'a, E: Error> From<&'a str> for ListError<E> {
 
 impl<E: Error> fmt::Display for ListError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.description())
-    }
-}
-
-impl<E: Error> Error for ListError<E> {
-    fn description(&self) -> &str {
-        match *self {
+        let d = match *self {
                         ListError::NotAuthed => "not_authed: No authentication token provided.",
 ListError::InvalidAuth => "invalid_auth: Invalid authentication token.",
 ListError::AccountInactive => "account_inactive: Authentication token is for a deleted user or team.",
@@ -467,13 +455,16 @@ ListError::InvalidPostType => "invalid_post_type: The method was called via a PO
 ListError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
 ListError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
 ListError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        ListError::MalformedResponse(_, ref e) => e.description(),
-                        ListError::Unknown(ref s) => s,
-                        ListError::Client(ref inner) => inner.description()
-                    }
+                        ListError::MalformedResponse(_, ref e) => return write!(f, "{}", e),
+                        ListError::Unknown(ref s) => return write!(f, "{}", s),
+                        ListError::Client(ref inner) => return write!(f, "{}", inner),
+                    };
+        write!(f, "{}", d)
     }
+}
 
-    fn cause(&self) -> Option<&dyn Error> {
+impl<E: Error + 'static> Error for ListError<E> {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
         match *self {
             ListError::MalformedResponse(_, ref e) => Some(e),
             ListError::Client(ref inner) => Some(inner),
@@ -599,13 +590,7 @@ impl<'a, E: Error> From<&'a str> for MarkError<E> {
 
 impl<E: Error> fmt::Display for MarkError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.description())
-    }
-}
-
-impl<E: Error> Error for MarkError<E> {
-    fn description(&self) -> &str {
-        match *self {
+        let d = match *self {
                         MarkError::ChannelNotFound => "channel_not_found: Value passed for channel was invalid.",
 MarkError::InvalidTimestamp => "invalid_timestamp: Value passed for timestamp was invalid.",
 MarkError::NotInChannel => "not_in_channel: Caller is not a member of the channel.",
@@ -620,13 +605,16 @@ MarkError::InvalidPostType => "invalid_post_type: The method was called via a PO
 MarkError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
 MarkError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
 MarkError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        MarkError::MalformedResponse(_, ref e) => e.description(),
-                        MarkError::Unknown(ref s) => s,
-                        MarkError::Client(ref inner) => inner.description()
-                    }
+                        MarkError::MalformedResponse(_, ref e) => return write!(f, "{}", e),
+                        MarkError::Unknown(ref s) => return write!(f, "{}", s),
+                        MarkError::Client(ref inner) => return write!(f, "{}", inner),
+                    };
+        write!(f, "{}", d)
     }
+}
 
-    fn cause(&self) -> Option<&dyn Error> {
+impl<E: Error + 'static> Error for MarkError<E> {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
         match *self {
             MarkError::MalformedResponse(_, ref e) => Some(e),
             MarkError::Client(ref inner) => Some(inner),
@@ -754,13 +742,7 @@ impl<'a, E: Error> From<&'a str> for OpenError<E> {
 
 impl<E: Error> fmt::Display for OpenError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.description())
-    }
-}
-
-impl<E: Error> Error for OpenError<E> {
-    fn description(&self) -> &str {
-        match *self {
+        let d = match *self {
                         OpenError::UserNotFound => "user_not_found: Value passed for user was invalid.",
 OpenError::UserNotVisible => "user_not_visible: The calling user is restricted from seeing the requested user.",
 OpenError::UserDisabled => "user_disabled: The user has been disabled.",
@@ -775,13 +757,16 @@ OpenError::InvalidPostType => "invalid_post_type: The method was called via a PO
 OpenError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
 OpenError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
 OpenError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        OpenError::MalformedResponse(_, ref e) => e.description(),
-                        OpenError::Unknown(ref s) => s,
-                        OpenError::Client(ref inner) => inner.description()
-                    }
+                        OpenError::MalformedResponse(_, ref e) => return write!(f, "{}", e),
+                        OpenError::Unknown(ref s) => return write!(f, "{}", s),
+                        OpenError::Client(ref inner) => return write!(f, "{}", inner),
+                    };
+        write!(f, "{}", d)
     }
+}
 
-    fn cause(&self) -> Option<&dyn Error> {
+impl<E: Error + 'static> Error for OpenError<E> {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
         match *self {
             OpenError::MalformedResponse(_, ref e) => Some(e),
             OpenError::Client(ref inner) => Some(inner),
@@ -909,13 +894,7 @@ impl<'a, E: Error> From<&'a str> for RepliesError<E> {
 
 impl<E: Error> fmt::Display for RepliesError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.description())
-    }
-}
-
-impl<E: Error> Error for RepliesError<E> {
-    fn description(&self) -> &str {
-        match *self {
+        let d = match *self {
                         RepliesError::ChannelNotFound => "channel_not_found: Value for channel was missing or invalid.",
 RepliesError::ThreadNotFound => "thread_not_found: Value for thread_ts was missing or invalid.",
 RepliesError::NotAuthed => "not_authed: No authentication token provided.",
@@ -930,13 +909,16 @@ RepliesError::InvalidPostType => "invalid_post_type: The method was called via a
 RepliesError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
 RepliesError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
 RepliesError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        RepliesError::MalformedResponse(_, ref e) => e.description(),
-                        RepliesError::Unknown(ref s) => s,
-                        RepliesError::Client(ref inner) => inner.description()
-                    }
+                        RepliesError::MalformedResponse(_, ref e) => return write!(f, "{}", e),
+                        RepliesError::Unknown(ref s) => return write!(f, "{}", s),
+                        RepliesError::Client(ref inner) => return write!(f, "{}", inner),
+                    };
+        write!(f, "{}", d)
     }
+}
 
-    fn cause(&self) -> Option<&dyn Error> {
+impl<E: Error + 'static> Error for RepliesError<E> {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
         match *self {
             RepliesError::MalformedResponse(_, ref e) => Some(e),
             RepliesError::Client(ref inner) => Some(inner),

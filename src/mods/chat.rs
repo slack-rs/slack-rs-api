@@ -151,13 +151,7 @@ impl<'a, E: Error> From<&'a str> for DeleteError<E> {
 
 impl<E: Error> fmt::Display for DeleteError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.description())
-    }
-}
-
-impl<E: Error> Error for DeleteError<E> {
-    fn description(&self) -> &str {
-        match *self {
+        let d = match *self {
                         DeleteError::MessageNotFound => "message_not_found: No message exists with the requested timestamp.",
 DeleteError::ChannelNotFound => "channel_not_found: Value passed for channel was invalid.",
 DeleteError::CantDeleteMessage => "cant_delete_message: Authenticated user does not have permission to delete this message.",
@@ -173,13 +167,16 @@ DeleteError::InvalidPostType => "invalid_post_type: The method was called via a 
 DeleteError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
 DeleteError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
 DeleteError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        DeleteError::MalformedResponse(_, ref e) => e.description(),
-                        DeleteError::Unknown(ref s) => s,
-                        DeleteError::Client(ref inner) => inner.description()
-                    }
+                        DeleteError::MalformedResponse(_, ref e) => return write!(f, "{}", e),
+                        DeleteError::Unknown(ref s) => return write!(f, "{}", s),
+                        DeleteError::Client(ref inner) => return write!(f, "{}", inner),
+                    };
+        write!(f, "{}", d)
     }
+}
 
-    fn cause(&self) -> Option<&dyn Error> {
+impl<E: Error + 'static> Error for DeleteError<E> {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
         match *self {
             DeleteError::MalformedResponse(_, ref e) => Some(e),
             DeleteError::Client(ref inner) => Some(inner),
@@ -315,13 +312,7 @@ impl<'a, E: Error> From<&'a str> for MeMessageError<E> {
 
 impl<E: Error> fmt::Display for MeMessageError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.description())
-    }
-}
-
-impl<E: Error> Error for MeMessageError<E> {
-    fn description(&self) -> &str {
-        match *self {
+        let d = match *self {
                         MeMessageError::ChannelNotFound => "channel_not_found: Value passed for channel was invalid.",
 MeMessageError::NotInChannel => "not_in_channel: Cannot post user messages to a channel they are not in.",
 MeMessageError::IsArchived => "is_archived: Channel has been archived.",
@@ -339,13 +330,16 @@ MeMessageError::InvalidPostType => "invalid_post_type: The method was called via
 MeMessageError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
 MeMessageError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
 MeMessageError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        MeMessageError::MalformedResponse(_, ref e) => e.description(),
-                        MeMessageError::Unknown(ref s) => s,
-                        MeMessageError::Client(ref inner) => inner.description()
-                    }
+                        MeMessageError::MalformedResponse(_, ref e) => return write!(f, "{}", e),
+                        MeMessageError::Unknown(ref s) => return write!(f, "{}", s),
+                        MeMessageError::Client(ref inner) => return write!(f, "{}", inner),
+                    };
+        write!(f, "{}", d)
     }
+}
 
-    fn cause(&self) -> Option<&dyn Error> {
+impl<E: Error + 'static> Error for MeMessageError<E> {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
         match *self {
             MeMessageError::MalformedResponse(_, ref e) => Some(e),
             MeMessageError::Client(ref inner) => Some(inner),
@@ -535,13 +529,7 @@ impl<'a, E: Error> From<&'a str> for PostMessageError<E> {
 
 impl<E: Error> fmt::Display for PostMessageError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.description())
-    }
-}
-
-impl<E: Error> Error for PostMessageError<E> {
-    fn description(&self) -> &str {
-        match *self {
+        let d = match *self {
                         PostMessageError::ChannelNotFound => "channel_not_found: Value passed for channel was invalid.",
 PostMessageError::NotInChannel => "not_in_channel: Cannot post user messages to a channel they are not in.",
 PostMessageError::IsArchived => "is_archived: Channel has been archived.",
@@ -560,13 +548,16 @@ PostMessageError::InvalidPostType => "invalid_post_type: The method was called v
 PostMessageError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
 PostMessageError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
 PostMessageError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        PostMessageError::MalformedResponse(_, ref e) => e.description(),
-                        PostMessageError::Unknown(ref s) => s,
-                        PostMessageError::Client(ref inner) => inner.description()
-                    }
+                        PostMessageError::MalformedResponse(_, ref e) => return write!(f, "{}", e),
+                        PostMessageError::Unknown(ref s) => return write!(f, "{}", s),
+                        PostMessageError::Client(ref inner) => return write!(f, "{}", inner),
+                    };
+        write!(f, "{}", d)
     }
+}
 
-    fn cause(&self) -> Option<&dyn Error> {
+impl<E: Error + 'static> Error for PostMessageError<E> {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
         match *self {
             PostMessageError::MalformedResponse(_, ref e) => Some(e),
             PostMessageError::Client(ref inner) => Some(inner),
@@ -696,13 +687,7 @@ impl<'a, E: Error> From<&'a str> for UnfurlError<E> {
 
 impl<E: Error> fmt::Display for UnfurlError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.description())
-    }
-}
-
-impl<E: Error> Error for UnfurlError<E> {
-    fn description(&self) -> &str {
-        match *self {
+        let d = match *self {
                         UnfurlError::NotAuthed => "not_authed: No authentication token provided.",
 UnfurlError::InvalidAuth => "invalid_auth: Invalid authentication token.",
 UnfurlError::AccountInactive => "account_inactive: Authentication token is for a deleted user or team.",
@@ -715,13 +700,16 @@ UnfurlError::InvalidPostType => "invalid_post_type: The method was called via a 
 UnfurlError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
 UnfurlError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
 UnfurlError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        UnfurlError::MalformedResponse(_, ref e) => e.description(),
-                        UnfurlError::Unknown(ref s) => s,
-                        UnfurlError::Client(ref inner) => inner.description()
-                    }
+                        UnfurlError::MalformedResponse(_, ref e) => return write!(f, "{}", e),
+                        UnfurlError::Unknown(ref s) => return write!(f, "{}", s),
+                        UnfurlError::Client(ref inner) => return write!(f, "{}", inner),
+                    };
+        write!(f, "{}", d)
     }
+}
 
-    fn cause(&self) -> Option<&dyn Error> {
+impl<E: Error + 'static> Error for UnfurlError<E> {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
         match *self {
             UnfurlError::MalformedResponse(_, ref e) => Some(e),
             UnfurlError::Client(ref inner) => Some(inner),
@@ -883,13 +871,7 @@ impl<'a, E: Error> From<&'a str> for UpdateError<E> {
 
 impl<E: Error> fmt::Display for UpdateError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.description())
-    }
-}
-
-impl<E: Error> Error for UpdateError<E> {
-    fn description(&self) -> &str {
-        match *self {
+        let d = match *self {
                         UpdateError::MessageNotFound => "message_not_found: No message exists with the requested timestamp.",
 UpdateError::CantUpdateMessage => "cant_update_message: Authenticated user does not have permission to update this message.",
 UpdateError::ChannelNotFound => "channel_not_found: Value passed for channel was invalid.",
@@ -908,13 +890,16 @@ UpdateError::InvalidPostType => "invalid_post_type: The method was called via a 
 UpdateError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
 UpdateError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
 UpdateError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        UpdateError::MalformedResponse(_, ref e) => e.description(),
-                        UpdateError::Unknown(ref s) => s,
-                        UpdateError::Client(ref inner) => inner.description()
-                    }
+                        UpdateError::MalformedResponse(_, ref e) => return write!(f, "{}", e),
+                        UpdateError::Unknown(ref s) => return write!(f, "{}", s),
+                        UpdateError::Client(ref inner) => return write!(f, "{}", inner),
+                    };
+        write!(f, "{}", d)
     }
+}
 
-    fn cause(&self) -> Option<&dyn Error> {
+impl<E: Error + 'static> Error for UpdateError<E> {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
         match *self {
             UpdateError::MalformedResponse(_, ref e) => Some(e),
             UpdateError::Client(ref inner) => Some(inner),
