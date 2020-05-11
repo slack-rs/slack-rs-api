@@ -74,7 +74,7 @@ impl<'de> ::serde::Deserialize<'de> for Timestamp {
 }
 
 impl Timestamp {
-    pub fn to_param_value(&self) -> String {
+    pub fn to_param_value(self) -> String {
         format!("{}", self)
     }
 }
