@@ -1,5 +1,4 @@
 //! Functionality for sending requests to Slack.
-use async_trait::async_trait;
 
 use std::{borrow::Borrow, error};
 
@@ -7,13 +6,12 @@ use std::{borrow::Borrow, error};
 ///
 /// If you do not have a custom client to integrate with and just want to send requests, use
 /// the [`default_client()`] function to get a simple request sender.
-#[async_trait]
 pub trait SlackWebRequestSender {
     type Error: error::Error;
 
     /// Make an API call to Slack. Takes a map of parameters that get appended to the request as query
     /// params.
-    async fn send<I, K, V, S>(&self, method: S, params: I) -> Result<String, Self::Error>
+    fn send<I, K, V, S>(&self, method: S, params: I) -> Result<String, Self::Error>
     where
         I: IntoIterator + Send,
         K: AsRef<str>,
@@ -22,22 +20,20 @@ pub trait SlackWebRequestSender {
         S: AsRef<str> + Send;
 }
 
-#[cfg(feature = "reqwest")]
+#[cfg(feature = "reqwest_blocking")]
 mod reqwest_support {
     pub use self::reqwest::Error;
-    use async_trait::async_trait;
     use reqwest_ as reqwest;
     use std::borrow::Borrow;
 
     use super::SlackWebRequestSender;
 
-    type Client = reqwest::Client;
+    type Client = reqwest::blocking::Client;
 
-    #[async_trait]
     impl SlackWebRequestSender for Client {
         type Error = reqwest::Error;
 
-        async fn send<I, K, V, S>(&self, method_url: S, params: I) -> Result<String, Self::Error>
+        fn send<I, K, V, S>(&self, method_url: S, params: I) -> Result<String, Self::Error>
         where
             I: IntoIterator + Send,
             K: AsRef<str>,
@@ -49,7 +45,7 @@ mod reqwest_support {
 
             url.query_pairs_mut().extend_pairs(params);
 
-            Ok(self.get(url).send().await?.text().await?)
+            Ok(self.get(url).send()?.text()?)
         }
     }
 
@@ -68,5 +64,5 @@ mod reqwest_support {
     }
 }
 
-#[cfg(feature = "reqwest")]
+#[cfg(feature = "reqwest_blocking")]
 pub use self::reqwest_support::*;

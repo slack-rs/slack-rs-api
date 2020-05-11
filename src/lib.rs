@@ -22,13 +22,20 @@ extern crate serde_derive;
 mod timestamp;
 pub use crate::timestamp::*;
 
-mod mods;
-pub use crate::mods::*;
-
 mod types;
 pub use crate::types::*;
 
+#[cfg(feature = "async")]
+mod mods;
+
+#[cfg(feature = "async")]
+pub use crate::mods::*;
+
+#[cfg(feature = "async")]
 pub mod requests;
+
+#[cfg(feature = "sync")]
+pub mod sync;
 
 #[cfg(feature = "reqwest")]
 pub use crate::requests::default_client;

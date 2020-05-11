@@ -68,7 +68,7 @@ fn generate_types(output_path: &Path) -> io::Result<()> {
     Ok(())
 }
 
-fn generate_modules(output_path: &Path) -> io::Result<()> {
+fn generate_modules(output_path: &Path, gen_mode: GenMode) -> io::Result<()> {
     let mut mods = vec![];
 
     let schema_path = Path::new(SCHEMA_DIR);
@@ -96,7 +96,7 @@ fn generate_modules(output_path: &Path) -> io::Result<()> {
                         .create(true)
                         .open(&out_filepath)?;
 
-                    out_file.write_all(module.generate().as_bytes())?;
+                    out_file.write_all(module.generate(gen_mode).as_bytes())?;
                 }
 
                 Command::new("rustfmt")
@@ -148,11 +148,23 @@ fn main() {
         let _ = fs::create_dir(outdir);
     }
 
-    let moddir = outdir.join("mods");
-    if !moddir.exists() {
-        let _ = fs::create_dir(&moddir);
+    {
+        let moddir = outdir.join("mods");
+        if !moddir.exists() {
+            let _ = fs::create_dir(&moddir);
+        }
+
+        generate_modules(&moddir, GenMode::Async).unwrap();
     }
 
-    generate_modules(&moddir).unwrap();
+    {
+        let moddir = outdir.join("sync").join("mods");
+        if !moddir.exists() {
+            let _ = fs::create_dir(&moddir);
+        }
+
+        generate_modules(&moddir, GenMode::Sync).unwrap();
+    }
+
     generate_types(outdir).unwrap();
 }
