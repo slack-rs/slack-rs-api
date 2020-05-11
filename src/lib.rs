@@ -117,6 +117,33 @@ mod tests {
 
     #[test]
     fn test_timestamp_to_param_value() {
-        assert_eq!(crate::Timestamp::from(1234567.0).to_param_value(), "1234567.0");
+        assert_eq!(
+            crate::Timestamp::from(1234567.0).to_param_value(),
+            "1234567.000000"
+        );
+    }
+
+    #[test]
+    fn test_timestamp_within_message() {
+        let msg = r#"{
+            "type": "message",
+            "text": "!sqrt 2",
+            "user": "U0E000000",
+            "channel": "D00000000",
+            "event_ts": "1588861564.009805",
+            "ts": "1588861564.009805"
+        }"#;
+        let message: crate::Message = serde_json::from_str(msg).unwrap();
+        match message {
+            crate::Message::Standard(crate::MessageStandard {
+                event_ts: Some(event_ts),
+                ts: Some(ts),
+                ..
+            }) => {
+                assert_eq!(event_ts.to_param_value(), "1588861564.009805");
+                assert_eq!(ts.to_param_value(), "1588861564.009805");
+            }
+            m => panic!("expected Message::Standard but got {:?}", m),
+        };
     }
 }
