@@ -191,8 +191,7 @@ impl<'de> ::serde::Deserialize<'de> for ListResponseItem {
     {
         use ::serde::de::Error as SerdeError;
 
-        const VARIANTS: &'static [&'static str] =
-            &["message", "file", "file_comment", "channel", "im", "group"];
+        const VARIANTS: &[&str] = &["message", "file", "file_comment", "channel", "im", "group"];
 
         let value = ::serde_json::Value::deserialize(deserializer)?;
         if let Some(ty_val) = value.get("type") {

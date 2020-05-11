@@ -195,7 +195,7 @@ impl<'de> ::serde::Deserialize<'de> for GetResponse {
     {
         use ::serde::de::Error as SerdeError;
 
-        const VARIANTS: &'static [&'static str] = &["message", "file", "file_comment"];
+        const VARIANTS: &[&str] = &["message", "file", "file_comment"];
 
         let value = ::serde_json::Value::deserialize(deserializer)?;
         if let Some(ty_val) = value.get("type") {
@@ -442,7 +442,7 @@ impl<'de> ::serde::Deserialize<'de> for ListResponseItem {
     {
         use ::serde::de::Error as SerdeError;
 
-        const VARIANTS: &'static [&'static str] = &["message", "file", "file_comment"];
+        const VARIANTS: &[&str] = &["message", "file", "file_comment"];
 
         let value = ::serde_json::Value::deserialize(deserializer)?;
         if let Some(ty_val) = value.get("type") {
