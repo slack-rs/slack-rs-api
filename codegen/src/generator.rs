@@ -28,8 +28,8 @@ pub struct Module {
 
 impl Module {
     pub fn generate(&self, gen_mode: GenMode) -> String {
-
-        let type_imports = format!("
+        let type_imports = format!(
+            "
             #[allow(unused_imports)]
             use std::collections::HashMap;
             use std::convert::From;
@@ -37,21 +37,26 @@ impl Module {
             use std::fmt;
 
             use serde_json;
-        ");
+        "
+        );
 
         let imports = match gen_mode {
-            GenMode::Types => vec![
-                type_imports
-            ],
+            GenMode::Types => vec![type_imports],
             GenMode::Sync => vec![
                 format!("use crate::sync::requests::SlackWebRequestSender;"),
                 "use serde_json;".into(),
-                format!("pub use crate::mod_types::{}_types::*;", self.get_safe_name()),
+                format!(
+                    "pub use crate::mod_types::{}_types::*;",
+                    self.get_safe_name()
+                ),
             ],
             GenMode::Async => vec![
                 format!("use crate::requests::SlackWebRequestSender;"),
                 "use serde_json;".into(),
-                format!("pub use crate::mod_types::{}_types::*;", self.get_safe_name()),
+                format!(
+                    "pub use crate::mod_types::{}_types::*;",
+                    self.get_safe_name()
+                ),
             ],
         };
 
@@ -75,8 +80,7 @@ impl Module {
                 .map(|p| p.generate(gen_mode))
                 .collect::<Vec<String>>()
                 .join("\n"),
-            imports = imports
-                .join("\n"),
+            imports = imports.join("\n"),
         )
     }
 
@@ -175,13 +179,13 @@ impl Method {
 
         if self.params.is_empty() {
             if gen_mode == GenMode::Types {
-                return 
-                format!("\
+                return format!(
+                    "\
 
                     {response}
                     ",
                     response = response,
-                )
+                );
             }
 
             format!("\
@@ -206,13 +210,13 @@ impl Method {
             )
         } else if self.params.len() == 1 && self.params[0].ty == "auth_token" {
             if gen_mode == GenMode::Types {
-                return 
-                format!("\
+                return format!(
+                    "\
 
                     {response}
                     ",
                     response = response,
-                )
+                );
             }
             format!("\
                 {documentation}
@@ -246,8 +250,8 @@ impl Method {
                 format!("client: &R, request: &{}{}", request_struct_name, lifetime)
             };
             if gen_mode == GenMode::Types {
-                return 
-                format!("\
+                return format!(
+                    "\
 
                     {request}
 
@@ -255,7 +259,7 @@ impl Method {
                     ",
                     response = response,
                     request = self.get_request_struct(&request_struct_name, gen_mode),
-                )
+                );
             }
             format!("\
                 {documentation}

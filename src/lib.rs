@@ -41,16 +41,18 @@ fn get_slack_url_for_method(method: &str) -> String {
 }
 
 fn optional_struct_or_empty_array<'de, T, D>(deserializer: D) -> Result<Option<T>, D::Error>
-    where T: serde::Deserialize<'de>,
-          D: serde::Deserializer<'de>
+where
+    T: serde::Deserialize<'de>,
+    D: serde::Deserializer<'de>,
 {
-    use std::marker::PhantomData;
     use serde::de;
+    use std::marker::PhantomData;
 
     struct StructOrEmptyArray<T>(PhantomData<T>);
 
     impl<'de, T> de::Visitor<'de> for StructOrEmptyArray<T>
-        where T: de::Deserialize<'de>
+    where
+        T: de::Deserialize<'de>,
     {
         type Value = Option<T>;
 
@@ -59,7 +61,8 @@ fn optional_struct_or_empty_array<'de, T, D>(deserializer: D) -> Result<Option<T
         }
 
         fn visit_seq<A>(self, mut seq: A) -> Result<Option<T>, A::Error>
-            where A: de::SeqAccess<'de>
+        where
+            A: de::SeqAccess<'de>,
         {
             match seq.next_element::<T>()? {
                 Some(_) => Err(de::Error::custom("non-empty array is not valid")),
@@ -68,13 +71,15 @@ fn optional_struct_or_empty_array<'de, T, D>(deserializer: D) -> Result<Option<T
         }
 
         fn visit_unit<E>(self) -> Result<Option<T>, E>
-            where E: de::Error
+        where
+            E: de::Error,
         {
             Ok(None)
         }
 
         fn visit_map<M>(self, access: M) -> Result<Option<T>, M::Error>
-            where M: de::MapAccess<'de>
+        where
+            M: de::MapAccess<'de>,
         {
             T::deserialize(de::value::MapAccessDeserializer::new(access)).map(Some)
         }
@@ -85,8 +90,8 @@ fn optional_struct_or_empty_array<'de, T, D>(deserializer: D) -> Result<Option<T
 
 #[cfg(test)]
 mod tests {
-    use serde_json;
     use super::UserProfile;
+    use serde_json;
 
     #[test]
     fn test_user_profile_fields_empty_array_deserialize() {
@@ -102,7 +107,9 @@ mod tests {
 
     #[test]
     fn test_user_profile_fields_nonempty_map_deserialize() {
-        let user_profile: UserProfile = serde_json::from_str(r#"{"fields": {"some_field": {"alt": "foo", "label": "bar"}}}"#).unwrap();
+        let user_profile: UserProfile =
+            serde_json::from_str(r#"{"fields": {"some_field": {"alt": "foo", "label": "bar"}}}"#)
+                .unwrap();
         assert_eq!(1, user_profile.fields.unwrap().len());
     }
 

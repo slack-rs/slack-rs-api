@@ -73,7 +73,11 @@ fn generate_modules(output_path: &Path, gen_mode: GenMode) -> io::Result<()> {
 
     let schema_path = Path::new(SCHEMA_DIR);
 
-    let postfix = if gen_mode == GenMode::Types { "_types" } else { "" };
+    let postfix = if gen_mode == GenMode::Types {
+        "_types"
+    } else {
+        ""
+    };
 
     for entry in fs::read_dir(schema_path.join("web"))? {
         if let Ok(e) = entry {
