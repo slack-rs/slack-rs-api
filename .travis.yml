@@ -7,6 +7,10 @@ matrix:
   fast_finish: true
   allow_failures:
   - rust: nightly
+script:
+  - cargo test --verbose --all-features
+  - cargo test --verbose --no-default-features --features "sync"
+  - cargo test --verbose --no-default-features --features "async"
 before_deploy:
 - cargo doc --verbose
 - cargo package --verbose
