@@ -28,19 +28,13 @@ mod types;
 pub use crate::types::*;
 
 #[cfg(feature = "async")]
-mod mods;
+mod async_impl;
 
 #[cfg(feature = "async")]
-pub use crate::mods::*;
-
-#[cfg(feature = "async")]
-pub mod requests;
+pub use async_impl::*;
 
 #[cfg(feature = "sync")]
 pub mod sync;
-
-#[cfg(feature = "reqwest")]
-pub use crate::requests::default_client;
 
 fn get_slack_url_for_method(method: &str) -> String {
     format!("https://slack.com/api/{}", method)

@@ -163,7 +163,7 @@ fn main() {
     }
 
     {
-        let moddir = outdir.join("mods");
+        let moddir = outdir.join("async_impl").join("mods");
         if !moddir.exists() {
             let _ = fs::create_dir(&moddir);
         }
