@@ -28,11 +28,8 @@ pub struct Module {
 
 impl Module {
     pub fn generate(&self, gen_mode: GenMode) -> String {
-        format!(
-            "{header}
 
-            {docs}
-
+        let type_imports = format!("
             #[allow(unused_imports)]
             use std::collections::HashMap;
             use std::convert::From;
@@ -40,8 +37,30 @@ impl Module {
             use std::fmt;
 
             use serde_json;
+        ");
 
-            use {requests_mod}::SlackWebRequestSender;
+        let imports = match gen_mode {
+            GenMode::Types => vec![
+                type_imports
+            ],
+            GenMode::Sync => vec![
+                format!("use crate::sync::requests::SlackWebRequestSender;"),
+                "use serde_json;".into(),
+                format!("pub use crate::mod_types::{}_types::*;", self.get_safe_name()),
+            ],
+            GenMode::Async => vec![
+                format!("use crate::requests::SlackWebRequestSender;"),
+                "use serde_json;".into(),
+                format!("pub use crate::mod_types::{}_types::*;", self.get_safe_name()),
+            ],
+        };
+
+        format!(
+            "{header}
+
+            {docs}
+
+            {imports}
 
             {methods}",
             header = AUTOGEN_HEADER,
@@ -56,7 +75,8 @@ impl Module {
                 .map(|p| p.generate(gen_mode))
                 .collect::<Vec<String>>()
                 .join("\n"),
-            requests_mod = if gen_mode == GenMode::Async { "crate::requests" } else { "crate::sync::requests" },
+            imports = imports
+                .join("\n"),
         )
     }
 
@@ -69,6 +89,7 @@ impl Module {
 pub enum GenMode {
     Async,
     Sync,
+    Types,
 }
 
 impl GenMode {
@@ -76,12 +97,14 @@ impl GenMode {
         match self {
             GenMode::Async => ".await",
             GenMode::Sync => "",
+            _ => unreachable!(),
         }
     }
     fn fn_type(self) -> &'static str {
         match self {
             GenMode::Async => "async fn",
             GenMode::Sync => "fn",
+            _ => unreachable!(),
         }
     }
 }
@@ -113,7 +136,7 @@ impl Method {
             .generate(&response_struct_name, &error_enum_name);
         let response_type = self.response.get_response_type(&response_struct_name);
 
-        let send_call = {
+        let send_call = || {
             let mut base_call = format!(
                 "\
                 let url = crate::get_slack_url_for_method(\"{name}\");
@@ -151,6 +174,16 @@ impl Method {
         };
 
         if self.params.is_empty() {
+            if gen_mode == GenMode::Types {
+                return 
+                format!("\
+
+                    {response}
+                    ",
+                    response = response,
+                )
+            }
+
             format!("\
                 {documentation}
                 pub {fn_type} {method_name}<R>(client: &R) -> Result<{response_type}, {error_type}<R::Error>>
@@ -159,8 +192,6 @@ impl Method {
                     let params = &[];
                     {send_call}
                 }}
-
-                {response}
                 ",
                 documentation = format_docs("///", &[
                     &self.description,
@@ -170,11 +201,19 @@ impl Method {
                 method_name = fn_name,
                 response_type = response_struct_name,
                 error_type = error_enum_name,
-                response = response,
-                send_call = send_call,
+                send_call = send_call(),
                 fn_type = gen_mode.fn_type(),
             )
         } else if self.params.len() == 1 && self.params[0].ty == "auth_token" {
+            if gen_mode == GenMode::Types {
+                return 
+                format!("\
+
+                    {response}
+                    ",
+                    response = response,
+                )
+            }
             format!("\
                 {documentation}
                 pub {fn_type} {method_name}<R>(client: &R, token: &str) -> Result<{response_type}, {error_type}<R::Error>>
@@ -183,8 +222,6 @@ impl Method {
                     let params = &[(\"token\", token)];
                     {send_call}
                 }}
-
-                {response}
                 ",
                 documentation = format_docs("///", &[
                     &self.description,
@@ -194,8 +231,7 @@ impl Method {
                 method_name = fn_name,
                 response_type = response_struct_name,
                 error_type = error_enum_name,
-                response = response,
-                send_call = send_call,
+                send_call = send_call(),
                 fn_type = gen_mode.fn_type(),
             )
         } else {
@@ -209,6 +245,18 @@ impl Method {
             } else {
                 format!("client: &R, request: &{}{}", request_struct_name, lifetime)
             };
+            if gen_mode == GenMode::Types {
+                return 
+                format!("\
+
+                    {request}
+
+                    {response}
+                    ",
+                    response = response,
+                    request = self.get_request_struct(&request_struct_name, gen_mode),
+                )
+            }
             format!("\
                 {documentation}
                 pub {fn_type} {method_name}<R>({method_params}) -> Result<{response_type}, {error_type}<R::Error>>
@@ -222,10 +270,6 @@ impl Method {
                     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
                     {send_call}
                 }}
-
-                {request}
-
-                {response}
                 ",
                 documentation = format_docs("///", &[
                     &self.description,
@@ -235,8 +279,6 @@ impl Method {
                 method_name = fn_name,
                 response_type = response_struct_name,
                 error_type = error_enum_name,
-                response = response,
-                request = self.get_request_struct(&request_struct_name, gen_mode),
                 method_params = method_params,
                 token = if has_token { "Some((\"token\", token))," } else { "" },
                 local_vars = self.params.iter()
@@ -251,7 +293,7 @@ impl Method {
                     .map(Param::get_pair)
                     .collect::<Vec<String>>()
                     .join(",\n"),
-                send_call = send_call,
+                send_call = send_call(),
                 fn_type = gen_mode.fn_type(),
             )
         }

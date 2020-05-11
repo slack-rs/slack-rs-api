@@ -73,6 +73,8 @@ fn generate_modules(output_path: &Path, gen_mode: GenMode) -> io::Result<()> {
 
     let schema_path = Path::new(SCHEMA_DIR);
 
+    let postfix = if gen_mode == GenMode::Types { "_types" } else { "" };
+
     for entry in fs::read_dir(schema_path.join("web"))? {
         if let Ok(e) = entry {
             let path = e.path();
@@ -85,9 +87,12 @@ fn generate_modules(output_path: &Path, gen_mode: GenMode) -> io::Result<()> {
                     "Could not parse module schema for {}",
                     path.display()
                 ));
-                mods.push(module.get_safe_name());
 
-                let out_filepath = output_path.join(format!("{}.rs", module.get_safe_name()));
+                let mod_name = format!("{}{}", module.get_safe_name(), postfix);
+
+                mods.push(mod_name.clone());
+
+                let out_filepath = output_path.join(format!("{}.rs", mod_name));
 
                 {
                     let mut out_file = OpenOptions::new()
@@ -146,6 +151,15 @@ fn main() {
     let outdir = Path::new(matches.value_of_os("out_dir").unwrap());
     if !outdir.exists() {
         let _ = fs::create_dir(outdir);
+    }
+
+    {
+        let moddir = outdir.join("mod_types");
+        if !moddir.exists() {
+            let _ = fs::create_dir(&moddir);
+        }
+
+        generate_modules(&moddir, GenMode::Types).unwrap();
     }
 
     {

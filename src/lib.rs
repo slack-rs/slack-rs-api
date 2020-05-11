@@ -19,6 +19,8 @@ use serde;
 #[macro_use]
 extern crate serde_derive;
 
+mod mod_types;
+
 mod timestamp;
 pub use crate::timestamp::*;
 
