@@ -14,7 +14,6 @@
 
 pub use crate::mod_types::reactions_types::*;
 use crate::requests::SlackWebRequestSender;
-use serde_json;
 
 /// Adds a reaction to an item.
 ///

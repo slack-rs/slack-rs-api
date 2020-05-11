@@ -16,7 +16,6 @@
 
 pub use crate::mod_types::usergroups_types::*;
 use crate::sync::requests::SlackWebRequestSender;
-use serde_json;
 
 /// Create a User Group
 ///

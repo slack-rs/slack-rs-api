@@ -16,7 +16,6 @@
 
 pub use crate::mod_types::chat_types::*;
 use crate::requests::SlackWebRequestSender;
-use serde_json;
 
 /// Deletes a message.
 ///

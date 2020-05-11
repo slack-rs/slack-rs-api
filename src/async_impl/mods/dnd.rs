@@ -16,7 +16,6 @@
 
 pub use crate::mod_types::dnd_types::*;
 use crate::requests::SlackWebRequestSender;
-use serde_json;
 
 /// Ends the current user's Do Not Disturb session immediately.
 ///

@@ -16,7 +16,6 @@
 
 pub use crate::mod_types::search_types::*;
 use crate::sync::requests::SlackWebRequestSender;
-use serde_json;
 
 /// Searches for messages and files matching a query.
 ///

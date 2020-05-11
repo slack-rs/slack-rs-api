@@ -18,8 +18,6 @@ use std::convert::From;
 use std::error::Error;
 use std::fmt;
 
-use serde_json;
-
 #[derive(Clone, Default, Debug)]
 pub struct ListRequest<'a> {
     /// The encoded ID of the User Group to update.

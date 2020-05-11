@@ -16,7 +16,6 @@
 
 pub use crate::mod_types::channels_types::*;
 use crate::requests::SlackWebRequestSender;
-use serde_json;
 
 /// Archives a channel.
 ///

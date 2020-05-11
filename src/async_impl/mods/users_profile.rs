@@ -14,7 +14,6 @@
 
 pub use crate::mod_types::users_profile_types::*;
 use crate::requests::SlackWebRequestSender;
-use serde_json;
 
 /// Retrieves a user's profile information.
 ///

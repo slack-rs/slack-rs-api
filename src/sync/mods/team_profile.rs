@@ -14,7 +14,6 @@
 
 pub use crate::mod_types::team_profile_types::*;
 use crate::sync::requests::SlackWebRequestSender;
-use serde_json;
 
 /// Retrieve a team's profile.
 ///

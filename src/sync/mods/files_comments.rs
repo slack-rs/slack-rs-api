@@ -14,7 +14,6 @@
 
 pub use crate::mod_types::files_comments_types::*;
 use crate::sync::requests::SlackWebRequestSender;
-use serde_json;
 
 /// Add a comment to an existing file.
 ///

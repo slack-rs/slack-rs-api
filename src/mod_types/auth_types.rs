@@ -18,8 +18,6 @@ use std::convert::From;
 use std::error::Error;
 use std::fmt;
 
-use serde_json;
-
 #[derive(Clone, Default, Debug)]
 pub struct RevokeRequest {
     /// Setting this parameter to 1 triggers a testing mode where the specified token will not actually be revoked.

@@ -16,7 +16,6 @@
 
 pub use crate::mod_types::mpim_types::*;
 use crate::sync::requests::SlackWebRequestSender;
-use serde_json;
 
 /// Closes a multiparty direct message channel.
 ///

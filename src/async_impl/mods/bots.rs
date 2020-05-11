@@ -14,7 +14,6 @@
 
 pub use crate::mod_types::bots_types::*;
 use crate::requests::SlackWebRequestSender;
-use serde_json;
 
 /// Gets information about a bot user.
 ///

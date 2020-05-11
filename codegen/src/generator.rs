@@ -35,8 +35,6 @@ impl Module {
             use std::convert::From;
             use std::error::Error;
             use std::fmt;
-
-            use serde_json;
         "
         );
 
@@ -44,7 +42,6 @@ impl Module {
             GenMode::Types => vec![type_imports],
             GenMode::Sync => vec![
                 format!("use crate::sync::requests::SlackWebRequestSender;"),
-                "use serde_json;".into(),
                 format!(
                     "pub use crate::mod_types::{}_types::*;",
                     self.get_safe_name()
@@ -52,7 +49,6 @@ impl Module {
             ],
             GenMode::Async => vec![
                 format!("use crate::requests::SlackWebRequestSender;"),
-                "use serde_json;".into(),
                 format!(
                     "pub use crate::mod_types::{}_types::*;",
                     self.get_safe_name()

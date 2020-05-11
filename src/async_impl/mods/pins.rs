@@ -14,7 +14,6 @@
 
 pub use crate::mod_types::pins_types::*;
 use crate::requests::SlackWebRequestSender;
-use serde_json;
 
 /// Pins an item to a channel.
 ///

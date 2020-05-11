@@ -20,8 +20,6 @@ use std::convert::From;
 use std::error::Error;
 use std::fmt;
 
-use serde_json;
-
 #[derive(Clone, Default, Debug)]
 pub struct CreateRequest<'a> {
     /// A name for the User Group. Must be unique among User Groups.

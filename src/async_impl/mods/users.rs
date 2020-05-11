@@ -16,7 +16,6 @@
 
 pub use crate::mod_types::users_types::*;
 use crate::requests::SlackWebRequestSender;
-use serde_json;
 
 /// Delete the user profile photo
 ///

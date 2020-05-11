@@ -14,7 +14,6 @@
 
 pub use crate::mod_types::usergroups_users_types::*;
 use crate::requests::SlackWebRequestSender;
-use serde_json;
 
 /// List all users in a User Group
 ///

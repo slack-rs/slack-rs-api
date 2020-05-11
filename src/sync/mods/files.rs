@@ -16,7 +16,6 @@
 
 pub use crate::mod_types::files_types::*;
 use crate::sync::requests::SlackWebRequestSender;
-use serde_json;
 
 /// Deletes a file.
 ///

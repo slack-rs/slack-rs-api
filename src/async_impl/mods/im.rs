@@ -16,7 +16,6 @@
 
 pub use crate::mod_types::im_types::*;
 use crate::requests::SlackWebRequestSender;
-use serde_json;
 
 /// Close a direct message channel.
 ///

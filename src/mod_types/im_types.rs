@@ -20,8 +20,6 @@ use std::convert::From;
 use std::error::Error;
 use std::fmt;
 
-use serde_json;
-
 #[derive(Clone, Default, Debug)]
 pub struct CloseRequest<'a> {
     /// Direct message channel to close.

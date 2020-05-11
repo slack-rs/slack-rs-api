@@ -14,7 +14,6 @@
 
 pub use crate::mod_types::oauth_types::*;
 use crate::sync::requests::SlackWebRequestSender;
-use serde_json;
 
 /// Exchanges a temporary OAuth code for an API token.
 ///

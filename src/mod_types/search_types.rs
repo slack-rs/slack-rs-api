@@ -20,8 +20,6 @@ use std::convert::From;
 use std::error::Error;
 use std::fmt;
 
-use serde_json;
-
 #[derive(Clone, Default, Debug)]
 pub struct AllRequest<'a> {
     /// Search query. May contains booleans, etc.

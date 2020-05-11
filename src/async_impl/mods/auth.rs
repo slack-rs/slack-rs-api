@@ -14,7 +14,6 @@
 
 pub use crate::mod_types::auth_types::*;
 use crate::requests::SlackWebRequestSender;
-use serde_json;
 
 /// Revokes a token.
 ///

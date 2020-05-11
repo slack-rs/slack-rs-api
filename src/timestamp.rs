@@ -1,5 +1,3 @@
-use serde;
-
 #[derive(Debug, Clone, Copy, Default, Eq, PartialEq, Ord, PartialOrd, Hash)]
 pub struct Timestamp(u64);
 
