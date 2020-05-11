@@ -38,3 +38,14 @@ reqwest = ["reqwest_", "async"]
 reqwest_blocking = ["reqwest_/blocking", "sync"]
 with_rustls = ["reqwest_/rustls-tls"]
 with_native_tls = ["reqwest_/native-tls"]
+
+[package.metadata.docs.rs]
+all-features = true
+
+[package.metadata.playground]
+features = [
+    "async",
+    "reqwest",
+    "sync",
+    "reqwest_blocking",
+]
