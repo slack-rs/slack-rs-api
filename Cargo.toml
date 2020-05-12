@@ -28,7 +28,7 @@ optional = true
 [dev-dependencies.tokio]
 package = "tokio"
 version = "0.2"
-features = ["full"]
+features = ["macros"]
 
 [features]
 default = ["reqwest", "with_native_tls"]
