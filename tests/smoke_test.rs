@@ -1,3 +1,5 @@
+#![cfg(feature = "reqwest")]
+
 use slack_api as slack;
 
 use std::env;
