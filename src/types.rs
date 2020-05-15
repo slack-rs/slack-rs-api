@@ -221,7 +221,7 @@ impl<'de> ::serde::Deserialize<'de> for Message {
     {
         use ::serde::de::Error as SerdeError;
 
-        const VARIANTS: &'static [&'static str] = &[
+        const VARIANTS: &[&str] = &[
             "standard",
             "bot_add",
             "bot_disable",

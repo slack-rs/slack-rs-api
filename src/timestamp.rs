@@ -1,5 +1,3 @@
-use serde;
-
 #[derive(Debug, Clone, Copy, Default, Eq, PartialEq, Ord, PartialOrd, Hash)]
 pub struct Timestamp(u64);
 
@@ -43,7 +41,7 @@ impl<'de> ::serde::Deserialize<'de> for Timestamp {
         // slack seems to use strings sometimes to
         // maintain precision greater than what f64 is happy with
         // so custom parser to get the f128 out of the string
-        
+
         let value = ::serde_json::Value::deserialize(deserializer)?;
 
         if let Some(s) = value.as_str() {
@@ -52,12 +50,12 @@ impl<'de> ::serde::Deserialize<'de> for Timestamp {
                 let i = s[..dot_index].parse::<u64>();
                 let d = s[dot_index..].parse::<f64>();
                 if let (Ok(i), Ok(d)) = (i, d) {
-                    return Ok((i, d).into())
+                    return Ok((i, d).into());
                 }
             } else {
                 // must be u64 in a string
                 if let Ok(u) = s.parse::<u64>() {
-                    return Ok(u.into())
+                    return Ok(u.into());
                 }
             }
         }
@@ -76,7 +74,7 @@ impl<'de> ::serde::Deserialize<'de> for Timestamp {
 }
 
 impl Timestamp {
-    pub fn to_param_value(&self) -> String {
+    pub fn to_param_value(self) -> String {
         format!("{}", self)
     }
 }

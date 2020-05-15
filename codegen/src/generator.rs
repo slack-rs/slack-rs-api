@@ -27,21 +27,41 @@ pub struct Module {
 }
 
 impl Module {
-    pub fn generate(&self) -> String {
-        format!(
-            "{header}
-
-            {docs}
-
+    pub fn generate(&self, gen_mode: GenMode) -> String {
+        let type_imports = format!(
+            "
             #[allow(unused_imports)]
             use std::collections::HashMap;
             use std::convert::From;
             use std::error::Error;
             use std::fmt;
+        "
+        );
 
-            use serde_json;
+        let imports = match gen_mode {
+            GenMode::Types => vec![type_imports],
+            GenMode::Sync => vec![
+                format!("use crate::sync::requests::SlackWebRequestSender;"),
+                format!(
+                    "pub use crate::mod_types::{}_types::*;",
+                    self.get_safe_name()
+                ),
+            ],
+            GenMode::Async => vec![
+                format!("use crate::requests::SlackWebRequestSender;"),
+                format!(
+                    "pub use crate::mod_types::{}_types::*;",
+                    self.get_safe_name()
+                ),
+            ],
+        };
 
-            use crate::requests::SlackWebRequestSender;
+        format!(
+            "{header}
+
+            {docs}
+
+            {imports}
 
             {methods}",
             header = AUTOGEN_HEADER,
@@ -53,14 +73,39 @@ impl Module {
             methods = self
                 .methods
                 .iter()
-                .map(Method::generate)
+                .map(|p| p.generate(gen_mode))
                 .collect::<Vec<String>>()
-                .join("\n")
+                .join("\n"),
+            imports = imports.join("\n"),
         )
     }
 
     pub fn get_safe_name(&self) -> String {
         self.name.replace('.', "_")
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum GenMode {
+    Async,
+    Sync,
+    Types,
+}
+
+impl GenMode {
+    fn dot_await(self) -> &'static str {
+        match self {
+            GenMode::Async => ".await",
+            GenMode::Sync => "",
+            _ => unreachable!(),
+        }
+    }
+    fn fn_type(self) -> &'static str {
+        match self {
+            GenMode::Async => "async fn",
+            GenMode::Sync => "fn",
+            _ => unreachable!(),
+        }
     }
 }
 
@@ -75,7 +120,7 @@ pub struct Method {
 }
 
 impl Method {
-    pub fn generate(&self) -> String {
+    pub fn generate(&self, gen_mode: GenMode) -> String {
         // HACK: these methods requires multipart support, which is not yet supported by this library
         if self.name == "files.upload" || self.name == "users.setPhoto" {
             return String::new();
@@ -91,12 +136,12 @@ impl Method {
             .generate(&response_struct_name, &error_enum_name);
         let response_type = self.response.get_response_type(&response_struct_name);
 
-        let send_call = {
+        let send_call = || {
             let mut base_call = format!(
                 "\
                 let url = crate::get_slack_url_for_method(\"{name}\");
                 client.send(&url, &params[..])
-                    .await
+                    {dot_await}
                     .map_err({error_type}::Client)
                     .and_then(|result| {{
                         serde_json::from_str::<{response_type}>(&result)
@@ -104,7 +149,8 @@ impl Method {
                     }})",
                 name = self.name,
                 response_type = response_struct_name,
-                error_type = error_enum_name
+                error_type = error_enum_name,
+                dot_await = gen_mode.dot_await(),
             );
 
             match response_type {
@@ -128,16 +174,24 @@ impl Method {
         };
 
         if self.params.is_empty() {
+            if gen_mode == GenMode::Types {
+                return format!(
+                    "\
+
+                    {response}
+                    ",
+                    response = response,
+                );
+            }
+
             format!("\
                 {documentation}
-                pub async fn {method_name}<R>(client: &R) -> Result<{response_type}, {error_type}<R::Error>>
+                pub {fn_type} {method_name}<R>(client: &R) -> Result<{response_type}, {error_type}<R::Error>>
                     where R: SlackWebRequestSender
                 {{
                     let params = &[];
                     {send_call}
                 }}
-
-                {response}
                 ",
                 documentation = format_docs("///", &[
                     &self.description,
@@ -147,20 +201,27 @@ impl Method {
                 method_name = fn_name,
                 response_type = response_struct_name,
                 error_type = error_enum_name,
-                response = response,
-                send_call = send_call
+                send_call = send_call(),
+                fn_type = gen_mode.fn_type(),
             )
         } else if self.params.len() == 1 && self.params[0].ty == "auth_token" {
+            if gen_mode == GenMode::Types {
+                return format!(
+                    "\
+
+                    {response}
+                    ",
+                    response = response,
+                );
+            }
             format!("\
                 {documentation}
-                pub async fn {method_name}<R>(client: &R, token: &str) -> Result<{response_type}, {error_type}<R::Error>>
+                pub {fn_type} {method_name}<R>(client: &R, token: &str) -> Result<{response_type}, {error_type}<R::Error>>
                     where R: SlackWebRequestSender
                 {{
                     let params = &[(\"token\", token)];
                     {send_call}
                 }}
-
-                {response}
                 ",
                 documentation = format_docs("///", &[
                     &self.description,
@@ -170,8 +231,8 @@ impl Method {
                 method_name = fn_name,
                 response_type = response_struct_name,
                 error_type = error_enum_name,
-                response = response,
-                send_call = send_call
+                send_call = send_call(),
+                fn_type = gen_mode.fn_type(),
             )
         } else {
             let has_token = self.params.iter().any(|p| p.ty == "auth_token");
@@ -184,9 +245,21 @@ impl Method {
             } else {
                 format!("client: &R, request: &{}{}", request_struct_name, lifetime)
             };
+            if gen_mode == GenMode::Types {
+                return format!(
+                    "\
+
+                    {request}
+
+                    {response}
+                    ",
+                    response = response,
+                    request = self.get_request_struct(&request_struct_name, gen_mode),
+                );
+            }
             format!("\
                 {documentation}
-                pub async fn {method_name}<R>({method_params}) -> Result<{response_type}, {error_type}<R::Error>>
+                pub {fn_type} {method_name}<R>({method_params}) -> Result<{response_type}, {error_type}<R::Error>>
                     where R: SlackWebRequestSender
                 {{
                     {local_vars}
@@ -197,10 +270,6 @@ impl Method {
                     let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
                     {send_call}
                 }}
-
-                {request}
-
-                {response}
                 ",
                 documentation = format_docs("///", &[
                     &self.description,
@@ -210,8 +279,6 @@ impl Method {
                 method_name = fn_name,
                 response_type = response_struct_name,
                 error_type = error_enum_name,
-                response = response,
-                request = self.get_request_struct(&request_struct_name),
                 method_params = method_params,
                 token = if has_token { "Some((\"token\", token))," } else { "" },
                 local_vars = self.params.iter()
@@ -226,7 +293,8 @@ impl Method {
                     .map(Param::get_pair)
                     .collect::<Vec<String>>()
                     .join(",\n"),
-                send_call = send_call
+                send_call = send_call(),
+                fn_type = gen_mode.fn_type(),
             )
         }
     }
@@ -239,7 +307,7 @@ impl Method {
             .all(|p| p.ty == "integer" || p.ty == "boolean")
     }
 
-    fn get_request_struct(&self, ty_name: &str) -> String {
+    fn get_request_struct(&self, ty_name: &str, gen_mode: GenMode) -> String {
         format!(
             "\
             #[derive(Clone, Default, Debug)]
@@ -252,7 +320,7 @@ impl Method {
                 .iter()
                 .filter(|p| p.ty != "auth_token") // passed in method params instead
                 .filter(|p| p.name != "simple_latest") // HACK: simple_latest breaks deserialization
-                .map(Param::generate)
+                .map(|p| p.generate(gen_mode))
                 .collect::<Vec<String>>()
                 .join("\n"),
             lifetime = if self.has_lifetime() { "<'a>" } else { "" }
@@ -498,7 +566,7 @@ pub struct Param {
 }
 
 impl Param {
-    fn generate(&self) -> String {
+    fn generate(&self, _gen_mode: GenMode) -> String {
         format!(
             "{documentation}\npub {name}: {ty},",
             documentation = format_docs("///", &self.description),
@@ -666,7 +734,7 @@ impl JsonEnum {
                 {{
                     use ::serde::de::Error as SerdeError;
 
-                    const VARIANTS: &'static [&'static str] = &[{variant_names}];
+                    const VARIANTS: &[&str] = &[{variant_names}];
 
                     let value = ::serde_json::Value::deserialize(deserializer)?;
                     if let Some(ty_val) = value.get(\"{variant_field}\") {{
