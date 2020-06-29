@@ -59,3 +59,8 @@ required-features = ["reqwest"]
 name = "channel_history"
 path = "examples/channel_history.rs"
 required-features = ["reqwest"]
+
+[[example]]
+name = "channel_history_sync"
+path = "examples/channel_history_sync.rs"
+required-features = ["sync", "reqwest_blocking"]
