@@ -1,3 +1,8 @@
+# 0.23.0
+* slack_api now provides async functions (enabled with "async" feature, on by default)
+* slack_api::sync provides the original functions (enabled with "sync" feature)
+* `Timestamp` type replaces all uses of string / u64 / f64 as timestamps
+
 # 0.22.0
 * Updates to API
   * #68 Bot icons are sometimes an array

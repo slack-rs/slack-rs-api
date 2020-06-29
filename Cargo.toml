@@ -5,8 +5,9 @@ documentation = "https://docs.rs/slack_api"
 license = "Apache-2.0"
 name = "slack_api"
 repository = "https://github.com/slack-rs/slack-rs-api.git"
-version = "0.22.0"
+version = "0.23.0"
 edition = "2018"
+readme = "README.md"
 
 [dependencies]
 serde = "1.0"
@@ -59,3 +60,8 @@ required-features = ["reqwest"]
 name = "channel_history"
 path = "examples/channel_history.rs"
 required-features = ["reqwest"]
+
+[[example]]
+name = "channel_history_sync"
+path = "examples/channel_history_sync.rs"
+required-features = ["sync", "reqwest_blocking"]
