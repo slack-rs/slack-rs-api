@@ -16,11 +16,11 @@ slack_api = "0.23.0"
 
 ### Async
 `default-features` include an async functions and client using [reqwest][reqwest]  
-See [async channel history example](examples/channel_histoy.hs)
+See [async channel history example](examples/channel_history.rs)
 
 ### Sync
 The `"sync"` feature provides sync functions and the `"reqwest_blocking"` feature provides a sync client using reqwest  
-See [sync channel history example](examples/channel_histoy_sync.hs)
+See [sync channel history example](examples/channel_history_sync.rs)
 
 ## Slack docs
 Slack's api is large and changes often. Their docs are high quality and no attempt to replicate them is made in this crate's docs. Please refer to their docs as your primary resource of how slack's api works.
