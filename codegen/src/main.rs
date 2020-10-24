@@ -10,6 +10,7 @@ use std::process::Command;
 
 use clap::{App, Arg};
 use inflector::Inflector;
+use reqwest::blocking::Client;
 
 mod json_schema;
 use crate::json_schema::{JsonSchema, PropType};
@@ -17,8 +18,14 @@ use crate::json_schema::{JsonSchema, PropType};
 mod generator;
 use crate::generator::*;
 
+mod schema;
+use schema::Spec;
+
+mod vec_or_single;
+
 const SCHEMA_DIR: &'static str = concat!(env!("CARGO_MANIFEST_DIR"), "/slack-api-schemas");
 const DEFAULT_OUT_DIR: &'static str = concat!(env!("CARGO_MANIFEST_DIR"), "/../src");
+const SLACK_API_SCHEMA: &'static str = "https://api.slack.com/specs/openapi/v2/slack_web.json";
 
 fn generate_types(output_path: &Path) -> io::Result<()> {
     let codegen_filepath = output_path.join("types.rs");
@@ -157,32 +164,42 @@ fn main() {
         let _ = fs::create_dir(outdir);
     }
 
-    {
-        let moddir = outdir.join("mod_types");
-        if !moddir.exists() {
-            let _ = fs::create_dir(&moddir);
-        }
+    let schema: Spec = Client::new()
+        .get(SLACK_API_SCHEMA)
+        .send()
+        .expect("Unable to send request to slack api")
+        .error_for_status()
+        .expect("Slack Server send failure code")
+        .json()
+        .expect("Unable to deserialize slack server response");
 
-        generate_modules(&moddir, GenMode::Types).unwrap();
-    }
 
-    {
-        let moddir = outdir.join("async_impl").join("mods");
-        if !moddir.exists() {
-            let _ = fs::create_dir(&moddir);
-        }
+    // {
+    //     let moddir = outdir.join("mod_types");
+    //     if !moddir.exists() {
+    //         let _ = fs::create_dir(&moddir);
+    //     }
 
-        generate_modules(&moddir, GenMode::Async).unwrap();
-    }
+    //     generate_modules(&moddir, GenMode::Types).unwrap();
+    // }
 
-    {
-        let moddir = outdir.join("sync").join("mods");
-        if !moddir.exists() {
-            let _ = fs::create_dir(&moddir);
-        }
+    // {
+    //     let moddir = outdir.join("async_impl").join("mods");
+    //     if !moddir.exists() {
+    //         let _ = fs::create_dir(&moddir);
+    //     }
 
-        generate_modules(&moddir, GenMode::Sync).unwrap();
-    }
+    //     generate_modules(&moddir, GenMode::Async).unwrap();
+    // }
 
-    generate_types(outdir).unwrap();
+    // {
+    //     let moddir = outdir.join("sync").join("mods");
+    //     if !moddir.exists() {
+    //         let _ = fs::create_dir(&moddir);
+    //     }
+
+    //     generate_modules(&moddir, GenMode::Sync).unwrap();
+    // }
+
+    // generate_types(outdir).unwrap();
 }
