@@ -1,4 +1,5 @@
 use crate::vec_or_single::VecOrSingle;
+use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
@@ -16,6 +17,45 @@ pub struct Spec {
     pub security_definitions: BTreeMap<String, Security>,
     pub swagger: String,
     pub tags: Vec<Tag>,
+}
+
+impl Spec {
+    pub fn replace_refs(&mut self) -> Result<()> {
+        for path in self.paths.values_mut() {
+            for mut operation in &mut [&mut path.get, &mut path.post] {
+                if let Some(ref mut op) = &mut operation {
+                    for response in op.responses.values_mut() {
+                        Self::replace_refs_schema(&mut response.schema, &self.definitions)?;
+                    }
+                }
+            }
+        }
+        Ok(())
+    }
+
+    fn replace_refs_schema(
+        schema: &mut Schema,
+        definitions: &BTreeMap<String, Schema>,
+    ) -> Result<()> {
+        if let Some(ref_path) = &schema.ref_path {
+            let def_name = ref_path.trim_start_matches("#/definitions/");
+            let def = definitions
+                .get(def_name)
+                .with_context(|| format!("Definition for {} is missing", def_name))?;
+            *schema = def.clone();
+        }
+        if let Some(items) = &mut schema.items {
+            for item in &mut items.0 {
+                Self::replace_refs_schema(item, definitions)?;
+            }
+        }
+        if let Some(properties) = &mut schema.properties {
+            for property in properties.values_mut() {
+                Self::replace_refs_schema(property, definitions)?;
+            }
+        }
+        Ok(())
+    }
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
@@ -59,6 +99,30 @@ pub struct Schema {
     pub ref_path: Option<String>,
 }
 
+impl Schema {
+    pub fn merge(&mut self, other: &Schema) {
+        match (&mut self.items, &other.items) {
+            (_, None) => {}
+            (None, o) => self.items = o.clone(),
+            (Some(ref mut s), Some(ref o)) => s.extend_from_slice(&o),
+        }
+        match (&mut self.enum_values, &other.enum_values) {
+            (_, None) => {}
+            (None, o) => self.enum_values = o.clone(),
+            (Some(ref mut s), Some(ref o)) => s.extend_from_slice(&o),
+        }
+        match (&mut self.properties, &other.properties) {
+            (_, None) => {}
+            (None, o) => self.properties = o.clone(),
+            (Some(ref mut s), Some(ref o)) => {
+                for (key, value) in o {
+                    let _ = s.entry(key.to_string()).or_insert_with(|| value.clone());
+                }
+            }
+        }
+    }
+}
+
 #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
 #[serde(untagged)]
 pub enum AdditionalProperties {
@@ -66,7 +130,7 @@ pub enum AdditionalProperties {
     Type {
         #[serde(rename = "type")]
         param_type: String,
-    }
+    },
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
@@ -114,7 +178,7 @@ pub struct Operation {
     pub external_docs: ExternalDoc,
     #[serde(rename = "operationId")]
     pub operation_id: String,
-    pub parameters: Vec<ParameterOrRef>,
+    pub parameters: Vec<Parameter>,
     pub produces: Vec<String>,
     pub responses: BTreeMap<String, Response>,
     pub security: Vec<SecurityRequirement>,
@@ -122,23 +186,16 @@ pub struct Operation {
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
-#[serde(untagged)]
-pub enum ParameterOrRef {
-    Parameter {
-        #[serde(skip_serializing_if = "Option::is_none")]
-        description: Option<String>,
-        #[serde(rename = "in")]
-        location: String,
-        name: String,
-        #[serde(skip_serializing_if = "Option::is_none")]
-        required: Option<bool>,
-        #[serde(rename = "type")]
-        param_type: String,
-    },
-    Ref {
-        #[serde(rename = "$ref")]
-        ref_path: String,
-    },
+pub struct Parameter {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub description: Option<String>,
+    #[serde(rename = "in")]
+    pub location: String,
+    pub name: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub required: Option<bool>,
+    #[serde(rename = "type")]
+    pub param_type: String,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]

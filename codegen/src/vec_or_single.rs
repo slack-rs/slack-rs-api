@@ -1,13 +1,13 @@
 use serde::{
     de::{DeserializeOwned, Deserializer},
-    ser::{SerializeMap, SerializeSeq, Serializer},
+    ser::{SerializeSeq, Serializer},
     Deserialize, Serialize,
 };
 use std::{fmt, marker::PhantomData};
 
 #[derive(Debug, Clone, PartialEq)]
 #[allow(missing_docs)]
-pub struct VecOrSingle<T>(Vec<T>);
+pub struct VecOrSingle<T>(pub Vec<T>);
 
 impl<T> std::ops::Deref for VecOrSingle<T> {
     type Target = Vec<T>;
@@ -18,14 +18,17 @@ impl<T> std::ops::Deref for VecOrSingle<T> {
     }
 }
 
-impl<T: Serialize> Serialize for VecOrSingle<T>
-{
-    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    {
+impl<T> std::ops::DerefMut for VecOrSingle<T> {
+    #[inline]
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
+impl<T: Serialize> Serialize for VecOrSingle<T> {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         match self.split_first() {
-            Some((first, rest)) if rest.is_empty() => {
-                first.serialize(serializer)
-            }
+            Some((first, rest)) if rest.is_empty() => first.serialize(serializer),
             _ => {
                 let mut seq = serializer.serialize_seq(Some(self.len()))?;
                 for e in &self.0 {
@@ -33,13 +36,12 @@ impl<T: Serialize> Serialize for VecOrSingle<T>
                 }
                 seq.end()
             }
-        }        
+        }
     }
 }
 
 impl<'de, T: DeserializeOwned> Deserialize<'de> for VecOrSingle<T> {
-    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<VecOrSingle<T>, D::Error>
-    {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<VecOrSingle<T>, D::Error> {
         struct VecOrSingleVisit<T>(PhantomData<T>);
 
         impl<T: DeserializeOwned> VecOrSingleVisit<T> {
@@ -139,6 +141,8 @@ impl<'de, T: DeserializeOwned> Deserialize<'de> for VecOrSingle<T> {
             }
         }
 
-        deserializer.deserialize_any(VecOrSingleVisit(PhantomData {})).map(|v| VecOrSingle(v))
+        deserializer
+            .deserialize_any(VecOrSingleVisit(PhantomData {}))
+            .map(VecOrSingle)
     }
 }
