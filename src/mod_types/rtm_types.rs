@@ -13,6 +13,7 @@
 //=============================================================================
 
 #![allow(unused_imports)]
+#![allow(dead_code)]
 
 use std::convert::From;
 use std::error::Error;
@@ -62,23 +63,23 @@ impl<E: Error> Into<Result<ConnectResponse, ConnectError<E>>> for ConnectRespons
 
 #[derive(Debug)]
 pub enum ConnectError<E: Error> {
-    NotAuthed,
-    InvalidAuth,
     AccountInactive,
-    TokenRevoked,
-    NoPermission,
+    FatalError,
     InvalidArgName,
     InvalidArrayArg,
+    InvalidAuth,
     InvalidCharset,
     InvalidFormData,
-    InvalidPostType,
-    MissingPostType,
-    TeamAddedToOrg,
     InvalidJson,
+    InvalidPostType,
     JsonNotObject,
+    MissingPostType,
+    NoPermission,
+    NotAuthed,
     RequestTimeout,
+    TeamAddedToOrg,
+    TokenRevoked,
     UpgradeRequired,
-    FatalError,
     /// The response was not parseable as the expected object
     MalformedResponse(String, serde_json::error::Error),
     /// The response returned an error that was unknown to the library
@@ -90,23 +91,23 @@ pub enum ConnectError<E: Error> {
 impl<'a, E: Error> From<&'a str> for ConnectError<E> {
     fn from(s: &'a str) -> Self {
         match s {
-            "not_authed" => ConnectError::NotAuthed,
-            "invalid_auth" => ConnectError::InvalidAuth,
             "account_inactive" => ConnectError::AccountInactive,
-            "token_revoked" => ConnectError::TokenRevoked,
-            "no_permission" => ConnectError::NoPermission,
+            "fatal_error" => ConnectError::FatalError,
             "invalid_arg_name" => ConnectError::InvalidArgName,
             "invalid_array_arg" => ConnectError::InvalidArrayArg,
+            "invalid_auth" => ConnectError::InvalidAuth,
             "invalid_charset" => ConnectError::InvalidCharset,
             "invalid_form_data" => ConnectError::InvalidFormData,
-            "invalid_post_type" => ConnectError::InvalidPostType,
-            "missing_post_type" => ConnectError::MissingPostType,
-            "team_added_to_org" => ConnectError::TeamAddedToOrg,
             "invalid_json" => ConnectError::InvalidJson,
+            "invalid_post_type" => ConnectError::InvalidPostType,
             "json_not_object" => ConnectError::JsonNotObject,
+            "missing_post_type" => ConnectError::MissingPostType,
+            "no_permission" => ConnectError::NoPermission,
+            "not_authed" => ConnectError::NotAuthed,
             "request_timeout" => ConnectError::RequestTimeout,
+            "team_added_to_org" => ConnectError::TeamAddedToOrg,
+            "token_revoked" => ConnectError::TokenRevoked,
             "upgrade_required" => ConnectError::UpgradeRequired,
-            "fatal_error" => ConnectError::FatalError,
             _ => ConnectError::Unknown(s.to_owned()),
         }
     }
@@ -115,23 +116,23 @@ impl<'a, E: Error> From<&'a str> for ConnectError<E> {
 impl<E: Error> fmt::Display for ConnectError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
-            ConnectError::NotAuthed => write!(f, "Server returned error not_authed"),
-            ConnectError::InvalidAuth => write!(f, "Server returned error invalid_auth"),
             ConnectError::AccountInactive => write!(f, "Server returned error account_inactive"),
-            ConnectError::TokenRevoked => write!(f, "Server returned error token_revoked"),
-            ConnectError::NoPermission => write!(f, "Server returned error no_permission"),
+            ConnectError::FatalError => write!(f, "Server returned error fatal_error"),
             ConnectError::InvalidArgName => write!(f, "Server returned error invalid_arg_name"),
             ConnectError::InvalidArrayArg => write!(f, "Server returned error invalid_array_arg"),
+            ConnectError::InvalidAuth => write!(f, "Server returned error invalid_auth"),
             ConnectError::InvalidCharset => write!(f, "Server returned error invalid_charset"),
             ConnectError::InvalidFormData => write!(f, "Server returned error invalid_form_data"),
-            ConnectError::InvalidPostType => write!(f, "Server returned error invalid_post_type"),
-            ConnectError::MissingPostType => write!(f, "Server returned error missing_post_type"),
-            ConnectError::TeamAddedToOrg => write!(f, "Server returned error team_added_to_org"),
             ConnectError::InvalidJson => write!(f, "Server returned error invalid_json"),
+            ConnectError::InvalidPostType => write!(f, "Server returned error invalid_post_type"),
             ConnectError::JsonNotObject => write!(f, "Server returned error json_not_object"),
+            ConnectError::MissingPostType => write!(f, "Server returned error missing_post_type"),
+            ConnectError::NoPermission => write!(f, "Server returned error no_permission"),
+            ConnectError::NotAuthed => write!(f, "Server returned error not_authed"),
             ConnectError::RequestTimeout => write!(f, "Server returned error request_timeout"),
+            ConnectError::TeamAddedToOrg => write!(f, "Server returned error team_added_to_org"),
+            ConnectError::TokenRevoked => write!(f, "Server returned error token_revoked"),
             ConnectError::UpgradeRequired => write!(f, "Server returned error upgrade_required"),
-            ConnectError::FatalError => write!(f, "Server returned error fatal_error"),
             ConnectError::MalformedResponse(_, ref e) => write!(f, "{}", e),
             ConnectError::Unknown(ref s) => write!(f, "{}", s),
             ConnectError::Client(ref inner) => write!(f, "{}", inner),

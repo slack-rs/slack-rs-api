@@ -13,6 +13,7 @@
 //=============================================================================
 
 #![allow(unused_imports)]
+#![allow(dead_code)]
 
 use std::convert::From;
 use std::error::Error;
@@ -20,9 +21,9 @@ use std::fmt;
 
 #[derive(Clone, Default, Debug)]
 pub struct InvalidateRequest {
+    pub session_id: u64,
     /// ID of the team that the session belongs to
     pub team_id: String,
-    pub session_id: u64,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -83,10 +84,10 @@ impl<E: Error + 'static> Error for InvalidateError<E> {
 
 #[derive(Clone, Default, Debug)]
 pub struct ResetRequest {
-    /// The ID of the user to wipe sessions for
-    pub user_id: String,
     /// Only expire mobile sessions (default: false)
     pub mobile_only: Option<bool>,
+    /// The ID of the user to wipe sessions for
+    pub user_id: String,
     /// Only expire web sessions (default: false)
     pub web_only: Option<bool>,
 }

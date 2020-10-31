@@ -13,6 +13,7 @@
 //=============================================================================
 
 #![allow(unused_imports)]
+#![allow(dead_code)]
 
 use std::convert::From;
 use std::error::Error;
@@ -20,11 +21,11 @@ use std::fmt;
 
 #[derive(Clone, Default, Debug)]
 pub struct ListRequest {
-    pub team_id: String,
-    /// The maximum number of items to return. Must be between 1 - 1000 both inclusive.
-    pub limit: Option<u64>,
     /// Set `cursor` to `next_cursor` returned by the previous call to list items in the next page.
     pub cursor: Option<String>,
+    /// The maximum number of items to return. Must be between 1 - 1000 both inclusive.
+    pub limit: Option<u64>,
+    pub team_id: String,
 }
 
 #[derive(Clone, Debug, Deserialize)]

@@ -13,6 +13,7 @@
 //=============================================================================
 
 #![allow(unused_imports)]
+#![allow(dead_code)]
 
 use std::convert::From;
 use std::error::Error;
@@ -20,14 +21,14 @@ use std::fmt;
 
 #[derive(Clone, Default, Debug)]
 pub struct AddGroupRequest {
-    /// Authentication token. Requires scope: `admin.conversations:write`
-    pub token: String,
-    /// The workspace where the channel exists. This argument is required for channels only tied to one workspace, and optional for channels that are shared across an organization.
-    pub team_id: Option<String>,
-    /// The [IDP Group](https://slack.com/help/articles/115001435788-Connect-identity-provider-groups-to-your-Enterprise-Grid-org) ID to be an allowlist for the private channel.
-    pub group_id: String,
     /// The channel to link this group to.
     pub channel_id: String,
+    /// The [IDP Group](https://slack.com/help/articles/115001435788-Connect-identity-provider-groups-to-your-Enterprise-Grid-org) ID to be an allowlist for the private channel.
+    pub group_id: String,
+    /// The workspace where the channel exists. This argument is required for channels only tied to one workspace, and optional for channels that are shared across an organization.
+    pub team_id: Option<String>,
+    /// Authentication token. Requires scope: `admin.conversations:write`
+    pub token: String,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -151,14 +152,14 @@ impl<E: Error + 'static> Error for ListGroupsError<E> {
 
 #[derive(Clone, Default, Debug)]
 pub struct RemoveGroupRequest {
-    /// Authentication token. Requires scope: `admin.conversations:write`
-    pub token: String,
-    /// The workspace where the channel exists. This argument is required for channels only tied to one workspace, and optional for channels that are shared across an organization.
-    pub team_id: String,
-    /// The [IDP Group](https://slack.com/help/articles/115001435788-Connect-identity-provider-groups-to-your-Enterprise-Grid-org) ID to remove from the private channel.
-    pub group_id: String,
     /// The channel to remove the linked group from.
     pub channel_id: String,
+    /// The [IDP Group](https://slack.com/help/articles/115001435788-Connect-identity-provider-groups-to-your-Enterprise-Grid-org) ID to remove from the private channel.
+    pub group_id: String,
+    /// The workspace where the channel exists. This argument is required for channels only tied to one workspace, and optional for channels that are shared across an organization.
+    pub team_id: String,
+    /// Authentication token. Requires scope: `admin.conversations:write`
+    pub token: String,
 }
 
 #[derive(Clone, Debug, Deserialize)]

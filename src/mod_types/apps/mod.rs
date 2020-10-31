@@ -13,6 +13,7 @@
 //=============================================================================
 
 #![allow(unused_imports)]
+#![allow(dead_code)]
 
 pub mod event;
 pub mod permissions;
@@ -49,28 +50,28 @@ impl<E: Error> Into<Result<UninstallResponse, UninstallError<E>>> for UninstallR
 
 #[derive(Debug)]
 pub enum UninstallError<E: Error> {
-    InvalidClientId,
+    AccountInactive,
     BadClientSecret,
     ClientIdTokenMismatch,
-    NotAuthed,
-    InvalidAuth,
-    AccountInactive,
-    TokenRevoked,
-    NoPermission,
-    OrgLoginRequired,
-    UserIsBot,
+    FatalError,
     InvalidArgName,
     InvalidArrayArg,
+    InvalidAuth,
     InvalidCharset,
+    InvalidClientId,
     InvalidFormData,
-    InvalidPostType,
-    MissingPostType,
-    TeamAddedToOrg,
     InvalidJson,
+    InvalidPostType,
     JsonNotObject,
+    MissingPostType,
+    NoPermission,
+    NotAuthed,
+    OrgLoginRequired,
     RequestTimeout,
+    TeamAddedToOrg,
+    TokenRevoked,
     UpgradeRequired,
-    FatalError,
+    UserIsBot,
     /// The response was not parseable as the expected object
     MalformedResponse(String, serde_json::error::Error),
     /// The response returned an error that was unknown to the library
@@ -82,28 +83,28 @@ pub enum UninstallError<E: Error> {
 impl<'a, E: Error> From<&'a str> for UninstallError<E> {
     fn from(s: &'a str) -> Self {
         match s {
-            "invalid_client_id" => UninstallError::InvalidClientId,
+            "account_inactive" => UninstallError::AccountInactive,
             "bad_client_secret" => UninstallError::BadClientSecret,
             "client_id_token_mismatch" => UninstallError::ClientIdTokenMismatch,
-            "not_authed" => UninstallError::NotAuthed,
-            "invalid_auth" => UninstallError::InvalidAuth,
-            "account_inactive" => UninstallError::AccountInactive,
-            "token_revoked" => UninstallError::TokenRevoked,
-            "no_permission" => UninstallError::NoPermission,
-            "org_login_required" => UninstallError::OrgLoginRequired,
-            "user_is_bot" => UninstallError::UserIsBot,
+            "fatal_error" => UninstallError::FatalError,
             "invalid_arg_name" => UninstallError::InvalidArgName,
             "invalid_array_arg" => UninstallError::InvalidArrayArg,
+            "invalid_auth" => UninstallError::InvalidAuth,
             "invalid_charset" => UninstallError::InvalidCharset,
+            "invalid_client_id" => UninstallError::InvalidClientId,
             "invalid_form_data" => UninstallError::InvalidFormData,
-            "invalid_post_type" => UninstallError::InvalidPostType,
-            "missing_post_type" => UninstallError::MissingPostType,
-            "team_added_to_org" => UninstallError::TeamAddedToOrg,
             "invalid_json" => UninstallError::InvalidJson,
+            "invalid_post_type" => UninstallError::InvalidPostType,
             "json_not_object" => UninstallError::JsonNotObject,
+            "missing_post_type" => UninstallError::MissingPostType,
+            "no_permission" => UninstallError::NoPermission,
+            "not_authed" => UninstallError::NotAuthed,
+            "org_login_required" => UninstallError::OrgLoginRequired,
             "request_timeout" => UninstallError::RequestTimeout,
+            "team_added_to_org" => UninstallError::TeamAddedToOrg,
+            "token_revoked" => UninstallError::TokenRevoked,
             "upgrade_required" => UninstallError::UpgradeRequired,
-            "fatal_error" => UninstallError::FatalError,
+            "user_is_bot" => UninstallError::UserIsBot,
             _ => UninstallError::Unknown(s.to_owned()),
         }
     }
@@ -112,32 +113,32 @@ impl<'a, E: Error> From<&'a str> for UninstallError<E> {
 impl<E: Error> fmt::Display for UninstallError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
-            UninstallError::InvalidClientId => write!(f, "Server returned error invalid_client_id"),
+            UninstallError::AccountInactive => write!(f, "Server returned error account_inactive"),
             UninstallError::BadClientSecret => write!(f, "Server returned error bad_client_secret"),
             UninstallError::ClientIdTokenMismatch => {
                 write!(f, "Server returned error client_id_token_mismatch")
             }
-            UninstallError::NotAuthed => write!(f, "Server returned error not_authed"),
+            UninstallError::FatalError => write!(f, "Server returned error fatal_error"),
+            UninstallError::InvalidArgName => write!(f, "Server returned error invalid_arg_name"),
+            UninstallError::InvalidArrayArg => write!(f, "Server returned error invalid_array_arg"),
             UninstallError::InvalidAuth => write!(f, "Server returned error invalid_auth"),
-            UninstallError::AccountInactive => write!(f, "Server returned error account_inactive"),
-            UninstallError::TokenRevoked => write!(f, "Server returned error token_revoked"),
+            UninstallError::InvalidCharset => write!(f, "Server returned error invalid_charset"),
+            UninstallError::InvalidClientId => write!(f, "Server returned error invalid_client_id"),
+            UninstallError::InvalidFormData => write!(f, "Server returned error invalid_form_data"),
+            UninstallError::InvalidJson => write!(f, "Server returned error invalid_json"),
+            UninstallError::InvalidPostType => write!(f, "Server returned error invalid_post_type"),
+            UninstallError::JsonNotObject => write!(f, "Server returned error json_not_object"),
+            UninstallError::MissingPostType => write!(f, "Server returned error missing_post_type"),
             UninstallError::NoPermission => write!(f, "Server returned error no_permission"),
+            UninstallError::NotAuthed => write!(f, "Server returned error not_authed"),
             UninstallError::OrgLoginRequired => {
                 write!(f, "Server returned error org_login_required")
             }
-            UninstallError::UserIsBot => write!(f, "Server returned error user_is_bot"),
-            UninstallError::InvalidArgName => write!(f, "Server returned error invalid_arg_name"),
-            UninstallError::InvalidArrayArg => write!(f, "Server returned error invalid_array_arg"),
-            UninstallError::InvalidCharset => write!(f, "Server returned error invalid_charset"),
-            UninstallError::InvalidFormData => write!(f, "Server returned error invalid_form_data"),
-            UninstallError::InvalidPostType => write!(f, "Server returned error invalid_post_type"),
-            UninstallError::MissingPostType => write!(f, "Server returned error missing_post_type"),
-            UninstallError::TeamAddedToOrg => write!(f, "Server returned error team_added_to_org"),
-            UninstallError::InvalidJson => write!(f, "Server returned error invalid_json"),
-            UninstallError::JsonNotObject => write!(f, "Server returned error json_not_object"),
             UninstallError::RequestTimeout => write!(f, "Server returned error request_timeout"),
+            UninstallError::TeamAddedToOrg => write!(f, "Server returned error team_added_to_org"),
+            UninstallError::TokenRevoked => write!(f, "Server returned error token_revoked"),
             UninstallError::UpgradeRequired => write!(f, "Server returned error upgrade_required"),
-            UninstallError::FatalError => write!(f, "Server returned error fatal_error"),
+            UninstallError::UserIsBot => write!(f, "Server returned error user_is_bot"),
             UninstallError::MalformedResponse(_, ref e) => write!(f, "{}", e),
             UninstallError::Unknown(ref s) => write!(f, "{}", s),
             UninstallError::Client(ref inner) => write!(f, "{}", inner),

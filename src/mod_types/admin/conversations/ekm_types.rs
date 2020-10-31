@@ -13,6 +13,7 @@
 //=============================================================================
 
 #![allow(unused_imports)]
+#![allow(dead_code)]
 
 use std::convert::From;
 use std::error::Error;
@@ -22,12 +23,12 @@ use std::fmt;
 pub struct ListOriginalConnectedChannelInfoRequest {
     /// A comma-separated list of channels to filter to.
     pub channel_ids: Option<String>,
-    /// A comma-separated list of the workspaces to which the channels you would like returned belong.
-    pub team_ids: Option<String>,
-    /// The maximum number of items to return. Must be between 1 - 1000 both inclusive.
-    pub limit: Option<u64>,
     /// Set `cursor` to `next_cursor` returned by the previous call to list items in the next page.
     pub cursor: Option<String>,
+    /// The maximum number of items to return. Must be between 1 - 1000 both inclusive.
+    pub limit: Option<u64>,
+    /// A comma-separated list of the workspaces to which the channels you would like returned belong.
+    pub team_ids: Option<String>,
 }
 
 #[derive(Clone, Debug, Deserialize)]

@@ -13,6 +13,7 @@
 //=============================================================================
 
 #![allow(unused_imports)]
+#![allow(dead_code)]
 
 use std::convert::From;
 use std::error::Error;
@@ -71,22 +72,22 @@ impl<E: Error> Into<Result<GetResponse, GetError<E>>> for GetResponse {
 
 #[derive(Debug)]
 pub enum GetError<E: Error> {
-    NotAuthed,
-    InvalidAuth,
     AccountInactive,
-    NoPermission,
-    UserIsBot,
     InvalidArgName,
     InvalidArrayArg,
+    InvalidAuth,
     InvalidCharset,
     InvalidFormData,
-    InvalidPostTyp,
-    MissingPostType,
-    TeamAddedToOrg,
     InvalidJson,
+    InvalidPostTyp,
     JsonNotObject,
+    MissingPostType,
+    NoPermission,
+    NotAuthed,
     RequestTimeou,
+    TeamAddedToOrg,
     UpgradeRequired,
+    UserIsBot,
     /// The response was not parseable as the expected object
     MalformedResponse(String, serde_json::error::Error),
     /// The response returned an error that was unknown to the library
@@ -98,22 +99,22 @@ pub enum GetError<E: Error> {
 impl<'a, E: Error> From<&'a str> for GetError<E> {
     fn from(s: &'a str) -> Self {
         match s {
-            "not_authed" => GetError::NotAuthed,
-            "invalid_auth" => GetError::InvalidAuth,
             "account_inactive" => GetError::AccountInactive,
-            "no_permission" => GetError::NoPermission,
-            "user_is_bot" => GetError::UserIsBot,
             "invalid_arg_name" => GetError::InvalidArgName,
             "invalid_array_arg" => GetError::InvalidArrayArg,
+            "invalid_auth" => GetError::InvalidAuth,
             "invalid_charset" => GetError::InvalidCharset,
             "invalid_form_data" => GetError::InvalidFormData,
-            "invalid_post_typ" => GetError::InvalidPostTyp,
-            "missing_post_type" => GetError::MissingPostType,
-            "team_added_to_org" => GetError::TeamAddedToOrg,
             "invalid_json" => GetError::InvalidJson,
+            "invalid_post_typ" => GetError::InvalidPostTyp,
             "json_not_object" => GetError::JsonNotObject,
+            "missing_post_type" => GetError::MissingPostType,
+            "no_permission" => GetError::NoPermission,
+            "not_authed" => GetError::NotAuthed,
             "request_timeou" => GetError::RequestTimeou,
+            "team_added_to_org" => GetError::TeamAddedToOrg,
             "upgrade_required" => GetError::UpgradeRequired,
+            "user_is_bot" => GetError::UserIsBot,
             _ => GetError::Unknown(s.to_owned()),
         }
     }
@@ -122,22 +123,22 @@ impl<'a, E: Error> From<&'a str> for GetError<E> {
 impl<E: Error> fmt::Display for GetError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
-            GetError::NotAuthed => write!(f, "Server returned error not_authed"),
-            GetError::InvalidAuth => write!(f, "Server returned error invalid_auth"),
             GetError::AccountInactive => write!(f, "Server returned error account_inactive"),
-            GetError::NoPermission => write!(f, "Server returned error no_permission"),
-            GetError::UserIsBot => write!(f, "Server returned error user_is_bot"),
             GetError::InvalidArgName => write!(f, "Server returned error invalid_arg_name"),
             GetError::InvalidArrayArg => write!(f, "Server returned error invalid_array_arg"),
+            GetError::InvalidAuth => write!(f, "Server returned error invalid_auth"),
             GetError::InvalidCharset => write!(f, "Server returned error invalid_charset"),
             GetError::InvalidFormData => write!(f, "Server returned error invalid_form_data"),
-            GetError::InvalidPostTyp => write!(f, "Server returned error invalid_post_typ"),
-            GetError::MissingPostType => write!(f, "Server returned error missing_post_type"),
-            GetError::TeamAddedToOrg => write!(f, "Server returned error team_added_to_org"),
             GetError::InvalidJson => write!(f, "Server returned error invalid_json"),
+            GetError::InvalidPostTyp => write!(f, "Server returned error invalid_post_typ"),
             GetError::JsonNotObject => write!(f, "Server returned error json_not_object"),
+            GetError::MissingPostType => write!(f, "Server returned error missing_post_type"),
+            GetError::NoPermission => write!(f, "Server returned error no_permission"),
+            GetError::NotAuthed => write!(f, "Server returned error not_authed"),
             GetError::RequestTimeou => write!(f, "Server returned error request_timeou"),
+            GetError::TeamAddedToOrg => write!(f, "Server returned error team_added_to_org"),
             GetError::UpgradeRequired => write!(f, "Server returned error upgrade_required"),
+            GetError::UserIsBot => write!(f, "Server returned error user_is_bot"),
             GetError::MalformedResponse(_, ref e) => write!(f, "{}", e),
             GetError::Unknown(ref s) => write!(f, "{}", s),
             GetError::Client(ref inner) => write!(f, "{}", inner),

@@ -1,39 +1,19 @@
 //! Functionality for sending requests to Slack.
 
-use std::{borrow::Borrow, error};
-
-/// Functionality for sending authenticated and unauthenticated requests to Slack via HTTP.
-///
-/// If you do not have a custom client to integrate with and just want to send requests, use
-/// the [`default_client()`] function to get a simple request sender.
-pub trait SlackWebRequestSender {
-    type Error: error::Error;
-
-    /// Make an API call to Slack. Takes a map of parameters that get appended to the request as query
-    /// params.
-    fn send<I, K, V, S>(&self, method: S, params: I) -> Result<String, Self::Error>
-    where
-        I: IntoIterator + Send,
-        K: AsRef<str>,
-        V: AsRef<str>,
-        I::Item: Borrow<(K, V)>,
-        S: AsRef<str> + Send;
-}
-
 #[cfg(feature = "reqwest_blocking")]
 mod reqwest_support {
     pub use self::reqwest::Error;
     use reqwest_ as reqwest;
     use std::borrow::Borrow;
 
-    use super::SlackWebRequestSender;
+    use crate::sync::SlackWebRequestSender;
 
     type Client = reqwest::blocking::Client;
 
     impl SlackWebRequestSender for Client {
         type Error = reqwest::Error;
 
-        fn send<I, K, V, S>(&self, method_url: S, params: I) -> Result<String, Self::Error>
+        fn get<I, K, V, S>(&self, method_url: S, params: I) -> Result<String, Self::Error>
         where
             I: IntoIterator + Send,
             K: AsRef<str>,
@@ -46,6 +26,28 @@ mod reqwest_support {
             url.query_pairs_mut().extend_pairs(params);
 
             Ok(self.get(url).send()?.text()?)
+        }
+
+        fn post<I, K, V, S>(
+            &self,
+            method_url: S,
+            form: &[(&str, &str)],
+            headers: I,
+        ) -> Result<String, Self::Error>
+        where
+            I: IntoIterator + Send,
+            K: AsRef<str>,
+            V: AsRef<str>,
+            I::Item: Borrow<(K, V)>,
+            S: AsRef<str> + Send,
+        {
+            let url = reqwest::Url::parse(method_url.as_ref()).expect("Unable to parse url");
+            let mut req = self.post(url).form(form);
+            for v in headers {
+                let (k, v) = v.borrow();
+                req = req.header(k.as_ref(), v.as_ref());
+            }
+            Ok(req.send()?.text()?)
         }
     }
 

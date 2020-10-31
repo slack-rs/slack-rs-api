@@ -13,6 +13,7 @@
 //=============================================================================
 
 #![allow(unused_imports)]
+#![allow(dead_code)]
 
 use std::convert::From;
 use std::error::Error;
@@ -77,6 +78,72 @@ impl<E: Error + 'static> Error for OpenError<E> {
         match *self {
             OpenError::MalformedResponse(_, ref e) => Some(e),
             OpenError::Client(ref inner) => Some(inner),
+            _ => None,
+        }
+    }
+}
+
+#[derive(Clone, Default, Debug)]
+pub struct PublishRequest {
+    /// A string that represents view state to protect against possible race conditions.
+    pub hash: Option<String>,
+    /// `id` of the user you want publish a view to.
+    pub user_id: String,
+    /// A [view payload](/reference/surfaces/views). This must be a JSON-encoded string.
+    pub view: String,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct PublishResponse {
+    #[serde(default)]
+    ok: bool,
+}
+
+impl<E: Error> Into<Result<PublishResponse, PublishError<E>>> for PublishResponse {
+    fn into(self) -> Result<PublishResponse, PublishError<E>> {
+        if self.ok {
+            Ok(self)
+        } else {
+            Err(PublishError::Unknown(
+                "Server failed without providing an error message.".into(),
+            ))
+        }
+    }
+}
+
+#[derive(Debug)]
+pub enum PublishError<E: Error> {
+    /// The response was not parseable as the expected object
+    MalformedResponse(String, serde_json::error::Error),
+    /// The response returned an error that was unknown to the library
+    Unknown(String),
+    /// The client had an error sending the request to Slack
+    Client(E),
+}
+
+impl<'a, E: Error> From<&'a str> for PublishError<E> {
+    fn from(s: &'a str) -> Self {
+        match s {
+            _ => PublishError::Unknown(s.to_owned()),
+        }
+    }
+}
+
+impl<E: Error> fmt::Display for PublishError<E> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match *self {
+            PublishError::MalformedResponse(_, ref e) => write!(f, "{}", e),
+            PublishError::Unknown(ref s) => write!(f, "{}", s),
+            PublishError::Client(ref inner) => write!(f, "{}", inner),
+        }
+    }
+}
+
+impl<E: Error + 'static> Error for PublishError<E> {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+        match *self {
+            PublishError::MalformedResponse(_, ref e) => Some(e),
+            PublishError::Client(ref inner) => Some(inner),
             _ => None,
         }
     }
@@ -148,14 +215,14 @@ impl<E: Error + 'static> Error for PushError<E> {
 
 #[derive(Clone, Default, Debug)]
 pub struct UpdateRequest {
-    /// A unique identifier of the view to be updated. Either `view_id` or `external_id` is required.
-    pub view_id: Option<String>,
     /// A unique identifier of the view set by the developer. Must be unique for all views on a team. Max length of 255 characters. Either `view_id` or `external_id` is required.
     pub external_id: Option<String>,
-    /// A [view object](/reference/surfaces/views). This must be a JSON-encoded string.
-    pub view: Option<String>,
     /// A string that represents view state to protect against possible race conditions.
     pub hash: Option<String>,
+    /// A [view object](/reference/surfaces/views). This must be a JSON-encoded string.
+    pub view: Option<String>,
+    /// A unique identifier of the view to be updated. Either `view_id` or `external_id` is required.
+    pub view_id: Option<String>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -209,72 +276,6 @@ impl<E: Error + 'static> Error for UpdateError<E> {
         match *self {
             UpdateError::MalformedResponse(_, ref e) => Some(e),
             UpdateError::Client(ref inner) => Some(inner),
-            _ => None,
-        }
-    }
-}
-
-#[derive(Clone, Default, Debug)]
-pub struct PublishRequest {
-    /// `id` of the user you want publish a view to.
-    pub user_id: String,
-    /// A [view payload](/reference/surfaces/views). This must be a JSON-encoded string.
-    pub view: String,
-    /// A string that represents view state to protect against possible race conditions.
-    pub hash: Option<String>,
-}
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct PublishResponse {
-    #[serde(default)]
-    ok: bool,
-}
-
-impl<E: Error> Into<Result<PublishResponse, PublishError<E>>> for PublishResponse {
-    fn into(self) -> Result<PublishResponse, PublishError<E>> {
-        if self.ok {
-            Ok(self)
-        } else {
-            Err(PublishError::Unknown(
-                "Server failed without providing an error message.".into(),
-            ))
-        }
-    }
-}
-
-#[derive(Debug)]
-pub enum PublishError<E: Error> {
-    /// The response was not parseable as the expected object
-    MalformedResponse(String, serde_json::error::Error),
-    /// The response returned an error that was unknown to the library
-    Unknown(String),
-    /// The client had an error sending the request to Slack
-    Client(E),
-}
-
-impl<'a, E: Error> From<&'a str> for PublishError<E> {
-    fn from(s: &'a str) -> Self {
-        match s {
-            _ => PublishError::Unknown(s.to_owned()),
-        }
-    }
-}
-
-impl<E: Error> fmt::Display for PublishError<E> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match *self {
-            PublishError::MalformedResponse(_, ref e) => write!(f, "{}", e),
-            PublishError::Unknown(ref s) => write!(f, "{}", s),
-            PublishError::Client(ref inner) => write!(f, "{}", inner),
-        }
-    }
-}
-
-impl<E: Error + 'static> Error for PublishError<E> {
-    fn source(&self) -> Option<&(dyn Error + 'static)> {
-        match *self {
-            PublishError::MalformedResponse(_, ref e) => Some(e),
-            PublishError::Client(ref inner) => Some(inner),
             _ => None,
         }
     }

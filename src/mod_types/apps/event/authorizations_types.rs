@@ -13,6 +13,7 @@
 //=============================================================================
 
 #![allow(unused_imports)]
+#![allow(dead_code)]
 
 use std::convert::From;
 use std::error::Error;
@@ -20,8 +21,8 @@ use std::fmt;
 
 #[derive(Clone, Default, Debug)]
 pub struct ListRequest {
-    pub event_context: String,
     pub cursor: Option<String>,
+    pub event_context: String,
     pub limit: Option<u64>,
 }
 

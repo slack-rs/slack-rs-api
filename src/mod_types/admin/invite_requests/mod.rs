@@ -13,6 +13,7 @@
 //=============================================================================
 
 #![allow(unused_imports)]
+#![allow(dead_code)]
 
 pub mod approved_types;
 pub mod denied_types;
@@ -22,11 +23,75 @@ use std::error::Error;
 use std::fmt;
 
 #[derive(Clone, Default, Debug)]
-pub struct DenyRequest {
-    /// ID for the workspace where the invite request was made.
-    pub team_id: Option<String>,
+pub struct ApproveRequest {
     /// ID of the request to invite.
     pub invite_request_id: String,
+    /// ID for the workspace where the invite request was made.
+    pub team_id: Option<String>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct ApproveResponse {
+    #[serde(default)]
+    ok: bool,
+}
+
+impl<E: Error> Into<Result<ApproveResponse, ApproveError<E>>> for ApproveResponse {
+    fn into(self) -> Result<ApproveResponse, ApproveError<E>> {
+        if self.ok {
+            Ok(self)
+        } else {
+            Err(ApproveError::Unknown(
+                "Server failed without providing an error message.".into(),
+            ))
+        }
+    }
+}
+
+#[derive(Debug)]
+pub enum ApproveError<E: Error> {
+    /// The response was not parseable as the expected object
+    MalformedResponse(String, serde_json::error::Error),
+    /// The response returned an error that was unknown to the library
+    Unknown(String),
+    /// The client had an error sending the request to Slack
+    Client(E),
+}
+
+impl<'a, E: Error> From<&'a str> for ApproveError<E> {
+    fn from(s: &'a str) -> Self {
+        match s {
+            _ => ApproveError::Unknown(s.to_owned()),
+        }
+    }
+}
+
+impl<E: Error> fmt::Display for ApproveError<E> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match *self {
+            ApproveError::MalformedResponse(_, ref e) => write!(f, "{}", e),
+            ApproveError::Unknown(ref s) => write!(f, "{}", s),
+            ApproveError::Client(ref inner) => write!(f, "{}", inner),
+        }
+    }
+}
+
+impl<E: Error + 'static> Error for ApproveError<E> {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+        match *self {
+            ApproveError::MalformedResponse(_, ref e) => Some(e),
+            ApproveError::Client(ref inner) => Some(inner),
+            _ => None,
+        }
+    }
+}
+
+#[derive(Clone, Default, Debug)]
+pub struct DenyRequest {
+    /// ID of the request to invite.
+    pub invite_request_id: String,
+    /// ID for the workspace where the invite request was made.
+    pub team_id: Option<String>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -87,12 +152,12 @@ impl<E: Error + 'static> Error for DenyError<E> {
 
 #[derive(Clone, Default, Debug)]
 pub struct ListRequest {
-    /// ID for the workspace where the invite requests were made.
-    pub team_id: Option<String>,
     /// Value of the `next_cursor` field sent as part of the previous API response
     pub cursor: Option<String>,
     /// The number of results that will be returned by the API on each invocation. Must be between 1 - 1000, both inclusive
     pub limit: Option<u64>,
+    /// ID for the workspace where the invite requests were made.
+    pub team_id: Option<String>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -146,70 +211,6 @@ impl<E: Error + 'static> Error for ListError<E> {
         match *self {
             ListError::MalformedResponse(_, ref e) => Some(e),
             ListError::Client(ref inner) => Some(inner),
-            _ => None,
-        }
-    }
-}
-
-#[derive(Clone, Default, Debug)]
-pub struct ApproveRequest {
-    /// ID for the workspace where the invite request was made.
-    pub team_id: Option<String>,
-    /// ID of the request to invite.
-    pub invite_request_id: String,
-}
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct ApproveResponse {
-    #[serde(default)]
-    ok: bool,
-}
-
-impl<E: Error> Into<Result<ApproveResponse, ApproveError<E>>> for ApproveResponse {
-    fn into(self) -> Result<ApproveResponse, ApproveError<E>> {
-        if self.ok {
-            Ok(self)
-        } else {
-            Err(ApproveError::Unknown(
-                "Server failed without providing an error message.".into(),
-            ))
-        }
-    }
-}
-
-#[derive(Debug)]
-pub enum ApproveError<E: Error> {
-    /// The response was not parseable as the expected object
-    MalformedResponse(String, serde_json::error::Error),
-    /// The response returned an error that was unknown to the library
-    Unknown(String),
-    /// The client had an error sending the request to Slack
-    Client(E),
-}
-
-impl<'a, E: Error> From<&'a str> for ApproveError<E> {
-    fn from(s: &'a str) -> Self {
-        match s {
-            _ => ApproveError::Unknown(s.to_owned()),
-        }
-    }
-}
-
-impl<E: Error> fmt::Display for ApproveError<E> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match *self {
-            ApproveError::MalformedResponse(_, ref e) => write!(f, "{}", e),
-            ApproveError::Unknown(ref s) => write!(f, "{}", s),
-            ApproveError::Client(ref inner) => write!(f, "{}", inner),
-        }
-    }
-}
-
-impl<E: Error + 'static> Error for ApproveError<E> {
-    fn source(&self) -> Option<&(dyn Error + 'static)> {
-        match *self {
-            ApproveError::MalformedResponse(_, ref e) => Some(e),
-            ApproveError::Client(ref inner) => Some(inner),
             _ => None,
         }
     }

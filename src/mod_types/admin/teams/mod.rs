@@ -13,6 +13,7 @@
 //=============================================================================
 
 #![allow(unused_imports)]
+#![allow(dead_code)]
 
 pub mod admins_types;
 pub mod owners_types;
@@ -24,14 +25,14 @@ use std::fmt;
 
 #[derive(Clone, Default, Debug)]
 pub struct CreateRequest {
-    /// Team domain (for example, slacksoftballteam).
-    pub team_domain: String,
-    /// Team name (for example, Slack Softball Team).
-    pub team_name: String,
     /// Description for the team.
     pub team_description: Option<String>,
     /// Who can join the team. A team's discoverability can be `open`, `closed`, `invite_only`, or `unlisted`.
     pub team_discoverability: Option<String>,
+    /// Team domain (for example, slacksoftballteam).
+    pub team_domain: String,
+    /// Team name (for example, Slack Softball Team).
+    pub team_name: String,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -92,10 +93,10 @@ impl<E: Error + 'static> Error for CreateError<E> {
 
 #[derive(Clone, Default, Debug)]
 pub struct ListRequest {
-    /// The maximum number of items to return. Must be between 1 - 100 both inclusive.
-    pub limit: Option<u64>,
     /// Set `cursor` to `next_cursor` returned by the previous call to list items in the next page.
     pub cursor: Option<String>,
+    /// The maximum number of items to return. Must be between 1 - 100 both inclusive.
+    pub limit: Option<u64>,
 }
 
 #[derive(Clone, Debug, Deserialize)]

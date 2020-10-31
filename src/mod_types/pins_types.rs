@@ -13,6 +13,7 @@
 //=============================================================================
 
 #![allow(unused_imports)]
+#![allow(dead_code)]
 
 use std::convert::From;
 use std::error::Error;
@@ -46,28 +47,28 @@ impl<E: Error> Into<Result<AddResponse, AddError<E>>> for AddResponse {
 
 #[derive(Debug)]
 pub enum AddError<E: Error> {
-    BadTimestamp,
-    MessageNotFound,
-    ChannelNotFound,
-    NoItemSpecified,
-    AlreadyPinned,
-    PermissionDenied,
-    FileNotShared,
-    NotPinnable,
-    NotAuthed,
-    InvalidAuth,
     AccountInactive,
-    NoPermission,
+    AlreadyPinned,
+    BadTimestamp,
+    ChannelNotFound,
+    FileNotShared,
     InvalidArgName,
     InvalidArrayArg,
+    InvalidAuth,
     InvalidCharset,
     InvalidFormData,
-    InvalidPostType,
-    MissingPostType,
-    TeamAddedToOrg,
     InvalidJson,
+    InvalidPostType,
     JsonNotObject,
+    MessageNotFound,
+    MissingPostType,
+    NoItemSpecified,
+    NoPermission,
+    NotAuthed,
+    NotPinnable,
+    PermissionDenied,
     RequestTimeout,
+    TeamAddedToOrg,
     UpgradeRequired,
     /// The response was not parseable as the expected object
     MalformedResponse(String, serde_json::error::Error),
@@ -80,28 +81,28 @@ pub enum AddError<E: Error> {
 impl<'a, E: Error> From<&'a str> for AddError<E> {
     fn from(s: &'a str) -> Self {
         match s {
-            "bad_timestamp" => AddError::BadTimestamp,
-            "message_not_found" => AddError::MessageNotFound,
-            "channel_not_found" => AddError::ChannelNotFound,
-            "no_item_specified" => AddError::NoItemSpecified,
-            "already_pinned" => AddError::AlreadyPinned,
-            "permission_denied" => AddError::PermissionDenied,
-            "file_not_shared" => AddError::FileNotShared,
-            "not_pinnable" => AddError::NotPinnable,
-            "not_authed" => AddError::NotAuthed,
-            "invalid_auth" => AddError::InvalidAuth,
             "account_inactive" => AddError::AccountInactive,
-            "no_permission" => AddError::NoPermission,
+            "already_pinned" => AddError::AlreadyPinned,
+            "bad_timestamp" => AddError::BadTimestamp,
+            "channel_not_found" => AddError::ChannelNotFound,
+            "file_not_shared" => AddError::FileNotShared,
             "invalid_arg_name" => AddError::InvalidArgName,
             "invalid_array_arg" => AddError::InvalidArrayArg,
+            "invalid_auth" => AddError::InvalidAuth,
             "invalid_charset" => AddError::InvalidCharset,
             "invalid_form_data" => AddError::InvalidFormData,
-            "invalid_post_type" => AddError::InvalidPostType,
-            "missing_post_type" => AddError::MissingPostType,
-            "team_added_to_org" => AddError::TeamAddedToOrg,
             "invalid_json" => AddError::InvalidJson,
+            "invalid_post_type" => AddError::InvalidPostType,
             "json_not_object" => AddError::JsonNotObject,
+            "message_not_found" => AddError::MessageNotFound,
+            "missing_post_type" => AddError::MissingPostType,
+            "no_item_specified" => AddError::NoItemSpecified,
+            "no_permission" => AddError::NoPermission,
+            "not_authed" => AddError::NotAuthed,
+            "not_pinnable" => AddError::NotPinnable,
+            "permission_denied" => AddError::PermissionDenied,
             "request_timeout" => AddError::RequestTimeout,
+            "team_added_to_org" => AddError::TeamAddedToOrg,
             "upgrade_required" => AddError::UpgradeRequired,
             _ => AddError::Unknown(s.to_owned()),
         }
@@ -111,28 +112,28 @@ impl<'a, E: Error> From<&'a str> for AddError<E> {
 impl<E: Error> fmt::Display for AddError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
-            AddError::BadTimestamp => write!(f, "Server returned error bad_timestamp"),
-            AddError::MessageNotFound => write!(f, "Server returned error message_not_found"),
-            AddError::ChannelNotFound => write!(f, "Server returned error channel_not_found"),
-            AddError::NoItemSpecified => write!(f, "Server returned error no_item_specified"),
-            AddError::AlreadyPinned => write!(f, "Server returned error already_pinned"),
-            AddError::PermissionDenied => write!(f, "Server returned error permission_denied"),
-            AddError::FileNotShared => write!(f, "Server returned error file_not_shared"),
-            AddError::NotPinnable => write!(f, "Server returned error not_pinnable"),
-            AddError::NotAuthed => write!(f, "Server returned error not_authed"),
-            AddError::InvalidAuth => write!(f, "Server returned error invalid_auth"),
             AddError::AccountInactive => write!(f, "Server returned error account_inactive"),
-            AddError::NoPermission => write!(f, "Server returned error no_permission"),
+            AddError::AlreadyPinned => write!(f, "Server returned error already_pinned"),
+            AddError::BadTimestamp => write!(f, "Server returned error bad_timestamp"),
+            AddError::ChannelNotFound => write!(f, "Server returned error channel_not_found"),
+            AddError::FileNotShared => write!(f, "Server returned error file_not_shared"),
             AddError::InvalidArgName => write!(f, "Server returned error invalid_arg_name"),
             AddError::InvalidArrayArg => write!(f, "Server returned error invalid_array_arg"),
+            AddError::InvalidAuth => write!(f, "Server returned error invalid_auth"),
             AddError::InvalidCharset => write!(f, "Server returned error invalid_charset"),
             AddError::InvalidFormData => write!(f, "Server returned error invalid_form_data"),
-            AddError::InvalidPostType => write!(f, "Server returned error invalid_post_type"),
-            AddError::MissingPostType => write!(f, "Server returned error missing_post_type"),
-            AddError::TeamAddedToOrg => write!(f, "Server returned error team_added_to_org"),
             AddError::InvalidJson => write!(f, "Server returned error invalid_json"),
+            AddError::InvalidPostType => write!(f, "Server returned error invalid_post_type"),
             AddError::JsonNotObject => write!(f, "Server returned error json_not_object"),
+            AddError::MessageNotFound => write!(f, "Server returned error message_not_found"),
+            AddError::MissingPostType => write!(f, "Server returned error missing_post_type"),
+            AddError::NoItemSpecified => write!(f, "Server returned error no_item_specified"),
+            AddError::NoPermission => write!(f, "Server returned error no_permission"),
+            AddError::NotAuthed => write!(f, "Server returned error not_authed"),
+            AddError::NotPinnable => write!(f, "Server returned error not_pinnable"),
+            AddError::PermissionDenied => write!(f, "Server returned error permission_denied"),
             AddError::RequestTimeout => write!(f, "Server returned error request_timeout"),
+            AddError::TeamAddedToOrg => write!(f, "Server returned error team_added_to_org"),
             AddError::UpgradeRequired => write!(f, "Server returned error upgrade_required"),
             AddError::MalformedResponse(_, ref e) => write!(f, "{}", e),
             AddError::Unknown(ref s) => write!(f, "{}", s),
@@ -146,138 +147,6 @@ impl<E: Error + 'static> Error for AddError<E> {
         match *self {
             AddError::MalformedResponse(_, ref e) => Some(e),
             AddError::Client(ref inner) => Some(inner),
-            _ => None,
-        }
-    }
-}
-
-#[derive(Clone, Default, Debug)]
-pub struct RemoveRequest {
-    /// Channel where the item is pinned to.
-    pub channel: String,
-    /// Timestamp of the message to un-pin.
-    pub timestamp: Option<String>,
-}
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct RemoveResponse {
-    pub callstack: Option<String>,
-    error: Option<String>,
-    #[serde(default)]
-    ok: bool,
-}
-
-impl<E: Error> Into<Result<RemoveResponse, RemoveError<E>>> for RemoveResponse {
-    fn into(self) -> Result<RemoveResponse, RemoveError<E>> {
-        if self.ok {
-            Ok(self)
-        } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
-        }
-    }
-}
-
-#[derive(Debug)]
-pub enum RemoveError<E: Error> {
-    BadTimestamp,
-    FileNotFound,
-    FileCommentNotFound,
-    MessageNotFound,
-    NoItemSpecified,
-    NotPinned,
-    PermissionDenied,
-    NotAuthed,
-    InvalidAuth,
-    AccountInactive,
-    NoPermission,
-    InvalidArgName,
-    InvalidArrayArg,
-    InvalidCharset,
-    InvalidFormData,
-    InvalidPostTyp,
-    MissingPostTyp,
-    TeamAddedToOrg,
-    InvalidJson,
-    JsonNotObject,
-    RequestTimeou,
-    UpgradeRequired,
-    /// The response was not parseable as the expected object
-    MalformedResponse(String, serde_json::error::Error),
-    /// The response returned an error that was unknown to the library
-    Unknown(String),
-    /// The client had an error sending the request to Slack
-    Client(E),
-}
-
-impl<'a, E: Error> From<&'a str> for RemoveError<E> {
-    fn from(s: &'a str) -> Self {
-        match s {
-            "bad_timestamp" => RemoveError::BadTimestamp,
-            "file_not_found" => RemoveError::FileNotFound,
-            "file_comment_not_found" => RemoveError::FileCommentNotFound,
-            "message_not_found" => RemoveError::MessageNotFound,
-            "no_item_specified" => RemoveError::NoItemSpecified,
-            "not_pinned" => RemoveError::NotPinned,
-            "permission_denied" => RemoveError::PermissionDenied,
-            "not_authed" => RemoveError::NotAuthed,
-            "invalid_auth" => RemoveError::InvalidAuth,
-            "account_inactive" => RemoveError::AccountInactive,
-            "no_permission" => RemoveError::NoPermission,
-            "invalid_arg_name" => RemoveError::InvalidArgName,
-            "invalid_array_arg" => RemoveError::InvalidArrayArg,
-            "invalid_charset" => RemoveError::InvalidCharset,
-            "invalid_form_data" => RemoveError::InvalidFormData,
-            "invalid_post_typ" => RemoveError::InvalidPostTyp,
-            "missing_post_typ" => RemoveError::MissingPostTyp,
-            "team_added_to_org" => RemoveError::TeamAddedToOrg,
-            "invalid_json" => RemoveError::InvalidJson,
-            "json_not_object" => RemoveError::JsonNotObject,
-            "request_timeou" => RemoveError::RequestTimeou,
-            "upgrade_required" => RemoveError::UpgradeRequired,
-            _ => RemoveError::Unknown(s.to_owned()),
-        }
-    }
-}
-
-impl<E: Error> fmt::Display for RemoveError<E> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match *self {
-            RemoveError::BadTimestamp => write!(f, "Server returned error bad_timestamp"),
-            RemoveError::FileNotFound => write!(f, "Server returned error file_not_found"),
-            RemoveError::FileCommentNotFound => {
-                write!(f, "Server returned error file_comment_not_found")
-            }
-            RemoveError::MessageNotFound => write!(f, "Server returned error message_not_found"),
-            RemoveError::NoItemSpecified => write!(f, "Server returned error no_item_specified"),
-            RemoveError::NotPinned => write!(f, "Server returned error not_pinned"),
-            RemoveError::PermissionDenied => write!(f, "Server returned error permission_denied"),
-            RemoveError::NotAuthed => write!(f, "Server returned error not_authed"),
-            RemoveError::InvalidAuth => write!(f, "Server returned error invalid_auth"),
-            RemoveError::AccountInactive => write!(f, "Server returned error account_inactive"),
-            RemoveError::NoPermission => write!(f, "Server returned error no_permission"),
-            RemoveError::InvalidArgName => write!(f, "Server returned error invalid_arg_name"),
-            RemoveError::InvalidArrayArg => write!(f, "Server returned error invalid_array_arg"),
-            RemoveError::InvalidCharset => write!(f, "Server returned error invalid_charset"),
-            RemoveError::InvalidFormData => write!(f, "Server returned error invalid_form_data"),
-            RemoveError::InvalidPostTyp => write!(f, "Server returned error invalid_post_typ"),
-            RemoveError::MissingPostTyp => write!(f, "Server returned error missing_post_typ"),
-            RemoveError::TeamAddedToOrg => write!(f, "Server returned error team_added_to_org"),
-            RemoveError::InvalidJson => write!(f, "Server returned error invalid_json"),
-            RemoveError::JsonNotObject => write!(f, "Server returned error json_not_object"),
-            RemoveError::RequestTimeou => write!(f, "Server returned error request_timeou"),
-            RemoveError::UpgradeRequired => write!(f, "Server returned error upgrade_required"),
-            RemoveError::MalformedResponse(_, ref e) => write!(f, "{}", e),
-            RemoveError::Unknown(ref s) => write!(f, "{}", s),
-            RemoveError::Client(ref inner) => write!(f, "{}", inner),
-        }
-    }
-}
-
-impl<E: Error + 'static> Error for RemoveError<E> {
-    fn source(&self) -> Option<&(dyn Error + 'static)> {
-        match *self {
-            RemoveError::MalformedResponse(_, ref e) => Some(e),
-            RemoveError::Client(ref inner) => Some(inner),
             _ => None,
         }
     }
@@ -410,21 +279,21 @@ impl<E: Error> Into<Result<ListResponse, ListError<E>>> for ListResponse {
 
 #[derive(Debug)]
 pub enum ListError<E: Error> {
-    ChannelNotFound,
-    NotAuthed,
-    InvalidAuth,
     AccountInactive,
-    NoPermission,
+    ChannelNotFound,
     InvalidArgName,
     InvalidArrayArg,
+    InvalidAuth,
     InvalidCharset,
     InvalidFormData,
-    InvalidPostType,
-    MissingPostType,
-    TeamAddedToOrg,
     InvalidJson,
+    InvalidPostType,
     JsonNotObject,
+    MissingPostType,
+    NoPermission,
+    NotAuthed,
     RequestTimeout,
+    TeamAddedToOrg,
     UpgradeRequired,
     /// The response was not parseable as the expected object
     MalformedResponse(String, serde_json::error::Error),
@@ -437,21 +306,21 @@ pub enum ListError<E: Error> {
 impl<'a, E: Error> From<&'a str> for ListError<E> {
     fn from(s: &'a str) -> Self {
         match s {
-            "channel_not_found" => ListError::ChannelNotFound,
-            "not_authed" => ListError::NotAuthed,
-            "invalid_auth" => ListError::InvalidAuth,
             "account_inactive" => ListError::AccountInactive,
-            "no_permission" => ListError::NoPermission,
+            "channel_not_found" => ListError::ChannelNotFound,
             "invalid_arg_name" => ListError::InvalidArgName,
             "invalid_array_arg" => ListError::InvalidArrayArg,
+            "invalid_auth" => ListError::InvalidAuth,
             "invalid_charset" => ListError::InvalidCharset,
             "invalid_form_data" => ListError::InvalidFormData,
-            "invalid_post_type" => ListError::InvalidPostType,
-            "missing_post_type" => ListError::MissingPostType,
-            "team_added_to_org" => ListError::TeamAddedToOrg,
             "invalid_json" => ListError::InvalidJson,
+            "invalid_post_type" => ListError::InvalidPostType,
             "json_not_object" => ListError::JsonNotObject,
+            "missing_post_type" => ListError::MissingPostType,
+            "no_permission" => ListError::NoPermission,
+            "not_authed" => ListError::NotAuthed,
             "request_timeout" => ListError::RequestTimeout,
+            "team_added_to_org" => ListError::TeamAddedToOrg,
             "upgrade_required" => ListError::UpgradeRequired,
             _ => ListError::Unknown(s.to_owned()),
         }
@@ -461,21 +330,21 @@ impl<'a, E: Error> From<&'a str> for ListError<E> {
 impl<E: Error> fmt::Display for ListError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
-            ListError::ChannelNotFound => write!(f, "Server returned error channel_not_found"),
-            ListError::NotAuthed => write!(f, "Server returned error not_authed"),
-            ListError::InvalidAuth => write!(f, "Server returned error invalid_auth"),
             ListError::AccountInactive => write!(f, "Server returned error account_inactive"),
-            ListError::NoPermission => write!(f, "Server returned error no_permission"),
+            ListError::ChannelNotFound => write!(f, "Server returned error channel_not_found"),
             ListError::InvalidArgName => write!(f, "Server returned error invalid_arg_name"),
             ListError::InvalidArrayArg => write!(f, "Server returned error invalid_array_arg"),
+            ListError::InvalidAuth => write!(f, "Server returned error invalid_auth"),
             ListError::InvalidCharset => write!(f, "Server returned error invalid_charset"),
             ListError::InvalidFormData => write!(f, "Server returned error invalid_form_data"),
-            ListError::InvalidPostType => write!(f, "Server returned error invalid_post_type"),
-            ListError::MissingPostType => write!(f, "Server returned error missing_post_type"),
-            ListError::TeamAddedToOrg => write!(f, "Server returned error team_added_to_org"),
             ListError::InvalidJson => write!(f, "Server returned error invalid_json"),
+            ListError::InvalidPostType => write!(f, "Server returned error invalid_post_type"),
             ListError::JsonNotObject => write!(f, "Server returned error json_not_object"),
+            ListError::MissingPostType => write!(f, "Server returned error missing_post_type"),
+            ListError::NoPermission => write!(f, "Server returned error no_permission"),
+            ListError::NotAuthed => write!(f, "Server returned error not_authed"),
             ListError::RequestTimeout => write!(f, "Server returned error request_timeout"),
+            ListError::TeamAddedToOrg => write!(f, "Server returned error team_added_to_org"),
             ListError::UpgradeRequired => write!(f, "Server returned error upgrade_required"),
             ListError::MalformedResponse(_, ref e) => write!(f, "{}", e),
             ListError::Unknown(ref s) => write!(f, "{}", s),
@@ -489,6 +358,138 @@ impl<E: Error + 'static> Error for ListError<E> {
         match *self {
             ListError::MalformedResponse(_, ref e) => Some(e),
             ListError::Client(ref inner) => Some(inner),
+            _ => None,
+        }
+    }
+}
+
+#[derive(Clone, Default, Debug)]
+pub struct RemoveRequest {
+    /// Channel where the item is pinned to.
+    pub channel: String,
+    /// Timestamp of the message to un-pin.
+    pub timestamp: Option<String>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct RemoveResponse {
+    pub callstack: Option<String>,
+    error: Option<String>,
+    #[serde(default)]
+    ok: bool,
+}
+
+impl<E: Error> Into<Result<RemoveResponse, RemoveError<E>>> for RemoveResponse {
+    fn into(self) -> Result<RemoveResponse, RemoveError<E>> {
+        if self.ok {
+            Ok(self)
+        } else {
+            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+        }
+    }
+}
+
+#[derive(Debug)]
+pub enum RemoveError<E: Error> {
+    AccountInactive,
+    BadTimestamp,
+    FileCommentNotFound,
+    FileNotFound,
+    InvalidArgName,
+    InvalidArrayArg,
+    InvalidAuth,
+    InvalidCharset,
+    InvalidFormData,
+    InvalidJson,
+    InvalidPostTyp,
+    JsonNotObject,
+    MessageNotFound,
+    MissingPostTyp,
+    NoItemSpecified,
+    NoPermission,
+    NotAuthed,
+    NotPinned,
+    PermissionDenied,
+    RequestTimeou,
+    TeamAddedToOrg,
+    UpgradeRequired,
+    /// The response was not parseable as the expected object
+    MalformedResponse(String, serde_json::error::Error),
+    /// The response returned an error that was unknown to the library
+    Unknown(String),
+    /// The client had an error sending the request to Slack
+    Client(E),
+}
+
+impl<'a, E: Error> From<&'a str> for RemoveError<E> {
+    fn from(s: &'a str) -> Self {
+        match s {
+            "account_inactive" => RemoveError::AccountInactive,
+            "bad_timestamp" => RemoveError::BadTimestamp,
+            "file_comment_not_found" => RemoveError::FileCommentNotFound,
+            "file_not_found" => RemoveError::FileNotFound,
+            "invalid_arg_name" => RemoveError::InvalidArgName,
+            "invalid_array_arg" => RemoveError::InvalidArrayArg,
+            "invalid_auth" => RemoveError::InvalidAuth,
+            "invalid_charset" => RemoveError::InvalidCharset,
+            "invalid_form_data" => RemoveError::InvalidFormData,
+            "invalid_json" => RemoveError::InvalidJson,
+            "invalid_post_typ" => RemoveError::InvalidPostTyp,
+            "json_not_object" => RemoveError::JsonNotObject,
+            "message_not_found" => RemoveError::MessageNotFound,
+            "missing_post_typ" => RemoveError::MissingPostTyp,
+            "no_item_specified" => RemoveError::NoItemSpecified,
+            "no_permission" => RemoveError::NoPermission,
+            "not_authed" => RemoveError::NotAuthed,
+            "not_pinned" => RemoveError::NotPinned,
+            "permission_denied" => RemoveError::PermissionDenied,
+            "request_timeou" => RemoveError::RequestTimeou,
+            "team_added_to_org" => RemoveError::TeamAddedToOrg,
+            "upgrade_required" => RemoveError::UpgradeRequired,
+            _ => RemoveError::Unknown(s.to_owned()),
+        }
+    }
+}
+
+impl<E: Error> fmt::Display for RemoveError<E> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match *self {
+            RemoveError::AccountInactive => write!(f, "Server returned error account_inactive"),
+            RemoveError::BadTimestamp => write!(f, "Server returned error bad_timestamp"),
+            RemoveError::FileCommentNotFound => {
+                write!(f, "Server returned error file_comment_not_found")
+            }
+            RemoveError::FileNotFound => write!(f, "Server returned error file_not_found"),
+            RemoveError::InvalidArgName => write!(f, "Server returned error invalid_arg_name"),
+            RemoveError::InvalidArrayArg => write!(f, "Server returned error invalid_array_arg"),
+            RemoveError::InvalidAuth => write!(f, "Server returned error invalid_auth"),
+            RemoveError::InvalidCharset => write!(f, "Server returned error invalid_charset"),
+            RemoveError::InvalidFormData => write!(f, "Server returned error invalid_form_data"),
+            RemoveError::InvalidJson => write!(f, "Server returned error invalid_json"),
+            RemoveError::InvalidPostTyp => write!(f, "Server returned error invalid_post_typ"),
+            RemoveError::JsonNotObject => write!(f, "Server returned error json_not_object"),
+            RemoveError::MessageNotFound => write!(f, "Server returned error message_not_found"),
+            RemoveError::MissingPostTyp => write!(f, "Server returned error missing_post_typ"),
+            RemoveError::NoItemSpecified => write!(f, "Server returned error no_item_specified"),
+            RemoveError::NoPermission => write!(f, "Server returned error no_permission"),
+            RemoveError::NotAuthed => write!(f, "Server returned error not_authed"),
+            RemoveError::NotPinned => write!(f, "Server returned error not_pinned"),
+            RemoveError::PermissionDenied => write!(f, "Server returned error permission_denied"),
+            RemoveError::RequestTimeou => write!(f, "Server returned error request_timeou"),
+            RemoveError::TeamAddedToOrg => write!(f, "Server returned error team_added_to_org"),
+            RemoveError::UpgradeRequired => write!(f, "Server returned error upgrade_required"),
+            RemoveError::MalformedResponse(_, ref e) => write!(f, "{}", e),
+            RemoveError::Unknown(ref s) => write!(f, "{}", s),
+            RemoveError::Client(ref inner) => write!(f, "{}", inner),
+        }
+    }
+}
+
+impl<E: Error + 'static> Error for RemoveError<E> {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+        match *self {
+            RemoveError::MalformedResponse(_, ref e) => Some(e),
+            RemoveError::Client(ref inner) => Some(inner),
             _ => None,
         }
     }

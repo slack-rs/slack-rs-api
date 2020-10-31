@@ -45,14 +45,20 @@ impl ModuleBuilder<'_> {
     }
 
     pub fn build(self) -> Module {
+        let mut submodules: Vec<Module> = self
+            .submodules
+            .into_iter()
+            .map(|(_, v)| v.build())
+            .collect();
+        submodules.sort_unstable_by(|a, b| a.name.cmp(&b.name));
+
+        let mut methods: Vec<Method> = self.methods.into_iter().map(|(_, v)| v).collect();
+        methods.sort_unstable_by(|a, b| a.name.cmp(&b.name));
+
         Module {
             name: self.name,
-            submodules: self
-                .submodules
-                .into_iter()
-                .map(|(_, v)| v.build())
-                .collect(),
-            methods: self.methods.into_iter().map(|(_, v)| v).collect(),
+            submodules,
+            methods,
         }
     }
 }
@@ -153,6 +159,7 @@ impl Module {
         let data = format!(
             "{header}
             #![allow(unused_imports)]
+            #![allow(dead_code)]
         
             {modules}{imports}
             
@@ -361,10 +368,10 @@ impl Method {
 
 #[derive(Clone, Debug)]
 pub struct Parameter {
-    description: Option<String>,
-    name: String,
-    required: bool,
-    param_type: ParameterDataType,
+    pub description: Option<String>,
+    pub name: String,
+    pub required: bool,
+    pub param_type: ParameterDataType,
 }
 
 impl Parameter {

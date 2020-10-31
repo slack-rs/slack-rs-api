@@ -13,6 +13,7 @@
 //=============================================================================
 
 #![allow(unused_imports)]
+#![allow(dead_code)]
 
 use std::convert::From;
 use std::error::Error;
@@ -59,26 +60,26 @@ impl<E: Error> Into<Result<ListResponse, ListError<E>>> for ListResponse {
 
 #[derive(Debug)]
 pub enum ListError<E: Error> {
-    InvalidCursor,
-    NotAuthed,
-    InvalidAuth,
     AccountInactive,
-    TokenRevoked,
-    NoPermission,
-    OrgLoginRequired,
-    UserIsBot,
+    FatalError,
     InvalidArgName,
     InvalidArrayArg,
+    InvalidAuth,
     InvalidCharset,
+    InvalidCursor,
     InvalidFormData,
-    InvalidPostType,
-    MissingPostType,
-    TeamAddedToOrg,
     InvalidJson,
+    InvalidPostType,
     JsonNotObject,
+    MissingPostType,
+    NoPermission,
+    NotAuthed,
+    OrgLoginRequired,
     RequestTimeout,
+    TeamAddedToOrg,
+    TokenRevoked,
     UpgradeRequired,
-    FatalError,
+    UserIsBot,
     /// The response was not parseable as the expected object
     MalformedResponse(String, serde_json::error::Error),
     /// The response returned an error that was unknown to the library
@@ -90,26 +91,26 @@ pub enum ListError<E: Error> {
 impl<'a, E: Error> From<&'a str> for ListError<E> {
     fn from(s: &'a str) -> Self {
         match s {
-            "invalid_cursor" => ListError::InvalidCursor,
-            "not_authed" => ListError::NotAuthed,
-            "invalid_auth" => ListError::InvalidAuth,
             "account_inactive" => ListError::AccountInactive,
-            "token_revoked" => ListError::TokenRevoked,
-            "no_permission" => ListError::NoPermission,
-            "org_login_required" => ListError::OrgLoginRequired,
-            "user_is_bot" => ListError::UserIsBot,
+            "fatal_error" => ListError::FatalError,
             "invalid_arg_name" => ListError::InvalidArgName,
             "invalid_array_arg" => ListError::InvalidArrayArg,
+            "invalid_auth" => ListError::InvalidAuth,
             "invalid_charset" => ListError::InvalidCharset,
+            "invalid_cursor" => ListError::InvalidCursor,
             "invalid_form_data" => ListError::InvalidFormData,
-            "invalid_post_type" => ListError::InvalidPostType,
-            "missing_post_type" => ListError::MissingPostType,
-            "team_added_to_org" => ListError::TeamAddedToOrg,
             "invalid_json" => ListError::InvalidJson,
+            "invalid_post_type" => ListError::InvalidPostType,
             "json_not_object" => ListError::JsonNotObject,
+            "missing_post_type" => ListError::MissingPostType,
+            "no_permission" => ListError::NoPermission,
+            "not_authed" => ListError::NotAuthed,
+            "org_login_required" => ListError::OrgLoginRequired,
             "request_timeout" => ListError::RequestTimeout,
+            "team_added_to_org" => ListError::TeamAddedToOrg,
+            "token_revoked" => ListError::TokenRevoked,
             "upgrade_required" => ListError::UpgradeRequired,
-            "fatal_error" => ListError::FatalError,
+            "user_is_bot" => ListError::UserIsBot,
             _ => ListError::Unknown(s.to_owned()),
         }
     }
@@ -118,26 +119,26 @@ impl<'a, E: Error> From<&'a str> for ListError<E> {
 impl<E: Error> fmt::Display for ListError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
-            ListError::InvalidCursor => write!(f, "Server returned error invalid_cursor"),
-            ListError::NotAuthed => write!(f, "Server returned error not_authed"),
-            ListError::InvalidAuth => write!(f, "Server returned error invalid_auth"),
             ListError::AccountInactive => write!(f, "Server returned error account_inactive"),
-            ListError::TokenRevoked => write!(f, "Server returned error token_revoked"),
-            ListError::NoPermission => write!(f, "Server returned error no_permission"),
-            ListError::OrgLoginRequired => write!(f, "Server returned error org_login_required"),
-            ListError::UserIsBot => write!(f, "Server returned error user_is_bot"),
+            ListError::FatalError => write!(f, "Server returned error fatal_error"),
             ListError::InvalidArgName => write!(f, "Server returned error invalid_arg_name"),
             ListError::InvalidArrayArg => write!(f, "Server returned error invalid_array_arg"),
+            ListError::InvalidAuth => write!(f, "Server returned error invalid_auth"),
             ListError::InvalidCharset => write!(f, "Server returned error invalid_charset"),
+            ListError::InvalidCursor => write!(f, "Server returned error invalid_cursor"),
             ListError::InvalidFormData => write!(f, "Server returned error invalid_form_data"),
-            ListError::InvalidPostType => write!(f, "Server returned error invalid_post_type"),
-            ListError::MissingPostType => write!(f, "Server returned error missing_post_type"),
-            ListError::TeamAddedToOrg => write!(f, "Server returned error team_added_to_org"),
             ListError::InvalidJson => write!(f, "Server returned error invalid_json"),
+            ListError::InvalidPostType => write!(f, "Server returned error invalid_post_type"),
             ListError::JsonNotObject => write!(f, "Server returned error json_not_object"),
+            ListError::MissingPostType => write!(f, "Server returned error missing_post_type"),
+            ListError::NoPermission => write!(f, "Server returned error no_permission"),
+            ListError::NotAuthed => write!(f, "Server returned error not_authed"),
+            ListError::OrgLoginRequired => write!(f, "Server returned error org_login_required"),
             ListError::RequestTimeout => write!(f, "Server returned error request_timeout"),
+            ListError::TeamAddedToOrg => write!(f, "Server returned error team_added_to_org"),
+            ListError::TokenRevoked => write!(f, "Server returned error token_revoked"),
             ListError::UpgradeRequired => write!(f, "Server returned error upgrade_required"),
-            ListError::FatalError => write!(f, "Server returned error fatal_error"),
+            ListError::UserIsBot => write!(f, "Server returned error user_is_bot"),
             ListError::MalformedResponse(_, ref e) => write!(f, "{}", e),
             ListError::Unknown(ref s) => write!(f, "{}", s),
             ListError::Client(ref inner) => write!(f, "{}", inner),

@@ -13,6 +13,7 @@
 //=============================================================================
 
 #![allow(unused_imports)]
+#![allow(dead_code)]
 
 pub mod profile_types;
 
@@ -21,813 +22,17 @@ use std::error::Error;
 use std::fmt;
 
 #[derive(Clone, Default, Debug)]
-pub struct GetPresenceRequest {
-    /// User to get presence info on. Defaults to the authed user.
-    pub user: Option<String>,
-}
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct GetPresenceResponse {
-    pub auto_away: Option<bool>,
-    pub connection_count: Option<u64>,
-    error: Option<String>,
-    pub last_activity: Option<u64>,
-    pub manual_away: Option<bool>,
-    #[serde(default)]
-    ok: bool,
-    pub online: Option<bool>,
-    pub presence: String,
-}
-
-impl<E: Error> Into<Result<GetPresenceResponse, GetPresenceError<E>>> for GetPresenceResponse {
-    fn into(self) -> Result<GetPresenceResponse, GetPresenceError<E>> {
-        if self.ok {
-            Ok(self)
-        } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
-        }
-    }
-}
-
-#[derive(Debug)]
-pub enum GetPresenceError<E: Error> {
-    /// The response was not parseable as the expected object
-    MalformedResponse(String, serde_json::error::Error),
-    /// The response returned an error that was unknown to the library
-    Unknown(String),
-    /// The client had an error sending the request to Slack
-    Client(E),
-}
-
-impl<'a, E: Error> From<&'a str> for GetPresenceError<E> {
-    fn from(s: &'a str) -> Self {
-        match s {
-            _ => GetPresenceError::Unknown(s.to_owned()),
-        }
-    }
-}
-
-impl<E: Error> fmt::Display for GetPresenceError<E> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match *self {
-            GetPresenceError::MalformedResponse(_, ref e) => write!(f, "{}", e),
-            GetPresenceError::Unknown(ref s) => write!(f, "{}", s),
-            GetPresenceError::Client(ref inner) => write!(f, "{}", inner),
-        }
-    }
-}
-
-impl<E: Error + 'static> Error for GetPresenceError<E> {
-    fn source(&self) -> Option<&(dyn Error + 'static)> {
-        match *self {
-            GetPresenceError::MalformedResponse(_, ref e) => Some(e),
-            GetPresenceError::Client(ref inner) => Some(inner),
-            _ => None,
-        }
-    }
-}
-
-#[derive(Clone, Default, Debug)]
-pub struct InfoRequest {
-    /// Set this to `true` to receive the locale for this user. Defaults to `false`
-    pub include_locale: Option<bool>,
-    /// User to get info on
-    pub user: Option<String>,
-}
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct InfoEnterpriseUserInner {
-    pub enterprise_id: String,
-    pub enterprise_name: String,
-    pub id: String,
-    pub is_admin: bool,
-    pub is_owner: bool,
-    pub teams: Vec<String>,
-}
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct InfoProfileInner {
-    pub always_active: Option<bool>,
-    pub api_app_id: Option<String>,
-    pub avatar_hash: String,
-    pub bot_id: Option<String>,
-    pub display_name: String,
-    pub display_name_normalized: String,
-    pub email: Option<String>,
-    pub fields: Vec<serde_json::Value>,
-    pub first_name: Option<String>,
-    pub guest_expiration_ts: Option<u64>,
-    pub guest_invited_by: Option<String>,
-    pub image_1024: Option<String>,
-    pub image_192: Option<String>,
-    pub image_24: Option<String>,
-    pub image_32: Option<String>,
-    pub image_48: Option<String>,
-    pub image_512: Option<String>,
-    pub image_72: Option<String>,
-    pub image_original: Option<String>,
-    pub is_app_user: Option<bool>,
-    pub is_custom_image: Option<bool>,
-    pub is_restricted: Option<bool>,
-    pub is_ultra_restricted: Option<bool>,
-    pub last_avatar_image_hash: Option<String>,
-    pub last_name: Option<String>,
-    pub memberships_count: Option<u64>,
-    pub name: Option<String>,
-    pub phone: String,
-    pub pronouns: Option<String>,
-    pub real_name: String,
-    pub real_name_normalized: String,
-    pub skype: String,
-    pub status_default_emoji: Option<String>,
-    pub status_default_text: Option<String>,
-    pub status_default_text_canonical: Option<String>,
-    pub status_emoji: String,
-    pub status_expiration: Option<u64>,
-    pub status_text: String,
-    pub status_text_canonical: Option<String>,
-    pub team: Option<String>,
-    pub title: String,
-    pub updated: Option<u64>,
-    pub user_id: Option<String>,
-    pub username: Option<String>,
-}
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct InfoOptionsInner {
-    pub is_custom: Option<bool>,
-    pub is_multiple_entry: Option<bool>,
-    pub is_protected: Option<bool>,
-    pub is_scim: Option<bool>,
-}
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct InfoFieldsInner {
-    pub field_name: Option<String>,
-    pub hint: String,
-    pub id: String,
-    pub is_hidden: Option<bool>,
-    pub label: String,
-    pub options: Option<Vec<InfoOptionsInner>>,
-    pub ordering: u64,
-    pub possible_values: Option<Vec<String>>,
-    pub r#type: String,
-}
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct InfoTeamProfileInner {
-    pub fields: Vec<InfoFieldsInner>,
-}
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct InfoUserInner {
-    pub color: Option<String>,
-    pub deleted: Option<bool>,
-    pub enterprise_user: Option<InfoEnterpriseUserInner>,
-    pub has_2fa: Option<bool>,
-    pub id: String,
-    pub is_admin: Option<bool>,
-    pub is_app_user: bool,
-    pub is_bot: bool,
-    pub is_external: Option<bool>,
-    pub is_forgotten: Option<bool>,
-    pub is_invited_user: Option<bool>,
-    pub is_owner: Option<bool>,
-    pub is_primary_owner: Option<bool>,
-    pub is_restricted: Option<bool>,
-    pub is_stranger: Option<bool>,
-    pub is_ultra_restricted: Option<bool>,
-    pub locale: Option<String>,
-    pub name: String,
-    pub presence: Option<String>,
-    pub profile: InfoProfileInner,
-    pub real_name: Option<String>,
-    pub team: Option<String>,
-    pub team_id: Option<String>,
-    pub team_profile: Option<InfoTeamProfileInner>,
-    pub two_factor_type: Option<String>,
-    pub tz: Option<Vec<String>>,
-    pub tz_label: Option<String>,
-    pub tz_offset: Option<u64>,
-    pub updated: u64,
-}
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct InfoResponse {
-    pub callstack: Option<String>,
-    error: Option<String>,
-    #[serde(default)]
-    ok: bool,
-    pub user: Vec<InfoUserInner>,
-}
-
-impl<E: Error> Into<Result<InfoResponse, InfoError<E>>> for InfoResponse {
-    fn into(self) -> Result<InfoResponse, InfoError<E>> {
-        if self.ok {
-            Ok(self)
-        } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
-        }
-    }
-}
-
-#[derive(Debug)]
-pub enum InfoError<E: Error> {
-    UserNotFound,
-    UserNotVisible,
-    NotAuthed,
-    InvalidAuth,
-    AccountInactive,
-    InvalidArgName,
-    InvalidArrayArg,
-    InvalidCharset,
-    InvalidFormData,
-    InvalidPostType,
-    MissingPostType,
-    TeamAddedToOrg,
-    InvalidJson,
-    JsonNotObject,
-    RequestTimeout,
-    UpgradeRequired,
-    /// The response was not parseable as the expected object
-    MalformedResponse(String, serde_json::error::Error),
-    /// The response returned an error that was unknown to the library
-    Unknown(String),
-    /// The client had an error sending the request to Slack
-    Client(E),
-}
-
-impl<'a, E: Error> From<&'a str> for InfoError<E> {
-    fn from(s: &'a str) -> Self {
-        match s {
-            "user_not_found" => InfoError::UserNotFound,
-            "user_not_visible" => InfoError::UserNotVisible,
-            "not_authed" => InfoError::NotAuthed,
-            "invalid_auth" => InfoError::InvalidAuth,
-            "account_inactive" => InfoError::AccountInactive,
-            "invalid_arg_name" => InfoError::InvalidArgName,
-            "invalid_array_arg" => InfoError::InvalidArrayArg,
-            "invalid_charset" => InfoError::InvalidCharset,
-            "invalid_form_data" => InfoError::InvalidFormData,
-            "invalid_post_type" => InfoError::InvalidPostType,
-            "missing_post_type" => InfoError::MissingPostType,
-            "team_added_to_org" => InfoError::TeamAddedToOrg,
-            "invalid_json" => InfoError::InvalidJson,
-            "json_not_object" => InfoError::JsonNotObject,
-            "request_timeout" => InfoError::RequestTimeout,
-            "upgrade_required" => InfoError::UpgradeRequired,
-            _ => InfoError::Unknown(s.to_owned()),
-        }
-    }
-}
-
-impl<E: Error> fmt::Display for InfoError<E> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match *self {
-            InfoError::UserNotFound => write!(f, "Server returned error user_not_found"),
-            InfoError::UserNotVisible => write!(f, "Server returned error user_not_visible"),
-            InfoError::NotAuthed => write!(f, "Server returned error not_authed"),
-            InfoError::InvalidAuth => write!(f, "Server returned error invalid_auth"),
-            InfoError::AccountInactive => write!(f, "Server returned error account_inactive"),
-            InfoError::InvalidArgName => write!(f, "Server returned error invalid_arg_name"),
-            InfoError::InvalidArrayArg => write!(f, "Server returned error invalid_array_arg"),
-            InfoError::InvalidCharset => write!(f, "Server returned error invalid_charset"),
-            InfoError::InvalidFormData => write!(f, "Server returned error invalid_form_data"),
-            InfoError::InvalidPostType => write!(f, "Server returned error invalid_post_type"),
-            InfoError::MissingPostType => write!(f, "Server returned error missing_post_type"),
-            InfoError::TeamAddedToOrg => write!(f, "Server returned error team_added_to_org"),
-            InfoError::InvalidJson => write!(f, "Server returned error invalid_json"),
-            InfoError::JsonNotObject => write!(f, "Server returned error json_not_object"),
-            InfoError::RequestTimeout => write!(f, "Server returned error request_timeout"),
-            InfoError::UpgradeRequired => write!(f, "Server returned error upgrade_required"),
-            InfoError::MalformedResponse(_, ref e) => write!(f, "{}", e),
-            InfoError::Unknown(ref s) => write!(f, "{}", s),
-            InfoError::Client(ref inner) => write!(f, "{}", inner),
-        }
-    }
-}
-
-impl<E: Error + 'static> Error for InfoError<E> {
-    fn source(&self) -> Option<&(dyn Error + 'static)> {
-        match *self {
-            InfoError::MalformedResponse(_, ref e) => Some(e),
-            InfoError::Client(ref inner) => Some(inner),
-            _ => None,
-        }
-    }
-}
-
-#[derive(Clone, Default, Debug)]
-pub struct ListRequest {
-    /// The maximum number of items to return. Fewer than the requested number of items may be returned, even if the end of the users list hasn't been reached. Providing no `limit` value will result in Slack attempting to deliver you the entire result set. If the collection is too large you may experience `limit_required` or HTTP 500 errors.
-    pub limit: Option<u64>,
+pub struct ConversationsRequest {
     /// Paginate through collections of data by setting the `cursor` parameter to a `next_cursor` attribute returned by a previous request's `response_metadata`. Default value fetches the first "page" of the collection. See [pagination](/docs/pagination) for more detail.
     pub cursor: Option<String>,
-    /// Set this to `true` to receive the locale for users. Defaults to `false`
-    pub include_locale: Option<bool>,
-}
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct ListEnterpriseUserInner {
-    pub enterprise_id: String,
-    pub enterprise_name: String,
-    pub id: String,
-    pub is_admin: bool,
-    pub is_owner: bool,
-    pub teams: Vec<String>,
-}
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct ListProfileInner {
-    pub always_active: Option<bool>,
-    pub api_app_id: Option<String>,
-    pub avatar_hash: String,
-    pub bot_id: Option<String>,
-    pub display_name: String,
-    pub display_name_normalized: String,
-    pub email: Option<String>,
-    pub fields: Vec<serde_json::Value>,
-    pub first_name: Option<String>,
-    pub guest_expiration_ts: Option<u64>,
-    pub guest_invited_by: Option<String>,
-    pub image_1024: Option<String>,
-    pub image_192: Option<String>,
-    pub image_24: Option<String>,
-    pub image_32: Option<String>,
-    pub image_48: Option<String>,
-    pub image_512: Option<String>,
-    pub image_72: Option<String>,
-    pub image_original: Option<String>,
-    pub is_app_user: Option<bool>,
-    pub is_custom_image: Option<bool>,
-    pub is_restricted: Option<bool>,
-    pub is_ultra_restricted: Option<bool>,
-    pub last_avatar_image_hash: Option<String>,
-    pub last_name: Option<String>,
-    pub memberships_count: Option<u64>,
-    pub name: Option<String>,
-    pub phone: String,
-    pub pronouns: Option<String>,
-    pub real_name: String,
-    pub real_name_normalized: String,
-    pub skype: String,
-    pub status_default_emoji: Option<String>,
-    pub status_default_text: Option<String>,
-    pub status_default_text_canonical: Option<String>,
-    pub status_emoji: String,
-    pub status_expiration: Option<u64>,
-    pub status_text: String,
-    pub status_text_canonical: Option<String>,
-    pub team: Option<String>,
-    pub title: String,
-    pub updated: Option<u64>,
-    pub user_id: Option<String>,
-    pub username: Option<String>,
-}
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct ListOptionsInner {
-    pub is_custom: Option<bool>,
-    pub is_multiple_entry: Option<bool>,
-    pub is_protected: Option<bool>,
-    pub is_scim: Option<bool>,
-}
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct ListFieldsInner {
-    pub field_name: Option<String>,
-    pub hint: String,
-    pub id: String,
-    pub is_hidden: Option<bool>,
-    pub label: String,
-    pub options: Option<Vec<ListOptionsInner>>,
-    pub ordering: u64,
-    pub possible_values: Option<Vec<String>>,
-    pub r#type: String,
-}
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct ListTeamProfileInner {
-    pub fields: Vec<ListFieldsInner>,
-}
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct ListMembersInner {
-    pub color: Option<String>,
-    pub deleted: Option<bool>,
-    pub enterprise_user: Option<ListEnterpriseUserInner>,
-    pub has_2fa: Option<bool>,
-    pub id: String,
-    pub is_admin: Option<bool>,
-    pub is_app_user: bool,
-    pub is_bot: bool,
-    pub is_external: Option<bool>,
-    pub is_forgotten: Option<bool>,
-    pub is_invited_user: Option<bool>,
-    pub is_owner: Option<bool>,
-    pub is_primary_owner: Option<bool>,
-    pub is_restricted: Option<bool>,
-    pub is_stranger: Option<bool>,
-    pub is_ultra_restricted: Option<bool>,
-    pub locale: Option<String>,
-    pub name: String,
-    pub presence: Option<String>,
-    pub profile: ListProfileInner,
-    pub real_name: Option<String>,
-    pub team: Option<String>,
-    pub team_id: Option<String>,
-    pub team_profile: Option<ListTeamProfileInner>,
-    pub two_factor_type: Option<String>,
-    pub tz: Option<Vec<String>>,
-    pub tz_label: Option<String>,
-    pub tz_offset: Option<u64>,
-    pub updated: u64,
-}
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct ListResponseMetadataInner {
-    pub next_cursor: String,
-}
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct ListResponse {
-    pub cache_ts: u64,
-    pub callstack: Option<String>,
-    error: Option<String>,
-    pub members: Vec<Vec<ListMembersInner>>,
-    #[serde(default)]
-    ok: bool,
-    pub response_metadata: Option<Vec<ListResponseMetadataInner>>,
-}
-
-impl<E: Error> Into<Result<ListResponse, ListError<E>>> for ListResponse {
-    fn into(self) -> Result<ListResponse, ListError<E>> {
-        if self.ok {
-            Ok(self)
-        } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
-        }
-    }
-}
-
-#[derive(Debug)]
-pub enum ListError<E: Error> {
-    LimitRequired,
-    InvalidCursor,
-    NotAuthed,
-    InvalidAuth,
-    AccountInactive,
-    NoPermission,
-    InvalidArgName,
-    InvalidArrayArg,
-    InvalidCharset,
-    InvalidFormData,
-    InvalidPostType,
-    MissingPostType,
-    TeamAddedToOrg,
-    InvalidJson,
-    JsonNotObject,
-    RequestTimeout,
-    UpgradeRequired,
-    FatalError,
-    /// The response was not parseable as the expected object
-    MalformedResponse(String, serde_json::error::Error),
-    /// The response returned an error that was unknown to the library
-    Unknown(String),
-    /// The client had an error sending the request to Slack
-    Client(E),
-}
-
-impl<'a, E: Error> From<&'a str> for ListError<E> {
-    fn from(s: &'a str) -> Self {
-        match s {
-            "limit_required" => ListError::LimitRequired,
-            "invalid_cursor" => ListError::InvalidCursor,
-            "not_authed" => ListError::NotAuthed,
-            "invalid_auth" => ListError::InvalidAuth,
-            "account_inactive" => ListError::AccountInactive,
-            "no_permission" => ListError::NoPermission,
-            "invalid_arg_name" => ListError::InvalidArgName,
-            "invalid_array_arg" => ListError::InvalidArrayArg,
-            "invalid_charset" => ListError::InvalidCharset,
-            "invalid_form_data" => ListError::InvalidFormData,
-            "invalid_post_type" => ListError::InvalidPostType,
-            "missing_post_type" => ListError::MissingPostType,
-            "team_added_to_org" => ListError::TeamAddedToOrg,
-            "invalid_json" => ListError::InvalidJson,
-            "json_not_object" => ListError::JsonNotObject,
-            "request_timeout" => ListError::RequestTimeout,
-            "upgrade_required" => ListError::UpgradeRequired,
-            "fatal_error" => ListError::FatalError,
-            _ => ListError::Unknown(s.to_owned()),
-        }
-    }
-}
-
-impl<E: Error> fmt::Display for ListError<E> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match *self {
-            ListError::LimitRequired => write!(f, "Server returned error limit_required"),
-            ListError::InvalidCursor => write!(f, "Server returned error invalid_cursor"),
-            ListError::NotAuthed => write!(f, "Server returned error not_authed"),
-            ListError::InvalidAuth => write!(f, "Server returned error invalid_auth"),
-            ListError::AccountInactive => write!(f, "Server returned error account_inactive"),
-            ListError::NoPermission => write!(f, "Server returned error no_permission"),
-            ListError::InvalidArgName => write!(f, "Server returned error invalid_arg_name"),
-            ListError::InvalidArrayArg => write!(f, "Server returned error invalid_array_arg"),
-            ListError::InvalidCharset => write!(f, "Server returned error invalid_charset"),
-            ListError::InvalidFormData => write!(f, "Server returned error invalid_form_data"),
-            ListError::InvalidPostType => write!(f, "Server returned error invalid_post_type"),
-            ListError::MissingPostType => write!(f, "Server returned error missing_post_type"),
-            ListError::TeamAddedToOrg => write!(f, "Server returned error team_added_to_org"),
-            ListError::InvalidJson => write!(f, "Server returned error invalid_json"),
-            ListError::JsonNotObject => write!(f, "Server returned error json_not_object"),
-            ListError::RequestTimeout => write!(f, "Server returned error request_timeout"),
-            ListError::UpgradeRequired => write!(f, "Server returned error upgrade_required"),
-            ListError::FatalError => write!(f, "Server returned error fatal_error"),
-            ListError::MalformedResponse(_, ref e) => write!(f, "{}", e),
-            ListError::Unknown(ref s) => write!(f, "{}", s),
-            ListError::Client(ref inner) => write!(f, "{}", inner),
-        }
-    }
-}
-
-impl<E: Error + 'static> Error for ListError<E> {
-    fn source(&self) -> Option<&(dyn Error + 'static)> {
-        match *self {
-            ListError::MalformedResponse(_, ref e) => Some(e),
-            ListError::Client(ref inner) => Some(inner),
-            _ => None,
-        }
-    }
-}
-
-#[derive(Clone, Default, Debug)]
-pub struct SetActiveRequest {}
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct SetActiveResponse {
-    pub callstack: Option<String>,
-    error: Option<String>,
-    #[serde(default)]
-    ok: bool,
-}
-
-impl<E: Error> Into<Result<SetActiveResponse, SetActiveError<E>>> for SetActiveResponse {
-    fn into(self) -> Result<SetActiveResponse, SetActiveError<E>> {
-        if self.ok {
-            Ok(self)
-        } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
-        }
-    }
-}
-
-#[derive(Debug)]
-pub enum SetActiveError<E: Error> {
-    NotAuthed,
-    InvalidAuth,
-    AccountInactive,
-    TokenRevoked,
-    NoPermission,
-    OrgLoginRequired,
-    EkmAccessDenied,
-    MissingScope,
-    InvalidArguments,
-    InvalidArgName,
-    InvalidCharset,
-    InvalidFormData,
-    InvalidPostType,
-    MissingPostType,
-    TeamAddedToOrg,
-    RequestTimeout,
-    FatalError,
-    InternalError,
-    /// The response was not parseable as the expected object
-    MalformedResponse(String, serde_json::error::Error),
-    /// The response returned an error that was unknown to the library
-    Unknown(String),
-    /// The client had an error sending the request to Slack
-    Client(E),
-}
-
-impl<'a, E: Error> From<&'a str> for SetActiveError<E> {
-    fn from(s: &'a str) -> Self {
-        match s {
-            "not_authed" => SetActiveError::NotAuthed,
-            "invalid_auth" => SetActiveError::InvalidAuth,
-            "account_inactive" => SetActiveError::AccountInactive,
-            "token_revoked" => SetActiveError::TokenRevoked,
-            "no_permission" => SetActiveError::NoPermission,
-            "org_login_required" => SetActiveError::OrgLoginRequired,
-            "ekm_access_denied" => SetActiveError::EkmAccessDenied,
-            "missing_scope" => SetActiveError::MissingScope,
-            "invalid_arguments" => SetActiveError::InvalidArguments,
-            "invalid_arg_name" => SetActiveError::InvalidArgName,
-            "invalid_charset" => SetActiveError::InvalidCharset,
-            "invalid_form_data" => SetActiveError::InvalidFormData,
-            "invalid_post_type" => SetActiveError::InvalidPostType,
-            "missing_post_type" => SetActiveError::MissingPostType,
-            "team_added_to_org" => SetActiveError::TeamAddedToOrg,
-            "request_timeout" => SetActiveError::RequestTimeout,
-            "fatal_error" => SetActiveError::FatalError,
-            "internal_error" => SetActiveError::InternalError,
-            _ => SetActiveError::Unknown(s.to_owned()),
-        }
-    }
-}
-
-impl<E: Error> fmt::Display for SetActiveError<E> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match *self {
-            SetActiveError::NotAuthed => write!(f, "Server returned error not_authed"),
-            SetActiveError::InvalidAuth => write!(f, "Server returned error invalid_auth"),
-            SetActiveError::AccountInactive => write!(f, "Server returned error account_inactive"),
-            SetActiveError::TokenRevoked => write!(f, "Server returned error token_revoked"),
-            SetActiveError::NoPermission => write!(f, "Server returned error no_permission"),
-            SetActiveError::OrgLoginRequired => {
-                write!(f, "Server returned error org_login_required")
-            }
-            SetActiveError::EkmAccessDenied => write!(f, "Server returned error ekm_access_denied"),
-            SetActiveError::MissingScope => write!(f, "Server returned error missing_scope"),
-            SetActiveError::InvalidArguments => {
-                write!(f, "Server returned error invalid_arguments")
-            }
-            SetActiveError::InvalidArgName => write!(f, "Server returned error invalid_arg_name"),
-            SetActiveError::InvalidCharset => write!(f, "Server returned error invalid_charset"),
-            SetActiveError::InvalidFormData => write!(f, "Server returned error invalid_form_data"),
-            SetActiveError::InvalidPostType => write!(f, "Server returned error invalid_post_type"),
-            SetActiveError::MissingPostType => write!(f, "Server returned error missing_post_type"),
-            SetActiveError::TeamAddedToOrg => write!(f, "Server returned error team_added_to_org"),
-            SetActiveError::RequestTimeout => write!(f, "Server returned error request_timeout"),
-            SetActiveError::FatalError => write!(f, "Server returned error fatal_error"),
-            SetActiveError::InternalError => write!(f, "Server returned error internal_error"),
-            SetActiveError::MalformedResponse(_, ref e) => write!(f, "{}", e),
-            SetActiveError::Unknown(ref s) => write!(f, "{}", s),
-            SetActiveError::Client(ref inner) => write!(f, "{}", inner),
-        }
-    }
-}
-
-impl<E: Error + 'static> Error for SetActiveError<E> {
-    fn source(&self) -> Option<&(dyn Error + 'static)> {
-        match *self {
-            SetActiveError::MalformedResponse(_, ref e) => Some(e),
-            SetActiveError::Client(ref inner) => Some(inner),
-            _ => None,
-        }
-    }
-}
-
-#[derive(Clone, Default, Debug)]
-pub struct SetPresenceRequest {
-    /// Either `auto` or `away`
-    pub presence: String,
-}
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct SetPresenceResponse {
-    pub callstack: Option<String>,
-    error: Option<String>,
-    #[serde(default)]
-    ok: bool,
-}
-
-impl<E: Error> Into<Result<SetPresenceResponse, SetPresenceError<E>>> for SetPresenceResponse {
-    fn into(self) -> Result<SetPresenceResponse, SetPresenceError<E>> {
-        if self.ok {
-            Ok(self)
-        } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
-        }
-    }
-}
-
-#[derive(Debug)]
-pub enum SetPresenceError<E: Error> {
-    InvalidPresence,
-    NotAuthed,
-    InvalidAuth,
-    AccountInactive,
-    TokenRevoked,
-    NoPermission,
-    OrgLoginRequired,
-    InvalidArgName,
-    InvalidArrayArg,
-    InvalidCharset,
-    InvalidFormData,
-    InvalidPostType,
-    MissingPostType,
-    TeamAddedToOrg,
-    InvalidJson,
-    JsonNotObject,
-    RequestTimeout,
-    UpgradeRequired,
-    FatalError,
-    /// The response was not parseable as the expected object
-    MalformedResponse(String, serde_json::error::Error),
-    /// The response returned an error that was unknown to the library
-    Unknown(String),
-    /// The client had an error sending the request to Slack
-    Client(E),
-}
-
-impl<'a, E: Error> From<&'a str> for SetPresenceError<E> {
-    fn from(s: &'a str) -> Self {
-        match s {
-            "invalid_presence" => SetPresenceError::InvalidPresence,
-            "not_authed" => SetPresenceError::NotAuthed,
-            "invalid_auth" => SetPresenceError::InvalidAuth,
-            "account_inactive" => SetPresenceError::AccountInactive,
-            "token_revoked" => SetPresenceError::TokenRevoked,
-            "no_permission" => SetPresenceError::NoPermission,
-            "org_login_required" => SetPresenceError::OrgLoginRequired,
-            "invalid_arg_name" => SetPresenceError::InvalidArgName,
-            "invalid_array_arg" => SetPresenceError::InvalidArrayArg,
-            "invalid_charset" => SetPresenceError::InvalidCharset,
-            "invalid_form_data" => SetPresenceError::InvalidFormData,
-            "invalid_post_type" => SetPresenceError::InvalidPostType,
-            "missing_post_type" => SetPresenceError::MissingPostType,
-            "team_added_to_org" => SetPresenceError::TeamAddedToOrg,
-            "invalid_json" => SetPresenceError::InvalidJson,
-            "json_not_object" => SetPresenceError::JsonNotObject,
-            "request_timeout" => SetPresenceError::RequestTimeout,
-            "upgrade_required" => SetPresenceError::UpgradeRequired,
-            "fatal_error" => SetPresenceError::FatalError,
-            _ => SetPresenceError::Unknown(s.to_owned()),
-        }
-    }
-}
-
-impl<E: Error> fmt::Display for SetPresenceError<E> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match *self {
-            SetPresenceError::InvalidPresence => {
-                write!(f, "Server returned error invalid_presence")
-            }
-            SetPresenceError::NotAuthed => write!(f, "Server returned error not_authed"),
-            SetPresenceError::InvalidAuth => write!(f, "Server returned error invalid_auth"),
-            SetPresenceError::AccountInactive => {
-                write!(f, "Server returned error account_inactive")
-            }
-            SetPresenceError::TokenRevoked => write!(f, "Server returned error token_revoked"),
-            SetPresenceError::NoPermission => write!(f, "Server returned error no_permission"),
-            SetPresenceError::OrgLoginRequired => {
-                write!(f, "Server returned error org_login_required")
-            }
-            SetPresenceError::InvalidArgName => write!(f, "Server returned error invalid_arg_name"),
-            SetPresenceError::InvalidArrayArg => {
-                write!(f, "Server returned error invalid_array_arg")
-            }
-            SetPresenceError::InvalidCharset => write!(f, "Server returned error invalid_charset"),
-            SetPresenceError::InvalidFormData => {
-                write!(f, "Server returned error invalid_form_data")
-            }
-            SetPresenceError::InvalidPostType => {
-                write!(f, "Server returned error invalid_post_type")
-            }
-            SetPresenceError::MissingPostType => {
-                write!(f, "Server returned error missing_post_type")
-            }
-            SetPresenceError::TeamAddedToOrg => {
-                write!(f, "Server returned error team_added_to_org")
-            }
-            SetPresenceError::InvalidJson => write!(f, "Server returned error invalid_json"),
-            SetPresenceError::JsonNotObject => write!(f, "Server returned error json_not_object"),
-            SetPresenceError::RequestTimeout => write!(f, "Server returned error request_timeout"),
-            SetPresenceError::UpgradeRequired => {
-                write!(f, "Server returned error upgrade_required")
-            }
-            SetPresenceError::FatalError => write!(f, "Server returned error fatal_error"),
-            SetPresenceError::MalformedResponse(_, ref e) => write!(f, "{}", e),
-            SetPresenceError::Unknown(ref s) => write!(f, "{}", s),
-            SetPresenceError::Client(ref inner) => write!(f, "{}", inner),
-        }
-    }
-}
-
-impl<E: Error + 'static> Error for SetPresenceError<E> {
-    fn source(&self) -> Option<&(dyn Error + 'static)> {
-        match *self {
-            SetPresenceError::MalformedResponse(_, ref e) => Some(e),
-            SetPresenceError::Client(ref inner) => Some(inner),
-            _ => None,
-        }
-    }
-}
-
-#[derive(Clone, Default, Debug)]
-pub struct ConversationsRequest {
-    /// Browse conversations by a specific user ID's membership. Non-public channels are restricted to those where the calling user shares membership.
-    pub user: Option<String>,
-    /// Mix and match channel types by providing a comma-separated list of any combination of `public_channel`, `private_channel`, `mpim`, `im`
-    pub types: Option<String>,
     /// Set to `true` to exclude archived channels from the list
     pub exclude_archived: Option<bool>,
     /// The maximum number of items to return. Fewer than the requested number of items may be returned, even if the end of the list hasn't been reached. Must be an integer no larger than 1000.
     pub limit: Option<u64>,
-    /// Paginate through collections of data by setting the `cursor` parameter to a `next_cursor` attribute returned by a previous request's `response_metadata`. Default value fetches the first "page" of the collection. See [pagination](/docs/pagination) for more detail.
-    pub cursor: Option<String>,
+    /// Mix and match channel types by providing a comma-separated list of any combination of `public_channel`, `private_channel`, `mpim`, `im`
+    pub types: Option<String>,
+    /// Browse conversations by a specific user ID's membership. Non-public channels are restricted to those where the calling user shares membership.
+    pub user: Option<String>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -1318,28 +523,28 @@ impl<E: Error> Into<Result<ConversationsResponse, ConversationsError<E>>>
 
 #[derive(Debug)]
 pub enum ConversationsError<E: Error> {
-    MethodNotSupportedForChannelType,
-    MissingScope,
-    InvalidTypes,
-    InvalidCursor,
-    InvalidLimit,
-    NotAuthed,
-    InvalidAuth,
     AccountInactive,
-    TokenRevoked,
-    NoPermission,
+    FatalError,
     InvalidArgName,
     InvalidArrayArg,
+    InvalidAuth,
     InvalidCharset,
+    InvalidCursor,
     InvalidFormData,
-    InvalidPostType,
-    MissingPostType,
-    TeamAddedToOrg,
     InvalidJson,
+    InvalidLimit,
+    InvalidPostType,
+    InvalidTypes,
     JsonNotObject,
+    MethodNotSupportedForChannelType,
+    MissingPostType,
+    MissingScope,
+    NoPermission,
+    NotAuthed,
     RequestTimeout,
+    TeamAddedToOrg,
+    TokenRevoked,
     UpgradeRequired,
-    FatalError,
     /// The response was not parseable as the expected object
     MalformedResponse(String, serde_json::error::Error),
     /// The response returned an error that was unknown to the library
@@ -1351,30 +556,30 @@ pub enum ConversationsError<E: Error> {
 impl<'a, E: Error> From<&'a str> for ConversationsError<E> {
     fn from(s: &'a str) -> Self {
         match s {
+            "account_inactive" => ConversationsError::AccountInactive,
+            "fatal_error" => ConversationsError::FatalError,
+            "invalid_arg_name" => ConversationsError::InvalidArgName,
+            "invalid_array_arg" => ConversationsError::InvalidArrayArg,
+            "invalid_auth" => ConversationsError::InvalidAuth,
+            "invalid_charset" => ConversationsError::InvalidCharset,
+            "invalid_cursor" => ConversationsError::InvalidCursor,
+            "invalid_form_data" => ConversationsError::InvalidFormData,
+            "invalid_json" => ConversationsError::InvalidJson,
+            "invalid_limit" => ConversationsError::InvalidLimit,
+            "invalid_post_type" => ConversationsError::InvalidPostType,
+            "invalid_types" => ConversationsError::InvalidTypes,
+            "json_not_object" => ConversationsError::JsonNotObject,
             "method_not_supported_for_channel_type" => {
                 ConversationsError::MethodNotSupportedForChannelType
             }
-            "missing_scope" => ConversationsError::MissingScope,
-            "invalid_types" => ConversationsError::InvalidTypes,
-            "invalid_cursor" => ConversationsError::InvalidCursor,
-            "invalid_limit" => ConversationsError::InvalidLimit,
-            "not_authed" => ConversationsError::NotAuthed,
-            "invalid_auth" => ConversationsError::InvalidAuth,
-            "account_inactive" => ConversationsError::AccountInactive,
-            "token_revoked" => ConversationsError::TokenRevoked,
-            "no_permission" => ConversationsError::NoPermission,
-            "invalid_arg_name" => ConversationsError::InvalidArgName,
-            "invalid_array_arg" => ConversationsError::InvalidArrayArg,
-            "invalid_charset" => ConversationsError::InvalidCharset,
-            "invalid_form_data" => ConversationsError::InvalidFormData,
-            "invalid_post_type" => ConversationsError::InvalidPostType,
             "missing_post_type" => ConversationsError::MissingPostType,
-            "team_added_to_org" => ConversationsError::TeamAddedToOrg,
-            "invalid_json" => ConversationsError::InvalidJson,
-            "json_not_object" => ConversationsError::JsonNotObject,
+            "missing_scope" => ConversationsError::MissingScope,
+            "no_permission" => ConversationsError::NoPermission,
+            "not_authed" => ConversationsError::NotAuthed,
             "request_timeout" => ConversationsError::RequestTimeout,
+            "team_added_to_org" => ConversationsError::TeamAddedToOrg,
+            "token_revoked" => ConversationsError::TokenRevoked,
             "upgrade_required" => ConversationsError::UpgradeRequired,
-            "fatal_error" => ConversationsError::FatalError,
             _ => ConversationsError::Unknown(s.to_owned()),
         }
     }
@@ -1383,51 +588,51 @@ impl<'a, E: Error> From<&'a str> for ConversationsError<E> {
 impl<E: Error> fmt::Display for ConversationsError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
-            ConversationsError::MethodNotSupportedForChannelType => write!(
-                f,
-                "Server returned error method_not_supported_for_channel_type"
-            ),
-            ConversationsError::MissingScope => write!(f, "Server returned error missing_scope"),
-            ConversationsError::InvalidTypes => write!(f, "Server returned error invalid_types"),
-            ConversationsError::InvalidCursor => write!(f, "Server returned error invalid_cursor"),
-            ConversationsError::InvalidLimit => write!(f, "Server returned error invalid_limit"),
-            ConversationsError::NotAuthed => write!(f, "Server returned error not_authed"),
-            ConversationsError::InvalidAuth => write!(f, "Server returned error invalid_auth"),
             ConversationsError::AccountInactive => {
                 write!(f, "Server returned error account_inactive")
             }
-            ConversationsError::TokenRevoked => write!(f, "Server returned error token_revoked"),
-            ConversationsError::NoPermission => write!(f, "Server returned error no_permission"),
+            ConversationsError::FatalError => write!(f, "Server returned error fatal_error"),
             ConversationsError::InvalidArgName => {
                 write!(f, "Server returned error invalid_arg_name")
             }
             ConversationsError::InvalidArrayArg => {
                 write!(f, "Server returned error invalid_array_arg")
             }
+            ConversationsError::InvalidAuth => write!(f, "Server returned error invalid_auth"),
             ConversationsError::InvalidCharset => {
                 write!(f, "Server returned error invalid_charset")
             }
+            ConversationsError::InvalidCursor => write!(f, "Server returned error invalid_cursor"),
             ConversationsError::InvalidFormData => {
                 write!(f, "Server returned error invalid_form_data")
             }
+            ConversationsError::InvalidJson => write!(f, "Server returned error invalid_json"),
+            ConversationsError::InvalidLimit => write!(f, "Server returned error invalid_limit"),
             ConversationsError::InvalidPostType => {
                 write!(f, "Server returned error invalid_post_type")
             }
+            ConversationsError::InvalidTypes => write!(f, "Server returned error invalid_types"),
+            ConversationsError::JsonNotObject => write!(f, "Server returned error json_not_object"),
+            ConversationsError::MethodNotSupportedForChannelType => write!(
+                f,
+                "Server returned error method_not_supported_for_channel_type"
+            ),
             ConversationsError::MissingPostType => {
                 write!(f, "Server returned error missing_post_type")
+            }
+            ConversationsError::MissingScope => write!(f, "Server returned error missing_scope"),
+            ConversationsError::NoPermission => write!(f, "Server returned error no_permission"),
+            ConversationsError::NotAuthed => write!(f, "Server returned error not_authed"),
+            ConversationsError::RequestTimeout => {
+                write!(f, "Server returned error request_timeout")
             }
             ConversationsError::TeamAddedToOrg => {
                 write!(f, "Server returned error team_added_to_org")
             }
-            ConversationsError::InvalidJson => write!(f, "Server returned error invalid_json"),
-            ConversationsError::JsonNotObject => write!(f, "Server returned error json_not_object"),
-            ConversationsError::RequestTimeout => {
-                write!(f, "Server returned error request_timeout")
-            }
+            ConversationsError::TokenRevoked => write!(f, "Server returned error token_revoked"),
             ConversationsError::UpgradeRequired => {
                 write!(f, "Server returned error upgrade_required")
             }
-            ConversationsError::FatalError => write!(f, "Server returned error fatal_error"),
             ConversationsError::MalformedResponse(_, ref e) => write!(f, "{}", e),
             ConversationsError::Unknown(ref s) => write!(f, "{}", s),
             ConversationsError::Client(ref inner) => write!(f, "{}", inner),
@@ -1440,6 +645,208 @@ impl<E: Error + 'static> Error for ConversationsError<E> {
         match *self {
             ConversationsError::MalformedResponse(_, ref e) => Some(e),
             ConversationsError::Client(ref inner) => Some(inner),
+            _ => None,
+        }
+    }
+}
+
+#[derive(Clone, Default, Debug)]
+pub struct DeletePhotoRequest {
+    /// Authentication token. Requires scope: `users.profile:write`
+    pub token: String,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct DeletePhotoResponse {
+    pub callstack: Option<String>,
+    error: Option<String>,
+    #[serde(default)]
+    ok: bool,
+}
+
+impl<E: Error> Into<Result<DeletePhotoResponse, DeletePhotoError<E>>> for DeletePhotoResponse {
+    fn into(self) -> Result<DeletePhotoResponse, DeletePhotoError<E>> {
+        if self.ok {
+            Ok(self)
+        } else {
+            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+        }
+    }
+}
+
+#[derive(Debug)]
+pub enum DeletePhotoError<E: Error> {
+    AccountInactive,
+    FatalError,
+    InvalidArgName,
+    InvalidArrayArg,
+    InvalidAuth,
+    InvalidCharset,
+    InvalidFormData,
+    InvalidJson,
+    InvalidPostType,
+    JsonNotObject,
+    MissingPostType,
+    NoPermission,
+    NotAuthed,
+    OrgLoginRequired,
+    RequestTimeout,
+    TeamAddedToOrg,
+    TokenRevoked,
+    UpgradeRequired,
+    UserIsBot,
+    /// The response was not parseable as the expected object
+    MalformedResponse(String, serde_json::error::Error),
+    /// The response returned an error that was unknown to the library
+    Unknown(String),
+    /// The client had an error sending the request to Slack
+    Client(E),
+}
+
+impl<'a, E: Error> From<&'a str> for DeletePhotoError<E> {
+    fn from(s: &'a str) -> Self {
+        match s {
+            "account_inactive" => DeletePhotoError::AccountInactive,
+            "fatal_error" => DeletePhotoError::FatalError,
+            "invalid_arg_name" => DeletePhotoError::InvalidArgName,
+            "invalid_array_arg" => DeletePhotoError::InvalidArrayArg,
+            "invalid_auth" => DeletePhotoError::InvalidAuth,
+            "invalid_charset" => DeletePhotoError::InvalidCharset,
+            "invalid_form_data" => DeletePhotoError::InvalidFormData,
+            "invalid_json" => DeletePhotoError::InvalidJson,
+            "invalid_post_type" => DeletePhotoError::InvalidPostType,
+            "json_not_object" => DeletePhotoError::JsonNotObject,
+            "missing_post_type" => DeletePhotoError::MissingPostType,
+            "no_permission" => DeletePhotoError::NoPermission,
+            "not_authed" => DeletePhotoError::NotAuthed,
+            "org_login_required" => DeletePhotoError::OrgLoginRequired,
+            "request_timeout" => DeletePhotoError::RequestTimeout,
+            "team_added_to_org" => DeletePhotoError::TeamAddedToOrg,
+            "token_revoked" => DeletePhotoError::TokenRevoked,
+            "upgrade_required" => DeletePhotoError::UpgradeRequired,
+            "user_is_bot" => DeletePhotoError::UserIsBot,
+            _ => DeletePhotoError::Unknown(s.to_owned()),
+        }
+    }
+}
+
+impl<E: Error> fmt::Display for DeletePhotoError<E> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match *self {
+            DeletePhotoError::AccountInactive => {
+                write!(f, "Server returned error account_inactive")
+            }
+            DeletePhotoError::FatalError => write!(f, "Server returned error fatal_error"),
+            DeletePhotoError::InvalidArgName => write!(f, "Server returned error invalid_arg_name"),
+            DeletePhotoError::InvalidArrayArg => {
+                write!(f, "Server returned error invalid_array_arg")
+            }
+            DeletePhotoError::InvalidAuth => write!(f, "Server returned error invalid_auth"),
+            DeletePhotoError::InvalidCharset => write!(f, "Server returned error invalid_charset"),
+            DeletePhotoError::InvalidFormData => {
+                write!(f, "Server returned error invalid_form_data")
+            }
+            DeletePhotoError::InvalidJson => write!(f, "Server returned error invalid_json"),
+            DeletePhotoError::InvalidPostType => {
+                write!(f, "Server returned error invalid_post_type")
+            }
+            DeletePhotoError::JsonNotObject => write!(f, "Server returned error json_not_object"),
+            DeletePhotoError::MissingPostType => {
+                write!(f, "Server returned error missing_post_type")
+            }
+            DeletePhotoError::NoPermission => write!(f, "Server returned error no_permission"),
+            DeletePhotoError::NotAuthed => write!(f, "Server returned error not_authed"),
+            DeletePhotoError::OrgLoginRequired => {
+                write!(f, "Server returned error org_login_required")
+            }
+            DeletePhotoError::RequestTimeout => write!(f, "Server returned error request_timeout"),
+            DeletePhotoError::TeamAddedToOrg => {
+                write!(f, "Server returned error team_added_to_org")
+            }
+            DeletePhotoError::TokenRevoked => write!(f, "Server returned error token_revoked"),
+            DeletePhotoError::UpgradeRequired => {
+                write!(f, "Server returned error upgrade_required")
+            }
+            DeletePhotoError::UserIsBot => write!(f, "Server returned error user_is_bot"),
+            DeletePhotoError::MalformedResponse(_, ref e) => write!(f, "{}", e),
+            DeletePhotoError::Unknown(ref s) => write!(f, "{}", s),
+            DeletePhotoError::Client(ref inner) => write!(f, "{}", inner),
+        }
+    }
+}
+
+impl<E: Error + 'static> Error for DeletePhotoError<E> {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+        match *self {
+            DeletePhotoError::MalformedResponse(_, ref e) => Some(e),
+            DeletePhotoError::Client(ref inner) => Some(inner),
+            _ => None,
+        }
+    }
+}
+
+#[derive(Clone, Default, Debug)]
+pub struct GetPresenceRequest {
+    /// User to get presence info on. Defaults to the authed user.
+    pub user: Option<String>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct GetPresenceResponse {
+    pub auto_away: Option<bool>,
+    pub connection_count: Option<u64>,
+    error: Option<String>,
+    pub last_activity: Option<u64>,
+    pub manual_away: Option<bool>,
+    #[serde(default)]
+    ok: bool,
+    pub online: Option<bool>,
+    pub presence: String,
+}
+
+impl<E: Error> Into<Result<GetPresenceResponse, GetPresenceError<E>>> for GetPresenceResponse {
+    fn into(self) -> Result<GetPresenceResponse, GetPresenceError<E>> {
+        if self.ok {
+            Ok(self)
+        } else {
+            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+        }
+    }
+}
+
+#[derive(Debug)]
+pub enum GetPresenceError<E: Error> {
+    /// The response was not parseable as the expected object
+    MalformedResponse(String, serde_json::error::Error),
+    /// The response returned an error that was unknown to the library
+    Unknown(String),
+    /// The client had an error sending the request to Slack
+    Client(E),
+}
+
+impl<'a, E: Error> From<&'a str> for GetPresenceError<E> {
+    fn from(s: &'a str) -> Self {
+        match s {
+            _ => GetPresenceError::Unknown(s.to_owned()),
+        }
+    }
+}
+
+impl<E: Error> fmt::Display for GetPresenceError<E> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match *self {
+            GetPresenceError::MalformedResponse(_, ref e) => write!(f, "{}", e),
+            GetPresenceError::Unknown(ref s) => write!(f, "{}", s),
+            GetPresenceError::Client(ref inner) => write!(f, "{}", inner),
+        }
+    }
+}
+
+impl<E: Error + 'static> Error for GetPresenceError<E> {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+        match *self {
+            GetPresenceError::MalformedResponse(_, ref e) => Some(e),
+            GetPresenceError::Client(ref inner) => Some(inner),
             _ => None,
         }
     }
@@ -1486,25 +893,25 @@ impl<E: Error> Into<Result<IdentityResponse, IdentityError<E>>> for IdentityResp
 
 #[derive(Debug)]
 pub enum IdentityError<E: Error> {
-    NotAuthed,
-    InvalidAuth,
     AccountInactive,
-    TokenRevoked,
-    NoPermission,
-    OrgLoginRequired,
-    UserIsBot,
+    FatalError,
     InvalidArgName,
     InvalidArrayArg,
+    InvalidAuth,
     InvalidCharset,
     InvalidFormData,
-    InvalidPostType,
-    MissingPostType,
-    TeamAddedToOrg,
     InvalidJson,
+    InvalidPostType,
     JsonNotObject,
+    MissingPostType,
+    NoPermission,
+    NotAuthed,
+    OrgLoginRequired,
     RequestTimeout,
+    TeamAddedToOrg,
+    TokenRevoked,
     UpgradeRequired,
-    FatalError,
+    UserIsBot,
     /// The response was not parseable as the expected object
     MalformedResponse(String, serde_json::error::Error),
     /// The response returned an error that was unknown to the library
@@ -1516,25 +923,25 @@ pub enum IdentityError<E: Error> {
 impl<'a, E: Error> From<&'a str> for IdentityError<E> {
     fn from(s: &'a str) -> Self {
         match s {
-            "not_authed" => IdentityError::NotAuthed,
-            "invalid_auth" => IdentityError::InvalidAuth,
             "account_inactive" => IdentityError::AccountInactive,
-            "token_revoked" => IdentityError::TokenRevoked,
-            "no_permission" => IdentityError::NoPermission,
-            "org_login_required" => IdentityError::OrgLoginRequired,
-            "user_is_bot" => IdentityError::UserIsBot,
+            "fatal_error" => IdentityError::FatalError,
             "invalid_arg_name" => IdentityError::InvalidArgName,
             "invalid_array_arg" => IdentityError::InvalidArrayArg,
+            "invalid_auth" => IdentityError::InvalidAuth,
             "invalid_charset" => IdentityError::InvalidCharset,
             "invalid_form_data" => IdentityError::InvalidFormData,
-            "invalid_post_type" => IdentityError::InvalidPostType,
-            "missing_post_type" => IdentityError::MissingPostType,
-            "team_added_to_org" => IdentityError::TeamAddedToOrg,
             "invalid_json" => IdentityError::InvalidJson,
+            "invalid_post_type" => IdentityError::InvalidPostType,
             "json_not_object" => IdentityError::JsonNotObject,
+            "missing_post_type" => IdentityError::MissingPostType,
+            "no_permission" => IdentityError::NoPermission,
+            "not_authed" => IdentityError::NotAuthed,
+            "org_login_required" => IdentityError::OrgLoginRequired,
             "request_timeout" => IdentityError::RequestTimeout,
+            "team_added_to_org" => IdentityError::TeamAddedToOrg,
+            "token_revoked" => IdentityError::TokenRevoked,
             "upgrade_required" => IdentityError::UpgradeRequired,
-            "fatal_error" => IdentityError::FatalError,
+            "user_is_bot" => IdentityError::UserIsBot,
             _ => IdentityError::Unknown(s.to_owned()),
         }
     }
@@ -1543,27 +950,27 @@ impl<'a, E: Error> From<&'a str> for IdentityError<E> {
 impl<E: Error> fmt::Display for IdentityError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
-            IdentityError::NotAuthed => write!(f, "Server returned error not_authed"),
-            IdentityError::InvalidAuth => write!(f, "Server returned error invalid_auth"),
             IdentityError::AccountInactive => write!(f, "Server returned error account_inactive"),
-            IdentityError::TokenRevoked => write!(f, "Server returned error token_revoked"),
+            IdentityError::FatalError => write!(f, "Server returned error fatal_error"),
+            IdentityError::InvalidArgName => write!(f, "Server returned error invalid_arg_name"),
+            IdentityError::InvalidArrayArg => write!(f, "Server returned error invalid_array_arg"),
+            IdentityError::InvalidAuth => write!(f, "Server returned error invalid_auth"),
+            IdentityError::InvalidCharset => write!(f, "Server returned error invalid_charset"),
+            IdentityError::InvalidFormData => write!(f, "Server returned error invalid_form_data"),
+            IdentityError::InvalidJson => write!(f, "Server returned error invalid_json"),
+            IdentityError::InvalidPostType => write!(f, "Server returned error invalid_post_type"),
+            IdentityError::JsonNotObject => write!(f, "Server returned error json_not_object"),
+            IdentityError::MissingPostType => write!(f, "Server returned error missing_post_type"),
             IdentityError::NoPermission => write!(f, "Server returned error no_permission"),
+            IdentityError::NotAuthed => write!(f, "Server returned error not_authed"),
             IdentityError::OrgLoginRequired => {
                 write!(f, "Server returned error org_login_required")
             }
-            IdentityError::UserIsBot => write!(f, "Server returned error user_is_bot"),
-            IdentityError::InvalidArgName => write!(f, "Server returned error invalid_arg_name"),
-            IdentityError::InvalidArrayArg => write!(f, "Server returned error invalid_array_arg"),
-            IdentityError::InvalidCharset => write!(f, "Server returned error invalid_charset"),
-            IdentityError::InvalidFormData => write!(f, "Server returned error invalid_form_data"),
-            IdentityError::InvalidPostType => write!(f, "Server returned error invalid_post_type"),
-            IdentityError::MissingPostType => write!(f, "Server returned error missing_post_type"),
-            IdentityError::TeamAddedToOrg => write!(f, "Server returned error team_added_to_org"),
-            IdentityError::InvalidJson => write!(f, "Server returned error invalid_json"),
-            IdentityError::JsonNotObject => write!(f, "Server returned error json_not_object"),
             IdentityError::RequestTimeout => write!(f, "Server returned error request_timeout"),
+            IdentityError::TeamAddedToOrg => write!(f, "Server returned error team_added_to_org"),
+            IdentityError::TokenRevoked => write!(f, "Server returned error token_revoked"),
             IdentityError::UpgradeRequired => write!(f, "Server returned error upgrade_required"),
-            IdentityError::FatalError => write!(f, "Server returned error fatal_error"),
+            IdentityError::UserIsBot => write!(f, "Server returned error user_is_bot"),
             IdentityError::MalformedResponse(_, ref e) => write!(f, "{}", e),
             IdentityError::Unknown(ref s) => write!(f, "{}", s),
             IdentityError::Client(ref inner) => write!(f, "{}", inner),
@@ -1582,21 +989,141 @@ impl<E: Error + 'static> Error for IdentityError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct DeletePhotoRequest {
-    /// Authentication token. Requires scope: `users.profile:write`
-    pub token: String,
+pub struct InfoRequest {
+    /// Set this to `true` to receive the locale for this user. Defaults to `false`
+    pub include_locale: Option<bool>,
+    /// User to get info on
+    pub user: Option<String>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
-pub struct DeletePhotoResponse {
+pub struct InfoEnterpriseUserInner {
+    pub enterprise_id: String,
+    pub enterprise_name: String,
+    pub id: String,
+    pub is_admin: bool,
+    pub is_owner: bool,
+    pub teams: Vec<String>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct InfoProfileInner {
+    pub always_active: Option<bool>,
+    pub api_app_id: Option<String>,
+    pub avatar_hash: String,
+    pub bot_id: Option<String>,
+    pub display_name: String,
+    pub display_name_normalized: String,
+    pub email: Option<String>,
+    pub fields: Vec<serde_json::Value>,
+    pub first_name: Option<String>,
+    pub guest_expiration_ts: Option<u64>,
+    pub guest_invited_by: Option<String>,
+    pub image_1024: Option<String>,
+    pub image_192: Option<String>,
+    pub image_24: Option<String>,
+    pub image_32: Option<String>,
+    pub image_48: Option<String>,
+    pub image_512: Option<String>,
+    pub image_72: Option<String>,
+    pub image_original: Option<String>,
+    pub is_app_user: Option<bool>,
+    pub is_custom_image: Option<bool>,
+    pub is_restricted: Option<bool>,
+    pub is_ultra_restricted: Option<bool>,
+    pub last_avatar_image_hash: Option<String>,
+    pub last_name: Option<String>,
+    pub memberships_count: Option<u64>,
+    pub name: Option<String>,
+    pub phone: String,
+    pub pronouns: Option<String>,
+    pub real_name: String,
+    pub real_name_normalized: String,
+    pub skype: String,
+    pub status_default_emoji: Option<String>,
+    pub status_default_text: Option<String>,
+    pub status_default_text_canonical: Option<String>,
+    pub status_emoji: String,
+    pub status_expiration: Option<u64>,
+    pub status_text: String,
+    pub status_text_canonical: Option<String>,
+    pub team: Option<String>,
+    pub title: String,
+    pub updated: Option<u64>,
+    pub user_id: Option<String>,
+    pub username: Option<String>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct InfoOptionsInner {
+    pub is_custom: Option<bool>,
+    pub is_multiple_entry: Option<bool>,
+    pub is_protected: Option<bool>,
+    pub is_scim: Option<bool>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct InfoFieldsInner {
+    pub field_name: Option<String>,
+    pub hint: String,
+    pub id: String,
+    pub is_hidden: Option<bool>,
+    pub label: String,
+    pub options: Option<Vec<InfoOptionsInner>>,
+    pub ordering: u64,
+    pub possible_values: Option<Vec<String>>,
+    pub r#type: String,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct InfoTeamProfileInner {
+    pub fields: Vec<InfoFieldsInner>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct InfoUserInner {
+    pub color: Option<String>,
+    pub deleted: Option<bool>,
+    pub enterprise_user: Option<InfoEnterpriseUserInner>,
+    pub has_2fa: Option<bool>,
+    pub id: String,
+    pub is_admin: Option<bool>,
+    pub is_app_user: bool,
+    pub is_bot: bool,
+    pub is_external: Option<bool>,
+    pub is_forgotten: Option<bool>,
+    pub is_invited_user: Option<bool>,
+    pub is_owner: Option<bool>,
+    pub is_primary_owner: Option<bool>,
+    pub is_restricted: Option<bool>,
+    pub is_stranger: Option<bool>,
+    pub is_ultra_restricted: Option<bool>,
+    pub locale: Option<String>,
+    pub name: String,
+    pub presence: Option<String>,
+    pub profile: InfoProfileInner,
+    pub real_name: Option<String>,
+    pub team: Option<String>,
+    pub team_id: Option<String>,
+    pub team_profile: Option<InfoTeamProfileInner>,
+    pub two_factor_type: Option<String>,
+    pub tz: Option<Vec<String>>,
+    pub tz_label: Option<String>,
+    pub tz_offset: Option<u64>,
+    pub updated: u64,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct InfoResponse {
     pub callstack: Option<String>,
     error: Option<String>,
     #[serde(default)]
     ok: bool,
+    pub user: Vec<InfoUserInner>,
 }
 
-impl<E: Error> Into<Result<DeletePhotoResponse, DeletePhotoError<E>>> for DeletePhotoResponse {
-    fn into(self) -> Result<DeletePhotoResponse, DeletePhotoError<E>> {
+impl<E: Error> Into<Result<InfoResponse, InfoError<E>>> for InfoResponse {
+    fn into(self) -> Result<InfoResponse, InfoError<E>> {
         if self.ok {
             Ok(self)
         } else {
@@ -1606,26 +1133,23 @@ impl<E: Error> Into<Result<DeletePhotoResponse, DeletePhotoError<E>>> for Delete
 }
 
 #[derive(Debug)]
-pub enum DeletePhotoError<E: Error> {
-    NotAuthed,
-    InvalidAuth,
+pub enum InfoError<E: Error> {
     AccountInactive,
-    TokenRevoked,
-    NoPermission,
-    OrgLoginRequired,
-    UserIsBot,
     InvalidArgName,
     InvalidArrayArg,
+    InvalidAuth,
     InvalidCharset,
     InvalidFormData,
-    InvalidPostType,
-    MissingPostType,
-    TeamAddedToOrg,
     InvalidJson,
+    InvalidPostType,
     JsonNotObject,
+    MissingPostType,
+    NotAuthed,
     RequestTimeout,
+    TeamAddedToOrg,
     UpgradeRequired,
-    FatalError,
+    UserNotFound,
+    UserNotVisible,
     /// The response was not parseable as the expected object
     MalformedResponse(String, serde_json::error::Error),
     /// The response returned an error that was unknown to the library
@@ -1634,129 +1158,211 @@ pub enum DeletePhotoError<E: Error> {
     Client(E),
 }
 
-impl<'a, E: Error> From<&'a str> for DeletePhotoError<E> {
+impl<'a, E: Error> From<&'a str> for InfoError<E> {
     fn from(s: &'a str) -> Self {
         match s {
-            "not_authed" => DeletePhotoError::NotAuthed,
-            "invalid_auth" => DeletePhotoError::InvalidAuth,
-            "account_inactive" => DeletePhotoError::AccountInactive,
-            "token_revoked" => DeletePhotoError::TokenRevoked,
-            "no_permission" => DeletePhotoError::NoPermission,
-            "org_login_required" => DeletePhotoError::OrgLoginRequired,
-            "user_is_bot" => DeletePhotoError::UserIsBot,
-            "invalid_arg_name" => DeletePhotoError::InvalidArgName,
-            "invalid_array_arg" => DeletePhotoError::InvalidArrayArg,
-            "invalid_charset" => DeletePhotoError::InvalidCharset,
-            "invalid_form_data" => DeletePhotoError::InvalidFormData,
-            "invalid_post_type" => DeletePhotoError::InvalidPostType,
-            "missing_post_type" => DeletePhotoError::MissingPostType,
-            "team_added_to_org" => DeletePhotoError::TeamAddedToOrg,
-            "invalid_json" => DeletePhotoError::InvalidJson,
-            "json_not_object" => DeletePhotoError::JsonNotObject,
-            "request_timeout" => DeletePhotoError::RequestTimeout,
-            "upgrade_required" => DeletePhotoError::UpgradeRequired,
-            "fatal_error" => DeletePhotoError::FatalError,
-            _ => DeletePhotoError::Unknown(s.to_owned()),
+            "account_inactive" => InfoError::AccountInactive,
+            "invalid_arg_name" => InfoError::InvalidArgName,
+            "invalid_array_arg" => InfoError::InvalidArrayArg,
+            "invalid_auth" => InfoError::InvalidAuth,
+            "invalid_charset" => InfoError::InvalidCharset,
+            "invalid_form_data" => InfoError::InvalidFormData,
+            "invalid_json" => InfoError::InvalidJson,
+            "invalid_post_type" => InfoError::InvalidPostType,
+            "json_not_object" => InfoError::JsonNotObject,
+            "missing_post_type" => InfoError::MissingPostType,
+            "not_authed" => InfoError::NotAuthed,
+            "request_timeout" => InfoError::RequestTimeout,
+            "team_added_to_org" => InfoError::TeamAddedToOrg,
+            "upgrade_required" => InfoError::UpgradeRequired,
+            "user_not_found" => InfoError::UserNotFound,
+            "user_not_visible" => InfoError::UserNotVisible,
+            _ => InfoError::Unknown(s.to_owned()),
         }
     }
 }
 
-impl<E: Error> fmt::Display for DeletePhotoError<E> {
+impl<E: Error> fmt::Display for InfoError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
-            DeletePhotoError::NotAuthed => write!(f, "Server returned error not_authed"),
-            DeletePhotoError::InvalidAuth => write!(f, "Server returned error invalid_auth"),
-            DeletePhotoError::AccountInactive => {
-                write!(f, "Server returned error account_inactive")
-            }
-            DeletePhotoError::TokenRevoked => write!(f, "Server returned error token_revoked"),
-            DeletePhotoError::NoPermission => write!(f, "Server returned error no_permission"),
-            DeletePhotoError::OrgLoginRequired => {
-                write!(f, "Server returned error org_login_required")
-            }
-            DeletePhotoError::UserIsBot => write!(f, "Server returned error user_is_bot"),
-            DeletePhotoError::InvalidArgName => write!(f, "Server returned error invalid_arg_name"),
-            DeletePhotoError::InvalidArrayArg => {
-                write!(f, "Server returned error invalid_array_arg")
-            }
-            DeletePhotoError::InvalidCharset => write!(f, "Server returned error invalid_charset"),
-            DeletePhotoError::InvalidFormData => {
-                write!(f, "Server returned error invalid_form_data")
-            }
-            DeletePhotoError::InvalidPostType => {
-                write!(f, "Server returned error invalid_post_type")
-            }
-            DeletePhotoError::MissingPostType => {
-                write!(f, "Server returned error missing_post_type")
-            }
-            DeletePhotoError::TeamAddedToOrg => {
-                write!(f, "Server returned error team_added_to_org")
-            }
-            DeletePhotoError::InvalidJson => write!(f, "Server returned error invalid_json"),
-            DeletePhotoError::JsonNotObject => write!(f, "Server returned error json_not_object"),
-            DeletePhotoError::RequestTimeout => write!(f, "Server returned error request_timeout"),
-            DeletePhotoError::UpgradeRequired => {
-                write!(f, "Server returned error upgrade_required")
-            }
-            DeletePhotoError::FatalError => write!(f, "Server returned error fatal_error"),
-            DeletePhotoError::MalformedResponse(_, ref e) => write!(f, "{}", e),
-            DeletePhotoError::Unknown(ref s) => write!(f, "{}", s),
-            DeletePhotoError::Client(ref inner) => write!(f, "{}", inner),
+            InfoError::AccountInactive => write!(f, "Server returned error account_inactive"),
+            InfoError::InvalidArgName => write!(f, "Server returned error invalid_arg_name"),
+            InfoError::InvalidArrayArg => write!(f, "Server returned error invalid_array_arg"),
+            InfoError::InvalidAuth => write!(f, "Server returned error invalid_auth"),
+            InfoError::InvalidCharset => write!(f, "Server returned error invalid_charset"),
+            InfoError::InvalidFormData => write!(f, "Server returned error invalid_form_data"),
+            InfoError::InvalidJson => write!(f, "Server returned error invalid_json"),
+            InfoError::InvalidPostType => write!(f, "Server returned error invalid_post_type"),
+            InfoError::JsonNotObject => write!(f, "Server returned error json_not_object"),
+            InfoError::MissingPostType => write!(f, "Server returned error missing_post_type"),
+            InfoError::NotAuthed => write!(f, "Server returned error not_authed"),
+            InfoError::RequestTimeout => write!(f, "Server returned error request_timeout"),
+            InfoError::TeamAddedToOrg => write!(f, "Server returned error team_added_to_org"),
+            InfoError::UpgradeRequired => write!(f, "Server returned error upgrade_required"),
+            InfoError::UserNotFound => write!(f, "Server returned error user_not_found"),
+            InfoError::UserNotVisible => write!(f, "Server returned error user_not_visible"),
+            InfoError::MalformedResponse(_, ref e) => write!(f, "{}", e),
+            InfoError::Unknown(ref s) => write!(f, "{}", s),
+            InfoError::Client(ref inner) => write!(f, "{}", inner),
         }
     }
 }
 
-impl<E: Error + 'static> Error for DeletePhotoError<E> {
+impl<E: Error + 'static> Error for InfoError<E> {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
         match *self {
-            DeletePhotoError::MalformedResponse(_, ref e) => Some(e),
-            DeletePhotoError::Client(ref inner) => Some(inner),
+            InfoError::MalformedResponse(_, ref e) => Some(e),
+            InfoError::Client(ref inner) => Some(inner),
             _ => None,
         }
     }
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct SetPhotoRequest {
-    /// Authentication token. Requires scope: `users.profile:write`
-    pub token: String,
-    /// Width/height of crop box (always square)
-    pub crop_w: Option<String>,
-    /// X coordinate of top-left corner of crop box
-    pub crop_x: Option<String>,
-    /// Y coordinate of top-left corner of crop box
-    pub crop_y: Option<String>,
-    /// File contents via `multipart/form-data`.
-    pub image: Option<String>,
+pub struct ListRequest {
+    /// Paginate through collections of data by setting the `cursor` parameter to a `next_cursor` attribute returned by a previous request's `response_metadata`. Default value fetches the first "page" of the collection. See [pagination](/docs/pagination) for more detail.
+    pub cursor: Option<String>,
+    /// Set this to `true` to receive the locale for users. Defaults to `false`
+    pub include_locale: Option<bool>,
+    /// The maximum number of items to return. Fewer than the requested number of items may be returned, even if the end of the users list hasn't been reached. Providing no `limit` value will result in Slack attempting to deliver you the entire result set. If the collection is too large you may experience `limit_required` or HTTP 500 errors.
+    pub limit: Option<u64>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
-pub struct SetPhotoProfileInner {
+pub struct ListEnterpriseUserInner {
+    pub enterprise_id: String,
+    pub enterprise_name: String,
+    pub id: String,
+    pub is_admin: bool,
+    pub is_owner: bool,
+    pub teams: Vec<String>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct ListProfileInner {
+    pub always_active: Option<bool>,
+    pub api_app_id: Option<String>,
     pub avatar_hash: String,
-    pub image_1024: String,
-    pub image_192: String,
-    pub image_24: String,
-    pub image_32: String,
-    pub image_48: String,
-    pub image_512: String,
-    pub image_72: String,
-    pub image_original: String,
+    pub bot_id: Option<String>,
+    pub display_name: String,
+    pub display_name_normalized: String,
+    pub email: Option<String>,
+    pub fields: Vec<serde_json::Value>,
+    pub first_name: Option<String>,
+    pub guest_expiration_ts: Option<u64>,
+    pub guest_invited_by: Option<String>,
+    pub image_1024: Option<String>,
+    pub image_192: Option<String>,
+    pub image_24: Option<String>,
+    pub image_32: Option<String>,
+    pub image_48: Option<String>,
+    pub image_512: Option<String>,
+    pub image_72: Option<String>,
+    pub image_original: Option<String>,
+    pub is_app_user: Option<bool>,
+    pub is_custom_image: Option<bool>,
+    pub is_restricted: Option<bool>,
+    pub is_ultra_restricted: Option<bool>,
+    pub last_avatar_image_hash: Option<String>,
+    pub last_name: Option<String>,
+    pub memberships_count: Option<u64>,
+    pub name: Option<String>,
+    pub phone: String,
+    pub pronouns: Option<String>,
+    pub real_name: String,
+    pub real_name_normalized: String,
+    pub skype: String,
+    pub status_default_emoji: Option<String>,
+    pub status_default_text: Option<String>,
+    pub status_default_text_canonical: Option<String>,
+    pub status_emoji: String,
+    pub status_expiration: Option<u64>,
+    pub status_text: String,
+    pub status_text_canonical: Option<String>,
+    pub team: Option<String>,
+    pub title: String,
+    pub updated: Option<u64>,
+    pub user_id: Option<String>,
+    pub username: Option<String>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
-pub struct SetPhotoResponse {
+pub struct ListOptionsInner {
+    pub is_custom: Option<bool>,
+    pub is_multiple_entry: Option<bool>,
+    pub is_protected: Option<bool>,
+    pub is_scim: Option<bool>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct ListFieldsInner {
+    pub field_name: Option<String>,
+    pub hint: String,
+    pub id: String,
+    pub is_hidden: Option<bool>,
+    pub label: String,
+    pub options: Option<Vec<ListOptionsInner>>,
+    pub ordering: u64,
+    pub possible_values: Option<Vec<String>>,
+    pub r#type: String,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct ListTeamProfileInner {
+    pub fields: Vec<ListFieldsInner>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct ListMembersInner {
+    pub color: Option<String>,
+    pub deleted: Option<bool>,
+    pub enterprise_user: Option<ListEnterpriseUserInner>,
+    pub has_2fa: Option<bool>,
+    pub id: String,
+    pub is_admin: Option<bool>,
+    pub is_app_user: bool,
+    pub is_bot: bool,
+    pub is_external: Option<bool>,
+    pub is_forgotten: Option<bool>,
+    pub is_invited_user: Option<bool>,
+    pub is_owner: Option<bool>,
+    pub is_primary_owner: Option<bool>,
+    pub is_restricted: Option<bool>,
+    pub is_stranger: Option<bool>,
+    pub is_ultra_restricted: Option<bool>,
+    pub locale: Option<String>,
+    pub name: String,
+    pub presence: Option<String>,
+    pub profile: ListProfileInner,
+    pub real_name: Option<String>,
+    pub team: Option<String>,
+    pub team_id: Option<String>,
+    pub team_profile: Option<ListTeamProfileInner>,
+    pub two_factor_type: Option<String>,
+    pub tz: Option<Vec<String>>,
+    pub tz_label: Option<String>,
+    pub tz_offset: Option<u64>,
+    pub updated: u64,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct ListResponseMetadataInner {
+    pub next_cursor: String,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct ListResponse {
+    pub cache_ts: u64,
     pub callstack: Option<String>,
-    pub debug_step: Option<String>,
-    pub dims: Option<String>,
     error: Option<String>,
+    pub members: Vec<Vec<ListMembersInner>>,
     #[serde(default)]
     ok: bool,
-    pub profile: SetPhotoProfileInner,
-    pub time_ident: Option<u64>,
+    pub response_metadata: Option<Vec<ListResponseMetadataInner>>,
 }
 
-impl<E: Error> Into<Result<SetPhotoResponse, SetPhotoError<E>>> for SetPhotoResponse {
-    fn into(self) -> Result<SetPhotoResponse, SetPhotoError<E>> {
+impl<E: Error> Into<Result<ListResponse, ListError<E>>> for ListResponse {
+    fn into(self) -> Result<ListResponse, ListError<E>> {
         if self.ok {
             Ok(self)
         } else {
@@ -1766,30 +1372,25 @@ impl<E: Error> Into<Result<SetPhotoResponse, SetPhotoError<E>>> for SetPhotoResp
 }
 
 #[derive(Debug)]
-pub enum SetPhotoError<E: Error> {
-    BadImage,
-    TooLarge,
-    TooManyFrames,
-    NotFound,
-    NotAuthed,
-    InvalidAuth,
+pub enum ListError<E: Error> {
     AccountInactive,
-    TokenRevoked,
-    NoPermission,
-    OrgLoginRequired,
-    UserIsBot,
+    FatalError,
     InvalidArgName,
     InvalidArrayArg,
+    InvalidAuth,
     InvalidCharset,
+    InvalidCursor,
     InvalidFormData,
-    InvalidPostType,
-    MissingPostType,
-    TeamAddedToOrg,
     InvalidJson,
+    InvalidPostType,
     JsonNotObject,
+    LimitRequired,
+    MissingPostType,
+    NoPermission,
+    NotAuthed,
     RequestTimeout,
+    TeamAddedToOrg,
     UpgradeRequired,
-    FatalError,
     /// The response was not parseable as the expected object
     MalformedResponse(String, serde_json::error::Error),
     /// The response returned an error that was unknown to the library
@@ -1798,77 +1399,65 @@ pub enum SetPhotoError<E: Error> {
     Client(E),
 }
 
-impl<'a, E: Error> From<&'a str> for SetPhotoError<E> {
+impl<'a, E: Error> From<&'a str> for ListError<E> {
     fn from(s: &'a str) -> Self {
         match s {
-            "bad_image" => SetPhotoError::BadImage,
-            "too_large" => SetPhotoError::TooLarge,
-            "too_many_frames" => SetPhotoError::TooManyFrames,
-            "not_found" => SetPhotoError::NotFound,
-            "not_authed" => SetPhotoError::NotAuthed,
-            "invalid_auth" => SetPhotoError::InvalidAuth,
-            "account_inactive" => SetPhotoError::AccountInactive,
-            "token_revoked" => SetPhotoError::TokenRevoked,
-            "no_permission" => SetPhotoError::NoPermission,
-            "org_login_required" => SetPhotoError::OrgLoginRequired,
-            "user_is_bot" => SetPhotoError::UserIsBot,
-            "invalid_arg_name" => SetPhotoError::InvalidArgName,
-            "invalid_array_arg" => SetPhotoError::InvalidArrayArg,
-            "invalid_charset" => SetPhotoError::InvalidCharset,
-            "invalid_form_data" => SetPhotoError::InvalidFormData,
-            "invalid_post_type" => SetPhotoError::InvalidPostType,
-            "missing_post_type" => SetPhotoError::MissingPostType,
-            "team_added_to_org" => SetPhotoError::TeamAddedToOrg,
-            "invalid_json" => SetPhotoError::InvalidJson,
-            "json_not_object" => SetPhotoError::JsonNotObject,
-            "request_timeout" => SetPhotoError::RequestTimeout,
-            "upgrade_required" => SetPhotoError::UpgradeRequired,
-            "fatal_error" => SetPhotoError::FatalError,
-            _ => SetPhotoError::Unknown(s.to_owned()),
+            "account_inactive" => ListError::AccountInactive,
+            "fatal_error" => ListError::FatalError,
+            "invalid_arg_name" => ListError::InvalidArgName,
+            "invalid_array_arg" => ListError::InvalidArrayArg,
+            "invalid_auth" => ListError::InvalidAuth,
+            "invalid_charset" => ListError::InvalidCharset,
+            "invalid_cursor" => ListError::InvalidCursor,
+            "invalid_form_data" => ListError::InvalidFormData,
+            "invalid_json" => ListError::InvalidJson,
+            "invalid_post_type" => ListError::InvalidPostType,
+            "json_not_object" => ListError::JsonNotObject,
+            "limit_required" => ListError::LimitRequired,
+            "missing_post_type" => ListError::MissingPostType,
+            "no_permission" => ListError::NoPermission,
+            "not_authed" => ListError::NotAuthed,
+            "request_timeout" => ListError::RequestTimeout,
+            "team_added_to_org" => ListError::TeamAddedToOrg,
+            "upgrade_required" => ListError::UpgradeRequired,
+            _ => ListError::Unknown(s.to_owned()),
         }
     }
 }
 
-impl<E: Error> fmt::Display for SetPhotoError<E> {
+impl<E: Error> fmt::Display for ListError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
-            SetPhotoError::BadImage => write!(f, "Server returned error bad_image"),
-            SetPhotoError::TooLarge => write!(f, "Server returned error too_large"),
-            SetPhotoError::TooManyFrames => write!(f, "Server returned error too_many_frames"),
-            SetPhotoError::NotFound => write!(f, "Server returned error not_found"),
-            SetPhotoError::NotAuthed => write!(f, "Server returned error not_authed"),
-            SetPhotoError::InvalidAuth => write!(f, "Server returned error invalid_auth"),
-            SetPhotoError::AccountInactive => write!(f, "Server returned error account_inactive"),
-            SetPhotoError::TokenRevoked => write!(f, "Server returned error token_revoked"),
-            SetPhotoError::NoPermission => write!(f, "Server returned error no_permission"),
-            SetPhotoError::OrgLoginRequired => {
-                write!(f, "Server returned error org_login_required")
-            }
-            SetPhotoError::UserIsBot => write!(f, "Server returned error user_is_bot"),
-            SetPhotoError::InvalidArgName => write!(f, "Server returned error invalid_arg_name"),
-            SetPhotoError::InvalidArrayArg => write!(f, "Server returned error invalid_array_arg"),
-            SetPhotoError::InvalidCharset => write!(f, "Server returned error invalid_charset"),
-            SetPhotoError::InvalidFormData => write!(f, "Server returned error invalid_form_data"),
-            SetPhotoError::InvalidPostType => write!(f, "Server returned error invalid_post_type"),
-            SetPhotoError::MissingPostType => write!(f, "Server returned error missing_post_type"),
-            SetPhotoError::TeamAddedToOrg => write!(f, "Server returned error team_added_to_org"),
-            SetPhotoError::InvalidJson => write!(f, "Server returned error invalid_json"),
-            SetPhotoError::JsonNotObject => write!(f, "Server returned error json_not_object"),
-            SetPhotoError::RequestTimeout => write!(f, "Server returned error request_timeout"),
-            SetPhotoError::UpgradeRequired => write!(f, "Server returned error upgrade_required"),
-            SetPhotoError::FatalError => write!(f, "Server returned error fatal_error"),
-            SetPhotoError::MalformedResponse(_, ref e) => write!(f, "{}", e),
-            SetPhotoError::Unknown(ref s) => write!(f, "{}", s),
-            SetPhotoError::Client(ref inner) => write!(f, "{}", inner),
+            ListError::AccountInactive => write!(f, "Server returned error account_inactive"),
+            ListError::FatalError => write!(f, "Server returned error fatal_error"),
+            ListError::InvalidArgName => write!(f, "Server returned error invalid_arg_name"),
+            ListError::InvalidArrayArg => write!(f, "Server returned error invalid_array_arg"),
+            ListError::InvalidAuth => write!(f, "Server returned error invalid_auth"),
+            ListError::InvalidCharset => write!(f, "Server returned error invalid_charset"),
+            ListError::InvalidCursor => write!(f, "Server returned error invalid_cursor"),
+            ListError::InvalidFormData => write!(f, "Server returned error invalid_form_data"),
+            ListError::InvalidJson => write!(f, "Server returned error invalid_json"),
+            ListError::InvalidPostType => write!(f, "Server returned error invalid_post_type"),
+            ListError::JsonNotObject => write!(f, "Server returned error json_not_object"),
+            ListError::LimitRequired => write!(f, "Server returned error limit_required"),
+            ListError::MissingPostType => write!(f, "Server returned error missing_post_type"),
+            ListError::NoPermission => write!(f, "Server returned error no_permission"),
+            ListError::NotAuthed => write!(f, "Server returned error not_authed"),
+            ListError::RequestTimeout => write!(f, "Server returned error request_timeout"),
+            ListError::TeamAddedToOrg => write!(f, "Server returned error team_added_to_org"),
+            ListError::UpgradeRequired => write!(f, "Server returned error upgrade_required"),
+            ListError::MalformedResponse(_, ref e) => write!(f, "{}", e),
+            ListError::Unknown(ref s) => write!(f, "{}", s),
+            ListError::Client(ref inner) => write!(f, "{}", inner),
         }
     }
 }
 
-impl<E: Error + 'static> Error for SetPhotoError<E> {
+impl<E: Error + 'static> Error for ListError<E> {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
         match *self {
-            SetPhotoError::MalformedResponse(_, ref e) => Some(e),
-            SetPhotoError::Client(ref inner) => Some(inner),
+            ListError::MalformedResponse(_, ref e) => Some(e),
+            ListError::Client(ref inner) => Some(inner),
             _ => None,
         }
     }
@@ -2020,24 +1609,24 @@ impl<E: Error> Into<Result<LookupByEmailResponse, LookupByEmailError<E>>>
 
 #[derive(Debug)]
 pub enum LookupByEmailError<E: Error> {
-    UsersNotFound,
-    EnterpriseIsRestricted,
-    NotAuthed,
-    InvalidAuth,
     AccountInactive,
-    NoPermission,
+    EnterpriseIsRestricted,
+    FatalError,
     InvalidArgName,
     InvalidArrayArg,
+    InvalidAuth,
     InvalidCharset,
     InvalidFormData,
-    InvalidPostType,
-    MissingPostType,
-    TeamAddedToOrg,
     InvalidJson,
+    InvalidPostType,
     JsonNotObject,
+    MissingPostType,
+    NoPermission,
+    NotAuthed,
     RequestTimeout,
+    TeamAddedToOrg,
     UpgradeRequired,
-    FatalError,
+    UsersNotFound,
     /// The response was not parseable as the expected object
     MalformedResponse(String, serde_json::error::Error),
     /// The response returned an error that was unknown to the library
@@ -2049,24 +1638,24 @@ pub enum LookupByEmailError<E: Error> {
 impl<'a, E: Error> From<&'a str> for LookupByEmailError<E> {
     fn from(s: &'a str) -> Self {
         match s {
-            "users_not_found" => LookupByEmailError::UsersNotFound,
-            "enterprise_is_restricted" => LookupByEmailError::EnterpriseIsRestricted,
-            "not_authed" => LookupByEmailError::NotAuthed,
-            "invalid_auth" => LookupByEmailError::InvalidAuth,
             "account_inactive" => LookupByEmailError::AccountInactive,
-            "no_permission" => LookupByEmailError::NoPermission,
+            "enterprise_is_restricted" => LookupByEmailError::EnterpriseIsRestricted,
+            "fatal_error" => LookupByEmailError::FatalError,
             "invalid_arg_name" => LookupByEmailError::InvalidArgName,
             "invalid_array_arg" => LookupByEmailError::InvalidArrayArg,
+            "invalid_auth" => LookupByEmailError::InvalidAuth,
             "invalid_charset" => LookupByEmailError::InvalidCharset,
             "invalid_form_data" => LookupByEmailError::InvalidFormData,
-            "invalid_post_type" => LookupByEmailError::InvalidPostType,
-            "missing_post_type" => LookupByEmailError::MissingPostType,
-            "team_added_to_org" => LookupByEmailError::TeamAddedToOrg,
             "invalid_json" => LookupByEmailError::InvalidJson,
+            "invalid_post_type" => LookupByEmailError::InvalidPostType,
             "json_not_object" => LookupByEmailError::JsonNotObject,
+            "missing_post_type" => LookupByEmailError::MissingPostType,
+            "no_permission" => LookupByEmailError::NoPermission,
+            "not_authed" => LookupByEmailError::NotAuthed,
             "request_timeout" => LookupByEmailError::RequestTimeout,
+            "team_added_to_org" => LookupByEmailError::TeamAddedToOrg,
             "upgrade_required" => LookupByEmailError::UpgradeRequired,
-            "fatal_error" => LookupByEmailError::FatalError,
+            "users_not_found" => LookupByEmailError::UsersNotFound,
             _ => LookupByEmailError::Unknown(s.to_owned()),
         }
     }
@@ -2075,46 +1664,46 @@ impl<'a, E: Error> From<&'a str> for LookupByEmailError<E> {
 impl<E: Error> fmt::Display for LookupByEmailError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
-            LookupByEmailError::UsersNotFound => write!(f, "Server returned error users_not_found"),
-            LookupByEmailError::EnterpriseIsRestricted => {
-                write!(f, "Server returned error enterprise_is_restricted")
-            }
-            LookupByEmailError::NotAuthed => write!(f, "Server returned error not_authed"),
-            LookupByEmailError::InvalidAuth => write!(f, "Server returned error invalid_auth"),
             LookupByEmailError::AccountInactive => {
                 write!(f, "Server returned error account_inactive")
             }
-            LookupByEmailError::NoPermission => write!(f, "Server returned error no_permission"),
+            LookupByEmailError::EnterpriseIsRestricted => {
+                write!(f, "Server returned error enterprise_is_restricted")
+            }
+            LookupByEmailError::FatalError => write!(f, "Server returned error fatal_error"),
             LookupByEmailError::InvalidArgName => {
                 write!(f, "Server returned error invalid_arg_name")
             }
             LookupByEmailError::InvalidArrayArg => {
                 write!(f, "Server returned error invalid_array_arg")
             }
+            LookupByEmailError::InvalidAuth => write!(f, "Server returned error invalid_auth"),
             LookupByEmailError::InvalidCharset => {
                 write!(f, "Server returned error invalid_charset")
             }
             LookupByEmailError::InvalidFormData => {
                 write!(f, "Server returned error invalid_form_data")
             }
+            LookupByEmailError::InvalidJson => write!(f, "Server returned error invalid_json"),
             LookupByEmailError::InvalidPostType => {
                 write!(f, "Server returned error invalid_post_type")
             }
+            LookupByEmailError::JsonNotObject => write!(f, "Server returned error json_not_object"),
             LookupByEmailError::MissingPostType => {
                 write!(f, "Server returned error missing_post_type")
+            }
+            LookupByEmailError::NoPermission => write!(f, "Server returned error no_permission"),
+            LookupByEmailError::NotAuthed => write!(f, "Server returned error not_authed"),
+            LookupByEmailError::RequestTimeout => {
+                write!(f, "Server returned error request_timeout")
             }
             LookupByEmailError::TeamAddedToOrg => {
                 write!(f, "Server returned error team_added_to_org")
             }
-            LookupByEmailError::InvalidJson => write!(f, "Server returned error invalid_json"),
-            LookupByEmailError::JsonNotObject => write!(f, "Server returned error json_not_object"),
-            LookupByEmailError::RequestTimeout => {
-                write!(f, "Server returned error request_timeout")
-            }
             LookupByEmailError::UpgradeRequired => {
                 write!(f, "Server returned error upgrade_required")
             }
-            LookupByEmailError::FatalError => write!(f, "Server returned error fatal_error"),
+            LookupByEmailError::UsersNotFound => write!(f, "Server returned error users_not_found"),
             LookupByEmailError::MalformedResponse(_, ref e) => write!(f, "{}", e),
             LookupByEmailError::Unknown(ref s) => write!(f, "{}", s),
             LookupByEmailError::Client(ref inner) => write!(f, "{}", inner),
@@ -2127,6 +1716,418 @@ impl<E: Error + 'static> Error for LookupByEmailError<E> {
         match *self {
             LookupByEmailError::MalformedResponse(_, ref e) => Some(e),
             LookupByEmailError::Client(ref inner) => Some(inner),
+            _ => None,
+        }
+    }
+}
+
+#[derive(Clone, Default, Debug)]
+pub struct SetActiveRequest {}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct SetActiveResponse {
+    pub callstack: Option<String>,
+    error: Option<String>,
+    #[serde(default)]
+    ok: bool,
+}
+
+impl<E: Error> Into<Result<SetActiveResponse, SetActiveError<E>>> for SetActiveResponse {
+    fn into(self) -> Result<SetActiveResponse, SetActiveError<E>> {
+        if self.ok {
+            Ok(self)
+        } else {
+            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+        }
+    }
+}
+
+#[derive(Debug)]
+pub enum SetActiveError<E: Error> {
+    AccountInactive,
+    EkmAccessDenied,
+    FatalError,
+    InternalError,
+    InvalidArgName,
+    InvalidArguments,
+    InvalidAuth,
+    InvalidCharset,
+    InvalidFormData,
+    InvalidPostType,
+    MissingPostType,
+    MissingScope,
+    NoPermission,
+    NotAuthed,
+    OrgLoginRequired,
+    RequestTimeout,
+    TeamAddedToOrg,
+    TokenRevoked,
+    /// The response was not parseable as the expected object
+    MalformedResponse(String, serde_json::error::Error),
+    /// The response returned an error that was unknown to the library
+    Unknown(String),
+    /// The client had an error sending the request to Slack
+    Client(E),
+}
+
+impl<'a, E: Error> From<&'a str> for SetActiveError<E> {
+    fn from(s: &'a str) -> Self {
+        match s {
+            "account_inactive" => SetActiveError::AccountInactive,
+            "ekm_access_denied" => SetActiveError::EkmAccessDenied,
+            "fatal_error" => SetActiveError::FatalError,
+            "internal_error" => SetActiveError::InternalError,
+            "invalid_arg_name" => SetActiveError::InvalidArgName,
+            "invalid_arguments" => SetActiveError::InvalidArguments,
+            "invalid_auth" => SetActiveError::InvalidAuth,
+            "invalid_charset" => SetActiveError::InvalidCharset,
+            "invalid_form_data" => SetActiveError::InvalidFormData,
+            "invalid_post_type" => SetActiveError::InvalidPostType,
+            "missing_post_type" => SetActiveError::MissingPostType,
+            "missing_scope" => SetActiveError::MissingScope,
+            "no_permission" => SetActiveError::NoPermission,
+            "not_authed" => SetActiveError::NotAuthed,
+            "org_login_required" => SetActiveError::OrgLoginRequired,
+            "request_timeout" => SetActiveError::RequestTimeout,
+            "team_added_to_org" => SetActiveError::TeamAddedToOrg,
+            "token_revoked" => SetActiveError::TokenRevoked,
+            _ => SetActiveError::Unknown(s.to_owned()),
+        }
+    }
+}
+
+impl<E: Error> fmt::Display for SetActiveError<E> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match *self {
+            SetActiveError::AccountInactive => write!(f, "Server returned error account_inactive"),
+            SetActiveError::EkmAccessDenied => write!(f, "Server returned error ekm_access_denied"),
+            SetActiveError::FatalError => write!(f, "Server returned error fatal_error"),
+            SetActiveError::InternalError => write!(f, "Server returned error internal_error"),
+            SetActiveError::InvalidArgName => write!(f, "Server returned error invalid_arg_name"),
+            SetActiveError::InvalidArguments => {
+                write!(f, "Server returned error invalid_arguments")
+            }
+            SetActiveError::InvalidAuth => write!(f, "Server returned error invalid_auth"),
+            SetActiveError::InvalidCharset => write!(f, "Server returned error invalid_charset"),
+            SetActiveError::InvalidFormData => write!(f, "Server returned error invalid_form_data"),
+            SetActiveError::InvalidPostType => write!(f, "Server returned error invalid_post_type"),
+            SetActiveError::MissingPostType => write!(f, "Server returned error missing_post_type"),
+            SetActiveError::MissingScope => write!(f, "Server returned error missing_scope"),
+            SetActiveError::NoPermission => write!(f, "Server returned error no_permission"),
+            SetActiveError::NotAuthed => write!(f, "Server returned error not_authed"),
+            SetActiveError::OrgLoginRequired => {
+                write!(f, "Server returned error org_login_required")
+            }
+            SetActiveError::RequestTimeout => write!(f, "Server returned error request_timeout"),
+            SetActiveError::TeamAddedToOrg => write!(f, "Server returned error team_added_to_org"),
+            SetActiveError::TokenRevoked => write!(f, "Server returned error token_revoked"),
+            SetActiveError::MalformedResponse(_, ref e) => write!(f, "{}", e),
+            SetActiveError::Unknown(ref s) => write!(f, "{}", s),
+            SetActiveError::Client(ref inner) => write!(f, "{}", inner),
+        }
+    }
+}
+
+impl<E: Error + 'static> Error for SetActiveError<E> {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+        match *self {
+            SetActiveError::MalformedResponse(_, ref e) => Some(e),
+            SetActiveError::Client(ref inner) => Some(inner),
+            _ => None,
+        }
+    }
+}
+
+#[derive(Clone, Default, Debug)]
+pub struct SetPhotoRequest {
+    /// Width/height of crop box (always square)
+    pub crop_w: Option<String>,
+    /// X coordinate of top-left corner of crop box
+    pub crop_x: Option<String>,
+    /// Y coordinate of top-left corner of crop box
+    pub crop_y: Option<String>,
+    /// File contents via `multipart/form-data`.
+    pub image: Option<String>,
+    /// Authentication token. Requires scope: `users.profile:write`
+    pub token: String,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct SetPhotoProfileInner {
+    pub avatar_hash: String,
+    pub image_1024: String,
+    pub image_192: String,
+    pub image_24: String,
+    pub image_32: String,
+    pub image_48: String,
+    pub image_512: String,
+    pub image_72: String,
+    pub image_original: String,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct SetPhotoResponse {
+    pub callstack: Option<String>,
+    pub debug_step: Option<String>,
+    pub dims: Option<String>,
+    error: Option<String>,
+    #[serde(default)]
+    ok: bool,
+    pub profile: SetPhotoProfileInner,
+    pub time_ident: Option<u64>,
+}
+
+impl<E: Error> Into<Result<SetPhotoResponse, SetPhotoError<E>>> for SetPhotoResponse {
+    fn into(self) -> Result<SetPhotoResponse, SetPhotoError<E>> {
+        if self.ok {
+            Ok(self)
+        } else {
+            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+        }
+    }
+}
+
+#[derive(Debug)]
+pub enum SetPhotoError<E: Error> {
+    AccountInactive,
+    BadImage,
+    FatalError,
+    InvalidArgName,
+    InvalidArrayArg,
+    InvalidAuth,
+    InvalidCharset,
+    InvalidFormData,
+    InvalidJson,
+    InvalidPostType,
+    JsonNotObject,
+    MissingPostType,
+    NoPermission,
+    NotAuthed,
+    NotFound,
+    OrgLoginRequired,
+    RequestTimeout,
+    TeamAddedToOrg,
+    TokenRevoked,
+    TooLarge,
+    TooManyFrames,
+    UpgradeRequired,
+    UserIsBot,
+    /// The response was not parseable as the expected object
+    MalformedResponse(String, serde_json::error::Error),
+    /// The response returned an error that was unknown to the library
+    Unknown(String),
+    /// The client had an error sending the request to Slack
+    Client(E),
+}
+
+impl<'a, E: Error> From<&'a str> for SetPhotoError<E> {
+    fn from(s: &'a str) -> Self {
+        match s {
+            "account_inactive" => SetPhotoError::AccountInactive,
+            "bad_image" => SetPhotoError::BadImage,
+            "fatal_error" => SetPhotoError::FatalError,
+            "invalid_arg_name" => SetPhotoError::InvalidArgName,
+            "invalid_array_arg" => SetPhotoError::InvalidArrayArg,
+            "invalid_auth" => SetPhotoError::InvalidAuth,
+            "invalid_charset" => SetPhotoError::InvalidCharset,
+            "invalid_form_data" => SetPhotoError::InvalidFormData,
+            "invalid_json" => SetPhotoError::InvalidJson,
+            "invalid_post_type" => SetPhotoError::InvalidPostType,
+            "json_not_object" => SetPhotoError::JsonNotObject,
+            "missing_post_type" => SetPhotoError::MissingPostType,
+            "no_permission" => SetPhotoError::NoPermission,
+            "not_authed" => SetPhotoError::NotAuthed,
+            "not_found" => SetPhotoError::NotFound,
+            "org_login_required" => SetPhotoError::OrgLoginRequired,
+            "request_timeout" => SetPhotoError::RequestTimeout,
+            "team_added_to_org" => SetPhotoError::TeamAddedToOrg,
+            "token_revoked" => SetPhotoError::TokenRevoked,
+            "too_large" => SetPhotoError::TooLarge,
+            "too_many_frames" => SetPhotoError::TooManyFrames,
+            "upgrade_required" => SetPhotoError::UpgradeRequired,
+            "user_is_bot" => SetPhotoError::UserIsBot,
+            _ => SetPhotoError::Unknown(s.to_owned()),
+        }
+    }
+}
+
+impl<E: Error> fmt::Display for SetPhotoError<E> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match *self {
+            SetPhotoError::AccountInactive => write!(f, "Server returned error account_inactive"),
+            SetPhotoError::BadImage => write!(f, "Server returned error bad_image"),
+            SetPhotoError::FatalError => write!(f, "Server returned error fatal_error"),
+            SetPhotoError::InvalidArgName => write!(f, "Server returned error invalid_arg_name"),
+            SetPhotoError::InvalidArrayArg => write!(f, "Server returned error invalid_array_arg"),
+            SetPhotoError::InvalidAuth => write!(f, "Server returned error invalid_auth"),
+            SetPhotoError::InvalidCharset => write!(f, "Server returned error invalid_charset"),
+            SetPhotoError::InvalidFormData => write!(f, "Server returned error invalid_form_data"),
+            SetPhotoError::InvalidJson => write!(f, "Server returned error invalid_json"),
+            SetPhotoError::InvalidPostType => write!(f, "Server returned error invalid_post_type"),
+            SetPhotoError::JsonNotObject => write!(f, "Server returned error json_not_object"),
+            SetPhotoError::MissingPostType => write!(f, "Server returned error missing_post_type"),
+            SetPhotoError::NoPermission => write!(f, "Server returned error no_permission"),
+            SetPhotoError::NotAuthed => write!(f, "Server returned error not_authed"),
+            SetPhotoError::NotFound => write!(f, "Server returned error not_found"),
+            SetPhotoError::OrgLoginRequired => {
+                write!(f, "Server returned error org_login_required")
+            }
+            SetPhotoError::RequestTimeout => write!(f, "Server returned error request_timeout"),
+            SetPhotoError::TeamAddedToOrg => write!(f, "Server returned error team_added_to_org"),
+            SetPhotoError::TokenRevoked => write!(f, "Server returned error token_revoked"),
+            SetPhotoError::TooLarge => write!(f, "Server returned error too_large"),
+            SetPhotoError::TooManyFrames => write!(f, "Server returned error too_many_frames"),
+            SetPhotoError::UpgradeRequired => write!(f, "Server returned error upgrade_required"),
+            SetPhotoError::UserIsBot => write!(f, "Server returned error user_is_bot"),
+            SetPhotoError::MalformedResponse(_, ref e) => write!(f, "{}", e),
+            SetPhotoError::Unknown(ref s) => write!(f, "{}", s),
+            SetPhotoError::Client(ref inner) => write!(f, "{}", inner),
+        }
+    }
+}
+
+impl<E: Error + 'static> Error for SetPhotoError<E> {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+        match *self {
+            SetPhotoError::MalformedResponse(_, ref e) => Some(e),
+            SetPhotoError::Client(ref inner) => Some(inner),
+            _ => None,
+        }
+    }
+}
+
+#[derive(Clone, Default, Debug)]
+pub struct SetPresenceRequest {
+    /// Either `auto` or `away`
+    pub presence: String,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct SetPresenceResponse {
+    pub callstack: Option<String>,
+    error: Option<String>,
+    #[serde(default)]
+    ok: bool,
+}
+
+impl<E: Error> Into<Result<SetPresenceResponse, SetPresenceError<E>>> for SetPresenceResponse {
+    fn into(self) -> Result<SetPresenceResponse, SetPresenceError<E>> {
+        if self.ok {
+            Ok(self)
+        } else {
+            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+        }
+    }
+}
+
+#[derive(Debug)]
+pub enum SetPresenceError<E: Error> {
+    AccountInactive,
+    FatalError,
+    InvalidArgName,
+    InvalidArrayArg,
+    InvalidAuth,
+    InvalidCharset,
+    InvalidFormData,
+    InvalidJson,
+    InvalidPostType,
+    InvalidPresence,
+    JsonNotObject,
+    MissingPostType,
+    NoPermission,
+    NotAuthed,
+    OrgLoginRequired,
+    RequestTimeout,
+    TeamAddedToOrg,
+    TokenRevoked,
+    UpgradeRequired,
+    /// The response was not parseable as the expected object
+    MalformedResponse(String, serde_json::error::Error),
+    /// The response returned an error that was unknown to the library
+    Unknown(String),
+    /// The client had an error sending the request to Slack
+    Client(E),
+}
+
+impl<'a, E: Error> From<&'a str> for SetPresenceError<E> {
+    fn from(s: &'a str) -> Self {
+        match s {
+            "account_inactive" => SetPresenceError::AccountInactive,
+            "fatal_error" => SetPresenceError::FatalError,
+            "invalid_arg_name" => SetPresenceError::InvalidArgName,
+            "invalid_array_arg" => SetPresenceError::InvalidArrayArg,
+            "invalid_auth" => SetPresenceError::InvalidAuth,
+            "invalid_charset" => SetPresenceError::InvalidCharset,
+            "invalid_form_data" => SetPresenceError::InvalidFormData,
+            "invalid_json" => SetPresenceError::InvalidJson,
+            "invalid_post_type" => SetPresenceError::InvalidPostType,
+            "invalid_presence" => SetPresenceError::InvalidPresence,
+            "json_not_object" => SetPresenceError::JsonNotObject,
+            "missing_post_type" => SetPresenceError::MissingPostType,
+            "no_permission" => SetPresenceError::NoPermission,
+            "not_authed" => SetPresenceError::NotAuthed,
+            "org_login_required" => SetPresenceError::OrgLoginRequired,
+            "request_timeout" => SetPresenceError::RequestTimeout,
+            "team_added_to_org" => SetPresenceError::TeamAddedToOrg,
+            "token_revoked" => SetPresenceError::TokenRevoked,
+            "upgrade_required" => SetPresenceError::UpgradeRequired,
+            _ => SetPresenceError::Unknown(s.to_owned()),
+        }
+    }
+}
+
+impl<E: Error> fmt::Display for SetPresenceError<E> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match *self {
+            SetPresenceError::AccountInactive => {
+                write!(f, "Server returned error account_inactive")
+            }
+            SetPresenceError::FatalError => write!(f, "Server returned error fatal_error"),
+            SetPresenceError::InvalidArgName => write!(f, "Server returned error invalid_arg_name"),
+            SetPresenceError::InvalidArrayArg => {
+                write!(f, "Server returned error invalid_array_arg")
+            }
+            SetPresenceError::InvalidAuth => write!(f, "Server returned error invalid_auth"),
+            SetPresenceError::InvalidCharset => write!(f, "Server returned error invalid_charset"),
+            SetPresenceError::InvalidFormData => {
+                write!(f, "Server returned error invalid_form_data")
+            }
+            SetPresenceError::InvalidJson => write!(f, "Server returned error invalid_json"),
+            SetPresenceError::InvalidPostType => {
+                write!(f, "Server returned error invalid_post_type")
+            }
+            SetPresenceError::InvalidPresence => {
+                write!(f, "Server returned error invalid_presence")
+            }
+            SetPresenceError::JsonNotObject => write!(f, "Server returned error json_not_object"),
+            SetPresenceError::MissingPostType => {
+                write!(f, "Server returned error missing_post_type")
+            }
+            SetPresenceError::NoPermission => write!(f, "Server returned error no_permission"),
+            SetPresenceError::NotAuthed => write!(f, "Server returned error not_authed"),
+            SetPresenceError::OrgLoginRequired => {
+                write!(f, "Server returned error org_login_required")
+            }
+            SetPresenceError::RequestTimeout => write!(f, "Server returned error request_timeout"),
+            SetPresenceError::TeamAddedToOrg => {
+                write!(f, "Server returned error team_added_to_org")
+            }
+            SetPresenceError::TokenRevoked => write!(f, "Server returned error token_revoked"),
+            SetPresenceError::UpgradeRequired => {
+                write!(f, "Server returned error upgrade_required")
+            }
+            SetPresenceError::MalformedResponse(_, ref e) => write!(f, "{}", e),
+            SetPresenceError::Unknown(ref s) => write!(f, "{}", s),
+            SetPresenceError::Client(ref inner) => write!(f, "{}", inner),
+        }
+    }
+}
+
+impl<E: Error + 'static> Error for SetPresenceError<E> {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+        match *self {
+            SetPresenceError::MalformedResponse(_, ref e) => Some(e),
+            SetPresenceError::Client(ref inner) => Some(inner),
             _ => None,
         }
     }

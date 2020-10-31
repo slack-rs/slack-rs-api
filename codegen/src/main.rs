@@ -184,7 +184,7 @@ fn create_method(
         acc.merge(&res.schema);
         acc
     });
-    let errors: Vec<String> = response
+    let mut errors: Vec<String> = response
         .properties
         .as_ref()
         .and_then(|m| m.get("error"))
@@ -197,6 +197,7 @@ fn create_method(
                 })
                 .collect()
         });
+    errors.sort_unstable();
     let response = Response::try_from(&response).with_context(|| {
         format!(
             "Unable to convert type in method {} in module {}",
@@ -224,6 +225,10 @@ fn create_method(
         };
         method.parameters.push(parameter);
     }
+    method
+        .parameters
+        .sort_unstable_by(|a, b| a.name.cmp(&b.name));
+
     Ok(method)
 }
 

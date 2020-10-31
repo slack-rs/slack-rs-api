@@ -13,6 +13,7 @@
 //=============================================================================
 
 #![allow(unused_imports)]
+#![allow(dead_code)]
 
 pub mod approved_types;
 pub mod requests_types;
@@ -21,71 +22,6 @@ pub mod restricted_types;
 use std::convert::From;
 use std::error::Error;
 use std::fmt;
-
-#[derive(Clone, Default, Debug)]
-pub struct RestrictRequest {
-    /// The id of the app to restrict.
-    pub app_id: Option<String>,
-    /// The id of the request to restrict.
-    pub request_id: Option<String>,
-    pub team_id: Option<String>,
-}
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct RestrictResponse {
-    #[serde(default)]
-    ok: bool,
-}
-
-impl<E: Error> Into<Result<RestrictResponse, RestrictError<E>>> for RestrictResponse {
-    fn into(self) -> Result<RestrictResponse, RestrictError<E>> {
-        if self.ok {
-            Ok(self)
-        } else {
-            Err(RestrictError::Unknown(
-                "Server failed without providing an error message.".into(),
-            ))
-        }
-    }
-}
-
-#[derive(Debug)]
-pub enum RestrictError<E: Error> {
-    /// The response was not parseable as the expected object
-    MalformedResponse(String, serde_json::error::Error),
-    /// The response returned an error that was unknown to the library
-    Unknown(String),
-    /// The client had an error sending the request to Slack
-    Client(E),
-}
-
-impl<'a, E: Error> From<&'a str> for RestrictError<E> {
-    fn from(s: &'a str) -> Self {
-        match s {
-            _ => RestrictError::Unknown(s.to_owned()),
-        }
-    }
-}
-
-impl<E: Error> fmt::Display for RestrictError<E> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match *self {
-            RestrictError::MalformedResponse(_, ref e) => write!(f, "{}", e),
-            RestrictError::Unknown(ref s) => write!(f, "{}", s),
-            RestrictError::Client(ref inner) => write!(f, "{}", inner),
-        }
-    }
-}
-
-impl<E: Error + 'static> Error for RestrictError<E> {
-    fn source(&self) -> Option<&(dyn Error + 'static)> {
-        match *self {
-            RestrictError::MalformedResponse(_, ref e) => Some(e),
-            RestrictError::Client(ref inner) => Some(inner),
-            _ => None,
-        }
-    }
-}
 
 #[derive(Clone, Default, Debug)]
 pub struct ApproveRequest {
@@ -147,6 +83,71 @@ impl<E: Error + 'static> Error for ApproveError<E> {
         match *self {
             ApproveError::MalformedResponse(_, ref e) => Some(e),
             ApproveError::Client(ref inner) => Some(inner),
+            _ => None,
+        }
+    }
+}
+
+#[derive(Clone, Default, Debug)]
+pub struct RestrictRequest {
+    /// The id of the app to restrict.
+    pub app_id: Option<String>,
+    /// The id of the request to restrict.
+    pub request_id: Option<String>,
+    pub team_id: Option<String>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct RestrictResponse {
+    #[serde(default)]
+    ok: bool,
+}
+
+impl<E: Error> Into<Result<RestrictResponse, RestrictError<E>>> for RestrictResponse {
+    fn into(self) -> Result<RestrictResponse, RestrictError<E>> {
+        if self.ok {
+            Ok(self)
+        } else {
+            Err(RestrictError::Unknown(
+                "Server failed without providing an error message.".into(),
+            ))
+        }
+    }
+}
+
+#[derive(Debug)]
+pub enum RestrictError<E: Error> {
+    /// The response was not parseable as the expected object
+    MalformedResponse(String, serde_json::error::Error),
+    /// The response returned an error that was unknown to the library
+    Unknown(String),
+    /// The client had an error sending the request to Slack
+    Client(E),
+}
+
+impl<'a, E: Error> From<&'a str> for RestrictError<E> {
+    fn from(s: &'a str) -> Self {
+        match s {
+            _ => RestrictError::Unknown(s.to_owned()),
+        }
+    }
+}
+
+impl<E: Error> fmt::Display for RestrictError<E> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match *self {
+            RestrictError::MalformedResponse(_, ref e) => write!(f, "{}", e),
+            RestrictError::Unknown(ref s) => write!(f, "{}", s),
+            RestrictError::Client(ref inner) => write!(f, "{}", inner),
+        }
+    }
+}
+
+impl<E: Error + 'static> Error for RestrictError<E> {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+        match *self {
+            RestrictError::MalformedResponse(_, ref e) => Some(e),
+            RestrictError::Client(ref inner) => Some(inner),
             _ => None,
         }
     }

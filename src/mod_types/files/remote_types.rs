@@ -13,17 +13,92 @@
 //=============================================================================
 
 #![allow(unused_imports)]
+#![allow(dead_code)]
 
 use std::convert::From;
 use std::error::Error;
 use std::fmt;
 
 #[derive(Clone, Default, Debug)]
-pub struct InfoRequest {
-    /// Specify a file by providing its ID.
-    pub file: Option<String>,
+pub struct AddRequest {
     /// Creator defined GUID for the file.
     pub external_id: Option<String>,
+    /// URL of the remote file.
+    pub external_url: Option<String>,
+    /// type of file
+    pub filetype: Option<String>,
+    /// A text file (txt, pdf, doc, etc.) containing textual search terms that are used to improve discovery of the remote file.
+    pub indexable_file_contents: Option<String>,
+    /// Preview of the document via `multipart/form-data`.
+    pub preview_image: Option<String>,
+    /// Title of the file being shared.
+    pub title: Option<String>,
+    /// Authentication token. Requires scope: `remote_files:write`
+    pub token: Option<String>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct AddResponse {
+    #[serde(default)]
+    ok: bool,
+}
+
+impl<E: Error> Into<Result<AddResponse, AddError<E>>> for AddResponse {
+    fn into(self) -> Result<AddResponse, AddError<E>> {
+        if self.ok {
+            Ok(self)
+        } else {
+            Err(AddError::Unknown(
+                "Server failed without providing an error message.".into(),
+            ))
+        }
+    }
+}
+
+#[derive(Debug)]
+pub enum AddError<E: Error> {
+    /// The response was not parseable as the expected object
+    MalformedResponse(String, serde_json::error::Error),
+    /// The response returned an error that was unknown to the library
+    Unknown(String),
+    /// The client had an error sending the request to Slack
+    Client(E),
+}
+
+impl<'a, E: Error> From<&'a str> for AddError<E> {
+    fn from(s: &'a str) -> Self {
+        match s {
+            _ => AddError::Unknown(s.to_owned()),
+        }
+    }
+}
+
+impl<E: Error> fmt::Display for AddError<E> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match *self {
+            AddError::MalformedResponse(_, ref e) => write!(f, "{}", e),
+            AddError::Unknown(ref s) => write!(f, "{}", s),
+            AddError::Client(ref inner) => write!(f, "{}", inner),
+        }
+    }
+}
+
+impl<E: Error + 'static> Error for AddError<E> {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+        match *self {
+            AddError::MalformedResponse(_, ref e) => Some(e),
+            AddError::Client(ref inner) => Some(inner),
+            _ => None,
+        }
+    }
+}
+
+#[derive(Clone, Default, Debug)]
+pub struct InfoRequest {
+    /// Creator defined GUID for the file.
+    pub external_id: Option<String>,
+    /// Specify a file by providing its ID.
+    pub file: Option<String>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -86,14 +161,14 @@ impl<E: Error + 'static> Error for InfoError<E> {
 pub struct ListRequest {
     /// Filter files appearing in a specific channel, indicated by its ID.
     pub channel: Option<String>,
+    /// Paginate through collections of data by setting the `cursor` parameter to a `next_cursor` attribute returned by a previous request's `response_metadata`. Default value fetches the first "page" of the collection. See [pagination](/docs/pagination) for more detail.
+    pub cursor: Option<String>,
+    /// The maximum number of items to return.
+    pub limit: Option<u64>,
     /// Filter files created after this timestamp (inclusive).
     pub ts_from: Option<u64>,
     /// Filter files created before this timestamp (inclusive).
     pub ts_to: Option<u64>,
-    /// The maximum number of items to return.
-    pub limit: Option<u64>,
-    /// Paginate through collections of data by setting the `cursor` parameter to a `next_cursor` attribute returned by a previous request's `response_metadata`. Default value fetches the first "page" of the collection. See [pagination](/docs/pagination) for more detail.
-    pub cursor: Option<String>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -153,87 +228,13 @@ impl<E: Error + 'static> Error for ListError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct AddRequest {
-    /// Authentication token. Requires scope: `remote_files:write`
-    pub token: Option<String>,
+pub struct RemoveRequest {
     /// Creator defined GUID for the file.
     pub external_id: Option<String>,
-    /// Title of the file being shared.
-    pub title: Option<String>,
-    /// type of file
-    pub filetype: Option<String>,
-    /// URL of the remote file.
-    pub external_url: Option<String>,
-    /// Preview of the document via `multipart/form-data`.
-    pub preview_image: Option<String>,
-    /// A text file (txt, pdf, doc, etc.) containing textual search terms that are used to improve discovery of the remote file.
-    pub indexable_file_contents: Option<String>,
-}
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct AddResponse {
-    #[serde(default)]
-    ok: bool,
-}
-
-impl<E: Error> Into<Result<AddResponse, AddError<E>>> for AddResponse {
-    fn into(self) -> Result<AddResponse, AddError<E>> {
-        if self.ok {
-            Ok(self)
-        } else {
-            Err(AddError::Unknown(
-                "Server failed without providing an error message.".into(),
-            ))
-        }
-    }
-}
-
-#[derive(Debug)]
-pub enum AddError<E: Error> {
-    /// The response was not parseable as the expected object
-    MalformedResponse(String, serde_json::error::Error),
-    /// The response returned an error that was unknown to the library
-    Unknown(String),
-    /// The client had an error sending the request to Slack
-    Client(E),
-}
-
-impl<'a, E: Error> From<&'a str> for AddError<E> {
-    fn from(s: &'a str) -> Self {
-        match s {
-            _ => AddError::Unknown(s.to_owned()),
-        }
-    }
-}
-
-impl<E: Error> fmt::Display for AddError<E> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match *self {
-            AddError::MalformedResponse(_, ref e) => write!(f, "{}", e),
-            AddError::Unknown(ref s) => write!(f, "{}", s),
-            AddError::Client(ref inner) => write!(f, "{}", inner),
-        }
-    }
-}
-
-impl<E: Error + 'static> Error for AddError<E> {
-    fn source(&self) -> Option<&(dyn Error + 'static)> {
-        match *self {
-            AddError::MalformedResponse(_, ref e) => Some(e),
-            AddError::Client(ref inner) => Some(inner),
-            _ => None,
-        }
-    }
-}
-
-#[derive(Clone, Default, Debug)]
-pub struct RemoveRequest {
-    /// Authentication token. Requires scope: `remote_files:write`
-    pub token: Option<String>,
     /// Specify a file by providing its ID.
     pub file: Option<String>,
-    /// Creator defined GUID for the file.
-    pub external_id: Option<String>,
+    /// Authentication token. Requires scope: `remote_files:write`
+    pub token: Option<String>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -293,89 +294,13 @@ impl<E: Error + 'static> Error for RemoveError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct UpdateRequest {
-    /// Authentication token. Requires scope: `remote_files:write`
-    pub token: Option<String>,
-    /// Specify a file by providing its ID.
-    pub file: Option<String>,
-    /// Creator defined GUID for the file.
-    pub external_id: Option<String>,
-    /// Title of the file being shared.
-    pub title: Option<String>,
-    /// type of file
-    pub filetype: Option<String>,
-    /// URL of the remote file.
-    pub external_url: Option<String>,
-    /// Preview of the document via `multipart/form-data`.
-    pub preview_image: Option<String>,
-    /// File containing contents that can be used to improve searchability for the remote file.
-    pub indexable_file_contents: Option<String>,
-}
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct UpdateResponse {
-    #[serde(default)]
-    ok: bool,
-}
-
-impl<E: Error> Into<Result<UpdateResponse, UpdateError<E>>> for UpdateResponse {
-    fn into(self) -> Result<UpdateResponse, UpdateError<E>> {
-        if self.ok {
-            Ok(self)
-        } else {
-            Err(UpdateError::Unknown(
-                "Server failed without providing an error message.".into(),
-            ))
-        }
-    }
-}
-
-#[derive(Debug)]
-pub enum UpdateError<E: Error> {
-    /// The response was not parseable as the expected object
-    MalformedResponse(String, serde_json::error::Error),
-    /// The response returned an error that was unknown to the library
-    Unknown(String),
-    /// The client had an error sending the request to Slack
-    Client(E),
-}
-
-impl<'a, E: Error> From<&'a str> for UpdateError<E> {
-    fn from(s: &'a str) -> Self {
-        match s {
-            _ => UpdateError::Unknown(s.to_owned()),
-        }
-    }
-}
-
-impl<E: Error> fmt::Display for UpdateError<E> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match *self {
-            UpdateError::MalformedResponse(_, ref e) => write!(f, "{}", e),
-            UpdateError::Unknown(ref s) => write!(f, "{}", s),
-            UpdateError::Client(ref inner) => write!(f, "{}", inner),
-        }
-    }
-}
-
-impl<E: Error + 'static> Error for UpdateError<E> {
-    fn source(&self) -> Option<&(dyn Error + 'static)> {
-        match *self {
-            UpdateError::MalformedResponse(_, ref e) => Some(e),
-            UpdateError::Client(ref inner) => Some(inner),
-            _ => None,
-        }
-    }
-}
-
-#[derive(Clone, Default, Debug)]
 pub struct ShareRequest {
-    /// Specify a file registered with Slack by providing its ID. Either this field or `external_id` or both are required.
-    pub file: Option<String>,
-    /// The globally unique identifier (GUID) for the file, as set by the app registering the file with Slack.  Either this field or `file` or both are required.
-    pub external_id: Option<String>,
     /// Comma-separated list of channel IDs where the file will be shared.
     pub channels: Option<String>,
+    /// The globally unique identifier (GUID) for the file, as set by the app registering the file with Slack.  Either this field or `file` or both are required.
+    pub external_id: Option<String>,
+    /// Specify a file registered with Slack by providing its ID. Either this field or `external_id` or both are required.
+    pub file: Option<String>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -429,6 +354,82 @@ impl<E: Error + 'static> Error for ShareError<E> {
         match *self {
             ShareError::MalformedResponse(_, ref e) => Some(e),
             ShareError::Client(ref inner) => Some(inner),
+            _ => None,
+        }
+    }
+}
+
+#[derive(Clone, Default, Debug)]
+pub struct UpdateRequest {
+    /// Creator defined GUID for the file.
+    pub external_id: Option<String>,
+    /// URL of the remote file.
+    pub external_url: Option<String>,
+    /// Specify a file by providing its ID.
+    pub file: Option<String>,
+    /// type of file
+    pub filetype: Option<String>,
+    /// File containing contents that can be used to improve searchability for the remote file.
+    pub indexable_file_contents: Option<String>,
+    /// Preview of the document via `multipart/form-data`.
+    pub preview_image: Option<String>,
+    /// Title of the file being shared.
+    pub title: Option<String>,
+    /// Authentication token. Requires scope: `remote_files:write`
+    pub token: Option<String>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct UpdateResponse {
+    #[serde(default)]
+    ok: bool,
+}
+
+impl<E: Error> Into<Result<UpdateResponse, UpdateError<E>>> for UpdateResponse {
+    fn into(self) -> Result<UpdateResponse, UpdateError<E>> {
+        if self.ok {
+            Ok(self)
+        } else {
+            Err(UpdateError::Unknown(
+                "Server failed without providing an error message.".into(),
+            ))
+        }
+    }
+}
+
+#[derive(Debug)]
+pub enum UpdateError<E: Error> {
+    /// The response was not parseable as the expected object
+    MalformedResponse(String, serde_json::error::Error),
+    /// The response returned an error that was unknown to the library
+    Unknown(String),
+    /// The client had an error sending the request to Slack
+    Client(E),
+}
+
+impl<'a, E: Error> From<&'a str> for UpdateError<E> {
+    fn from(s: &'a str) -> Self {
+        match s {
+            _ => UpdateError::Unknown(s.to_owned()),
+        }
+    }
+}
+
+impl<E: Error> fmt::Display for UpdateError<E> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match *self {
+            UpdateError::MalformedResponse(_, ref e) => write!(f, "{}", e),
+            UpdateError::Unknown(ref s) => write!(f, "{}", s),
+            UpdateError::Client(ref inner) => write!(f, "{}", inner),
+        }
+    }
+}
+
+impl<E: Error + 'static> Error for UpdateError<E> {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+        match *self {
+            UpdateError::MalformedResponse(_, ref e) => Some(e),
+            UpdateError::Client(ref inner) => Some(inner),
             _ => None,
         }
     }

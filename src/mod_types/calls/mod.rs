@@ -13,6 +13,7 @@
 //=============================================================================
 
 #![allow(unused_imports)]
+#![allow(dead_code)]
 
 pub mod participants_types;
 
@@ -21,29 +22,37 @@ use std::error::Error;
 use std::fmt;
 
 #[derive(Clone, Default, Debug)]
-pub struct UpdateRequest {
-    /// `id` returned by the [`calls.add`](/methods/calls.add) method.
-    pub id: String,
-    /// The name of the Call.
-    pub title: Option<String>,
-    /// The URL required for a client to join the Call.
-    pub join_url: Option<String>,
+pub struct AddRequest {
+    /// The valid Slack user ID of the user who created this Call. When this method is called with a user token, the `created_by` field is optional and defaults to the authed user of the token. Otherwise, the field is required.
+    pub created_by: Option<String>,
+    /// Call start time in UTC UNIX timestamp format
+    pub date_start: Option<u64>,
     /// When supplied, available Slack clients will attempt to directly launch the 3rd-party Call with this URL.
     pub desktop_app_join_url: Option<String>,
+    /// An optional, human-readable ID supplied by the 3rd-party Call provider. If supplied, this ID will be displayed in the Call object.
+    pub external_display_id: Option<String>,
+    /// An ID supplied by the 3rd-party Call provider. It must be unique across all Calls from that service.
+    pub external_unique_id: String,
+    /// The URL required for a client to join the Call.
+    pub join_url: String,
+    /// The name of the Call.
+    pub title: Option<String>,
+    /// The list of users to register as participants in the Call. [Read more on how to specify users here](/apis/calls#users).
+    pub users: Option<String>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
-pub struct UpdateResponse {
+pub struct AddResponse {
     #[serde(default)]
     ok: bool,
 }
 
-impl<E: Error> Into<Result<UpdateResponse, UpdateError<E>>> for UpdateResponse {
-    fn into(self) -> Result<UpdateResponse, UpdateError<E>> {
+impl<E: Error> Into<Result<AddResponse, AddError<E>>> for AddResponse {
+    fn into(self) -> Result<AddResponse, AddError<E>> {
         if self.ok {
             Ok(self)
         } else {
-            Err(UpdateError::Unknown(
+            Err(AddError::Unknown(
                 "Server failed without providing an error message.".into(),
             ))
         }
@@ -51,7 +60,7 @@ impl<E: Error> Into<Result<UpdateResponse, UpdateError<E>>> for UpdateResponse {
 }
 
 #[derive(Debug)]
-pub enum UpdateError<E: Error> {
+pub enum AddError<E: Error> {
     /// The response was not parseable as the expected object
     MalformedResponse(String, serde_json::error::Error),
     /// The response returned an error that was unknown to the library
@@ -60,29 +69,29 @@ pub enum UpdateError<E: Error> {
     Client(E),
 }
 
-impl<'a, E: Error> From<&'a str> for UpdateError<E> {
+impl<'a, E: Error> From<&'a str> for AddError<E> {
     fn from(s: &'a str) -> Self {
         match s {
-            _ => UpdateError::Unknown(s.to_owned()),
+            _ => AddError::Unknown(s.to_owned()),
         }
     }
 }
 
-impl<E: Error> fmt::Display for UpdateError<E> {
+impl<E: Error> fmt::Display for AddError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
-            UpdateError::MalformedResponse(_, ref e) => write!(f, "{}", e),
-            UpdateError::Unknown(ref s) => write!(f, "{}", s),
-            UpdateError::Client(ref inner) => write!(f, "{}", inner),
+            AddError::MalformedResponse(_, ref e) => write!(f, "{}", e),
+            AddError::Unknown(ref s) => write!(f, "{}", s),
+            AddError::Client(ref inner) => write!(f, "{}", inner),
         }
     }
 }
 
-impl<E: Error + 'static> Error for UpdateError<E> {
+impl<E: Error + 'static> Error for AddError<E> {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
         match *self {
-            UpdateError::MalformedResponse(_, ref e) => Some(e),
-            UpdateError::Client(ref inner) => Some(inner),
+            AddError::MalformedResponse(_, ref e) => Some(e),
+            AddError::Client(ref inner) => Some(inner),
             _ => None,
         }
     }
@@ -90,10 +99,10 @@ impl<E: Error + 'static> Error for UpdateError<E> {
 
 #[derive(Clone, Default, Debug)]
 pub struct EndRequest {
-    /// `id` returned when registering the call using the [`calls.add`](/methods/calls.add) method.
-    pub id: String,
     /// Call duration in seconds
     pub duration: Option<u64>,
+    /// `id` returned when registering the call using the [`calls.add`](/methods/calls.add) method.
+    pub id: String,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -215,37 +224,29 @@ impl<E: Error + 'static> Error for InfoError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct AddRequest {
-    /// An ID supplied by the 3rd-party Call provider. It must be unique across all Calls from that service.
-    pub external_unique_id: String,
-    /// An optional, human-readable ID supplied by the 3rd-party Call provider. If supplied, this ID will be displayed in the Call object.
-    pub external_display_id: Option<String>,
-    /// The URL required for a client to join the Call.
-    pub join_url: String,
+pub struct UpdateRequest {
     /// When supplied, available Slack clients will attempt to directly launch the 3rd-party Call with this URL.
     pub desktop_app_join_url: Option<String>,
-    /// Call start time in UTC UNIX timestamp format
-    pub date_start: Option<u64>,
+    /// `id` returned by the [`calls.add`](/methods/calls.add) method.
+    pub id: String,
+    /// The URL required for a client to join the Call.
+    pub join_url: Option<String>,
     /// The name of the Call.
     pub title: Option<String>,
-    /// The valid Slack user ID of the user who created this Call. When this method is called with a user token, the `created_by` field is optional and defaults to the authed user of the token. Otherwise, the field is required.
-    pub created_by: Option<String>,
-    /// The list of users to register as participants in the Call. [Read more on how to specify users here](/apis/calls#users).
-    pub users: Option<String>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
-pub struct AddResponse {
+pub struct UpdateResponse {
     #[serde(default)]
     ok: bool,
 }
 
-impl<E: Error> Into<Result<AddResponse, AddError<E>>> for AddResponse {
-    fn into(self) -> Result<AddResponse, AddError<E>> {
+impl<E: Error> Into<Result<UpdateResponse, UpdateError<E>>> for UpdateResponse {
+    fn into(self) -> Result<UpdateResponse, UpdateError<E>> {
         if self.ok {
             Ok(self)
         } else {
-            Err(AddError::Unknown(
+            Err(UpdateError::Unknown(
                 "Server failed without providing an error message.".into(),
             ))
         }
@@ -253,7 +254,7 @@ impl<E: Error> Into<Result<AddResponse, AddError<E>>> for AddResponse {
 }
 
 #[derive(Debug)]
-pub enum AddError<E: Error> {
+pub enum UpdateError<E: Error> {
     /// The response was not parseable as the expected object
     MalformedResponse(String, serde_json::error::Error),
     /// The response returned an error that was unknown to the library
@@ -262,29 +263,29 @@ pub enum AddError<E: Error> {
     Client(E),
 }
 
-impl<'a, E: Error> From<&'a str> for AddError<E> {
+impl<'a, E: Error> From<&'a str> for UpdateError<E> {
     fn from(s: &'a str) -> Self {
         match s {
-            _ => AddError::Unknown(s.to_owned()),
+            _ => UpdateError::Unknown(s.to_owned()),
         }
     }
 }
 
-impl<E: Error> fmt::Display for AddError<E> {
+impl<E: Error> fmt::Display for UpdateError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
-            AddError::MalformedResponse(_, ref e) => write!(f, "{}", e),
-            AddError::Unknown(ref s) => write!(f, "{}", s),
-            AddError::Client(ref inner) => write!(f, "{}", inner),
+            UpdateError::MalformedResponse(_, ref e) => write!(f, "{}", e),
+            UpdateError::Unknown(ref s) => write!(f, "{}", s),
+            UpdateError::Client(ref inner) => write!(f, "{}", inner),
         }
     }
 }
 
-impl<E: Error + 'static> Error for AddError<E> {
+impl<E: Error + 'static> Error for UpdateError<E> {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
         match *self {
-            AddError::MalformedResponse(_, ref e) => Some(e),
-            AddError::Client(ref inner) => Some(inner),
+            UpdateError::MalformedResponse(_, ref e) => Some(e),
+            UpdateError::Client(ref inner) => Some(inner),
             _ => None,
         }
     }

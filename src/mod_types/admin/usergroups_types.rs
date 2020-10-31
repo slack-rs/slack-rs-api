@@ -13,151 +13,20 @@
 //=============================================================================
 
 #![allow(unused_imports)]
+#![allow(dead_code)]
 
 use std::convert::From;
 use std::error::Error;
 use std::fmt;
 
 #[derive(Clone, Default, Debug)]
-pub struct RemoveChannelsRequest {
-    /// ID of the IDP Group
-    pub usergroup_id: String,
-    /// Comma-separated string of channel IDs
-    pub channel_ids: String,
-}
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct RemoveChannelsResponse {
-    #[serde(default)]
-    ok: bool,
-}
-
-impl<E: Error> Into<Result<RemoveChannelsResponse, RemoveChannelsError<E>>>
-    for RemoveChannelsResponse
-{
-    fn into(self) -> Result<RemoveChannelsResponse, RemoveChannelsError<E>> {
-        if self.ok {
-            Ok(self)
-        } else {
-            Err(RemoveChannelsError::Unknown(
-                "Server failed without providing an error message.".into(),
-            ))
-        }
-    }
-}
-
-#[derive(Debug)]
-pub enum RemoveChannelsError<E: Error> {
-    /// The response was not parseable as the expected object
-    MalformedResponse(String, serde_json::error::Error),
-    /// The response returned an error that was unknown to the library
-    Unknown(String),
-    /// The client had an error sending the request to Slack
-    Client(E),
-}
-
-impl<'a, E: Error> From<&'a str> for RemoveChannelsError<E> {
-    fn from(s: &'a str) -> Self {
-        match s {
-            _ => RemoveChannelsError::Unknown(s.to_owned()),
-        }
-    }
-}
-
-impl<E: Error> fmt::Display for RemoveChannelsError<E> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match *self {
-            RemoveChannelsError::MalformedResponse(_, ref e) => write!(f, "{}", e),
-            RemoveChannelsError::Unknown(ref s) => write!(f, "{}", s),
-            RemoveChannelsError::Client(ref inner) => write!(f, "{}", inner),
-        }
-    }
-}
-
-impl<E: Error + 'static> Error for RemoveChannelsError<E> {
-    fn source(&self) -> Option<&(dyn Error + 'static)> {
-        match *self {
-            RemoveChannelsError::MalformedResponse(_, ref e) => Some(e),
-            RemoveChannelsError::Client(ref inner) => Some(inner),
-            _ => None,
-        }
-    }
-}
-
-#[derive(Clone, Default, Debug)]
-pub struct AddTeamsRequest {
-    /// An encoded usergroup (IDP Group) ID.
-    pub usergroup_id: String,
-    /// A comma separated list of encoded team (workspace) IDs. Each workspace *MUST* belong to the organization associated with the token.
-    pub team_ids: String,
-    /// When `true`, this method automatically creates new workspace accounts for the IDP group members.
-    pub auto_provision: Option<bool>,
-}
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct AddTeamsResponse {
-    #[serde(default)]
-    ok: bool,
-}
-
-impl<E: Error> Into<Result<AddTeamsResponse, AddTeamsError<E>>> for AddTeamsResponse {
-    fn into(self) -> Result<AddTeamsResponse, AddTeamsError<E>> {
-        if self.ok {
-            Ok(self)
-        } else {
-            Err(AddTeamsError::Unknown(
-                "Server failed without providing an error message.".into(),
-            ))
-        }
-    }
-}
-
-#[derive(Debug)]
-pub enum AddTeamsError<E: Error> {
-    /// The response was not parseable as the expected object
-    MalformedResponse(String, serde_json::error::Error),
-    /// The response returned an error that was unknown to the library
-    Unknown(String),
-    /// The client had an error sending the request to Slack
-    Client(E),
-}
-
-impl<'a, E: Error> From<&'a str> for AddTeamsError<E> {
-    fn from(s: &'a str) -> Self {
-        match s {
-            _ => AddTeamsError::Unknown(s.to_owned()),
-        }
-    }
-}
-
-impl<E: Error> fmt::Display for AddTeamsError<E> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match *self {
-            AddTeamsError::MalformedResponse(_, ref e) => write!(f, "{}", e),
-            AddTeamsError::Unknown(ref s) => write!(f, "{}", s),
-            AddTeamsError::Client(ref inner) => write!(f, "{}", inner),
-        }
-    }
-}
-
-impl<E: Error + 'static> Error for AddTeamsError<E> {
-    fn source(&self) -> Option<&(dyn Error + 'static)> {
-        match *self {
-            AddTeamsError::MalformedResponse(_, ref e) => Some(e),
-            AddTeamsError::Client(ref inner) => Some(inner),
-            _ => None,
-        }
-    }
-}
-
-#[derive(Clone, Default, Debug)]
 pub struct AddChannelsRequest {
-    /// ID of the IDP group to add default channels for.
-    pub usergroup_id: String,
-    /// The workspace to add default channels in.
-    pub team_id: Option<String>,
     /// Comma separated string of channel IDs.
     pub channel_ids: String,
+    /// The workspace to add default channels in.
+    pub team_id: Option<String>,
+    /// ID of the IDP group to add default channels for.
+    pub usergroup_id: String,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -217,13 +86,79 @@ impl<E: Error + 'static> Error for AddChannelsError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct ListChannelsRequest {
-    /// ID of the IDP group to list default channels for.
+pub struct AddTeamsRequest {
+    /// When `true`, this method automatically creates new workspace accounts for the IDP group members.
+    pub auto_provision: Option<bool>,
+    /// A comma separated list of encoded team (workspace) IDs. Each workspace *MUST* belong to the organization associated with the token.
+    pub team_ids: String,
+    /// An encoded usergroup (IDP Group) ID.
     pub usergroup_id: String,
-    /// ID of the the workspace.
-    pub team_id: Option<String>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct AddTeamsResponse {
+    #[serde(default)]
+    ok: bool,
+}
+
+impl<E: Error> Into<Result<AddTeamsResponse, AddTeamsError<E>>> for AddTeamsResponse {
+    fn into(self) -> Result<AddTeamsResponse, AddTeamsError<E>> {
+        if self.ok {
+            Ok(self)
+        } else {
+            Err(AddTeamsError::Unknown(
+                "Server failed without providing an error message.".into(),
+            ))
+        }
+    }
+}
+
+#[derive(Debug)]
+pub enum AddTeamsError<E: Error> {
+    /// The response was not parseable as the expected object
+    MalformedResponse(String, serde_json::error::Error),
+    /// The response returned an error that was unknown to the library
+    Unknown(String),
+    /// The client had an error sending the request to Slack
+    Client(E),
+}
+
+impl<'a, E: Error> From<&'a str> for AddTeamsError<E> {
+    fn from(s: &'a str) -> Self {
+        match s {
+            _ => AddTeamsError::Unknown(s.to_owned()),
+        }
+    }
+}
+
+impl<E: Error> fmt::Display for AddTeamsError<E> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match *self {
+            AddTeamsError::MalformedResponse(_, ref e) => write!(f, "{}", e),
+            AddTeamsError::Unknown(ref s) => write!(f, "{}", s),
+            AddTeamsError::Client(ref inner) => write!(f, "{}", inner),
+        }
+    }
+}
+
+impl<E: Error + 'static> Error for AddTeamsError<E> {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+        match *self {
+            AddTeamsError::MalformedResponse(_, ref e) => Some(e),
+            AddTeamsError::Client(ref inner) => Some(inner),
+            _ => None,
+        }
+    }
+}
+
+#[derive(Clone, Default, Debug)]
+pub struct ListChannelsRequest {
     /// Flag to include or exclude the count of members per channel.
     pub include_num_members: Option<bool>,
+    /// ID of the the workspace.
+    pub team_id: Option<String>,
+    /// ID of the IDP group to list default channels for.
+    pub usergroup_id: String,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -277,6 +212,72 @@ impl<E: Error + 'static> Error for ListChannelsError<E> {
         match *self {
             ListChannelsError::MalformedResponse(_, ref e) => Some(e),
             ListChannelsError::Client(ref inner) => Some(inner),
+            _ => None,
+        }
+    }
+}
+
+#[derive(Clone, Default, Debug)]
+pub struct RemoveChannelsRequest {
+    /// Comma-separated string of channel IDs
+    pub channel_ids: String,
+    /// ID of the IDP Group
+    pub usergroup_id: String,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct RemoveChannelsResponse {
+    #[serde(default)]
+    ok: bool,
+}
+
+impl<E: Error> Into<Result<RemoveChannelsResponse, RemoveChannelsError<E>>>
+    for RemoveChannelsResponse
+{
+    fn into(self) -> Result<RemoveChannelsResponse, RemoveChannelsError<E>> {
+        if self.ok {
+            Ok(self)
+        } else {
+            Err(RemoveChannelsError::Unknown(
+                "Server failed without providing an error message.".into(),
+            ))
+        }
+    }
+}
+
+#[derive(Debug)]
+pub enum RemoveChannelsError<E: Error> {
+    /// The response was not parseable as the expected object
+    MalformedResponse(String, serde_json::error::Error),
+    /// The response returned an error that was unknown to the library
+    Unknown(String),
+    /// The client had an error sending the request to Slack
+    Client(E),
+}
+
+impl<'a, E: Error> From<&'a str> for RemoveChannelsError<E> {
+    fn from(s: &'a str) -> Self {
+        match s {
+            _ => RemoveChannelsError::Unknown(s.to_owned()),
+        }
+    }
+}
+
+impl<E: Error> fmt::Display for RemoveChannelsError<E> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match *self {
+            RemoveChannelsError::MalformedResponse(_, ref e) => write!(f, "{}", e),
+            RemoveChannelsError::Unknown(ref s) => write!(f, "{}", s),
+            RemoveChannelsError::Client(ref inner) => write!(f, "{}", inner),
+        }
+    }
+}
+
+impl<E: Error + 'static> Error for RemoveChannelsError<E> {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+        match *self {
+            RemoveChannelsError::MalformedResponse(_, ref e) => Some(e),
+            RemoveChannelsError::Client(ref inner) => Some(inner),
             _ => None,
         }
     }

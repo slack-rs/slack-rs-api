@@ -13,82 +13,13 @@
 //=============================================================================
 
 #![allow(unused_imports)]
+#![allow(dead_code)]
 
 pub mod v_2_types;
 
 use std::convert::From;
 use std::error::Error;
 use std::fmt;
-
-#[derive(Clone, Default, Debug)]
-pub struct TokenRequest {
-    /// Issued when you created your application.
-    pub client_id: Option<String>,
-    /// Issued when you created your application.
-    pub client_secret: Option<String>,
-    /// The `code` param returned via the OAuth callback.
-    pub code: Option<String>,
-    /// This must match the originally submitted URI (if one was sent).
-    pub redirect_uri: Option<String>,
-    /// Request the user to add your app only to a single channel.
-    pub single_channel: Option<bool>,
-}
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct TokenResponse {
-    #[serde(default)]
-    ok: bool,
-}
-
-impl<E: Error> Into<Result<TokenResponse, TokenError<E>>> for TokenResponse {
-    fn into(self) -> Result<TokenResponse, TokenError<E>> {
-        if self.ok {
-            Ok(self)
-        } else {
-            Err(TokenError::Unknown(
-                "Server failed without providing an error message.".into(),
-            ))
-        }
-    }
-}
-
-#[derive(Debug)]
-pub enum TokenError<E: Error> {
-    /// The response was not parseable as the expected object
-    MalformedResponse(String, serde_json::error::Error),
-    /// The response returned an error that was unknown to the library
-    Unknown(String),
-    /// The client had an error sending the request to Slack
-    Client(E),
-}
-
-impl<'a, E: Error> From<&'a str> for TokenError<E> {
-    fn from(s: &'a str) -> Self {
-        match s {
-            _ => TokenError::Unknown(s.to_owned()),
-        }
-    }
-}
-
-impl<E: Error> fmt::Display for TokenError<E> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match *self {
-            TokenError::MalformedResponse(_, ref e) => write!(f, "{}", e),
-            TokenError::Unknown(ref s) => write!(f, "{}", s),
-            TokenError::Client(ref inner) => write!(f, "{}", inner),
-        }
-    }
-}
-
-impl<E: Error + 'static> Error for TokenError<E> {
-    fn source(&self) -> Option<&(dyn Error + 'static)> {
-        match *self {
-            TokenError::MalformedResponse(_, ref e) => Some(e),
-            TokenError::Client(ref inner) => Some(inner),
-            _ => None,
-        }
-    }
-}
 
 #[derive(Clone, Default, Debug)]
 pub struct AccessRequest {
@@ -155,6 +86,76 @@ impl<E: Error + 'static> Error for AccessError<E> {
         match *self {
             AccessError::MalformedResponse(_, ref e) => Some(e),
             AccessError::Client(ref inner) => Some(inner),
+            _ => None,
+        }
+    }
+}
+
+#[derive(Clone, Default, Debug)]
+pub struct TokenRequest {
+    /// Issued when you created your application.
+    pub client_id: Option<String>,
+    /// Issued when you created your application.
+    pub client_secret: Option<String>,
+    /// The `code` param returned via the OAuth callback.
+    pub code: Option<String>,
+    /// This must match the originally submitted URI (if one was sent).
+    pub redirect_uri: Option<String>,
+    /// Request the user to add your app only to a single channel.
+    pub single_channel: Option<bool>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct TokenResponse {
+    #[serde(default)]
+    ok: bool,
+}
+
+impl<E: Error> Into<Result<TokenResponse, TokenError<E>>> for TokenResponse {
+    fn into(self) -> Result<TokenResponse, TokenError<E>> {
+        if self.ok {
+            Ok(self)
+        } else {
+            Err(TokenError::Unknown(
+                "Server failed without providing an error message.".into(),
+            ))
+        }
+    }
+}
+
+#[derive(Debug)]
+pub enum TokenError<E: Error> {
+    /// The response was not parseable as the expected object
+    MalformedResponse(String, serde_json::error::Error),
+    /// The response returned an error that was unknown to the library
+    Unknown(String),
+    /// The client had an error sending the request to Slack
+    Client(E),
+}
+
+impl<'a, E: Error> From<&'a str> for TokenError<E> {
+    fn from(s: &'a str) -> Self {
+        match s {
+            _ => TokenError::Unknown(s.to_owned()),
+        }
+    }
+}
+
+impl<E: Error> fmt::Display for TokenError<E> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match *self {
+            TokenError::MalformedResponse(_, ref e) => write!(f, "{}", e),
+            TokenError::Unknown(ref s) => write!(f, "{}", s),
+            TokenError::Client(ref inner) => write!(f, "{}", inner),
+        }
+    }
+}
+
+impl<E: Error + 'static> Error for TokenError<E> {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+        match *self {
+            TokenError::MalformedResponse(_, ref e) => Some(e),
+            TokenError::Client(ref inner) => Some(inner),
             _ => None,
         }
     }

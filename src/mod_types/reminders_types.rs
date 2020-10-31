@@ -13,6 +13,7 @@
 //=============================================================================
 
 #![allow(unused_imports)]
+#![allow(dead_code)]
 
 use std::convert::From;
 use std::error::Error;
@@ -60,31 +61,31 @@ impl<E: Error> Into<Result<AddResponse, AddError<E>>> for AddResponse {
 
 #[derive(Debug)]
 pub enum AddError<E: Error> {
-    CannotParse,
-    UserNotFound,
+    AccountInactive,
     CannotAddBot,
-    CannotAddSlackbot,
     CannotAddOthers,
     CannotAddOthersRecurring,
-    NotAuthed,
-    InvalidAuth,
-    AccountInactive,
-    TokenRevoked,
-    NoPermission,
-    OrgLoginRequired,
-    UserIsBot,
+    CannotAddSlackbot,
+    CannotParse,
+    FatalError,
     InvalidArgName,
     InvalidArrayArg,
+    InvalidAuth,
     InvalidCharset,
     InvalidFormData,
-    InvalidPostType,
-    MissingPostType,
-    TeamAddedToOrg,
     InvalidJson,
+    InvalidPostType,
     JsonNotObject,
+    MissingPostType,
+    NoPermission,
+    NotAuthed,
+    OrgLoginRequired,
     RequestTimeout,
+    TeamAddedToOrg,
+    TokenRevoked,
     UpgradeRequired,
-    FatalError,
+    UserIsBot,
+    UserNotFound,
     /// The response was not parseable as the expected object
     MalformedResponse(String, serde_json::error::Error),
     /// The response returned an error that was unknown to the library
@@ -96,31 +97,31 @@ pub enum AddError<E: Error> {
 impl<'a, E: Error> From<&'a str> for AddError<E> {
     fn from(s: &'a str) -> Self {
         match s {
-            "cannot_parse" => AddError::CannotParse,
-            "user_not_found" => AddError::UserNotFound,
+            "account_inactive" => AddError::AccountInactive,
             "cannot_add_bot" => AddError::CannotAddBot,
-            "cannot_add_slackbot" => AddError::CannotAddSlackbot,
             "cannot_add_others" => AddError::CannotAddOthers,
             "cannot_add_others_recurring" => AddError::CannotAddOthersRecurring,
-            "not_authed" => AddError::NotAuthed,
-            "invalid_auth" => AddError::InvalidAuth,
-            "account_inactive" => AddError::AccountInactive,
-            "token_revoked" => AddError::TokenRevoked,
-            "no_permission" => AddError::NoPermission,
-            "org_login_required" => AddError::OrgLoginRequired,
-            "user_is_bot" => AddError::UserIsBot,
+            "cannot_add_slackbot" => AddError::CannotAddSlackbot,
+            "cannot_parse" => AddError::CannotParse,
+            "fatal_error" => AddError::FatalError,
             "invalid_arg_name" => AddError::InvalidArgName,
             "invalid_array_arg" => AddError::InvalidArrayArg,
+            "invalid_auth" => AddError::InvalidAuth,
             "invalid_charset" => AddError::InvalidCharset,
             "invalid_form_data" => AddError::InvalidFormData,
-            "invalid_post_type" => AddError::InvalidPostType,
-            "missing_post_type" => AddError::MissingPostType,
-            "team_added_to_org" => AddError::TeamAddedToOrg,
             "invalid_json" => AddError::InvalidJson,
+            "invalid_post_type" => AddError::InvalidPostType,
             "json_not_object" => AddError::JsonNotObject,
+            "missing_post_type" => AddError::MissingPostType,
+            "no_permission" => AddError::NoPermission,
+            "not_authed" => AddError::NotAuthed,
+            "org_login_required" => AddError::OrgLoginRequired,
             "request_timeout" => AddError::RequestTimeout,
+            "team_added_to_org" => AddError::TeamAddedToOrg,
+            "token_revoked" => AddError::TokenRevoked,
             "upgrade_required" => AddError::UpgradeRequired,
-            "fatal_error" => AddError::FatalError,
+            "user_is_bot" => AddError::UserIsBot,
+            "user_not_found" => AddError::UserNotFound,
             _ => AddError::Unknown(s.to_owned()),
         }
     }
@@ -129,33 +130,33 @@ impl<'a, E: Error> From<&'a str> for AddError<E> {
 impl<E: Error> fmt::Display for AddError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
-            AddError::CannotParse => write!(f, "Server returned error cannot_parse"),
-            AddError::UserNotFound => write!(f, "Server returned error user_not_found"),
+            AddError::AccountInactive => write!(f, "Server returned error account_inactive"),
             AddError::CannotAddBot => write!(f, "Server returned error cannot_add_bot"),
-            AddError::CannotAddSlackbot => write!(f, "Server returned error cannot_add_slackbot"),
             AddError::CannotAddOthers => write!(f, "Server returned error cannot_add_others"),
             AddError::CannotAddOthersRecurring => {
                 write!(f, "Server returned error cannot_add_others_recurring")
             }
-            AddError::NotAuthed => write!(f, "Server returned error not_authed"),
-            AddError::InvalidAuth => write!(f, "Server returned error invalid_auth"),
-            AddError::AccountInactive => write!(f, "Server returned error account_inactive"),
-            AddError::TokenRevoked => write!(f, "Server returned error token_revoked"),
-            AddError::NoPermission => write!(f, "Server returned error no_permission"),
-            AddError::OrgLoginRequired => write!(f, "Server returned error org_login_required"),
-            AddError::UserIsBot => write!(f, "Server returned error user_is_bot"),
+            AddError::CannotAddSlackbot => write!(f, "Server returned error cannot_add_slackbot"),
+            AddError::CannotParse => write!(f, "Server returned error cannot_parse"),
+            AddError::FatalError => write!(f, "Server returned error fatal_error"),
             AddError::InvalidArgName => write!(f, "Server returned error invalid_arg_name"),
             AddError::InvalidArrayArg => write!(f, "Server returned error invalid_array_arg"),
+            AddError::InvalidAuth => write!(f, "Server returned error invalid_auth"),
             AddError::InvalidCharset => write!(f, "Server returned error invalid_charset"),
             AddError::InvalidFormData => write!(f, "Server returned error invalid_form_data"),
-            AddError::InvalidPostType => write!(f, "Server returned error invalid_post_type"),
-            AddError::MissingPostType => write!(f, "Server returned error missing_post_type"),
-            AddError::TeamAddedToOrg => write!(f, "Server returned error team_added_to_org"),
             AddError::InvalidJson => write!(f, "Server returned error invalid_json"),
+            AddError::InvalidPostType => write!(f, "Server returned error invalid_post_type"),
             AddError::JsonNotObject => write!(f, "Server returned error json_not_object"),
+            AddError::MissingPostType => write!(f, "Server returned error missing_post_type"),
+            AddError::NoPermission => write!(f, "Server returned error no_permission"),
+            AddError::NotAuthed => write!(f, "Server returned error not_authed"),
+            AddError::OrgLoginRequired => write!(f, "Server returned error org_login_required"),
             AddError::RequestTimeout => write!(f, "Server returned error request_timeout"),
+            AddError::TeamAddedToOrg => write!(f, "Server returned error team_added_to_org"),
+            AddError::TokenRevoked => write!(f, "Server returned error token_revoked"),
             AddError::UpgradeRequired => write!(f, "Server returned error upgrade_required"),
-            AddError::FatalError => write!(f, "Server returned error fatal_error"),
+            AddError::UserIsBot => write!(f, "Server returned error user_is_bot"),
+            AddError::UserNotFound => write!(f, "Server returned error user_not_found"),
             AddError::MalformedResponse(_, ref e) => write!(f, "{}", e),
             AddError::Unknown(ref s) => write!(f, "{}", s),
             AddError::Client(ref inner) => write!(f, "{}", inner),
@@ -168,256 +169,6 @@ impl<E: Error + 'static> Error for AddError<E> {
         match *self {
             AddError::MalformedResponse(_, ref e) => Some(e),
             AddError::Client(ref inner) => Some(inner),
-            _ => None,
-        }
-    }
-}
-
-#[derive(Clone, Default, Debug)]
-pub struct DeleteRequest {
-    /// The ID of the reminder
-    pub reminder: Option<String>,
-}
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct DeleteResponse {
-    pub callstack: Option<String>,
-    error: Option<String>,
-    #[serde(default)]
-    ok: bool,
-}
-
-impl<E: Error> Into<Result<DeleteResponse, DeleteError<E>>> for DeleteResponse {
-    fn into(self) -> Result<DeleteResponse, DeleteError<E>> {
-        if self.ok {
-            Ok(self)
-        } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
-        }
-    }
-}
-
-#[derive(Debug)]
-pub enum DeleteError<E: Error> {
-    NotFound,
-    NotAuthed,
-    InvalidAuth,
-    AccountInactive,
-    TokenRevoked,
-    NoPermission,
-    OrgLoginRequired,
-    UserIsBot,
-    InvalidArgName,
-    InvalidArrayArg,
-    InvalidCharset,
-    InvalidFormData,
-    InvalidPostType,
-    MissingPostType,
-    TeamAddedToOrg,
-    InvalidJson,
-    JsonNotObject,
-    RequestTimeout,
-    UpgradeRequired,
-    FatalError,
-    /// The response was not parseable as the expected object
-    MalformedResponse(String, serde_json::error::Error),
-    /// The response returned an error that was unknown to the library
-    Unknown(String),
-    /// The client had an error sending the request to Slack
-    Client(E),
-}
-
-impl<'a, E: Error> From<&'a str> for DeleteError<E> {
-    fn from(s: &'a str) -> Self {
-        match s {
-            "not_found" => DeleteError::NotFound,
-            "not_authed" => DeleteError::NotAuthed,
-            "invalid_auth" => DeleteError::InvalidAuth,
-            "account_inactive" => DeleteError::AccountInactive,
-            "token_revoked" => DeleteError::TokenRevoked,
-            "no_permission" => DeleteError::NoPermission,
-            "org_login_required" => DeleteError::OrgLoginRequired,
-            "user_is_bot" => DeleteError::UserIsBot,
-            "invalid_arg_name" => DeleteError::InvalidArgName,
-            "invalid_array_arg" => DeleteError::InvalidArrayArg,
-            "invalid_charset" => DeleteError::InvalidCharset,
-            "invalid_form_data" => DeleteError::InvalidFormData,
-            "invalid_post_type" => DeleteError::InvalidPostType,
-            "missing_post_type" => DeleteError::MissingPostType,
-            "team_added_to_org" => DeleteError::TeamAddedToOrg,
-            "invalid_json" => DeleteError::InvalidJson,
-            "json_not_object" => DeleteError::JsonNotObject,
-            "request_timeout" => DeleteError::RequestTimeout,
-            "upgrade_required" => DeleteError::UpgradeRequired,
-            "fatal_error" => DeleteError::FatalError,
-            _ => DeleteError::Unknown(s.to_owned()),
-        }
-    }
-}
-
-impl<E: Error> fmt::Display for DeleteError<E> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match *self {
-            DeleteError::NotFound => write!(f, "Server returned error not_found"),
-            DeleteError::NotAuthed => write!(f, "Server returned error not_authed"),
-            DeleteError::InvalidAuth => write!(f, "Server returned error invalid_auth"),
-            DeleteError::AccountInactive => write!(f, "Server returned error account_inactive"),
-            DeleteError::TokenRevoked => write!(f, "Server returned error token_revoked"),
-            DeleteError::NoPermission => write!(f, "Server returned error no_permission"),
-            DeleteError::OrgLoginRequired => write!(f, "Server returned error org_login_required"),
-            DeleteError::UserIsBot => write!(f, "Server returned error user_is_bot"),
-            DeleteError::InvalidArgName => write!(f, "Server returned error invalid_arg_name"),
-            DeleteError::InvalidArrayArg => write!(f, "Server returned error invalid_array_arg"),
-            DeleteError::InvalidCharset => write!(f, "Server returned error invalid_charset"),
-            DeleteError::InvalidFormData => write!(f, "Server returned error invalid_form_data"),
-            DeleteError::InvalidPostType => write!(f, "Server returned error invalid_post_type"),
-            DeleteError::MissingPostType => write!(f, "Server returned error missing_post_type"),
-            DeleteError::TeamAddedToOrg => write!(f, "Server returned error team_added_to_org"),
-            DeleteError::InvalidJson => write!(f, "Server returned error invalid_json"),
-            DeleteError::JsonNotObject => write!(f, "Server returned error json_not_object"),
-            DeleteError::RequestTimeout => write!(f, "Server returned error request_timeout"),
-            DeleteError::UpgradeRequired => write!(f, "Server returned error upgrade_required"),
-            DeleteError::FatalError => write!(f, "Server returned error fatal_error"),
-            DeleteError::MalformedResponse(_, ref e) => write!(f, "{}", e),
-            DeleteError::Unknown(ref s) => write!(f, "{}", s),
-            DeleteError::Client(ref inner) => write!(f, "{}", inner),
-        }
-    }
-}
-
-impl<E: Error + 'static> Error for DeleteError<E> {
-    fn source(&self) -> Option<&(dyn Error + 'static)> {
-        match *self {
-            DeleteError::MalformedResponse(_, ref e) => Some(e),
-            DeleteError::Client(ref inner) => Some(inner),
-            _ => None,
-        }
-    }
-}
-
-#[derive(Clone, Default, Debug)]
-pub struct ListRequest {}
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct ListRemindersInner {
-    pub complete_ts: Option<u64>,
-    pub creator: String,
-    pub id: String,
-    pub recurring: bool,
-    pub text: String,
-    pub time: Option<u64>,
-    pub user: String,
-}
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct ListResponse {
-    pub callstack: Option<String>,
-    error: Option<String>,
-    #[serde(default)]
-    ok: bool,
-    pub reminders: Vec<ListRemindersInner>,
-}
-
-impl<E: Error> Into<Result<ListResponse, ListError<E>>> for ListResponse {
-    fn into(self) -> Result<ListResponse, ListError<E>> {
-        if self.ok {
-            Ok(self)
-        } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
-        }
-    }
-}
-
-#[derive(Debug)]
-pub enum ListError<E: Error> {
-    NotAuthed,
-    InvalidAuth,
-    AccountInactive,
-    TokenRevoked,
-    NoPermission,
-    OrgLoginRequired,
-    UserIsBot,
-    InvalidArgName,
-    InvalidArrayArg,
-    InvalidCharset,
-    InvalidFormData,
-    InvalidPostType,
-    MissingPostType,
-    TeamAddedToOrg,
-    InvalidJson,
-    JsonNotObject,
-    RequestTimeout,
-    UpgradeRequired,
-    FatalError,
-    /// The response was not parseable as the expected object
-    MalformedResponse(String, serde_json::error::Error),
-    /// The response returned an error that was unknown to the library
-    Unknown(String),
-    /// The client had an error sending the request to Slack
-    Client(E),
-}
-
-impl<'a, E: Error> From<&'a str> for ListError<E> {
-    fn from(s: &'a str) -> Self {
-        match s {
-            "not_authed" => ListError::NotAuthed,
-            "invalid_auth" => ListError::InvalidAuth,
-            "account_inactive" => ListError::AccountInactive,
-            "token_revoked" => ListError::TokenRevoked,
-            "no_permission" => ListError::NoPermission,
-            "org_login_required" => ListError::OrgLoginRequired,
-            "user_is_bot" => ListError::UserIsBot,
-            "invalid_arg_name" => ListError::InvalidArgName,
-            "invalid_array_arg" => ListError::InvalidArrayArg,
-            "invalid_charset" => ListError::InvalidCharset,
-            "invalid_form_data" => ListError::InvalidFormData,
-            "invalid_post_type" => ListError::InvalidPostType,
-            "missing_post_type" => ListError::MissingPostType,
-            "team_added_to_org" => ListError::TeamAddedToOrg,
-            "invalid_json" => ListError::InvalidJson,
-            "json_not_object" => ListError::JsonNotObject,
-            "request_timeout" => ListError::RequestTimeout,
-            "upgrade_required" => ListError::UpgradeRequired,
-            "fatal_error" => ListError::FatalError,
-            _ => ListError::Unknown(s.to_owned()),
-        }
-    }
-}
-
-impl<E: Error> fmt::Display for ListError<E> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match *self {
-            ListError::NotAuthed => write!(f, "Server returned error not_authed"),
-            ListError::InvalidAuth => write!(f, "Server returned error invalid_auth"),
-            ListError::AccountInactive => write!(f, "Server returned error account_inactive"),
-            ListError::TokenRevoked => write!(f, "Server returned error token_revoked"),
-            ListError::NoPermission => write!(f, "Server returned error no_permission"),
-            ListError::OrgLoginRequired => write!(f, "Server returned error org_login_required"),
-            ListError::UserIsBot => write!(f, "Server returned error user_is_bot"),
-            ListError::InvalidArgName => write!(f, "Server returned error invalid_arg_name"),
-            ListError::InvalidArrayArg => write!(f, "Server returned error invalid_array_arg"),
-            ListError::InvalidCharset => write!(f, "Server returned error invalid_charset"),
-            ListError::InvalidFormData => write!(f, "Server returned error invalid_form_data"),
-            ListError::InvalidPostType => write!(f, "Server returned error invalid_post_type"),
-            ListError::MissingPostType => write!(f, "Server returned error missing_post_type"),
-            ListError::TeamAddedToOrg => write!(f, "Server returned error team_added_to_org"),
-            ListError::InvalidJson => write!(f, "Server returned error invalid_json"),
-            ListError::JsonNotObject => write!(f, "Server returned error json_not_object"),
-            ListError::RequestTimeout => write!(f, "Server returned error request_timeout"),
-            ListError::UpgradeRequired => write!(f, "Server returned error upgrade_required"),
-            ListError::FatalError => write!(f, "Server returned error fatal_error"),
-            ListError::MalformedResponse(_, ref e) => write!(f, "{}", e),
-            ListError::Unknown(ref s) => write!(f, "{}", s),
-            ListError::Client(ref inner) => write!(f, "{}", inner),
-        }
-    }
-}
-
-impl<E: Error + 'static> Error for ListError<E> {
-    fn source(&self) -> Option<&(dyn Error + 'static)> {
-        match *self {
-            ListError::MalformedResponse(_, ref e) => Some(e),
-            ListError::Client(ref inner) => Some(inner),
             _ => None,
         }
     }
@@ -449,28 +200,28 @@ impl<E: Error> Into<Result<CompleteResponse, CompleteError<E>>> for CompleteResp
 
 #[derive(Debug)]
 pub enum CompleteError<E: Error> {
-    NotFound,
-    CannotCompleteRecurring,
-    CannotCompleteOthers,
-    NotAuthed,
-    InvalidAuth,
     AccountInactive,
-    TokenRevoked,
-    NoPermission,
-    OrgLoginRequired,
-    UserIsBot,
+    CannotCompleteOthers,
+    CannotCompleteRecurring,
+    FatalError,
     InvalidArgName,
     InvalidArrayArg,
+    InvalidAuth,
     InvalidCharset,
     InvalidFormData,
-    InvalidPostType,
-    MissingPostType,
-    TeamAddedToOrg,
     InvalidJson,
+    InvalidPostType,
     JsonNotObject,
+    MissingPostType,
+    NoPermission,
+    NotAuthed,
+    NotFound,
+    OrgLoginRequired,
     RequestTimeout,
+    TeamAddedToOrg,
+    TokenRevoked,
     UpgradeRequired,
-    FatalError,
+    UserIsBot,
     /// The response was not parseable as the expected object
     MalformedResponse(String, serde_json::error::Error),
     /// The response returned an error that was unknown to the library
@@ -482,28 +233,28 @@ pub enum CompleteError<E: Error> {
 impl<'a, E: Error> From<&'a str> for CompleteError<E> {
     fn from(s: &'a str) -> Self {
         match s {
-            "not_found" => CompleteError::NotFound,
-            "cannot_complete_recurring" => CompleteError::CannotCompleteRecurring,
-            "cannot_complete_others" => CompleteError::CannotCompleteOthers,
-            "not_authed" => CompleteError::NotAuthed,
-            "invalid_auth" => CompleteError::InvalidAuth,
             "account_inactive" => CompleteError::AccountInactive,
-            "token_revoked" => CompleteError::TokenRevoked,
-            "no_permission" => CompleteError::NoPermission,
-            "org_login_required" => CompleteError::OrgLoginRequired,
-            "user_is_bot" => CompleteError::UserIsBot,
+            "cannot_complete_others" => CompleteError::CannotCompleteOthers,
+            "cannot_complete_recurring" => CompleteError::CannotCompleteRecurring,
+            "fatal_error" => CompleteError::FatalError,
             "invalid_arg_name" => CompleteError::InvalidArgName,
             "invalid_array_arg" => CompleteError::InvalidArrayArg,
+            "invalid_auth" => CompleteError::InvalidAuth,
             "invalid_charset" => CompleteError::InvalidCharset,
             "invalid_form_data" => CompleteError::InvalidFormData,
-            "invalid_post_type" => CompleteError::InvalidPostType,
-            "missing_post_type" => CompleteError::MissingPostType,
-            "team_added_to_org" => CompleteError::TeamAddedToOrg,
             "invalid_json" => CompleteError::InvalidJson,
+            "invalid_post_type" => CompleteError::InvalidPostType,
             "json_not_object" => CompleteError::JsonNotObject,
+            "missing_post_type" => CompleteError::MissingPostType,
+            "no_permission" => CompleteError::NoPermission,
+            "not_authed" => CompleteError::NotAuthed,
+            "not_found" => CompleteError::NotFound,
+            "org_login_required" => CompleteError::OrgLoginRequired,
             "request_timeout" => CompleteError::RequestTimeout,
+            "team_added_to_org" => CompleteError::TeamAddedToOrg,
+            "token_revoked" => CompleteError::TokenRevoked,
             "upgrade_required" => CompleteError::UpgradeRequired,
-            "fatal_error" => CompleteError::FatalError,
+            "user_is_bot" => CompleteError::UserIsBot,
             _ => CompleteError::Unknown(s.to_owned()),
         }
     }
@@ -512,34 +263,34 @@ impl<'a, E: Error> From<&'a str> for CompleteError<E> {
 impl<E: Error> fmt::Display for CompleteError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
-            CompleteError::NotFound => write!(f, "Server returned error not_found"),
-            CompleteError::CannotCompleteRecurring => {
-                write!(f, "Server returned error cannot_complete_recurring")
-            }
+            CompleteError::AccountInactive => write!(f, "Server returned error account_inactive"),
             CompleteError::CannotCompleteOthers => {
                 write!(f, "Server returned error cannot_complete_others")
             }
-            CompleteError::NotAuthed => write!(f, "Server returned error not_authed"),
+            CompleteError::CannotCompleteRecurring => {
+                write!(f, "Server returned error cannot_complete_recurring")
+            }
+            CompleteError::FatalError => write!(f, "Server returned error fatal_error"),
+            CompleteError::InvalidArgName => write!(f, "Server returned error invalid_arg_name"),
+            CompleteError::InvalidArrayArg => write!(f, "Server returned error invalid_array_arg"),
             CompleteError::InvalidAuth => write!(f, "Server returned error invalid_auth"),
-            CompleteError::AccountInactive => write!(f, "Server returned error account_inactive"),
-            CompleteError::TokenRevoked => write!(f, "Server returned error token_revoked"),
+            CompleteError::InvalidCharset => write!(f, "Server returned error invalid_charset"),
+            CompleteError::InvalidFormData => write!(f, "Server returned error invalid_form_data"),
+            CompleteError::InvalidJson => write!(f, "Server returned error invalid_json"),
+            CompleteError::InvalidPostType => write!(f, "Server returned error invalid_post_type"),
+            CompleteError::JsonNotObject => write!(f, "Server returned error json_not_object"),
+            CompleteError::MissingPostType => write!(f, "Server returned error missing_post_type"),
             CompleteError::NoPermission => write!(f, "Server returned error no_permission"),
+            CompleteError::NotAuthed => write!(f, "Server returned error not_authed"),
+            CompleteError::NotFound => write!(f, "Server returned error not_found"),
             CompleteError::OrgLoginRequired => {
                 write!(f, "Server returned error org_login_required")
             }
-            CompleteError::UserIsBot => write!(f, "Server returned error user_is_bot"),
-            CompleteError::InvalidArgName => write!(f, "Server returned error invalid_arg_name"),
-            CompleteError::InvalidArrayArg => write!(f, "Server returned error invalid_array_arg"),
-            CompleteError::InvalidCharset => write!(f, "Server returned error invalid_charset"),
-            CompleteError::InvalidFormData => write!(f, "Server returned error invalid_form_data"),
-            CompleteError::InvalidPostType => write!(f, "Server returned error invalid_post_type"),
-            CompleteError::MissingPostType => write!(f, "Server returned error missing_post_type"),
-            CompleteError::TeamAddedToOrg => write!(f, "Server returned error team_added_to_org"),
-            CompleteError::InvalidJson => write!(f, "Server returned error invalid_json"),
-            CompleteError::JsonNotObject => write!(f, "Server returned error json_not_object"),
             CompleteError::RequestTimeout => write!(f, "Server returned error request_timeout"),
+            CompleteError::TeamAddedToOrg => write!(f, "Server returned error team_added_to_org"),
+            CompleteError::TokenRevoked => write!(f, "Server returned error token_revoked"),
             CompleteError::UpgradeRequired => write!(f, "Server returned error upgrade_required"),
-            CompleteError::FatalError => write!(f, "Server returned error fatal_error"),
+            CompleteError::UserIsBot => write!(f, "Server returned error user_is_bot"),
             CompleteError::MalformedResponse(_, ref e) => write!(f, "{}", e),
             CompleteError::Unknown(ref s) => write!(f, "{}", s),
             CompleteError::Client(ref inner) => write!(f, "{}", inner),
@@ -552,6 +303,128 @@ impl<E: Error + 'static> Error for CompleteError<E> {
         match *self {
             CompleteError::MalformedResponse(_, ref e) => Some(e),
             CompleteError::Client(ref inner) => Some(inner),
+            _ => None,
+        }
+    }
+}
+
+#[derive(Clone, Default, Debug)]
+pub struct DeleteRequest {
+    /// The ID of the reminder
+    pub reminder: Option<String>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct DeleteResponse {
+    pub callstack: Option<String>,
+    error: Option<String>,
+    #[serde(default)]
+    ok: bool,
+}
+
+impl<E: Error> Into<Result<DeleteResponse, DeleteError<E>>> for DeleteResponse {
+    fn into(self) -> Result<DeleteResponse, DeleteError<E>> {
+        if self.ok {
+            Ok(self)
+        } else {
+            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+        }
+    }
+}
+
+#[derive(Debug)]
+pub enum DeleteError<E: Error> {
+    AccountInactive,
+    FatalError,
+    InvalidArgName,
+    InvalidArrayArg,
+    InvalidAuth,
+    InvalidCharset,
+    InvalidFormData,
+    InvalidJson,
+    InvalidPostType,
+    JsonNotObject,
+    MissingPostType,
+    NoPermission,
+    NotAuthed,
+    NotFound,
+    OrgLoginRequired,
+    RequestTimeout,
+    TeamAddedToOrg,
+    TokenRevoked,
+    UpgradeRequired,
+    UserIsBot,
+    /// The response was not parseable as the expected object
+    MalformedResponse(String, serde_json::error::Error),
+    /// The response returned an error that was unknown to the library
+    Unknown(String),
+    /// The client had an error sending the request to Slack
+    Client(E),
+}
+
+impl<'a, E: Error> From<&'a str> for DeleteError<E> {
+    fn from(s: &'a str) -> Self {
+        match s {
+            "account_inactive" => DeleteError::AccountInactive,
+            "fatal_error" => DeleteError::FatalError,
+            "invalid_arg_name" => DeleteError::InvalidArgName,
+            "invalid_array_arg" => DeleteError::InvalidArrayArg,
+            "invalid_auth" => DeleteError::InvalidAuth,
+            "invalid_charset" => DeleteError::InvalidCharset,
+            "invalid_form_data" => DeleteError::InvalidFormData,
+            "invalid_json" => DeleteError::InvalidJson,
+            "invalid_post_type" => DeleteError::InvalidPostType,
+            "json_not_object" => DeleteError::JsonNotObject,
+            "missing_post_type" => DeleteError::MissingPostType,
+            "no_permission" => DeleteError::NoPermission,
+            "not_authed" => DeleteError::NotAuthed,
+            "not_found" => DeleteError::NotFound,
+            "org_login_required" => DeleteError::OrgLoginRequired,
+            "request_timeout" => DeleteError::RequestTimeout,
+            "team_added_to_org" => DeleteError::TeamAddedToOrg,
+            "token_revoked" => DeleteError::TokenRevoked,
+            "upgrade_required" => DeleteError::UpgradeRequired,
+            "user_is_bot" => DeleteError::UserIsBot,
+            _ => DeleteError::Unknown(s.to_owned()),
+        }
+    }
+}
+
+impl<E: Error> fmt::Display for DeleteError<E> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match *self {
+            DeleteError::AccountInactive => write!(f, "Server returned error account_inactive"),
+            DeleteError::FatalError => write!(f, "Server returned error fatal_error"),
+            DeleteError::InvalidArgName => write!(f, "Server returned error invalid_arg_name"),
+            DeleteError::InvalidArrayArg => write!(f, "Server returned error invalid_array_arg"),
+            DeleteError::InvalidAuth => write!(f, "Server returned error invalid_auth"),
+            DeleteError::InvalidCharset => write!(f, "Server returned error invalid_charset"),
+            DeleteError::InvalidFormData => write!(f, "Server returned error invalid_form_data"),
+            DeleteError::InvalidJson => write!(f, "Server returned error invalid_json"),
+            DeleteError::InvalidPostType => write!(f, "Server returned error invalid_post_type"),
+            DeleteError::JsonNotObject => write!(f, "Server returned error json_not_object"),
+            DeleteError::MissingPostType => write!(f, "Server returned error missing_post_type"),
+            DeleteError::NoPermission => write!(f, "Server returned error no_permission"),
+            DeleteError::NotAuthed => write!(f, "Server returned error not_authed"),
+            DeleteError::NotFound => write!(f, "Server returned error not_found"),
+            DeleteError::OrgLoginRequired => write!(f, "Server returned error org_login_required"),
+            DeleteError::RequestTimeout => write!(f, "Server returned error request_timeout"),
+            DeleteError::TeamAddedToOrg => write!(f, "Server returned error team_added_to_org"),
+            DeleteError::TokenRevoked => write!(f, "Server returned error token_revoked"),
+            DeleteError::UpgradeRequired => write!(f, "Server returned error upgrade_required"),
+            DeleteError::UserIsBot => write!(f, "Server returned error user_is_bot"),
+            DeleteError::MalformedResponse(_, ref e) => write!(f, "{}", e),
+            DeleteError::Unknown(ref s) => write!(f, "{}", s),
+            DeleteError::Client(ref inner) => write!(f, "{}", inner),
+        }
+    }
+}
+
+impl<E: Error + 'static> Error for DeleteError<E> {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+        match *self {
+            DeleteError::MalformedResponse(_, ref e) => Some(e),
+            DeleteError::Client(ref inner) => Some(inner),
             _ => None,
         }
     }
@@ -595,26 +468,26 @@ impl<E: Error> Into<Result<InfoResponse, InfoError<E>>> for InfoResponse {
 
 #[derive(Debug)]
 pub enum InfoError<E: Error> {
-    NotFound,
-    NotAuthed,
-    InvalidAuth,
     AccountInactive,
-    TokenRevoked,
-    NoPermission,
-    OrgLoginRequired,
-    UserIsBot,
+    FatalError,
     InvalidArgName,
     InvalidArrayArg,
+    InvalidAuth,
     InvalidCharset,
     InvalidFormData,
-    InvalidPostType,
-    MissingPostType,
-    TeamAddedToOrg,
     InvalidJson,
+    InvalidPostType,
     JsonNotObject,
+    MissingPostType,
+    NoPermission,
+    NotAuthed,
+    NotFound,
+    OrgLoginRequired,
     RequestTimeout,
+    TeamAddedToOrg,
+    TokenRevoked,
     UpgradeRequired,
-    FatalError,
+    UserIsBot,
     /// The response was not parseable as the expected object
     MalformedResponse(String, serde_json::error::Error),
     /// The response returned an error that was unknown to the library
@@ -626,26 +499,26 @@ pub enum InfoError<E: Error> {
 impl<'a, E: Error> From<&'a str> for InfoError<E> {
     fn from(s: &'a str) -> Self {
         match s {
-            "not_found" => InfoError::NotFound,
-            "not_authed" => InfoError::NotAuthed,
-            "invalid_auth" => InfoError::InvalidAuth,
             "account_inactive" => InfoError::AccountInactive,
-            "token_revoked" => InfoError::TokenRevoked,
-            "no_permission" => InfoError::NoPermission,
-            "org_login_required" => InfoError::OrgLoginRequired,
-            "user_is_bot" => InfoError::UserIsBot,
+            "fatal_error" => InfoError::FatalError,
             "invalid_arg_name" => InfoError::InvalidArgName,
             "invalid_array_arg" => InfoError::InvalidArrayArg,
+            "invalid_auth" => InfoError::InvalidAuth,
             "invalid_charset" => InfoError::InvalidCharset,
             "invalid_form_data" => InfoError::InvalidFormData,
-            "invalid_post_type" => InfoError::InvalidPostType,
-            "missing_post_type" => InfoError::MissingPostType,
-            "team_added_to_org" => InfoError::TeamAddedToOrg,
             "invalid_json" => InfoError::InvalidJson,
+            "invalid_post_type" => InfoError::InvalidPostType,
             "json_not_object" => InfoError::JsonNotObject,
+            "missing_post_type" => InfoError::MissingPostType,
+            "no_permission" => InfoError::NoPermission,
+            "not_authed" => InfoError::NotAuthed,
+            "not_found" => InfoError::NotFound,
+            "org_login_required" => InfoError::OrgLoginRequired,
             "request_timeout" => InfoError::RequestTimeout,
+            "team_added_to_org" => InfoError::TeamAddedToOrg,
+            "token_revoked" => InfoError::TokenRevoked,
             "upgrade_required" => InfoError::UpgradeRequired,
-            "fatal_error" => InfoError::FatalError,
+            "user_is_bot" => InfoError::UserIsBot,
             _ => InfoError::Unknown(s.to_owned()),
         }
     }
@@ -654,26 +527,26 @@ impl<'a, E: Error> From<&'a str> for InfoError<E> {
 impl<E: Error> fmt::Display for InfoError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
-            InfoError::NotFound => write!(f, "Server returned error not_found"),
-            InfoError::NotAuthed => write!(f, "Server returned error not_authed"),
-            InfoError::InvalidAuth => write!(f, "Server returned error invalid_auth"),
             InfoError::AccountInactive => write!(f, "Server returned error account_inactive"),
-            InfoError::TokenRevoked => write!(f, "Server returned error token_revoked"),
-            InfoError::NoPermission => write!(f, "Server returned error no_permission"),
-            InfoError::OrgLoginRequired => write!(f, "Server returned error org_login_required"),
-            InfoError::UserIsBot => write!(f, "Server returned error user_is_bot"),
+            InfoError::FatalError => write!(f, "Server returned error fatal_error"),
             InfoError::InvalidArgName => write!(f, "Server returned error invalid_arg_name"),
             InfoError::InvalidArrayArg => write!(f, "Server returned error invalid_array_arg"),
+            InfoError::InvalidAuth => write!(f, "Server returned error invalid_auth"),
             InfoError::InvalidCharset => write!(f, "Server returned error invalid_charset"),
             InfoError::InvalidFormData => write!(f, "Server returned error invalid_form_data"),
-            InfoError::InvalidPostType => write!(f, "Server returned error invalid_post_type"),
-            InfoError::MissingPostType => write!(f, "Server returned error missing_post_type"),
-            InfoError::TeamAddedToOrg => write!(f, "Server returned error team_added_to_org"),
             InfoError::InvalidJson => write!(f, "Server returned error invalid_json"),
+            InfoError::InvalidPostType => write!(f, "Server returned error invalid_post_type"),
             InfoError::JsonNotObject => write!(f, "Server returned error json_not_object"),
+            InfoError::MissingPostType => write!(f, "Server returned error missing_post_type"),
+            InfoError::NoPermission => write!(f, "Server returned error no_permission"),
+            InfoError::NotAuthed => write!(f, "Server returned error not_authed"),
+            InfoError::NotFound => write!(f, "Server returned error not_found"),
+            InfoError::OrgLoginRequired => write!(f, "Server returned error org_login_required"),
             InfoError::RequestTimeout => write!(f, "Server returned error request_timeout"),
+            InfoError::TeamAddedToOrg => write!(f, "Server returned error team_added_to_org"),
+            InfoError::TokenRevoked => write!(f, "Server returned error token_revoked"),
             InfoError::UpgradeRequired => write!(f, "Server returned error upgrade_required"),
-            InfoError::FatalError => write!(f, "Server returned error fatal_error"),
+            InfoError::UserIsBot => write!(f, "Server returned error user_is_bot"),
             InfoError::MalformedResponse(_, ref e) => write!(f, "{}", e),
             InfoError::Unknown(ref s) => write!(f, "{}", s),
             InfoError::Client(ref inner) => write!(f, "{}", inner),
@@ -686,6 +559,134 @@ impl<E: Error + 'static> Error for InfoError<E> {
         match *self {
             InfoError::MalformedResponse(_, ref e) => Some(e),
             InfoError::Client(ref inner) => Some(inner),
+            _ => None,
+        }
+    }
+}
+
+#[derive(Clone, Default, Debug)]
+pub struct ListRequest {}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct ListRemindersInner {
+    pub complete_ts: Option<u64>,
+    pub creator: String,
+    pub id: String,
+    pub recurring: bool,
+    pub text: String,
+    pub time: Option<u64>,
+    pub user: String,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct ListResponse {
+    pub callstack: Option<String>,
+    error: Option<String>,
+    #[serde(default)]
+    ok: bool,
+    pub reminders: Vec<ListRemindersInner>,
+}
+
+impl<E: Error> Into<Result<ListResponse, ListError<E>>> for ListResponse {
+    fn into(self) -> Result<ListResponse, ListError<E>> {
+        if self.ok {
+            Ok(self)
+        } else {
+            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+        }
+    }
+}
+
+#[derive(Debug)]
+pub enum ListError<E: Error> {
+    AccountInactive,
+    FatalError,
+    InvalidArgName,
+    InvalidArrayArg,
+    InvalidAuth,
+    InvalidCharset,
+    InvalidFormData,
+    InvalidJson,
+    InvalidPostType,
+    JsonNotObject,
+    MissingPostType,
+    NoPermission,
+    NotAuthed,
+    OrgLoginRequired,
+    RequestTimeout,
+    TeamAddedToOrg,
+    TokenRevoked,
+    UpgradeRequired,
+    UserIsBot,
+    /// The response was not parseable as the expected object
+    MalformedResponse(String, serde_json::error::Error),
+    /// The response returned an error that was unknown to the library
+    Unknown(String),
+    /// The client had an error sending the request to Slack
+    Client(E),
+}
+
+impl<'a, E: Error> From<&'a str> for ListError<E> {
+    fn from(s: &'a str) -> Self {
+        match s {
+            "account_inactive" => ListError::AccountInactive,
+            "fatal_error" => ListError::FatalError,
+            "invalid_arg_name" => ListError::InvalidArgName,
+            "invalid_array_arg" => ListError::InvalidArrayArg,
+            "invalid_auth" => ListError::InvalidAuth,
+            "invalid_charset" => ListError::InvalidCharset,
+            "invalid_form_data" => ListError::InvalidFormData,
+            "invalid_json" => ListError::InvalidJson,
+            "invalid_post_type" => ListError::InvalidPostType,
+            "json_not_object" => ListError::JsonNotObject,
+            "missing_post_type" => ListError::MissingPostType,
+            "no_permission" => ListError::NoPermission,
+            "not_authed" => ListError::NotAuthed,
+            "org_login_required" => ListError::OrgLoginRequired,
+            "request_timeout" => ListError::RequestTimeout,
+            "team_added_to_org" => ListError::TeamAddedToOrg,
+            "token_revoked" => ListError::TokenRevoked,
+            "upgrade_required" => ListError::UpgradeRequired,
+            "user_is_bot" => ListError::UserIsBot,
+            _ => ListError::Unknown(s.to_owned()),
+        }
+    }
+}
+
+impl<E: Error> fmt::Display for ListError<E> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match *self {
+            ListError::AccountInactive => write!(f, "Server returned error account_inactive"),
+            ListError::FatalError => write!(f, "Server returned error fatal_error"),
+            ListError::InvalidArgName => write!(f, "Server returned error invalid_arg_name"),
+            ListError::InvalidArrayArg => write!(f, "Server returned error invalid_array_arg"),
+            ListError::InvalidAuth => write!(f, "Server returned error invalid_auth"),
+            ListError::InvalidCharset => write!(f, "Server returned error invalid_charset"),
+            ListError::InvalidFormData => write!(f, "Server returned error invalid_form_data"),
+            ListError::InvalidJson => write!(f, "Server returned error invalid_json"),
+            ListError::InvalidPostType => write!(f, "Server returned error invalid_post_type"),
+            ListError::JsonNotObject => write!(f, "Server returned error json_not_object"),
+            ListError::MissingPostType => write!(f, "Server returned error missing_post_type"),
+            ListError::NoPermission => write!(f, "Server returned error no_permission"),
+            ListError::NotAuthed => write!(f, "Server returned error not_authed"),
+            ListError::OrgLoginRequired => write!(f, "Server returned error org_login_required"),
+            ListError::RequestTimeout => write!(f, "Server returned error request_timeout"),
+            ListError::TeamAddedToOrg => write!(f, "Server returned error team_added_to_org"),
+            ListError::TokenRevoked => write!(f, "Server returned error token_revoked"),
+            ListError::UpgradeRequired => write!(f, "Server returned error upgrade_required"),
+            ListError::UserIsBot => write!(f, "Server returned error user_is_bot"),
+            ListError::MalformedResponse(_, ref e) => write!(f, "{}", e),
+            ListError::Unknown(ref s) => write!(f, "{}", s),
+            ListError::Client(ref inner) => write!(f, "{}", inner),
+        }
+    }
+}
+
+impl<E: Error + 'static> Error for ListError<E> {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+        match *self {
+            ListError::MalformedResponse(_, ref e) => Some(e),
+            ListError::Client(ref inner) => Some(inner),
             _ => None,
         }
     }
