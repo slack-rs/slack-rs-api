@@ -12,26 +12,8 @@
 //
 //=============================================================================
 
+#![allow(unused_imports)]
+#![allow(dead_code)]
+
+use crate::async_impl::SlackWebRequestSender;
 pub use crate::mod_types::emoji_types::*;
-use crate::requests::SlackWebRequestSender;
-
-/// Lists custom emoji for a team.
-///
-/// Wraps https://api.slack.com/methods/emoji.list
-
-pub async fn list<R>(client: &R, token: &str) -> Result<ListResponse, ListError<R::Error>>
-where
-    R: SlackWebRequestSender,
-{
-    let params = &[("token", token)];
-    let url = crate::get_slack_url_for_method("emoji.list");
-    client
-        .send(&url, &params[..])
-        .await
-        .map_err(ListError::Client)
-        .and_then(|result| {
-            serde_json::from_str::<ListResponse>(&result)
-                .map_err(|e| ListError::MalformedResponse(result, e))
-        })
-        .and_then(|o| o.into())
-}

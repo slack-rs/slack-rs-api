@@ -12,33 +12,8 @@
 //
 //=============================================================================
 
+#![allow(unused_imports)]
+#![allow(dead_code)]
+
+use crate::async_impl::SlackWebRequestSender;
 pub use crate::mod_types::api_types::*;
-use crate::requests::SlackWebRequestSender;
-
-/// Checks API calling code.
-///
-/// Wraps https://api.slack.com/methods/api.test
-
-pub async fn test<R>(
-    client: &R,
-    request: &TestRequest<'_>,
-) -> Result<TestResponse, TestError<R::Error>>
-where
-    R: SlackWebRequestSender,
-{
-    let params = vec![
-        request.error.map(|error| ("error", error)),
-        request.foo.map(|foo| ("foo", foo)),
-    ];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    let url = crate::get_slack_url_for_method("api.test");
-    client
-        .send(&url, &params[..])
-        .await
-        .map_err(TestError::Client)
-        .and_then(|result| {
-            serde_json::from_str::<TestResponse>(&result)
-                .map_err(|e| TestError::MalformedResponse(result, e))
-        })
-        .and_then(|o| o.into())
-}

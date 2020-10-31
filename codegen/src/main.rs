@@ -250,11 +250,13 @@ fn generate(outdir: &Path, modules: &[Module]) -> Result<()> {
         fs::create_dir_all(&moddir)
             .with_context(|| format!("Unable to create directory at: {:?}", moddir))?;
     }
+    Module::generate(&modules, &moddir, GenMode::Async)?;
 
     let moddir = outdir.join("sync").join("mods");
     if !moddir.exists() {
         fs::create_dir_all(&moddir)
             .with_context(|| format!("Unable to create directory at: {:?}", moddir))?;
     }
+    Module::generate(&modules, &moddir, GenMode::Sync)?;
     Ok(())
 }

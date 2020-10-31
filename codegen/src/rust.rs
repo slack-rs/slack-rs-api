@@ -74,7 +74,7 @@ impl Module {
     pub fn generate(modules: &[Self], moddir: &Path, gen_mode: GenMode) -> Result<()> {
         Self::generate_modrs(modules, moddir, gen_mode)?;
         for module in modules {
-            Self::generate_mod(module, moddir, gen_mode)?;
+            Self::generate_mod(module, moddir, String::new(), gen_mode)?;
         }
         Ok(())
     }
@@ -96,26 +96,32 @@ impl Module {
         Ok(())
     }
 
-    fn generate_mod(module: &Self, moddir: &Path, gen_mode: GenMode) -> Result<()> {
-        let data = module.generate_mod_data(gen_mode)?;
+    fn generate_mod(module: &Self, moddir: &Path, mut type_path: String, gen_mode: GenMode) -> Result<()> {
+        let modname = module.name.to_snake_case();
+        if !type_path.is_empty() {
+            type_path.push_str("::");
+        }
+        type_path.push_str(&modname);
         let mod_file_path = if module.submodules.is_empty() {
             let postfix = if gen_mode == GenMode::Types {
                 "_types"
             } else {
                 ""
             };
-            moddir.join(format!("{}{}.rs", module.name.to_snake_case(), postfix))
+            type_path.push_str("_types");
+            moddir.join(format!("{}{}.rs", modname, postfix))
         } else {
-            let moddir = moddir.join(&module.name.to_snake_case());
+            let moddir = moddir.join(&modname);
             if !moddir.exists() {
                 fs::create_dir_all(&moddir)
                     .with_context(|| format!("Unable to create directory at: {:?}", moddir))?;
             }
             for submodule in &module.submodules {
-                Self::generate_mod(submodule, &moddir, gen_mode)?;
+                Self::generate_mod(submodule, &moddir, type_path.clone(), gen_mode)?;
             }
             moddir.join("mod.rs")
         };
+        let data = module.generate_mod_data(gen_mode, type_path)?;
         let mut mod_file = OpenOptions::new()
             .write(true)
             .truncate(true)
@@ -139,7 +145,7 @@ impl Module {
         Ok(())
     }
 
-    fn generate_mod_data(&self, gen_mode: GenMode) -> Result<String> {
+    fn generate_mod_data(&self, gen_mode: GenMode, path: String) -> Result<String> {
         let modules = if self.submodules.is_empty() {
             String::new()
         } else {
@@ -148,13 +154,24 @@ impl Module {
                 modules = Self::build_module_include(&self.submodules, gen_mode)
             )
         };
-        let imports = "use std::convert::From;
+        let (body, imports) = if gen_mode == GenMode::Types {
+            (
+                self.build_types()?,
+                "use std::convert::From;
             use std::error::Error;
-            use std::fmt;";
-        let body = if gen_mode == GenMode::Types {
-            self.build_types()?
+            use std::fmt;"
+                    .into(),
+            )
         } else {
-            String::new()
+            (
+                self.build_calls(gen_mode)?,
+                format!(
+                    "{import}
+            pub use crate::mod_types::{path}::*;",
+                    import = gen_mode.import(),
+                    path = path,
+                ),
+            )
         };
         let data = format!(
             "{header}
@@ -206,6 +223,14 @@ impl Module {
         }
         Ok(methods.join("\n"))
     }
+
+    fn build_calls(&self, gen_mode: GenMode) -> Result<String> {
+        let mut methods: Vec<String> = Vec::with_capacity(self.methods.len());
+        for method in &self.methods {
+            methods.push(method.build_call_method(gen_mode)?);
+        }
+        Ok(methods.join("\n"))
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -216,6 +241,14 @@ pub enum GenMode {
 }
 
 impl GenMode {
+    fn import(self) -> &'static str {
+        match self {
+            GenMode::Async => "use crate::async_impl::SlackWebRequestSender;",
+            GenMode::Sync => "use crate::sync::SlackWebRequestSender;",
+            _ => unreachable!(),
+        }
+    }
+
     fn dot_await(self) -> &'static str {
         match self {
             GenMode::Async => ".await",
@@ -362,6 +395,11 @@ impl Method {
             custom_errors_from = custom_errors_from,
             custom_errors_dis = custom_errors_dis,
         );
+        Ok(out)
+    }
+
+    fn build_call_method(&self, gen_mode: GenMode) -> Result<String> {
+        let out = format!("",);
         Ok(out)
     }
 }
