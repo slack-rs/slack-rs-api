@@ -13,7 +13,7 @@ mod reqwest_support {
     impl SlackWebRequestSender for Client {
         type Error = reqwest::Error;
 
-        fn get<I, K, V, S>(
+        fn get<S>(
             &self,
             method_url: S,
             params: &[(&str, String)],
@@ -28,7 +28,7 @@ mod reqwest_support {
             Ok(self.get(url).send()?.text()?)
         }
 
-        fn post<I, K, V, S>(
+        fn post<S>(
             &self,
             method_url: S,
             form: &[(&str, String)],
@@ -41,7 +41,7 @@ mod reqwest_support {
             let mut req = self.post(url).form(form);
             for v in headers {
                 let (k, v) = v.borrow();
-                req = req.header(k.as_ref(), v.as_ref());
+                req = req.header(*k, v);
             }
             Ok(req.send()?.text()?)
         }

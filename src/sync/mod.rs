@@ -9,7 +9,7 @@ pub mod requests;
 #[cfg(feature = "reqwest_blocking")]
 pub use self::requests::default_client;
 
-use std::{borrow::Borrow, error};
+use std::error;
 
 /// Functionality for sending authenticated and unauthenticated requests to Slack via HTTP.
 ///
