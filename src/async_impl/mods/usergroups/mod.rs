@@ -54,7 +54,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/usergroups.create");
     client
-        .get(&url, &params[..])
+        .post(&url, &params[..], &[])
         .await
         .map_err(CreateError::Client)
         .and_then(|result| {
@@ -83,7 +83,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/usergroups.disable");
     client
-        .get(&url, &params[..])
+        .post(&url, &params[..], &[])
         .await
         .map_err(DisableError::Client)
         .and_then(|result| {
@@ -112,7 +112,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/usergroups.enable");
     client
-        .get(&url, &params[..])
+        .post(&url, &params[..], &[])
         .await
         .map_err(EnableError::Client)
         .and_then(|result| {
@@ -187,7 +187,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/usergroups.update");
     client
-        .get(&url, &params[..])
+        .post(&url, &params[..], &[])
         .await
         .map_err(UpdateError::Client)
         .and_then(|result| {

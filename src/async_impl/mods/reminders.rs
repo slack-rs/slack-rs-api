@@ -35,7 +35,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/reminders.add");
     client
-        .get(&url, &params[..])
+        .post(&url, &params[..], &[])
         .await
         .map_err(AddError::Client)
         .and_then(|result| {
@@ -61,7 +61,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/reminders.complete");
     client
-        .get(&url, &params[..])
+        .post(&url, &params[..], &[])
         .await
         .map_err(CompleteError::Client)
         .and_then(|result| {
@@ -87,7 +87,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/reminders.delete");
     client
-        .get(&url, &params[..])
+        .post(&url, &params[..], &[])
         .await
         .map_err(DeleteError::Client)
         .and_then(|result| {

@@ -35,7 +35,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/reactions.add");
     client
-        .get(&url, &params[..])
+        .post(&url, &params[..], &[])
         .map_err(AddError::Client)
         .and_then(|result| {
             serde_json::from_str::<AddResponse>(&result)
@@ -141,7 +141,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/reactions.remove");
     client
-        .get(&url, &params[..])
+        .post(&url, &params[..], &[])
         .map_err(RemoveError::Client)
         .and_then(|result| {
             serde_json::from_str::<RemoveResponse>(&result)

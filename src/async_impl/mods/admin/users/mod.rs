@@ -51,7 +51,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.users.assign");
     client
-        .get(&url, &params[..])
+        .post(&url, &params[..], &[])
         .await
         .map_err(AssignError::Client)
         .and_then(|result| {
@@ -102,7 +102,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.users.invite");
     client
-        .get(&url, &params[..])
+        .post(&url, &params[..], &[])
         .await
         .map_err(InviteError::Client)
         .and_then(|result| {
@@ -158,7 +158,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.users.remove");
     client
-        .get(&url, &params[..])
+        .post(&url, &params[..], &[])
         .await
         .map_err(RemoveError::Client)
         .and_then(|result| {
@@ -184,7 +184,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.users.setAdmin");
     client
-        .get(&url, &params[..])
+        .post(&url, &params[..], &[])
         .await
         .map_err(SetAdminError::Client)
         .and_then(|result| {
@@ -211,7 +211,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.users.setExpiration");
     client
-        .get(&url, &params[..])
+        .post(&url, &params[..], &[])
         .await
         .map_err(SetExpirationError::Client)
         .and_then(|result| {
@@ -237,7 +237,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.users.setOwner");
     client
-        .get(&url, &params[..])
+        .post(&url, &params[..], &[])
         .await
         .map_err(SetOwnerError::Client)
         .and_then(|result| {
@@ -263,7 +263,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.users.setRegular");
     client
-        .get(&url, &params[..])
+        .post(&url, &params[..], &[])
         .await
         .map_err(SetRegularError::Client)
         .and_then(|result| {

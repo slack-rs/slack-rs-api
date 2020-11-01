@@ -54,7 +54,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/usergroups.create");
     client
-        .get(&url, &params[..])
+        .post(&url, &params[..], &[])
         .map_err(CreateError::Client)
         .and_then(|result| {
             serde_json::from_str::<CreateResponse>(&result)
@@ -82,7 +82,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/usergroups.disable");
     client
-        .get(&url, &params[..])
+        .post(&url, &params[..], &[])
         .map_err(DisableError::Client)
         .and_then(|result| {
             serde_json::from_str::<DisableResponse>(&result)
@@ -110,7 +110,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/usergroups.enable");
     client
-        .get(&url, &params[..])
+        .post(&url, &params[..], &[])
         .map_err(EnableError::Client)
         .and_then(|result| {
             serde_json::from_str::<EnableResponse>(&result)
@@ -183,7 +183,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/usergroups.update");
     client
-        .get(&url, &params[..])
+        .post(&url, &params[..], &[])
         .map_err(UpdateError::Client)
         .and_then(|result| {
             serde_json::from_str::<UpdateResponse>(&result)

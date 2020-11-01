@@ -37,7 +37,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.conversations.archive");
     client
-        .get(&url, &params[..])
+        .post(&url, &params[..], &[])
         .await
         .map_err(ArchiveError::Client)
         .and_then(|result| {
@@ -60,7 +60,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.conversations.convertToPrivate");
     client
-        .get(&url, &params[..])
+        .post(&url, &params[..], &[])
         .await
         .map_err(ConvertToPrivateError::Client)
         .and_then(|result| {
@@ -98,7 +98,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.conversations.create");
     client
-        .get(&url, &params[..])
+        .post(&url, &params[..], &[])
         .await
         .map_err(CreateError::Client)
         .and_then(|result| {
@@ -121,7 +121,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.conversations.delete");
     client
-        .get(&url, &params[..])
+        .post(&url, &params[..], &[])
         .await
         .map_err(DeleteError::Client)
         .and_then(|result| {
@@ -150,7 +150,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.conversations.disconnectShared");
     client
-        .get(&url, &params[..])
+        .post(&url, &params[..], &[])
         .await
         .map_err(DisconnectSharedError::Client)
         .and_then(|result| {
@@ -232,7 +232,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.conversations.invite");
     client
-        .get(&url, &params[..])
+        .post(&url, &params[..], &[])
         .await
         .map_err(InviteError::Client)
         .and_then(|result| {
@@ -258,7 +258,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.conversations.rename");
     client
-        .get(&url, &params[..])
+        .post(&url, &params[..], &[])
         .await
         .map_err(RenameError::Client)
         .and_then(|result| {
@@ -333,7 +333,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.conversations.setConversationPrefs");
     client
-        .get(&url, &params[..])
+        .post(&url, &params[..], &[])
         .await
         .map_err(SetConversationPrefsError::Client)
         .and_then(|result| {
@@ -370,7 +370,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.conversations.setTeams");
     client
-        .get(&url, &params[..])
+        .post(&url, &params[..], &[])
         .await
         .map_err(SetTeamsError::Client)
         .and_then(|result| {
@@ -393,7 +393,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.conversations.unarchive");
     client
-        .get(&url, &params[..])
+        .post(&url, &params[..], &[])
         .await
         .map_err(UnarchiveError::Client)
         .and_then(|result| {

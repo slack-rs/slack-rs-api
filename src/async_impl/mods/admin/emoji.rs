@@ -29,13 +29,12 @@ where
 {
     let params = vec![
         Some(("name", request.name.to_string())),
-        Some(("token", request.token.to_string())),
         Some(("url", request.url.to_string())),
     ];
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.emoji.add");
     client
-        .get(&url, &params[..])
+        .post(&url, &params[..], &[("token", request.token.clone())])
         .await
         .map_err(AddError::Client)
         .and_then(|result| {
@@ -57,12 +56,11 @@ where
     let params = vec![
         Some(("alias_for", request.alias_for.to_string())),
         Some(("name", request.name.to_string())),
-        Some(("token", request.token.to_string())),
     ];
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.emoji.addAlias");
     client
-        .get(&url, &params[..])
+        .post(&url, &params[..], &[("token", request.token.clone())])
         .await
         .map_err(AddAliasError::Client)
         .and_then(|result| {
@@ -110,14 +108,11 @@ pub async fn remove<R>(
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
-        Some(("name", request.name.to_string())),
-        Some(("token", request.token.to_string())),
-    ];
+    let params = vec![Some(("name", request.name.to_string()))];
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.emoji.remove");
     client
-        .get(&url, &params[..])
+        .post(&url, &params[..], &[("token", request.token.clone())])
         .await
         .map_err(RemoveError::Client)
         .and_then(|result| {
@@ -139,12 +134,11 @@ where
     let params = vec![
         Some(("name", request.name.to_string())),
         Some(("new_name", request.new_name.to_string())),
-        Some(("token", request.token.to_string())),
     ];
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.emoji.rename");
     client
-        .get(&url, &params[..])
+        .post(&url, &params[..], &[("token", request.token.clone())])
         .await
         .map_err(RenameError::Client)
         .and_then(|result| {

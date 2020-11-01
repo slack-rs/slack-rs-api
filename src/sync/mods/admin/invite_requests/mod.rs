@@ -43,7 +43,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.inviteRequests.approve");
     client
-        .get(&url, &params[..])
+        .post(&url, &params[..], &[])
         .map_err(ApproveError::Client)
         .and_then(|result| {
             serde_json::from_str::<ApproveResponse>(&result)
@@ -68,7 +68,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.inviteRequests.deny");
     client
-        .get(&url, &params[..])
+        .post(&url, &params[..], &[])
         .map_err(DenyError::Client)
         .and_then(|result| {
             serde_json::from_str::<DenyResponse>(&result)

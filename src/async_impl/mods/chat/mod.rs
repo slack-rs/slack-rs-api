@@ -46,7 +46,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/chat.delete");
     client
-        .get(&url, &params[..])
+        .post(&url, &params[..], &[])
         .await
         .map_err(DeleteError::Client)
         .and_then(|result| {
@@ -79,7 +79,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/chat.deleteScheduledMessage");
     client
-        .get(&url, &params[..])
+        .post(&url, &params[..], &[])
         .await
         .map_err(DeleteScheduledMessageError::Client)
         .and_then(|result| {
@@ -134,7 +134,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/chat.meMessage");
     client
-        .get(&url, &params[..])
+        .post(&url, &params[..], &[])
         .await
         .map_err(MeMessageError::Client)
         .and_then(|result| {
@@ -197,7 +197,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/chat.postEphemeral");
     client
-        .get(&url, &params[..])
+        .post(&url, &params[..], &[])
         .await
         .map_err(PostEphemeralError::Client)
         .and_then(|result| {
@@ -275,7 +275,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/chat.postMessage");
     client
-        .get(&url, &params[..])
+        .post(&url, &params[..], &[])
         .await
         .map_err(PostMessageError::Client)
         .and_then(|result| {
@@ -344,7 +344,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/chat.scheduleMessage");
     client
-        .get(&url, &params[..])
+        .post(&url, &params[..], &[])
         .await
         .map_err(ScheduleMessageError::Client)
         .and_then(|result| {
@@ -386,7 +386,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/chat.unfurl");
     client
-        .get(&url, &params[..])
+        .post(&url, &params[..], &[])
         .await
         .map_err(UnfurlError::Client)
         .and_then(|result| {
@@ -433,7 +433,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/chat.update");
     client
-        .get(&url, &params[..])
+        .post(&url, &params[..], &[])
         .await
         .map_err(UpdateError::Client)
         .and_then(|result| {

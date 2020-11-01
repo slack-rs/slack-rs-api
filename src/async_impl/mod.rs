@@ -8,7 +8,7 @@ pub use self::requests::default_client;
 
 use async_trait::async_trait;
 
-use std::{borrow::Borrow, error};
+use std::error;
 
 /// Functionality for sending authenticated and unauthenticated requests to Slack via HTTP.
 ///
@@ -20,26 +20,18 @@ pub trait SlackWebRequestSender {
 
     /// Make an get API call to Slack. Takes a map of parameters that get appended to the request as query
     /// params.
-    async fn get<I, K, V, S>(&self, method_url: S, params: I) -> Result<String, Self::Error>
+    async fn get<S>(&self, method_url: S, params: &[(&str, String)]) -> Result<String, Self::Error>
     where
-        I: IntoIterator + Send,
-        K: AsRef<str>,
-        V: AsRef<str>,
-        I::Item: Borrow<(K, V)>,
         S: AsRef<str> + Send;
 
     /// Make an post API call to Slack. Takes a map of parameters that get appended to the request as body
     /// and a map of headers to set.
-    async fn post<I, K, V, S>(
+    async fn post<S>(
         &self,
         method_url: S,
-        form: &[(&str, &str)],
-        headers: I,
+        form: &[(&str, String)],
+        headers: &[(&str, String)],
     ) -> Result<String, Self::Error>
     where
-        I: IntoIterator + Send,
-        K: AsRef<str>,
-        V: AsRef<str>,
-        I::Item: Borrow<(K, V)>,
         S: AsRef<str> + Send;
 }

@@ -57,15 +57,18 @@ where
             .title
             .as_ref()
             .map(|title| ("title", title.to_string())),
-        request
-            .token
-            .as_ref()
-            .map(|token| ("token", token.to_string())),
     ];
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/files.remote.add");
     client
-        .get(&url, &params[..])
+        .post(
+            &url,
+            &params[..],
+            &request
+                .token
+                .as_ref()
+                .map_or(vec![], |t| vec![("token", t.into())]),
+        )
         .map_err(AddError::Client)
         .and_then(|result| {
             serde_json::from_str::<AddResponse>(&result)
@@ -154,15 +157,18 @@ where
             .as_ref()
             .map(|external_id| ("external_id", external_id.to_string())),
         request.file.as_ref().map(|file| ("file", file.to_string())),
-        request
-            .token
-            .as_ref()
-            .map(|token| ("token", token.to_string())),
     ];
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/files.remote.remove");
     client
-        .get(&url, &params[..])
+        .post(
+            &url,
+            &params[..],
+            &request
+                .token
+                .as_ref()
+                .map_or(vec![], |t| vec![("token", t.into())]),
+        )
         .map_err(RemoveError::Client)
         .and_then(|result| {
             serde_json::from_str::<RemoveResponse>(&result)
@@ -240,15 +246,18 @@ where
             .title
             .as_ref()
             .map(|title| ("title", title.to_string())),
-        request
-            .token
-            .as_ref()
-            .map(|token| ("token", token.to_string())),
     ];
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/files.remote.update");
     client
-        .get(&url, &params[..])
+        .post(
+            &url,
+            &params[..],
+            &request
+                .token
+                .as_ref()
+                .map_or(vec![], |t| vec![("token", t.into())]),
+        )
         .map_err(UpdateError::Client)
         .and_then(|result| {
             serde_json::from_str::<UpdateResponse>(&result)

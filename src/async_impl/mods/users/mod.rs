@@ -73,11 +73,11 @@ pub async fn delete_photo<R>(
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![Some(("token", request.token.to_string()))];
+    let params = vec![];
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/users.deletePhoto");
     client
-        .get(&url, &params[..])
+        .post(&url, &params[..], &[("token", request.token.clone())])
         .await
         .map_err(DeletePhotoError::Client)
         .and_then(|result| {
@@ -228,7 +228,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/users.setActive");
     client
-        .get(&url, &params[..])
+        .post(&url, &params[..], &[])
         .await
         .map_err(SetActiveError::Client)
         .and_then(|result| {
@@ -264,12 +264,11 @@ where
             .image
             .as_ref()
             .map(|image| ("image", image.to_string())),
-        Some(("token", request.token.to_string())),
     ];
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/users.setPhoto");
     client
-        .get(&url, &params[..])
+        .post(&url, &params[..], &[("token", request.token.clone())])
         .await
         .map_err(SetPhotoError::Client)
         .and_then(|result| {
@@ -292,7 +291,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/users.setPresence");
     client
-        .get(&url, &params[..])
+        .post(&url, &params[..], &[])
         .await
         .map_err(SetPresenceError::Client)
         .and_then(|result| {

@@ -52,12 +52,11 @@ where
     let params = vec![
         Some(("channel_ids", request.channel_ids.to_string())),
         Some(("team_id", request.team_id.to_string())),
-        Some(("token", request.token.to_string())),
     ];
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.teams.settings.setDefaultChannels");
     client
-        .get(&url, &params[..])
+        .post(&url, &params[..], &[("token", request.token.clone())])
         .map_err(SetDefaultChannelsError::Client)
         .and_then(|result| {
             serde_json::from_str::<SetDefaultChannelsResponse>(&result)
@@ -82,7 +81,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.teams.settings.setDescription");
     client
-        .get(&url, &params[..])
+        .post(&url, &params[..], &[])
         .map_err(SetDescriptionError::Client)
         .and_then(|result| {
             serde_json::from_str::<SetDescriptionResponse>(&result)
@@ -107,7 +106,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.teams.settings.setDiscoverability");
     client
-        .get(&url, &params[..])
+        .post(&url, &params[..], &[])
         .map_err(SetDiscoverabilityError::Client)
         .and_then(|result| {
             serde_json::from_str::<SetDiscoverabilityResponse>(&result)
@@ -128,12 +127,11 @@ where
     let params = vec![
         Some(("image_url", request.image_url.to_string())),
         Some(("team_id", request.team_id.to_string())),
-        Some(("token", request.token.to_string())),
     ];
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.teams.settings.setIcon");
     client
-        .get(&url, &params[..])
+        .post(&url, &params[..], &[("token", request.token.clone())])
         .map_err(SetIconError::Client)
         .and_then(|result| {
             serde_json::from_str::<SetIconResponse>(&result)
@@ -158,7 +156,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.teams.settings.setName");
     client
-        .get(&url, &params[..])
+        .post(&url, &params[..], &[])
         .map_err(SetNameError::Client)
         .and_then(|result| {
             serde_json::from_str::<SetNameResponse>(&result)

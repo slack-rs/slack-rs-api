@@ -60,7 +60,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/calls.add");
     client
-        .get(&url, &params[..])
+        .post(&url, &params[..], &[])
         .map_err(AddError::Client)
         .and_then(|result| {
             serde_json::from_str::<AddResponse>(&result)
@@ -85,7 +85,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/calls.end");
     client
-        .get(&url, &params[..])
+        .post(&url, &params[..], &[])
         .map_err(EndError::Client)
         .and_then(|result| {
             serde_json::from_str::<EndResponse>(&result)
@@ -140,7 +140,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/calls.update");
     client
-        .get(&url, &params[..])
+        .post(&url, &params[..], &[])
         .map_err(UpdateError::Client)
         .and_then(|result| {
             serde_json::from_str::<UpdateResponse>(&result)

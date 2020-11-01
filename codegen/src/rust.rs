@@ -411,12 +411,35 @@ impl Method {
         let response_type = format!("{}Response", type_prefix);
         let error_type = format!("{}Error", type_prefix);
         let fn_name = self.name.to_snake_case();
-        let parameters = self
-            .parameters
-            .iter()
-            .map(Parameter::to_rust_fn)
-            .collect::<Vec<_>>()
-            .join("\n");
+        let parameters = match self.http_method {
+            HttpMethod::Get => self
+                .parameters
+                .iter()
+                .map(Parameter::to_rust_fn)
+                .collect::<Vec<_>>()
+                .join("\n"),
+            HttpMethod::Post => self
+                .parameters
+                .iter()
+                .filter(|p| p.name != "token")
+                .map(Parameter::to_rust_fn)
+                .collect::<Vec<_>>()
+                .join("\n"),
+        };
+        let headers = match self.http_method {
+            HttpMethod::Get => "",
+            HttpMethod::Post => {
+                if let Some(token) = self.parameters.iter().find(|p| p.name == "token") {
+                    if token.required {
+                        ", &[(\"token\", request.token.clone())]"
+                    } else {
+                        ", &request.token.as_ref().map_or(vec![], |t| vec![(\"token\", t.into())])"
+                    }
+                } else {
+                    ", &[]"
+                }
+            }
+        };
         let out = format!(
             "/// {description}
             ///
@@ -435,7 +458,7 @@ impl Method {
                 let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
                 let url = crate::get_slack_url_for_method(\"{full_name}\");
                 client
-                    .get(&url, &params[..]){dot_await}
+                    .{method}(&url, &params[..]{headers}){dot_await}
                     .map_err({error_type}::Client)
                     .and_then(|result| {{
                         serde_json::from_str::<{response_type}>(&result)
@@ -452,6 +475,8 @@ impl Method {
             fn_type = gen_mode.fn_type(),
             dot_await = gen_mode.dot_await(),
             parameters = parameters,
+            method=self.http_method.method(),
+            headers=headers,
         );
         Ok(out)
     }

@@ -34,7 +34,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/dnd.endDnd");
     client
-        .get(&url, &params[..])
+        .post(&url, &params[..], &[])
         .map_err(EndDndError::Client)
         .and_then(|result| {
             serde_json::from_str::<EndDndResponse>(&result)
@@ -56,7 +56,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/dnd.endSnooze");
     client
-        .get(&url, &params[..])
+        .post(&url, &params[..], &[])
         .map_err(EndSnoozeError::Client)
         .and_then(|result| {
             serde_json::from_str::<EndSnoozeResponse>(&result)
@@ -93,14 +93,11 @@ pub fn set_snooze<R>(
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
-        Some(("num_minutes", request.num_minutes.to_string())),
-        Some(("token", request.token.to_string())),
-    ];
+    let params = vec![Some(("num_minutes", request.num_minutes.to_string()))];
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/dnd.setSnooze");
     client
-        .get(&url, &params[..])
+        .post(&url, &params[..], &[("token", request.token.clone())])
         .map_err(SetSnoozeError::Client)
         .and_then(|result| {
             serde_json::from_str::<SetSnoozeResponse>(&result)

@@ -37,7 +37,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/files.delete");
     client
-        .get(&url, &params[..])
+        .post(&url, &params[..], &[])
         .await
         .map_err(DeleteError::Client)
         .and_then(|result| {
@@ -147,7 +147,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/files.revokePublicURL");
     client
-        .get(&url, &params[..])
+        .post(&url, &params[..], &[])
         .await
         .map_err(RevokePublicURLError::Client)
         .and_then(|result| {
@@ -170,7 +170,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/files.sharedPublicURL");
     client
-        .get(&url, &params[..])
+        .post(&url, &params[..], &[])
         .await
         .map_err(SharedPublicURLError::Client)
         .and_then(|result| {
@@ -219,15 +219,18 @@ where
             .title
             .as_ref()
             .map(|title| ("title", title.to_string())),
-        request
-            .token
-            .as_ref()
-            .map(|token| ("token", token.to_string())),
     ];
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/files.upload");
     client
-        .get(&url, &params[..])
+        .post(
+            &url,
+            &params[..],
+            &request
+                .token
+                .as_ref()
+                .map_or(vec![], |t| vec![("token", t.into())]),
+        )
         .await
         .map_err(UploadError::Client)
         .and_then(|result| {

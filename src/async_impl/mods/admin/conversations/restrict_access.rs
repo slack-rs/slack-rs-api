@@ -37,12 +37,11 @@ where
             .team_id
             .as_ref()
             .map(|team_id| ("team_id", team_id.to_string())),
-        Some(("token", request.token.to_string())),
     ];
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.conversations.restrictAccess.addGroup");
     client
-        .get(&url, &params[..])
+        .post(&url, &params[..], &[("token", request.token.clone())])
         .await
         .map_err(AddGroupError::Client)
         .and_then(|result| {
@@ -94,12 +93,11 @@ where
         Some(("channel_id", request.channel_id.to_string())),
         Some(("group_id", request.group_id.to_string())),
         Some(("team_id", request.team_id.to_string())),
-        Some(("token", request.token.to_string())),
     ];
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.conversations.restrictAccess.removeGroup");
     client
-        .get(&url, &params[..])
+        .post(&url, &params[..], &[("token", request.token.clone())])
         .await
         .map_err(RemoveGroupError::Client)
         .and_then(|result| {
