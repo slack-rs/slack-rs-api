@@ -12,6 +12,7 @@
 //
 //=============================================================================
 
+#![allow(unused_variables)]
 #![allow(unused_imports)]
 #![allow(dead_code)]
 
@@ -21,3 +22,50 @@ pub mod users;
 
 use crate::async_impl::SlackWebRequestSender;
 pub use crate::mod_types::apps::permissions::*;
+
+/// Returns list of permissions this app has on a team.
+///
+/// Wraps https://api.slack.com/methods/apps.permissions.info
+
+pub async fn info<R>(client: &R, request: &InfoRequest) -> Result<InfoResponse, InfoError<R::Error>>
+where
+    R: SlackWebRequestSender,
+{
+    let params = vec![];
+    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = crate::get_slack_url_for_method("/apps.permissions.info");
+    client
+        .get(&url, &params[..])
+        .await
+        .map_err(InfoError::Client)
+        .and_then(|result| {
+            serde_json::from_str::<InfoResponse>(&result)
+                .map_err(|e| InfoError::MalformedResponse(result, e))
+        })
+}
+/// Allows an app to request additional scopes
+///
+/// Wraps https://api.slack.com/methods/apps.permissions.request
+
+pub async fn request<R>(
+    client: &R,
+    request: &RequestRequest,
+) -> Result<RequestResponse, RequestError<R::Error>>
+where
+    R: SlackWebRequestSender,
+{
+    let params = vec![
+        Some(("scopes", request.scopes.to_string())),
+        Some(("trigger_id", request.trigger_id.to_string())),
+    ];
+    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = crate::get_slack_url_for_method("/apps.permissions.request");
+    client
+        .get(&url, &params[..])
+        .await
+        .map_err(RequestError::Client)
+        .and_then(|result| {
+            serde_json::from_str::<RequestResponse>(&result)
+                .map_err(|e| RequestError::MalformedResponse(result, e))
+        })
+}

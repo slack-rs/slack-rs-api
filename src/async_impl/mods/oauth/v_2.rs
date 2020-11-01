@@ -12,8 +12,47 @@
 //
 //=============================================================================
 
+#![allow(unused_variables)]
 #![allow(unused_imports)]
 #![allow(dead_code)]
 
 use crate::async_impl::SlackWebRequestSender;
 pub use crate::mod_types::oauth::v_2_types::*;
+
+/// Exchanges a temporary OAuth verifier code for an access token.
+///
+/// Wraps https://api.slack.com/methods/oauth.v2.access
+
+pub async fn access<R>(
+    client: &R,
+    request: &AccessRequest,
+) -> Result<AccessResponse, AccessError<R::Error>>
+where
+    R: SlackWebRequestSender,
+{
+    let params = vec![
+        request
+            .client_id
+            .as_ref()
+            .map(|client_id| ("client_id", client_id.to_string())),
+        request
+            .client_secret
+            .as_ref()
+            .map(|client_secret| ("client_secret", client_secret.to_string())),
+        Some(("code", request.code.to_string())),
+        request
+            .redirect_uri
+            .as_ref()
+            .map(|redirect_uri| ("redirect_uri", redirect_uri.to_string())),
+    ];
+    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = crate::get_slack_url_for_method("/oauth.v2.access");
+    client
+        .get(&url, &params[..])
+        .await
+        .map_err(AccessError::Client)
+        .and_then(|result| {
+            serde_json::from_str::<AccessResponse>(&result)
+                .map_err(|e| AccessError::MalformedResponse(result, e))
+        })
+}

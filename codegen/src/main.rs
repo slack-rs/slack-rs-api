@@ -99,7 +99,7 @@ fn transform_to_modules(spec: &Spec) -> Result<Vec<Module>> {
         let mut module_names = module_iterator(full_name);
         let top_path = first_path_from_iterator(&mut module_names, full_name)?;
         let mut module = add_module_if_not_exists(&mut modules, top_path);
-        add_submodules(&mut module_names, &mut module, path)?;
+        add_submodules(&mut module_names, &mut module, path, full_name)?;
     }
     Ok(modules.into_iter().map(|(_, v)| v.build()).collect())
 }
@@ -129,16 +129,17 @@ fn add_submodules<'a>(
     module_names: &mut Peekable<impl Iterator<Item = &'a str>>,
     mut module: &mut ModuleBuilder<'a>,
     path: &PathItem,
+    full_name: &'a str,
 ) -> Result<()> {
     while let Some(name) = module_names.next() {
         if module_names.peek().is_some() {
             module = add_module_if_not_exists(&mut module.submodules, name);
         } else {
             if let Some(op) = &path.get {
-                add_method_if_not_exists(module, name, op, HttpMethod::Get)?;
+                add_method_if_not_exists(module, name, op, HttpMethod::Get, full_name)?;
             }
             if let Some(op) = &path.post {
-                add_method_if_not_exists(module, name, op, HttpMethod::Post)?;
+                add_method_if_not_exists(module, name, op, HttpMethod::Post, full_name)?;
             }
         }
     }
@@ -150,8 +151,9 @@ fn add_method_if_not_exists<'a>(
     name: &'a str,
     op: &Operation,
     http_method: HttpMethod,
+    full_name: &'a str,
 ) -> Result<()> {
-    let method = create_method(module, name, op, http_method)?;
+    let method = create_method(module, name, op, http_method, full_name)?;
     if let Some(cur) = module.methods.get(name) {
         bail!(format!(
             "Method with the name {} already exists for module {}. \nOld: {:#?}\nNew: {:#?}",
@@ -168,6 +170,7 @@ fn create_method(
     name: &str,
     op: &Operation,
     http_method: HttpMethod,
+    full_name: &str,
 ) -> Result<Method> {
     let response: schema::Schema = op
         .responses
@@ -206,6 +209,7 @@ fn create_method(
     })?;
     let mut method = Method {
         name: name.into(),
+        full_name: full_name.into(),
         description: op.description.clone(),
         documentation_url: op.external_docs.url.clone(),
         parameters: Vec::new(),

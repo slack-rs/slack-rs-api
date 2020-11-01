@@ -12,6 +12,7 @@
 //
 //=============================================================================
 
+#![allow(unused_variables)]
 #![allow(unused_imports)]
 #![allow(dead_code)]
 
@@ -20,3 +21,35 @@ pub mod permissions;
 
 pub use crate::mod_types::apps::*;
 use crate::sync::SlackWebRequestSender;
+
+/// Uninstalls your app from a workspace.
+///
+/// Wraps https://api.slack.com/methods/apps.uninstall
+
+pub fn uninstall<R>(
+    client: &R,
+    request: &UninstallRequest,
+) -> Result<UninstallResponse, UninstallError<R::Error>>
+where
+    R: SlackWebRequestSender,
+{
+    let params = vec![
+        request
+            .client_id
+            .as_ref()
+            .map(|client_id| ("client_id", client_id.to_string())),
+        request
+            .client_secret
+            .as_ref()
+            .map(|client_secret| ("client_secret", client_secret.to_string())),
+    ];
+    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = crate::get_slack_url_for_method("/apps.uninstall");
+    client
+        .get(&url, &params[..])
+        .map_err(UninstallError::Client)
+        .and_then(|result| {
+            serde_json::from_str::<UninstallResponse>(&result)
+                .map_err(|e| UninstallError::MalformedResponse(result, e))
+        })
+}

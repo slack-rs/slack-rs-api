@@ -12,6 +12,7 @@
 //
 //=============================================================================
 
+#![allow(unused_variables)]
 #![allow(unused_imports)]
 #![allow(dead_code)]
 
@@ -19,3 +20,86 @@ pub mod v_2;
 
 use crate::async_impl::SlackWebRequestSender;
 pub use crate::mod_types::oauth::*;
+
+/// Exchanges a temporary OAuth verifier code for an access token.
+///
+/// Wraps https://api.slack.com/methods/oauth.access
+
+pub async fn access<R>(
+    client: &R,
+    request: &AccessRequest,
+) -> Result<AccessResponse, AccessError<R::Error>>
+where
+    R: SlackWebRequestSender,
+{
+    let params = vec![
+        request
+            .client_id
+            .as_ref()
+            .map(|client_id| ("client_id", client_id.to_string())),
+        request
+            .client_secret
+            .as_ref()
+            .map(|client_secret| ("client_secret", client_secret.to_string())),
+        request.code.as_ref().map(|code| ("code", code.to_string())),
+        request
+            .redirect_uri
+            .as_ref()
+            .map(|redirect_uri| ("redirect_uri", redirect_uri.to_string())),
+        request
+            .single_channel
+            .as_ref()
+            .map(|single_channel| ("single_channel", single_channel.to_string())),
+    ];
+    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = crate::get_slack_url_for_method("/oauth.access");
+    client
+        .get(&url, &params[..])
+        .await
+        .map_err(AccessError::Client)
+        .and_then(|result| {
+            serde_json::from_str::<AccessResponse>(&result)
+                .map_err(|e| AccessError::MalformedResponse(result, e))
+        })
+}
+/// Exchanges a temporary OAuth verifier code for a workspace token.
+///
+/// Wraps https://api.slack.com/methods/oauth.token
+
+pub async fn token<R>(
+    client: &R,
+    request: &TokenRequest,
+) -> Result<TokenResponse, TokenError<R::Error>>
+where
+    R: SlackWebRequestSender,
+{
+    let params = vec![
+        request
+            .client_id
+            .as_ref()
+            .map(|client_id| ("client_id", client_id.to_string())),
+        request
+            .client_secret
+            .as_ref()
+            .map(|client_secret| ("client_secret", client_secret.to_string())),
+        request.code.as_ref().map(|code| ("code", code.to_string())),
+        request
+            .redirect_uri
+            .as_ref()
+            .map(|redirect_uri| ("redirect_uri", redirect_uri.to_string())),
+        request
+            .single_channel
+            .as_ref()
+            .map(|single_channel| ("single_channel", single_channel.to_string())),
+    ];
+    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = crate::get_slack_url_for_method("/oauth.token");
+    client
+        .get(&url, &params[..])
+        .await
+        .map_err(TokenError::Client)
+        .and_then(|result| {
+            serde_json::from_str::<TokenResponse>(&result)
+                .map_err(|e| TokenError::MalformedResponse(result, e))
+        })
+}

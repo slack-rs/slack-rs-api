@@ -12,8 +12,53 @@
 //
 //=============================================================================
 
+#![allow(unused_variables)]
 #![allow(unused_imports)]
 #![allow(dead_code)]
 
 use crate::async_impl::SlackWebRequestSender;
 pub use crate::mod_types::auth_types::*;
+
+/// Revokes a token.
+///
+/// Wraps https://api.slack.com/methods/auth.revoke
+
+pub async fn revoke<R>(
+    client: &R,
+    request: &RevokeRequest,
+) -> Result<RevokeResponse, RevokeError<R::Error>>
+where
+    R: SlackWebRequestSender,
+{
+    let params = vec![request.test.as_ref().map(|test| ("test", test.to_string()))];
+    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = crate::get_slack_url_for_method("/auth.revoke");
+    client
+        .get(&url, &params[..])
+        .await
+        .map_err(RevokeError::Client)
+        .and_then(|result| {
+            serde_json::from_str::<RevokeResponse>(&result)
+                .map_err(|e| RevokeError::MalformedResponse(result, e))
+        })
+}
+/// Checks authentication & identity.
+///
+/// Wraps https://api.slack.com/methods/auth.test
+
+pub async fn test<R>(client: &R, request: &TestRequest) -> Result<TestResponse, TestError<R::Error>>
+where
+    R: SlackWebRequestSender,
+{
+    let params = vec![];
+    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = crate::get_slack_url_for_method("/auth.test");
+    client
+        .get(&url, &params[..])
+        .await
+        .map_err(TestError::Client)
+        .and_then(|result| {
+            serde_json::from_str::<TestResponse>(&result)
+                .map_err(|e| TestError::MalformedResponse(result, e))
+        })
+}

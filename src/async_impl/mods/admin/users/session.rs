@@ -12,8 +12,69 @@
 //
 //=============================================================================
 
+#![allow(unused_variables)]
 #![allow(unused_imports)]
 #![allow(dead_code)]
 
 use crate::async_impl::SlackWebRequestSender;
 pub use crate::mod_types::admin::users::session_types::*;
+
+/// Invalidate a single session for a user by session_id
+///
+/// Wraps https://api.slack.com/methods/admin.users.session.invalidate
+
+pub async fn invalidate<R>(
+    client: &R,
+    request: &InvalidateRequest,
+) -> Result<InvalidateResponse, InvalidateError<R::Error>>
+where
+    R: SlackWebRequestSender,
+{
+    let params = vec![
+        Some(("session_id", request.session_id.to_string())),
+        Some(("team_id", request.team_id.to_string())),
+    ];
+    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = crate::get_slack_url_for_method("/admin.users.session.invalidate");
+    client
+        .get(&url, &params[..])
+        .await
+        .map_err(InvalidateError::Client)
+        .and_then(|result| {
+            serde_json::from_str::<InvalidateResponse>(&result)
+                .map_err(|e| InvalidateError::MalformedResponse(result, e))
+        })
+}
+/// Wipes all valid sessions on all devices for a given user
+///
+/// Wraps https://api.slack.com/methods/admin.users.session.reset
+
+pub async fn reset<R>(
+    client: &R,
+    request: &ResetRequest,
+) -> Result<ResetResponse, ResetError<R::Error>>
+where
+    R: SlackWebRequestSender,
+{
+    let params = vec![
+        request
+            .mobile_only
+            .as_ref()
+            .map(|mobile_only| ("mobile_only", mobile_only.to_string())),
+        Some(("user_id", request.user_id.to_string())),
+        request
+            .web_only
+            .as_ref()
+            .map(|web_only| ("web_only", web_only.to_string())),
+    ];
+    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = crate::get_slack_url_for_method("/admin.users.session.reset");
+    client
+        .get(&url, &params[..])
+        .await
+        .map_err(ResetError::Client)
+        .and_then(|result| {
+            serde_json::from_str::<ResetResponse>(&result)
+                .map_err(|e| ResetError::MalformedResponse(result, e))
+        })
+}

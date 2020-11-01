@@ -96,7 +96,12 @@ impl Module {
         Ok(())
     }
 
-    fn generate_mod(module: &Self, moddir: &Path, mut type_path: String, gen_mode: GenMode) -> Result<()> {
+    fn generate_mod(
+        module: &Self,
+        moddir: &Path,
+        mut type_path: String,
+        gen_mode: GenMode,
+    ) -> Result<()> {
         let modname = module.name.to_snake_case();
         if !type_path.is_empty() {
             type_path.push_str("::");
@@ -175,6 +180,7 @@ impl Module {
         };
         let data = format!(
             "{header}
+            #![allow(unused_variables)]
             #![allow(unused_imports)]
             #![allow(dead_code)]
         
@@ -268,6 +274,7 @@ impl GenMode {
 #[derive(Clone, Debug)]
 pub struct Method {
     pub name: String,
+    pub full_name: String,
     pub description: String,
     pub documentation_url: String,
     pub parameters: Vec<Parameter>,
@@ -399,7 +406,53 @@ impl Method {
     }
 
     fn build_call_method(&self, gen_mode: GenMode) -> Result<String> {
-        let out = format!("",);
+        let type_prefix = self.name.to_pascal_case();
+        let request_type = format!("{}Request", type_prefix);
+        let response_type = format!("{}Response", type_prefix);
+        let error_type = format!("{}Error", type_prefix);
+        let fn_name = self.name.to_snake_case();
+        let parameters = self
+            .parameters
+            .iter()
+            .map(Parameter::to_rust_fn)
+            .collect::<Vec<_>>()
+            .join("\n");
+        let out = format!(
+            "/// {description}
+            ///
+            /// Wraps {doc_url}
+            
+            pub {fn_type} {fn_name}<R>(
+                client: &R,
+                request: &{request_type},
+            ) -> Result<{response_type}, {error_type}<R::Error>>
+            where
+                R: SlackWebRequestSender,
+            {{
+                let params = vec![
+                    {parameters}
+                ];
+                let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+                let url = crate::get_slack_url_for_method(\"{full_name}\");
+                client
+                    .get(&url, &params[..]){dot_await}
+                    .map_err({error_type}::Client)
+                    .and_then(|result| {{
+                        serde_json::from_str::<{response_type}>(&result)
+                            .map_err(|e| {error_type}::MalformedResponse(result, e))
+                    }})
+            }}",
+            description = self.description,
+            doc_url = self.documentation_url,
+            request_type = request_type,
+            response_type = response_type,
+            error_type = error_type,
+            fn_name = fn_name,
+            full_name = self.full_name,
+            fn_type = gen_mode.fn_type(),
+            dot_await = gen_mode.dot_await(),
+            parameters = parameters,
+        );
         Ok(out)
     }
 }
@@ -417,6 +470,20 @@ impl Parameter {
         let description = self.description_to_rust();
         let r#type = self.param_type.to_rust(self.required);
         format!("{description}pub {name}: {type},", description = description, name=self.name, type=r#type)
+    }
+
+    fn to_rust_fn(&self) -> String {
+        if self.required {
+            format!(
+                "Some((\"{name}\", request.{name}.to_string())),",
+                name = self.name
+            )
+        } else {
+            format!(
+                "request.{name}.as_ref().map(|{name}| (\"{name}\", {name}.to_string())),",
+                name = self.name
+            )
+        }
     }
 
     fn description_to_rust(&self) -> String {
@@ -725,4 +792,13 @@ impl TryFrom<&schema::Schema> for ResponseType {
 pub enum HttpMethod {
     Get,
     Post,
+}
+
+impl HttpMethod {
+    fn method(self) -> &'static str {
+        match self {
+            Self::Get => "get",
+            Self::Post => "post",
+        }
+    }
 }
