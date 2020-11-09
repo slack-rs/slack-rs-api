@@ -12,9 +12,9 @@
 //
 //=============================================================================
 
-#![allow(unused_variables)]
 #![allow(unused_imports)]
-#![allow(dead_code)]
+#![allow(clippy::match_single_binding)]
+#![allow(clippy::blacklisted_name)]
 
 pub use crate::mod_types::admin::teams::settings_types::*;
 use crate::sync::SlackWebRequestSender;
@@ -23,11 +23,18 @@ use crate::sync::SlackWebRequestSender;
 ///
 /// Wraps https://api.slack.com/methods/admin.teams.settings.info
 
-pub fn info<R>(client: &R, request: &InfoRequest) -> Result<InfoResponse, InfoError<R::Error>>
+pub fn info<R>(
+    client: &R,
+    token: &str,
+    request: &InfoRequest,
+) -> Result<InfoResponse, InfoError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![Some(("team_id", request.team_id.to_string()))];
+    let params = vec![
+        Some(("token", token.to_string())),
+        Some(("team_id", request.team_id.to_string())),
+    ];
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.teams.settings.info");
     client
@@ -44,6 +51,7 @@ where
 
 pub fn set_default_channels<R>(
     client: &R,
+    token: &str,
     request: &SetDefaultChannelsRequest,
 ) -> Result<SetDefaultChannelsResponse, SetDefaultChannelsError<R::Error>>
 where
@@ -56,7 +64,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.teams.settings.setDefaultChannels");
     client
-        .post(&url, &params[..], &[("token", request.token.clone())])
+        .post(&url, &params[..], &[("token", token.to_string())])
         .map_err(SetDefaultChannelsError::Client)
         .and_then(|result| {
             serde_json::from_str::<SetDefaultChannelsResponse>(&result)
@@ -69,6 +77,7 @@ where
 
 pub fn set_description<R>(
     client: &R,
+    token: &str,
     request: &SetDescriptionRequest,
 ) -> Result<SetDescriptionResponse, SetDescriptionError<R::Error>>
 where
@@ -81,7 +90,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.teams.settings.setDescription");
     client
-        .post(&url, &params[..], &[])
+        .post(&url, &params[..], &[("token", token.to_string())])
         .map_err(SetDescriptionError::Client)
         .and_then(|result| {
             serde_json::from_str::<SetDescriptionResponse>(&result)
@@ -94,6 +103,7 @@ where
 
 pub fn set_discoverability<R>(
     client: &R,
+    token: &str,
     request: &SetDiscoverabilityRequest,
 ) -> Result<SetDiscoverabilityResponse, SetDiscoverabilityError<R::Error>>
 where
@@ -106,7 +116,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.teams.settings.setDiscoverability");
     client
-        .post(&url, &params[..], &[])
+        .post(&url, &params[..], &[("token", token.to_string())])
         .map_err(SetDiscoverabilityError::Client)
         .and_then(|result| {
             serde_json::from_str::<SetDiscoverabilityResponse>(&result)
@@ -119,6 +129,7 @@ where
 
 pub fn set_icon<R>(
     client: &R,
+    token: &str,
     request: &SetIconRequest,
 ) -> Result<SetIconResponse, SetIconError<R::Error>>
 where
@@ -131,7 +142,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.teams.settings.setIcon");
     client
-        .post(&url, &params[..], &[("token", request.token.clone())])
+        .post(&url, &params[..], &[("token", token.to_string())])
         .map_err(SetIconError::Client)
         .and_then(|result| {
             serde_json::from_str::<SetIconResponse>(&result)
@@ -144,6 +155,7 @@ where
 
 pub fn set_name<R>(
     client: &R,
+    token: &str,
     request: &SetNameRequest,
 ) -> Result<SetNameResponse, SetNameError<R::Error>>
 where
@@ -156,7 +168,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.teams.settings.setName");
     client
-        .post(&url, &params[..], &[])
+        .post(&url, &params[..], &[("token", token.to_string())])
         .map_err(SetNameError::Client)
         .and_then(|result| {
             serde_json::from_str::<SetNameResponse>(&result)

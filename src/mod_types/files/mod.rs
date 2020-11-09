@@ -12,9 +12,9 @@
 //
 //=============================================================================
 
-#![allow(unused_variables)]
 #![allow(unused_imports)]
-#![allow(dead_code)]
+#![allow(clippy::match_single_binding)]
+#![allow(clippy::blacklisted_name)]
 
 pub mod comments_types;
 pub mod remote_types;
@@ -380,9 +380,9 @@ pub struct ListRequest {
     /// Show truncated file info for files hidden due to being too old, and the team who owns the file being over the file limit.
     pub show_files_hidden_by_limit: Option<bool>,
     /// Filter files created after this timestamp (inclusive).
-    pub ts_from: Option<u64>,
+    pub ts_from: Option<f64>,
     /// Filter files created before this timestamp (inclusive).
-    pub ts_to: Option<u64>,
+    pub ts_to: Option<f64>,
     /// Filter files by type ([see below](#file_types)). You can pass multiple values in the types argument, like `types=spaces,snippets`.The default value is `all`, which does not filter the list.
     pub types: Option<String>,
     /// Filter files created by a single user.
@@ -1098,11 +1098,9 @@ pub struct UploadRequest {
     /// The message text introducing the file in specified `channels`.
     pub initial_comment: Option<String>,
     /// Provide another message's `ts` value to upload this file as a reply. Never use a reply's `ts` value; use its parent instead.
-    pub thread_ts: Option<u64>,
+    pub thread_ts: Option<f64>,
     /// Title of file.
     pub title: Option<String>,
-    /// Authentication token. Requires scope: `files:write:user`
-    pub token: Option<String>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -1214,6 +1212,7 @@ impl<E: Error> Into<Result<UploadResponse, UploadError<E>>> for UploadResponse {
 #[derive(Debug)]
 pub enum UploadError<E: Error> {
     AccountInactive,
+    FileUploadSizeRestricted,
     FileUploadsDisabled,
     FileUploadsExceptImagesDisabled,
     InvalidArgName,
@@ -1245,6 +1244,7 @@ impl<'a, E: Error> From<&'a str> for UploadError<E> {
     fn from(s: &'a str) -> Self {
         match s {
             "account_inactive" => UploadError::AccountInactive,
+            "file_upload_size_restricted" => UploadError::FileUploadSizeRestricted,
             "file_uploads_disabled" => UploadError::FileUploadsDisabled,
             "file_uploads_except_images_disabled" => UploadError::FileUploadsExceptImagesDisabled,
             "invalid_arg_name" => UploadError::InvalidArgName,
@@ -1273,6 +1273,9 @@ impl<E: Error> fmt::Display for UploadError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
             UploadError::AccountInactive => write!(f, "Server returned error account_inactive"),
+            UploadError::FileUploadSizeRestricted => {
+                write!(f, "Server returned error file_upload_size_restricted")
+            }
             UploadError::FileUploadsDisabled => {
                 write!(f, "Server returned error file_uploads_disabled")
             }

@@ -12,9 +12,9 @@
 //
 //=============================================================================
 
-#![allow(unused_variables)]
 #![allow(unused_imports)]
-#![allow(dead_code)]
+#![allow(clippy::match_single_binding)]
+#![allow(clippy::blacklisted_name)]
 
 use crate::async_impl::SlackWebRequestSender;
 pub use crate::mod_types::users::profile_types::*;
@@ -23,11 +23,16 @@ pub use crate::mod_types::users::profile_types::*;
 ///
 /// Wraps https://api.slack.com/methods/users.profile.get
 
-pub async fn get<R>(client: &R, request: &GetRequest) -> Result<GetResponse, GetError<R::Error>>
+pub async fn get<R>(
+    client: &R,
+    token: &str,
+    request: &GetRequest,
+) -> Result<GetResponse, GetError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
     let params = vec![
+        Some(("token", token.to_string())),
         request
             .include_labels
             .as_ref()
@@ -49,7 +54,11 @@ where
 ///
 /// Wraps https://api.slack.com/methods/users.profile.set
 
-pub async fn set<R>(client: &R, request: &SetRequest) -> Result<SetResponse, SetError<R::Error>>
+pub async fn set<R>(
+    client: &R,
+    token: &str,
+    request: &SetRequest,
+) -> Result<SetResponse, SetError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
@@ -68,7 +77,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/users.profile.set");
     client
-        .post(&url, &params[..], &[])
+        .post(&url, &params[..], &[("token", token.to_string())])
         .await
         .map_err(SetError::Client)
         .and_then(|result| {

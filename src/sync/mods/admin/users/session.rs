@@ -12,9 +12,9 @@
 //
 //=============================================================================
 
-#![allow(unused_variables)]
 #![allow(unused_imports)]
-#![allow(dead_code)]
+#![allow(clippy::match_single_binding)]
+#![allow(clippy::blacklisted_name)]
 
 pub use crate::mod_types::admin::users::session_types::*;
 use crate::sync::SlackWebRequestSender;
@@ -25,6 +25,7 @@ use crate::sync::SlackWebRequestSender;
 
 pub fn invalidate<R>(
     client: &R,
+    token: &str,
     request: &InvalidateRequest,
 ) -> Result<InvalidateResponse, InvalidateError<R::Error>>
 where
@@ -37,7 +38,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.users.session.invalidate");
     client
-        .post(&url, &params[..], &[])
+        .post(&url, &params[..], &[("token", token.to_string())])
         .map_err(InvalidateError::Client)
         .and_then(|result| {
             serde_json::from_str::<InvalidateResponse>(&result)
@@ -48,7 +49,11 @@ where
 ///
 /// Wraps https://api.slack.com/methods/admin.users.session.reset
 
-pub fn reset<R>(client: &R, request: &ResetRequest) -> Result<ResetResponse, ResetError<R::Error>>
+pub fn reset<R>(
+    client: &R,
+    token: &str,
+    request: &ResetRequest,
+) -> Result<ResetResponse, ResetError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
@@ -66,7 +71,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.users.session.reset");
     client
-        .post(&url, &params[..], &[])
+        .post(&url, &params[..], &[("token", token.to_string())])
         .map_err(ResetError::Client)
         .and_then(|result| {
             serde_json::from_str::<ResetResponse>(&result)

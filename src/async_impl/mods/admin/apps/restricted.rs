@@ -12,9 +12,9 @@
 //
 //=============================================================================
 
-#![allow(unused_variables)]
 #![allow(unused_imports)]
-#![allow(dead_code)]
+#![allow(clippy::match_single_binding)]
+#![allow(clippy::blacklisted_name)]
 
 use crate::async_impl::SlackWebRequestSender;
 pub use crate::mod_types::admin::apps::restricted_types::*;
@@ -23,11 +23,16 @@ pub use crate::mod_types::admin::apps::restricted_types::*;
 ///
 /// Wraps https://api.slack.com/methods/admin.apps.restricted.list
 
-pub async fn list<R>(client: &R, request: &ListRequest) -> Result<ListResponse, ListError<R::Error>>
+pub async fn list<R>(
+    client: &R,
+    token: &str,
+    request: &ListRequest,
+) -> Result<ListResponse, ListError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
     let params = vec![
+        Some(("token", token.to_string())),
         request
             .cursor
             .as_ref()

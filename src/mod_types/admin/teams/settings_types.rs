@@ -12,9 +12,9 @@
 //
 //=============================================================================
 
-#![allow(unused_variables)]
 #![allow(unused_imports)]
-#![allow(dead_code)]
+#![allow(clippy::match_single_binding)]
+#![allow(clippy::blacklisted_name)]
 
 use std::convert::From;
 use std::error::Error;
@@ -87,8 +87,6 @@ pub struct SetDefaultChannelsRequest {
     pub channel_ids: String,
     /// ID for the workspace to set the default channel for.
     pub team_id: String,
-    /// Authentication token. Requires scope: `admin.teams:write`
-    pub token: String,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -287,8 +285,6 @@ pub struct SetIconRequest {
     pub image_url: String,
     /// ID for the workspace to set the icon for.
     pub team_id: String,
-    /// Authentication token. Requires scope: `admin.teams:write`
-    pub token: String,
 }
 
 #[derive(Clone, Debug, Deserialize)]

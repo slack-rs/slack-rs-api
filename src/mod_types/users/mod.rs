@@ -12,9 +12,9 @@
 //
 //=============================================================================
 
-#![allow(unused_variables)]
 #![allow(unused_imports)]
-#![allow(dead_code)]
+#![allow(clippy::match_single_binding)]
+#![allow(clippy::blacklisted_name)]
 
 pub mod profile_types;
 
@@ -481,7 +481,7 @@ pub struct ConversationsChannelsInner {
     pub pending_shared: Option<Vec<String>>,
     pub pin_count: Option<u64>,
     pub previous_names: Option<Vec<String>>,
-    pub priority: Option<u64>,
+    pub priority: Option<f64>,
     pub purpose: ConversationsPurposeInner,
     pub shared_team_ids: Option<Vec<String>>,
     pub shares: Option<Vec<ConversationsShares2Inner>>,
@@ -652,10 +652,7 @@ impl<E: Error + 'static> Error for ConversationsError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct DeletePhotoRequest {
-    /// Authentication token. Requires scope: `users.profile:write`
-    pub token: String,
-}
+pub struct DeletePhotoRequest {}
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct DeletePhotoResponse {
@@ -1071,7 +1068,7 @@ pub struct InfoFieldsInner {
     pub is_hidden: Option<bool>,
     pub label: String,
     pub options: Option<Vec<InfoOptionsInner>>,
-    pub ordering: u64,
+    pub ordering: f64,
     pub possible_values: Option<Vec<String>>,
     pub r#type: String,
 }
@@ -1110,8 +1107,8 @@ pub struct InfoUserInner {
     pub two_factor_type: Option<String>,
     pub tz: Option<Vec<String>>,
     pub tz_label: Option<String>,
-    pub tz_offset: Option<u64>,
-    pub updated: u64,
+    pub tz_offset: Option<f64>,
+    pub updated: f64,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -1303,7 +1300,7 @@ pub struct ListFieldsInner {
     pub is_hidden: Option<bool>,
     pub label: String,
     pub options: Option<Vec<ListOptionsInner>>,
-    pub ordering: u64,
+    pub ordering: f64,
     pub possible_values: Option<Vec<String>>,
     pub r#type: String,
 }
@@ -1342,8 +1339,8 @@ pub struct ListMembersInner {
     pub two_factor_type: Option<String>,
     pub tz: Option<Vec<String>>,
     pub tz_label: Option<String>,
-    pub tz_offset: Option<u64>,
-    pub updated: u64,
+    pub tz_offset: Option<f64>,
+    pub updated: f64,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -1544,7 +1541,7 @@ pub struct LookupByEmailFieldsInner {
     pub is_hidden: Option<bool>,
     pub label: String,
     pub options: Option<Vec<LookupByEmailOptionsInner>>,
-    pub ordering: u64,
+    pub ordering: f64,
     pub possible_values: Option<Vec<String>>,
     pub r#type: String,
 }
@@ -1583,8 +1580,8 @@ pub struct LookupByEmailUserInner {
     pub two_factor_type: Option<String>,
     pub tz: Option<Vec<String>>,
     pub tz_label: Option<String>,
-    pub tz_offset: Option<u64>,
-    pub updated: u64,
+    pub tz_offset: Option<f64>,
+    pub updated: f64,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -1849,8 +1846,6 @@ pub struct SetPhotoRequest {
     pub crop_y: Option<String>,
     /// File contents via `multipart/form-data`.
     pub image: Option<String>,
-    /// Authentication token. Requires scope: `users.profile:write`
-    pub token: String,
 }
 
 #[derive(Clone, Debug, Deserialize)]

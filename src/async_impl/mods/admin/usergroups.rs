@@ -12,9 +12,9 @@
 //
 //=============================================================================
 
-#![allow(unused_variables)]
 #![allow(unused_imports)]
-#![allow(dead_code)]
+#![allow(clippy::match_single_binding)]
+#![allow(clippy::blacklisted_name)]
 
 use crate::async_impl::SlackWebRequestSender;
 pub use crate::mod_types::admin::usergroups_types::*;
@@ -25,6 +25,7 @@ pub use crate::mod_types::admin::usergroups_types::*;
 
 pub async fn add_channels<R>(
     client: &R,
+    token: &str,
     request: &AddChannelsRequest,
 ) -> Result<AddChannelsResponse, AddChannelsError<R::Error>>
 where
@@ -41,7 +42,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.usergroups.addChannels");
     client
-        .post(&url, &params[..], &[])
+        .post(&url, &params[..], &[("token", token.to_string())])
         .await
         .map_err(AddChannelsError::Client)
         .and_then(|result| {
@@ -55,6 +56,7 @@ where
 
 pub async fn add_teams<R>(
     client: &R,
+    token: &str,
     request: &AddTeamsRequest,
 ) -> Result<AddTeamsResponse, AddTeamsError<R::Error>>
 where
@@ -71,7 +73,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.usergroups.addTeams");
     client
-        .post(&url, &params[..], &[])
+        .post(&url, &params[..], &[("token", token.to_string())])
         .await
         .map_err(AddTeamsError::Client)
         .and_then(|result| {
@@ -85,12 +87,14 @@ where
 
 pub async fn list_channels<R>(
     client: &R,
+    token: &str,
     request: &ListChannelsRequest,
 ) -> Result<ListChannelsResponse, ListChannelsError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
     let params = vec![
+        Some(("token", token.to_string())),
         request
             .include_num_members
             .as_ref()
@@ -118,6 +122,7 @@ where
 
 pub async fn remove_channels<R>(
     client: &R,
+    token: &str,
     request: &RemoveChannelsRequest,
 ) -> Result<RemoveChannelsResponse, RemoveChannelsError<R::Error>>
 where
@@ -130,7 +135,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.usergroups.removeChannels");
     client
-        .post(&url, &params[..], &[])
+        .post(&url, &params[..], &[("token", token.to_string())])
         .await
         .map_err(RemoveChannelsError::Client)
         .and_then(|result| {

@@ -12,9 +12,9 @@
 //
 //=============================================================================
 
-#![allow(unused_variables)]
 #![allow(unused_imports)]
-#![allow(dead_code)]
+#![allow(clippy::match_single_binding)]
+#![allow(clippy::blacklisted_name)]
 
 use crate::async_impl::SlackWebRequestSender;
 pub use crate::mod_types::conversations_types::*;
@@ -25,6 +25,7 @@ pub use crate::mod_types::conversations_types::*;
 
 pub async fn archive<R>(
     client: &R,
+    token: Option<&str>,
     request: &ArchiveRequest,
 ) -> Result<ArchiveResponse, ArchiveError<R::Error>>
 where
@@ -37,7 +38,11 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/conversations.archive");
     client
-        .post(&url, &params[..], &[])
+        .post(
+            &url,
+            &params[..],
+            &token.map_or(vec![], |t| vec![("token", t.to_string())]),
+        )
         .await
         .map_err(ArchiveError::Client)
         .and_then(|result| {
@@ -51,6 +56,7 @@ where
 
 pub async fn close<R>(
     client: &R,
+    token: Option<&str>,
     request: &CloseRequest,
 ) -> Result<CloseResponse, CloseError<R::Error>>
 where
@@ -63,7 +69,11 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/conversations.close");
     client
-        .post(&url, &params[..], &[])
+        .post(
+            &url,
+            &params[..],
+            &token.map_or(vec![], |t| vec![("token", t.to_string())]),
+        )
         .await
         .map_err(CloseError::Client)
         .and_then(|result| {
@@ -77,6 +87,7 @@ where
 
 pub async fn create<R>(
     client: &R,
+    token: Option<&str>,
     request: &CreateRequest,
 ) -> Result<CreateResponse, CreateError<R::Error>>
 where
@@ -92,7 +103,11 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/conversations.create");
     client
-        .post(&url, &params[..], &[])
+        .post(
+            &url,
+            &params[..],
+            &token.map_or(vec![], |t| vec![("token", t.to_string())]),
+        )
         .await
         .map_err(CreateError::Client)
         .and_then(|result| {
@@ -106,16 +121,15 @@ where
 
 pub async fn history<R>(
     client: &R,
+    token: &str,
     request: &HistoryRequest,
 ) -> Result<HistoryResponse, HistoryError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
     let params = vec![
-        request
-            .channel
-            .as_ref()
-            .map(|channel| ("channel", channel.to_string())),
+        Some(("token", token.to_string())),
+        Some(("channel", request.channel.to_string())),
         request
             .cursor
             .as_ref()
@@ -152,15 +166,17 @@ where
 ///
 /// Wraps https://api.slack.com/methods/conversations.info
 
-pub async fn info<R>(client: &R, request: &InfoRequest) -> Result<InfoResponse, InfoError<R::Error>>
+pub async fn info<R>(
+    client: &R,
+    token: &str,
+    request: &InfoRequest,
+) -> Result<InfoResponse, InfoError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
     let params = vec![
-        request
-            .channel
-            .as_ref()
-            .map(|channel| ("channel", channel.to_string())),
+        Some(("token", token.to_string())),
+        Some(("channel", request.channel.to_string())),
         request
             .include_locale
             .as_ref()
@@ -187,6 +203,7 @@ where
 
 pub async fn invite<R>(
     client: &R,
+    token: Option<&str>,
     request: &InviteRequest,
 ) -> Result<InviteResponse, InviteError<R::Error>>
 where
@@ -205,7 +222,11 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/conversations.invite");
     client
-        .post(&url, &params[..], &[])
+        .post(
+            &url,
+            &params[..],
+            &token.map_or(vec![], |t| vec![("token", t.to_string())]),
+        )
         .await
         .map_err(InviteError::Client)
         .and_then(|result| {
@@ -217,7 +238,11 @@ where
 ///
 /// Wraps https://api.slack.com/methods/conversations.join
 
-pub async fn join<R>(client: &R, request: &JoinRequest) -> Result<JoinResponse, JoinError<R::Error>>
+pub async fn join<R>(
+    client: &R,
+    token: Option<&str>,
+    request: &JoinRequest,
+) -> Result<JoinResponse, JoinError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
@@ -228,7 +253,11 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/conversations.join");
     client
-        .post(&url, &params[..], &[])
+        .post(
+            &url,
+            &params[..],
+            &token.map_or(vec![], |t| vec![("token", t.to_string())]),
+        )
         .await
         .map_err(JoinError::Client)
         .and_then(|result| {
@@ -240,7 +269,11 @@ where
 ///
 /// Wraps https://api.slack.com/methods/conversations.kick
 
-pub async fn kick<R>(client: &R, request: &KickRequest) -> Result<KickResponse, KickError<R::Error>>
+pub async fn kick<R>(
+    client: &R,
+    token: Option<&str>,
+    request: &KickRequest,
+) -> Result<KickResponse, KickError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
@@ -254,7 +287,11 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/conversations.kick");
     client
-        .post(&url, &params[..], &[])
+        .post(
+            &url,
+            &params[..],
+            &token.map_or(vec![], |t| vec![("token", t.to_string())]),
+        )
         .await
         .map_err(KickError::Client)
         .and_then(|result| {
@@ -268,6 +305,7 @@ where
 
 pub async fn leave<R>(
     client: &R,
+    token: Option<&str>,
     request: &LeaveRequest,
 ) -> Result<LeaveResponse, LeaveError<R::Error>>
 where
@@ -280,7 +318,11 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/conversations.leave");
     client
-        .post(&url, &params[..], &[])
+        .post(
+            &url,
+            &params[..],
+            &token.map_or(vec![], |t| vec![("token", t.to_string())]),
+        )
         .await
         .map_err(LeaveError::Client)
         .and_then(|result| {
@@ -292,11 +334,16 @@ where
 ///
 /// Wraps https://api.slack.com/methods/conversations.list
 
-pub async fn list<R>(client: &R, request: &ListRequest) -> Result<ListResponse, ListError<R::Error>>
+pub async fn list<R>(
+    client: &R,
+    token: &str,
+    request: &ListRequest,
+) -> Result<ListResponse, ListError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
     let params = vec![
+        Some(("token", token.to_string())),
         request
             .cursor
             .as_ref()
@@ -329,7 +376,11 @@ where
 ///
 /// Wraps https://api.slack.com/methods/conversations.mark
 
-pub async fn mark<R>(client: &R, request: &MarkRequest) -> Result<MarkResponse, MarkError<R::Error>>
+pub async fn mark<R>(
+    client: &R,
+    token: Option<&str>,
+    request: &MarkRequest,
+) -> Result<MarkResponse, MarkError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
@@ -343,7 +394,11 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/conversations.mark");
     client
-        .post(&url, &params[..], &[])
+        .post(
+            &url,
+            &params[..],
+            &token.map_or(vec![], |t| vec![("token", t.to_string())]),
+        )
         .await
         .map_err(MarkError::Client)
         .and_then(|result| {
@@ -357,12 +412,14 @@ where
 
 pub async fn members<R>(
     client: &R,
+    token: Option<&str>,
     request: &MembersRequest,
 ) -> Result<MembersResponse, MembersError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
     let params = vec![
+        token.map(|token| ("token", token.to_string())),
         request
             .channel
             .as_ref()
@@ -391,7 +448,11 @@ where
 ///
 /// Wraps https://api.slack.com/methods/conversations.open
 
-pub async fn open<R>(client: &R, request: &OpenRequest) -> Result<OpenResponse, OpenError<R::Error>>
+pub async fn open<R>(
+    client: &R,
+    token: Option<&str>,
+    request: &OpenRequest,
+) -> Result<OpenResponse, OpenError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
@@ -412,7 +473,11 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/conversations.open");
     client
-        .post(&url, &params[..], &[])
+        .post(
+            &url,
+            &params[..],
+            &token.map_or(vec![], |t| vec![("token", t.to_string())]),
+        )
         .await
         .map_err(OpenError::Client)
         .and_then(|result| {
@@ -426,6 +491,7 @@ where
 
 pub async fn rename<R>(
     client: &R,
+    token: Option<&str>,
     request: &RenameRequest,
 ) -> Result<RenameResponse, RenameError<R::Error>>
 where
@@ -441,7 +507,11 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/conversations.rename");
     client
-        .post(&url, &params[..], &[])
+        .post(
+            &url,
+            &params[..],
+            &token.map_or(vec![], |t| vec![("token", t.to_string())]),
+        )
         .await
         .map_err(RenameError::Client)
         .and_then(|result| {
@@ -455,12 +525,14 @@ where
 
 pub async fn replies<R>(
     client: &R,
+    token: Option<&str>,
     request: &RepliesRequest,
 ) -> Result<RepliesResponse, RepliesError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
     let params = vec![
+        token.map(|token| ("token", token.to_string())),
         request
             .channel
             .as_ref()
@@ -504,6 +576,7 @@ where
 
 pub async fn set_purpose<R>(
     client: &R,
+    token: Option<&str>,
     request: &SetPurposeRequest,
 ) -> Result<SetPurposeResponse, SetPurposeError<R::Error>>
 where
@@ -522,7 +595,11 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/conversations.setPurpose");
     client
-        .post(&url, &params[..], &[])
+        .post(
+            &url,
+            &params[..],
+            &token.map_or(vec![], |t| vec![("token", t.to_string())]),
+        )
         .await
         .map_err(SetPurposeError::Client)
         .and_then(|result| {
@@ -536,6 +613,7 @@ where
 
 pub async fn set_topic<R>(
     client: &R,
+    token: Option<&str>,
     request: &SetTopicRequest,
 ) -> Result<SetTopicResponse, SetTopicError<R::Error>>
 where
@@ -554,7 +632,11 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/conversations.setTopic");
     client
-        .post(&url, &params[..], &[])
+        .post(
+            &url,
+            &params[..],
+            &token.map_or(vec![], |t| vec![("token", t.to_string())]),
+        )
         .await
         .map_err(SetTopicError::Client)
         .and_then(|result| {
@@ -568,6 +650,7 @@ where
 
 pub async fn unarchive<R>(
     client: &R,
+    token: Option<&str>,
     request: &UnarchiveRequest,
 ) -> Result<UnarchiveResponse, UnarchiveError<R::Error>>
 where
@@ -580,7 +663,11 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/conversations.unarchive");
     client
-        .post(&url, &params[..], &[])
+        .post(
+            &url,
+            &params[..],
+            &token.map_or(vec![], |t| vec![("token", t.to_string())]),
+        )
         .await
         .map_err(UnarchiveError::Client)
         .and_then(|result| {

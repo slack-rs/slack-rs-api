@@ -12,9 +12,9 @@
 //
 //=============================================================================
 
-#![allow(unused_variables)]
 #![allow(unused_imports)]
-#![allow(dead_code)]
+#![allow(clippy::match_single_binding)]
+#![allow(clippy::blacklisted_name)]
 
 pub use crate::mod_types::search_types::*;
 use crate::sync::SlackWebRequestSender;
@@ -25,12 +25,14 @@ use crate::sync::SlackWebRequestSender;
 
 pub fn messages<R>(
     client: &R,
+    token: &str,
     request: &MessagesRequest,
 ) -> Result<MessagesResponse, MessagesError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
     let params = vec![
+        Some(("token", token.to_string())),
         request
             .count
             .as_ref()

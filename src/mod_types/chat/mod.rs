@@ -12,9 +12,9 @@
 //
 //=============================================================================
 
-#![allow(unused_variables)]
 #![allow(unused_imports)]
-#![allow(dead_code)]
+#![allow(clippy::match_single_binding)]
+#![allow(clippy::blacklisted_name)]
 
 pub mod scheduled_messages_types;
 
@@ -29,7 +29,7 @@ pub struct DeleteRequest {
     /// Channel containing the message to be deleted.
     pub channel: Option<String>,
     /// Timestamp of the message to be deleted.
-    pub ts: Option<u64>,
+    pub ts: Option<f64>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -1297,7 +1297,7 @@ pub struct ScheduleMessageRequest {
     /// How this field works and whether it is required depends on other fields you use in your API call. [See below](#text_usage) for more detail.
     pub text: Option<String>,
     /// Provide another message's `ts` value to make this message a reply. Avoid using a reply's `ts` value; use its parent instead.
-    pub thread_ts: Option<u64>,
+    pub thread_ts: Option<f64>,
     /// Pass true to enable unfurling of primarily text-based content.
     pub unfurl_links: Option<bool>,
     /// Pass false to disable unfurling of media content.

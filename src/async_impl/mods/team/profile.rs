@@ -12,9 +12,9 @@
 //
 //=============================================================================
 
-#![allow(unused_variables)]
 #![allow(unused_imports)]
-#![allow(dead_code)]
+#![allow(clippy::match_single_binding)]
+#![allow(clippy::blacklisted_name)]
 
 use crate::async_impl::SlackWebRequestSender;
 pub use crate::mod_types::team::profile_types::*;
@@ -23,14 +23,21 @@ pub use crate::mod_types::team::profile_types::*;
 ///
 /// Wraps https://api.slack.com/methods/team.profile.get
 
-pub async fn get<R>(client: &R, request: &GetRequest) -> Result<GetResponse, GetError<R::Error>>
+pub async fn get<R>(
+    client: &R,
+    token: &str,
+    request: &GetRequest,
+) -> Result<GetResponse, GetError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![request
-        .visibility
-        .as_ref()
-        .map(|visibility| ("visibility", visibility.to_string()))];
+    let params = vec![
+        Some(("token", token.to_string())),
+        request
+            .visibility
+            .as_ref()
+            .map(|visibility| ("visibility", visibility.to_string())),
+    ];
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/team.profile.get");
     client

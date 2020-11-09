@@ -12,9 +12,9 @@
 //
 //=============================================================================
 
-#![allow(unused_variables)]
 #![allow(unused_imports)]
-#![allow(dead_code)]
+#![allow(clippy::match_single_binding)]
+#![allow(clippy::blacklisted_name)]
 
 pub use crate::mod_types::apps::permissions::users_types::*;
 use crate::sync::SlackWebRequestSender;
@@ -23,11 +23,16 @@ use crate::sync::SlackWebRequestSender;
 ///
 /// Wraps https://api.slack.com/methods/apps.permissions.users.list
 
-pub fn list<R>(client: &R, request: &ListRequest) -> Result<ListResponse, ListError<R::Error>>
+pub fn list<R>(
+    client: &R,
+    token: &str,
+    request: &ListRequest,
+) -> Result<ListResponse, ListError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
     let params = vec![
+        Some(("token", token.to_string())),
         request
             .cursor
             .as_ref()
@@ -53,12 +58,14 @@ where
 
 pub fn request<R>(
     client: &R,
+    token: &str,
     request: &RequestRequest,
 ) -> Result<RequestResponse, RequestError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
     let params = vec![
+        Some(("token", token.to_string())),
         Some(("scopes", request.scopes.to_string())),
         Some(("trigger_id", request.trigger_id.to_string())),
         Some(("user", request.user.to_string())),

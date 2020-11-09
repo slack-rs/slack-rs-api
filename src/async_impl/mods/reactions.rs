@@ -12,9 +12,9 @@
 //
 //=============================================================================
 
-#![allow(unused_variables)]
 #![allow(unused_imports)]
-#![allow(dead_code)]
+#![allow(clippy::match_single_binding)]
+#![allow(clippy::blacklisted_name)]
 
 use crate::async_impl::SlackWebRequestSender;
 pub use crate::mod_types::reactions_types::*;
@@ -23,7 +23,11 @@ pub use crate::mod_types::reactions_types::*;
 ///
 /// Wraps https://api.slack.com/methods/reactions.add
 
-pub async fn add<R>(client: &R, request: &AddRequest) -> Result<AddResponse, AddError<R::Error>>
+pub async fn add<R>(
+    client: &R,
+    token: &str,
+    request: &AddRequest,
+) -> Result<AddResponse, AddError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
@@ -35,7 +39,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/reactions.add");
     client
-        .post(&url, &params[..], &[])
+        .post(&url, &params[..], &[("token", token.to_string())])
         .await
         .map_err(AddError::Client)
         .and_then(|result| {
@@ -47,11 +51,16 @@ where
 ///
 /// Wraps https://api.slack.com/methods/reactions.get
 
-pub async fn get<R>(client: &R, request: &GetRequest) -> Result<GetResponse, GetError<R::Error>>
+pub async fn get<R>(
+    client: &R,
+    token: &str,
+    request: &GetRequest,
+) -> Result<GetResponse, GetError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
     let params = vec![
+        Some(("token", token.to_string())),
         request
             .channel
             .as_ref()
@@ -82,11 +91,16 @@ where
 ///
 /// Wraps https://api.slack.com/methods/reactions.list
 
-pub async fn list<R>(client: &R, request: &ListRequest) -> Result<ListResponse, ListError<R::Error>>
+pub async fn list<R>(
+    client: &R,
+    token: &str,
+    request: &ListRequest,
+) -> Result<ListResponse, ListError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
     let params = vec![
+        Some(("token", token.to_string())),
         request
             .count
             .as_ref()
@@ -120,6 +134,7 @@ where
 
 pub async fn remove<R>(
     client: &R,
+    token: &str,
     request: &RemoveRequest,
 ) -> Result<RemoveResponse, RemoveError<R::Error>>
 where
@@ -144,7 +159,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/reactions.remove");
     client
-        .post(&url, &params[..], &[])
+        .post(&url, &params[..], &[("token", token.to_string())])
         .await
         .map_err(RemoveError::Client)
         .and_then(|result| {

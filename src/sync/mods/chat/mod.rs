@@ -12,9 +12,9 @@
 //
 //=============================================================================
 
-#![allow(unused_variables)]
 #![allow(unused_imports)]
-#![allow(dead_code)]
+#![allow(clippy::match_single_binding)]
+#![allow(clippy::blacklisted_name)]
 
 pub mod scheduled_messages;
 
@@ -27,6 +27,7 @@ use crate::sync::SlackWebRequestSender;
 
 pub fn delete<R>(
     client: &R,
+    token: Option<&str>,
     request: &DeleteRequest,
 ) -> Result<DeleteResponse, DeleteError<R::Error>>
 where
@@ -46,7 +47,11 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/chat.delete");
     client
-        .post(&url, &params[..], &[])
+        .post(
+            &url,
+            &params[..],
+            &token.map_or(vec![], |t| vec![("token", t.to_string())]),
+        )
         .map_err(DeleteError::Client)
         .and_then(|result| {
             serde_json::from_str::<DeleteResponse>(&result)
@@ -59,6 +64,7 @@ where
 
 pub fn delete_scheduled_message<R>(
     client: &R,
+    token: &str,
     request: &DeleteScheduledMessageRequest,
 ) -> Result<DeleteScheduledMessageResponse, DeleteScheduledMessageError<R::Error>>
 where
@@ -78,7 +84,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/chat.deleteScheduledMessage");
     client
-        .post(&url, &params[..], &[])
+        .post(&url, &params[..], &[("token", token.to_string())])
         .map_err(DeleteScheduledMessageError::Client)
         .and_then(|result| {
             serde_json::from_str::<DeleteScheduledMessageResponse>(&result)
@@ -91,12 +97,14 @@ where
 
 pub fn get_permalink<R>(
     client: &R,
+    token: &str,
     request: &GetPermalinkRequest,
 ) -> Result<GetPermalinkResponse, GetPermalinkError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
     let params = vec![
+        Some(("token", token.to_string())),
         Some(("channel", request.channel.to_string())),
         Some(("message_ts", request.message_ts.to_string())),
     ];
@@ -116,6 +124,7 @@ where
 
 pub fn me_message<R>(
     client: &R,
+    token: Option<&str>,
     request: &MeMessageRequest,
 ) -> Result<MeMessageResponse, MeMessageError<R::Error>>
 where
@@ -131,7 +140,11 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/chat.meMessage");
     client
-        .post(&url, &params[..], &[])
+        .post(
+            &url,
+            &params[..],
+            &token.map_or(vec![], |t| vec![("token", t.to_string())]),
+        )
         .map_err(MeMessageError::Client)
         .and_then(|result| {
             serde_json::from_str::<MeMessageResponse>(&result)
@@ -144,6 +157,7 @@ where
 
 pub fn post_ephemeral<R>(
     client: &R,
+    token: &str,
     request: &PostEphemeralRequest,
 ) -> Result<PostEphemeralResponse, PostEphemeralError<R::Error>>
 where
@@ -193,7 +207,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/chat.postEphemeral");
     client
-        .post(&url, &params[..], &[])
+        .post(&url, &params[..], &[("token", token.to_string())])
         .map_err(PostEphemeralError::Client)
         .and_then(|result| {
             serde_json::from_str::<PostEphemeralResponse>(&result)
@@ -206,6 +220,7 @@ where
 
 pub fn post_message<R>(
     client: &R,
+    token: &str,
     request: &PostMessageRequest,
 ) -> Result<PostMessageResponse, PostMessageError<R::Error>>
 where
@@ -270,7 +285,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/chat.postMessage");
     client
-        .post(&url, &params[..], &[])
+        .post(&url, &params[..], &[("token", token.to_string())])
         .map_err(PostMessageError::Client)
         .and_then(|result| {
             serde_json::from_str::<PostMessageResponse>(&result)
@@ -283,6 +298,7 @@ where
 
 pub fn schedule_message<R>(
     client: &R,
+    token: Option<&str>,
     request: &ScheduleMessageRequest,
 ) -> Result<ScheduleMessageResponse, ScheduleMessageError<R::Error>>
 where
@@ -338,7 +354,11 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/chat.scheduleMessage");
     client
-        .post(&url, &params[..], &[])
+        .post(
+            &url,
+            &params[..],
+            &token.map_or(vec![], |t| vec![("token", t.to_string())]),
+        )
         .map_err(ScheduleMessageError::Client)
         .and_then(|result| {
             serde_json::from_str::<ScheduleMessageResponse>(&result)
@@ -351,6 +371,7 @@ where
 
 pub fn unfurl<R>(
     client: &R,
+    token: &str,
     request: &UnfurlRequest,
 ) -> Result<UnfurlResponse, UnfurlError<R::Error>>
 where
@@ -379,7 +400,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/chat.unfurl");
     client
-        .post(&url, &params[..], &[])
+        .post(&url, &params[..], &[("token", token.to_string())])
         .map_err(UnfurlError::Client)
         .and_then(|result| {
             serde_json::from_str::<UnfurlResponse>(&result)
@@ -392,6 +413,7 @@ where
 
 pub fn update<R>(
     client: &R,
+    token: &str,
     request: &UpdateRequest,
 ) -> Result<UpdateResponse, UpdateError<R::Error>>
 where
@@ -425,7 +447,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/chat.update");
     client
-        .post(&url, &params[..], &[])
+        .post(&url, &params[..], &[("token", token.to_string())])
         .map_err(UpdateError::Client)
         .and_then(|result| {
             serde_json::from_str::<UpdateResponse>(&result)

@@ -12,9 +12,9 @@
 //
 //=============================================================================
 
-#![allow(unused_variables)]
 #![allow(unused_imports)]
-#![allow(dead_code)]
+#![allow(clippy::match_single_binding)]
+#![allow(clippy::blacklisted_name)]
 
 pub mod approved;
 pub mod denied;
@@ -28,6 +28,7 @@ pub use crate::mod_types::admin::invite_requests::*;
 
 pub async fn approve<R>(
     client: &R,
+    token: &str,
     request: &ApproveRequest,
 ) -> Result<ApproveResponse, ApproveError<R::Error>>
 where
@@ -43,7 +44,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.inviteRequests.approve");
     client
-        .post(&url, &params[..], &[])
+        .post(&url, &params[..], &[("token", token.to_string())])
         .await
         .map_err(ApproveError::Client)
         .and_then(|result| {
@@ -55,7 +56,11 @@ where
 ///
 /// Wraps https://api.slack.com/methods/admin.inviteRequests.deny
 
-pub async fn deny<R>(client: &R, request: &DenyRequest) -> Result<DenyResponse, DenyError<R::Error>>
+pub async fn deny<R>(
+    client: &R,
+    token: &str,
+    request: &DenyRequest,
+) -> Result<DenyResponse, DenyError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
@@ -69,7 +74,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.inviteRequests.deny");
     client
-        .post(&url, &params[..], &[])
+        .post(&url, &params[..], &[("token", token.to_string())])
         .await
         .map_err(DenyError::Client)
         .and_then(|result| {
@@ -81,11 +86,16 @@ where
 ///
 /// Wraps https://api.slack.com/methods/admin.inviteRequests.list
 
-pub async fn list<R>(client: &R, request: &ListRequest) -> Result<ListResponse, ListError<R::Error>>
+pub async fn list<R>(
+    client: &R,
+    token: &str,
+    request: &ListRequest,
+) -> Result<ListResponse, ListError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
     let params = vec![
+        Some(("token", token.to_string())),
         request
             .cursor
             .as_ref()

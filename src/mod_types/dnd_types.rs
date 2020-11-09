@@ -12,9 +12,9 @@
 //
 //=============================================================================
 
-#![allow(unused_variables)]
 #![allow(unused_imports)]
-#![allow(dead_code)]
+#![allow(clippy::match_single_binding)]
+#![allow(clippy::blacklisted_name)]
 
 use std::convert::From;
 use std::error::Error;
@@ -396,8 +396,6 @@ impl<E: Error + 'static> Error for InfoError<E> {
 pub struct SetSnoozeRequest {
     /// Number of minutes, from now, to snooze until.
     pub num_minutes: String,
-    /// Authentication token. Requires scope: `dnd:write`
-    pub token: String,
 }
 
 #[derive(Clone, Debug, Deserialize)]

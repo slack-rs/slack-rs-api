@@ -12,9 +12,9 @@
 //
 //=============================================================================
 
-#![allow(unused_variables)]
 #![allow(unused_imports)]
-#![allow(dead_code)]
+#![allow(clippy::match_single_binding)]
+#![allow(clippy::blacklisted_name)]
 
 use std::convert::From;
 use std::error::Error;
@@ -42,7 +42,7 @@ pub struct GetFieldsInner {
     pub is_hidden: Option<bool>,
     pub label: String,
     pub options: Option<Vec<GetOptionsInner>>,
-    pub ordering: u64,
+    pub ordering: f64,
     pub possible_values: Option<Vec<String>>,
     pub r#type: String,
 }

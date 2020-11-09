@@ -12,9 +12,9 @@
 //
 //=============================================================================
 
-#![allow(unused_variables)]
 #![allow(unused_imports)]
-#![allow(dead_code)]
+#![allow(clippy::match_single_binding)]
+#![allow(clippy::blacklisted_name)]
 
 pub mod profile;
 
@@ -27,12 +27,14 @@ pub use crate::mod_types::users::*;
 
 pub async fn conversations<R>(
     client: &R,
+    token: Option<&str>,
     request: &ConversationsRequest,
 ) -> Result<ConversationsResponse, ConversationsError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
     let params = vec![
+        token.map(|token| ("token", token.to_string())),
         request
             .cursor
             .as_ref()
@@ -68,7 +70,8 @@ where
 
 pub async fn delete_photo<R>(
     client: &R,
-    request: &DeletePhotoRequest,
+    token: &str,
+    _request: &DeletePhotoRequest,
 ) -> Result<DeletePhotoResponse, DeletePhotoError<R::Error>>
 where
     R: SlackWebRequestSender,
@@ -77,7 +80,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/users.deletePhoto");
     client
-        .post(&url, &params[..], &[("token", request.token.clone())])
+        .post(&url, &params[..], &[("token", token.to_string())])
         .await
         .map_err(DeletePhotoError::Client)
         .and_then(|result| {
@@ -91,12 +94,16 @@ where
 
 pub async fn get_presence<R>(
     client: &R,
+    token: &str,
     request: &GetPresenceRequest,
 ) -> Result<GetPresenceResponse, GetPresenceError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![request.user.as_ref().map(|user| ("user", user.to_string()))];
+    let params = vec![
+        Some(("token", token.to_string())),
+        request.user.as_ref().map(|user| ("user", user.to_string())),
+    ];
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/users.getPresence");
     client
@@ -114,12 +121,13 @@ where
 
 pub async fn identity<R>(
     client: &R,
-    request: &IdentityRequest,
+    token: Option<&str>,
+    _request: &IdentityRequest,
 ) -> Result<IdentityResponse, IdentityError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![];
+    let params = vec![token.map(|token| ("token", token.to_string()))];
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/users.identity");
     client
@@ -135,11 +143,16 @@ where
 ///
 /// Wraps https://api.slack.com/methods/users.info
 
-pub async fn info<R>(client: &R, request: &InfoRequest) -> Result<InfoResponse, InfoError<R::Error>>
+pub async fn info<R>(
+    client: &R,
+    token: &str,
+    request: &InfoRequest,
+) -> Result<InfoResponse, InfoError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
     let params = vec![
+        Some(("token", token.to_string())),
         request
             .include_locale
             .as_ref()
@@ -161,11 +174,16 @@ where
 ///
 /// Wraps https://api.slack.com/methods/users.list
 
-pub async fn list<R>(client: &R, request: &ListRequest) -> Result<ListResponse, ListError<R::Error>>
+pub async fn list<R>(
+    client: &R,
+    token: Option<&str>,
+    request: &ListRequest,
+) -> Result<ListResponse, ListError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
     let params = vec![
+        token.map(|token| ("token", token.to_string())),
         request
             .cursor
             .as_ref()
@@ -196,12 +214,16 @@ where
 
 pub async fn lookup_by_email<R>(
     client: &R,
+    token: &str,
     request: &LookupByEmailRequest,
 ) -> Result<LookupByEmailResponse, LookupByEmailError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![Some(("email", request.email.to_string()))];
+    let params = vec![
+        Some(("token", token.to_string())),
+        Some(("email", request.email.to_string())),
+    ];
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/users.lookupByEmail");
     client
@@ -219,7 +241,8 @@ where
 
 pub async fn set_active<R>(
     client: &R,
-    request: &SetActiveRequest,
+    token: &str,
+    _request: &SetActiveRequest,
 ) -> Result<SetActiveResponse, SetActiveError<R::Error>>
 where
     R: SlackWebRequestSender,
@@ -228,7 +251,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/users.setActive");
     client
-        .post(&url, &params[..], &[])
+        .post(&url, &params[..], &[("token", token.to_string())])
         .await
         .map_err(SetActiveError::Client)
         .and_then(|result| {
@@ -242,6 +265,7 @@ where
 
 pub async fn set_photo<R>(
     client: &R,
+    token: &str,
     request: &SetPhotoRequest,
 ) -> Result<SetPhotoResponse, SetPhotoError<R::Error>>
 where
@@ -268,7 +292,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/users.setPhoto");
     client
-        .post(&url, &params[..], &[("token", request.token.clone())])
+        .post(&url, &params[..], &[("token", token.to_string())])
         .await
         .map_err(SetPhotoError::Client)
         .and_then(|result| {
@@ -282,6 +306,7 @@ where
 
 pub async fn set_presence<R>(
     client: &R,
+    token: &str,
     request: &SetPresenceRequest,
 ) -> Result<SetPresenceResponse, SetPresenceError<R::Error>>
 where
@@ -291,7 +316,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/users.setPresence");
     client
-        .post(&url, &params[..], &[])
+        .post(&url, &params[..], &[("token", token.to_string())])
         .await
         .map_err(SetPresenceError::Client)
         .and_then(|result| {

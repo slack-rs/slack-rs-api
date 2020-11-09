@@ -12,9 +12,9 @@
 //
 //=============================================================================
 
-#![allow(unused_variables)]
 #![allow(unused_imports)]
-#![allow(dead_code)]
+#![allow(clippy::match_single_binding)]
+#![allow(clippy::blacklisted_name)]
 
 use std::convert::From;
 use std::error::Error;
@@ -27,11 +27,11 @@ pub struct ListRequest {
     /// For pagination purposes, this is the `cursor` value returned from a previous call to `chat.scheduledmessages.list` indicating where you want to start this call from.
     pub cursor: Option<String>,
     /// A UNIX timestamp of the latest value in the time range
-    pub latest: Option<u64>,
+    pub latest: Option<f64>,
     /// Maximum number of original entries to return.
     pub limit: Option<u64>,
     /// A UNIX timestamp of the oldest value in the time range
-    pub oldest: Option<u64>,
+    pub oldest: Option<f64>,
 }
 
 #[derive(Clone, Debug, Deserialize)]

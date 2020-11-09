@@ -3,22 +3,22 @@
 
 use std::collections::HashMap;
 use std::convert::TryFrom;
-use std::fmt;
 use std::fs;
-use std::io::Write;
 use std::iter::Peekable;
 use std::path::{Path, PathBuf};
 
 use anyhow::{bail, Context, Result};
 use clap::{App, Arg};
 use reqwest::blocking::Client;
-use serde::Serialize;
 
 mod rust;
 use rust::{GenMode, HttpMethod, Method, Module, ModuleBuilder, Parameter, Response};
 
 mod schema;
 use schema::{EnumValues, Operation, PathItem, Spec};
+
+mod adapt;
+use adapt::correct;
 
 mod vec_or_single;
 
@@ -33,9 +33,8 @@ fn main() -> Result<()> {
     let arguments = handle_arguments()?;
     let mut spec = fetch_slack_api_spec()?;
     spec.replace_refs()?;
-    let modules = transform_to_modules(&spec)?;
-    debug(&modules);
-    debug_json(&spec.paths);
+    let mut modules = transform_to_modules(&spec)?;
+    correct(&mut modules);
     generate(&arguments.outdir, &modules)?;
     Ok(())
 }
@@ -76,21 +75,6 @@ fn fetch_slack_api_spec() -> Result<Spec> {
         .context("Slack Server send failure code")?
         .json()
         .context("Unable to deserialize slack server response")
-}
-
-fn debug<D: fmt::Debug>(data: D) {
-    std::fs::File::create("/tmp_crypt/slack.debug")
-        .unwrap()
-        .write_all(format!("{:#?}", data).as_bytes())
-        .unwrap();
-}
-
-fn debug_json<D: Serialize>(data: D) {
-    let data = serde_json::to_string_pretty(&data).expect("Unable to serialize debug data");
-    std::fs::File::create("/tmp_crypt/slack.json")
-        .unwrap()
-        .write_all(data.as_bytes())
-        .unwrap();
 }
 
 fn transform_to_modules(spec: &Spec) -> Result<Vec<Module>> {
@@ -219,8 +203,7 @@ fn create_method(
     };
     for parameter in &op.parameters {
         let parameter = match parameter.location.as_ref() {
-            "header" if parameter.name == "token" => continue,
-            "query" if parameter.name == "token" => continue,
+            "header" if parameter.name == "token" => Parameter::try_from(parameter)?,
             "formData" | "query" => Parameter::try_from(parameter)?,
             loc => bail!(format!(
                 "Unsupported paramter location {} for {}",

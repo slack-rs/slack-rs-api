@@ -12,9 +12,9 @@
 //
 //=============================================================================
 
-#![allow(unused_variables)]
 #![allow(unused_imports)]
-#![allow(dead_code)]
+#![allow(clippy::match_single_binding)]
+#![allow(clippy::blacklisted_name)]
 
 pub mod ekm;
 pub mod restrict_access;
@@ -28,6 +28,7 @@ use crate::sync::SlackWebRequestSender;
 
 pub fn archive<R>(
     client: &R,
+    token: &str,
     request: &ArchiveRequest,
 ) -> Result<ArchiveResponse, ArchiveError<R::Error>>
 where
@@ -37,7 +38,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.conversations.archive");
     client
-        .post(&url, &params[..], &[])
+        .post(&url, &params[..], &[("token", token.to_string())])
         .map_err(ArchiveError::Client)
         .and_then(|result| {
             serde_json::from_str::<ArchiveResponse>(&result)
@@ -50,6 +51,7 @@ where
 
 pub fn convert_to_private<R>(
     client: &R,
+    token: &str,
     request: &ConvertToPrivateRequest,
 ) -> Result<ConvertToPrivateResponse, ConvertToPrivateError<R::Error>>
 where
@@ -59,7 +61,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.conversations.convertToPrivate");
     client
-        .post(&url, &params[..], &[])
+        .post(&url, &params[..], &[("token", token.to_string())])
         .map_err(ConvertToPrivateError::Client)
         .and_then(|result| {
             serde_json::from_str::<ConvertToPrivateResponse>(&result)
@@ -72,6 +74,7 @@ where
 
 pub fn create<R>(
     client: &R,
+    token: &str,
     request: &CreateRequest,
 ) -> Result<CreateResponse, CreateError<R::Error>>
 where
@@ -96,7 +99,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.conversations.create");
     client
-        .post(&url, &params[..], &[])
+        .post(&url, &params[..], &[("token", token.to_string())])
         .map_err(CreateError::Client)
         .and_then(|result| {
             serde_json::from_str::<CreateResponse>(&result)
@@ -109,6 +112,7 @@ where
 
 pub fn delete<R>(
     client: &R,
+    token: &str,
     request: &DeleteRequest,
 ) -> Result<DeleteResponse, DeleteError<R::Error>>
 where
@@ -118,7 +122,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.conversations.delete");
     client
-        .post(&url, &params[..], &[])
+        .post(&url, &params[..], &[("token", token.to_string())])
         .map_err(DeleteError::Client)
         .and_then(|result| {
             serde_json::from_str::<DeleteResponse>(&result)
@@ -131,6 +135,7 @@ where
 
 pub fn disconnect_shared<R>(
     client: &R,
+    token: &str,
     request: &DisconnectSharedRequest,
 ) -> Result<DisconnectSharedResponse, DisconnectSharedError<R::Error>>
 where
@@ -146,7 +151,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.conversations.disconnectShared");
     client
-        .post(&url, &params[..], &[])
+        .post(&url, &params[..], &[("token", token.to_string())])
         .map_err(DisconnectSharedError::Client)
         .and_then(|result| {
             serde_json::from_str::<DisconnectSharedResponse>(&result)
@@ -159,12 +164,16 @@ where
 
 pub fn get_conversation_prefs<R>(
     client: &R,
+    token: &str,
     request: &GetConversationPrefsRequest,
 ) -> Result<GetConversationPrefsResponse, GetConversationPrefsError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![Some(("channel_id", request.channel_id.to_string()))];
+    let params = vec![
+        Some(("token", token.to_string())),
+        Some(("channel_id", request.channel_id.to_string())),
+    ];
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.conversations.getConversationPrefs");
     client
@@ -181,12 +190,14 @@ where
 
 pub fn get_teams<R>(
     client: &R,
+    token: &str,
     request: &GetTeamsRequest,
 ) -> Result<GetTeamsResponse, GetTeamsError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
     let params = vec![
+        Some(("token", token.to_string())),
         Some(("channel_id", request.channel_id.to_string())),
         request
             .cursor
@@ -213,6 +224,7 @@ where
 
 pub fn invite<R>(
     client: &R,
+    token: &str,
     request: &InviteRequest,
 ) -> Result<InviteResponse, InviteError<R::Error>>
 where
@@ -225,7 +237,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.conversations.invite");
     client
-        .post(&url, &params[..], &[])
+        .post(&url, &params[..], &[("token", token.to_string())])
         .map_err(InviteError::Client)
         .and_then(|result| {
             serde_json::from_str::<InviteResponse>(&result)
@@ -238,6 +250,7 @@ where
 
 pub fn rename<R>(
     client: &R,
+    token: &str,
     request: &RenameRequest,
 ) -> Result<RenameResponse, RenameError<R::Error>>
 where
@@ -250,7 +263,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.conversations.rename");
     client
-        .post(&url, &params[..], &[])
+        .post(&url, &params[..], &[("token", token.to_string())])
         .map_err(RenameError::Client)
         .and_then(|result| {
             serde_json::from_str::<RenameResponse>(&result)
@@ -263,12 +276,14 @@ where
 
 pub fn search<R>(
     client: &R,
+    token: &str,
     request: &SearchRequest,
 ) -> Result<SearchResponse, SearchError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
     let params = vec![
+        Some(("token", token.to_string())),
         request
             .cursor
             .as_ref()
@@ -311,6 +326,7 @@ where
 
 pub fn set_conversation_prefs<R>(
     client: &R,
+    token: &str,
     request: &SetConversationPrefsRequest,
 ) -> Result<SetConversationPrefsResponse, SetConversationPrefsError<R::Error>>
 where
@@ -323,7 +339,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.conversations.setConversationPrefs");
     client
-        .post(&url, &params[..], &[])
+        .post(&url, &params[..], &[("token", token.to_string())])
         .map_err(SetConversationPrefsError::Client)
         .and_then(|result| {
             serde_json::from_str::<SetConversationPrefsResponse>(&result)
@@ -336,6 +352,7 @@ where
 
 pub fn set_teams<R>(
     client: &R,
+    token: &str,
     request: &SetTeamsRequest,
 ) -> Result<SetTeamsResponse, SetTeamsError<R::Error>>
 where
@@ -359,7 +376,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.conversations.setTeams");
     client
-        .post(&url, &params[..], &[])
+        .post(&url, &params[..], &[("token", token.to_string())])
         .map_err(SetTeamsError::Client)
         .and_then(|result| {
             serde_json::from_str::<SetTeamsResponse>(&result)
@@ -372,6 +389,7 @@ where
 
 pub fn unarchive<R>(
     client: &R,
+    token: &str,
     request: &UnarchiveRequest,
 ) -> Result<UnarchiveResponse, UnarchiveError<R::Error>>
 where
@@ -381,7 +399,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.conversations.unarchive");
     client
-        .post(&url, &params[..], &[])
+        .post(&url, &params[..], &[("token", token.to_string())])
         .map_err(UnarchiveError::Client)
         .and_then(|result| {
             serde_json::from_str::<UnarchiveResponse>(&result)

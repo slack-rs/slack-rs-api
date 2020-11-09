@@ -12,9 +12,9 @@
 //
 //=============================================================================
 
-#![allow(unused_variables)]
 #![allow(unused_imports)]
-#![allow(dead_code)]
+#![allow(clippy::match_single_binding)]
+#![allow(clippy::blacklisted_name)]
 
 use std::convert::From;
 use std::error::Error;
@@ -751,7 +751,7 @@ pub struct CreateChannelInner {
     pub pending_shared: Option<Vec<String>>,
     pub pin_count: Option<u64>,
     pub previous_names: Option<Vec<String>>,
-    pub priority: Option<u64>,
+    pub priority: Option<f64>,
     pub purpose: CreatePurposeInner,
     pub shared_team_ids: Option<Vec<String>>,
     pub shares: Option<Vec<CreateShares2Inner>>,
@@ -919,23 +919,23 @@ impl<E: Error + 'static> Error for CreateError<E> {
 #[derive(Clone, Default, Debug)]
 pub struct HistoryRequest {
     /// Conversation ID to fetch history for.
-    pub channel: Option<String>,
+    pub channel: String,
     /// Paginate through collections of data by setting the `cursor` parameter to a `next_cursor` attribute returned by a previous request's `response_metadata`. Default value fetches the first "page" of the collection. See [pagination](/docs/pagination) for more detail.
     pub cursor: Option<String>,
     /// Include messages with latest or oldest timestamp in results only when either timestamp is specified.
     pub inclusive: Option<bool>,
     /// End of time range of messages to include in results.
-    pub latest: Option<u64>,
+    pub latest: Option<f64>,
     /// The maximum number of items to return. Fewer than the requested number of items may be returned, even if the end of the users list hasn't been reached.
     pub limit: Option<u64>,
     /// Start of time range of messages to include in results.
-    pub oldest: Option<u64>,
+    pub oldest: Option<f64>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct HistoryAttachmentsInner {
     pub fallback: Option<String>,
-    pub id: u64,
+    pub id: Option<u64>,
     pub image_bytes: Option<u64>,
     pub image_height: Option<u64>,
     pub image_url: Option<String>,
@@ -1193,7 +1193,7 @@ pub struct HistoryUserProfileInner {
 pub struct HistoryMessagesInner {
     pub attachments: Option<Vec<HistoryAttachmentsInner>>,
     pub blocks: Option<Vec<HistoryBlocksInner>>,
-    pub bot_id: Option<Vec<String>>,
+    pub bot_id: Option<String>,
     pub bot_profile: Option<HistoryBotProfileInner>,
     pub client_msg_id: Option<String>,
     pub comment: Option<HistoryCommentInner>,
@@ -1238,10 +1238,10 @@ pub struct HistoryMessagesInner {
 pub struct HistoryResponse {
     pub callstack: Option<String>,
     pub channel_actions_count: u64,
-    pub channel_actions_ts: Vec<u64>,
+    pub channel_actions_ts: Option<Vec<u64>>,
     error: Option<String>,
     pub has_more: bool,
-    pub messages: Vec<HistoryMessagesInner>,
+    pub messages: Option<Vec<HistoryMessagesInner>>,
     pub needed: Option<String>,
     #[serde(default)]
     ok: bool,
@@ -1351,7 +1351,7 @@ impl<E: Error + 'static> Error for HistoryError<E> {
 #[derive(Clone, Default, Debug)]
 pub struct InfoRequest {
     /// Conversation ID to learn more about
-    pub channel: Option<String>,
+    pub channel: String,
     /// Set this to `true` to receive the locale for this conversation. Defaults to `false`
     pub include_locale: Option<bool>,
     /// Set to `true` to include the member count for the specified conversation. Defaults to `false`
@@ -1803,7 +1803,7 @@ pub struct InfoChannelInner {
     pub pending_shared: Option<Vec<String>>,
     pub pin_count: Option<u64>,
     pub previous_names: Option<Vec<String>>,
-    pub priority: Option<u64>,
+    pub priority: Option<f64>,
     pub purpose: InfoPurposeInner,
     pub shared_team_ids: Option<Vec<String>>,
     pub shares: Option<Vec<InfoShares2Inner>>,
@@ -1820,7 +1820,7 @@ pub struct InfoChannelInner {
 #[derive(Clone, Debug, Deserialize)]
 pub struct InfoResponse {
     pub callstack: Option<String>,
-    pub channel: Vec<InfoChannelInner>,
+    pub channel: InfoChannelInner,
     error: Option<String>,
     pub needed: Option<String>,
     #[serde(default)]
@@ -2377,7 +2377,7 @@ pub struct InviteChannelInner {
     pub pending_shared: Option<Vec<String>>,
     pub pin_count: Option<u64>,
     pub previous_names: Option<Vec<String>>,
-    pub priority: Option<u64>,
+    pub priority: Option<f64>,
     pub purpose: InvitePurposeInner,
     pub shared_team_ids: Option<Vec<String>>,
     pub shares: Option<Vec<InviteShares2Inner>>,
@@ -3012,7 +3012,7 @@ pub struct JoinChannelInner {
     pub pending_shared: Option<Vec<String>>,
     pub pin_count: Option<u64>,
     pub previous_names: Option<Vec<String>>,
-    pub priority: Option<u64>,
+    pub priority: Option<f64>,
     pub purpose: JoinPurposeInner,
     pub shared_team_ids: Option<Vec<String>>,
     pub shares: Option<Vec<JoinShares2Inner>>,
@@ -3910,7 +3910,7 @@ pub struct ListChannelsInner {
     pub pending_shared: Option<Vec<String>>,
     pub pin_count: Option<u64>,
     pub previous_names: Option<Vec<String>>,
-    pub priority: Option<u64>,
+    pub priority: Option<f64>,
     pub purpose: ListPurposeInner,
     pub shared_team_ids: Option<Vec<String>>,
     pub shares: Option<Vec<ListShares2Inner>>,
@@ -3932,7 +3932,7 @@ pub struct ListResponseMetadataInner {
 #[derive(Clone, Debug, Deserialize)]
 pub struct ListResponse {
     pub callstack: Option<String>,
-    pub channels: Vec<Vec<ListChannelsInner>>,
+    pub channels: Vec<ListChannelsInner>,
     error: Option<String>,
     pub needed: Option<String>,
     #[serde(default)]
@@ -4036,7 +4036,7 @@ pub struct MarkRequest {
     /// Channel or conversation to set the read cursor for.
     pub channel: Option<String>,
     /// Unique identifier of message you want marked as most recently seen in this conversation.
-    pub ts: Option<u64>,
+    pub ts: Option<f64>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -4743,7 +4743,7 @@ pub struct OpenChannelInner {
     pub pending_shared: Option<Vec<String>>,
     pub pin_count: Option<u64>,
     pub previous_names: Option<Vec<String>>,
-    pub priority: Option<u64>,
+    pub priority: Option<f64>,
     pub purpose: OpenPurposeInner,
     pub shared_team_ids: Option<Vec<String>>,
     pub shares: Option<Vec<OpenShares2Inner>>,
@@ -5345,7 +5345,7 @@ pub struct RenameChannelInner {
     pub pending_shared: Option<Vec<String>>,
     pub pin_count: Option<u64>,
     pub previous_names: Option<Vec<String>>,
-    pub priority: Option<u64>,
+    pub priority: Option<f64>,
     pub purpose: RenamePurposeInner,
     pub shared_team_ids: Option<Vec<String>>,
     pub shares: Option<Vec<RenameShares2Inner>>,
@@ -5515,13 +5515,13 @@ pub struct RepliesRequest {
     /// Include messages with latest or oldest timestamp in results only when either timestamp is specified.
     pub inclusive: Option<bool>,
     /// End of time range of messages to include in results.
-    pub latest: Option<u64>,
+    pub latest: Option<f64>,
     /// The maximum number of items to return. Fewer than the requested number of items may be returned, even if the end of the users list hasn't been reached.
     pub limit: Option<u64>,
     /// Start of time range of messages to include in results.
-    pub oldest: Option<u64>,
+    pub oldest: Option<f64>,
     /// Unique identifier of a thread's parent message. `ts` must be the timestamp of an existing message with 0 or more replies. If there are no replies then just the single message referenced by `ts` will return - it is just an ordinary, unthreaded message.
-    pub ts: Option<u64>,
+    pub ts: Option<f64>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -6123,7 +6123,7 @@ pub struct SetPurposeChannelInner {
     pub pending_shared: Option<Vec<String>>,
     pub pin_count: Option<u64>,
     pub previous_names: Option<Vec<String>>,
-    pub priority: Option<u64>,
+    pub priority: Option<f64>,
     pub purpose: SetPurposePurposeInner,
     pub shared_team_ids: Option<Vec<String>>,
     pub shares: Option<Vec<SetPurposeShares2Inner>>,
@@ -6729,7 +6729,7 @@ pub struct SetTopicChannelInner {
     pub pending_shared: Option<Vec<String>>,
     pub pin_count: Option<u64>,
     pub previous_names: Option<Vec<String>>,
-    pub priority: Option<u64>,
+    pub priority: Option<f64>,
     pub purpose: SetTopicPurposeInner,
     pub shared_team_ids: Option<Vec<String>>,
     pub shares: Option<Vec<SetTopicShares2Inner>>,

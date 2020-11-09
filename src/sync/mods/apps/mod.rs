@@ -12,9 +12,9 @@
 //
 //=============================================================================
 
-#![allow(unused_variables)]
 #![allow(unused_imports)]
-#![allow(dead_code)]
+#![allow(clippy::match_single_binding)]
+#![allow(clippy::blacklisted_name)]
 
 pub mod event;
 pub mod permissions;
@@ -28,12 +28,14 @@ use crate::sync::SlackWebRequestSender;
 
 pub fn uninstall<R>(
     client: &R,
+    token: Option<&str>,
     request: &UninstallRequest,
 ) -> Result<UninstallResponse, UninstallError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
     let params = vec![
+        token.map(|token| ("token", token.to_string())),
         request
             .client_id
             .as_ref()

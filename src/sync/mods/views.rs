@@ -12,9 +12,9 @@
 //
 //=============================================================================
 
-#![allow(unused_variables)]
 #![allow(unused_imports)]
-#![allow(dead_code)]
+#![allow(clippy::match_single_binding)]
+#![allow(clippy::blacklisted_name)]
 
 pub use crate::mod_types::views_types::*;
 use crate::sync::SlackWebRequestSender;
@@ -23,11 +23,16 @@ use crate::sync::SlackWebRequestSender;
 ///
 /// Wraps https://api.slack.com/methods/views.open
 
-pub fn open<R>(client: &R, request: &OpenRequest) -> Result<OpenResponse, OpenError<R::Error>>
+pub fn open<R>(
+    client: &R,
+    token: &str,
+    request: &OpenRequest,
+) -> Result<OpenResponse, OpenError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
     let params = vec![
+        Some(("token", token.to_string())),
         Some(("trigger_id", request.trigger_id.to_string())),
         Some(("view", request.view.to_string())),
     ];
@@ -47,12 +52,14 @@ where
 
 pub fn publish<R>(
     client: &R,
+    token: &str,
     request: &PublishRequest,
 ) -> Result<PublishResponse, PublishError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
     let params = vec![
+        Some(("token", token.to_string())),
         request.hash.as_ref().map(|hash| ("hash", hash.to_string())),
         Some(("user_id", request.user_id.to_string())),
         Some(("view", request.view.to_string())),
@@ -71,11 +78,16 @@ where
 ///
 /// Wraps https://api.slack.com/methods/views.push
 
-pub fn push<R>(client: &R, request: &PushRequest) -> Result<PushResponse, PushError<R::Error>>
+pub fn push<R>(
+    client: &R,
+    token: &str,
+    request: &PushRequest,
+) -> Result<PushResponse, PushError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
     let params = vec![
+        Some(("token", token.to_string())),
         Some(("trigger_id", request.trigger_id.to_string())),
         Some(("view", request.view.to_string())),
     ];
@@ -95,12 +107,14 @@ where
 
 pub fn update<R>(
     client: &R,
+    token: &str,
     request: &UpdateRequest,
 ) -> Result<UpdateResponse, UpdateError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
     let params = vec![
+        Some(("token", token.to_string())),
         request
             .external_id
             .as_ref()

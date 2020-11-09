@@ -12,9 +12,9 @@
 //
 //=============================================================================
 
-#![allow(unused_variables)]
 #![allow(unused_imports)]
-#![allow(dead_code)]
+#![allow(clippy::match_single_binding)]
+#![allow(clippy::blacklisted_name)]
 
 pub mod profile;
 
@@ -27,12 +27,14 @@ use crate::sync::SlackWebRequestSender;
 
 pub fn access_logs<R>(
     client: &R,
+    token: &str,
     request: &AccessLogsRequest,
 ) -> Result<AccessLogsResponse, AccessLogsError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
     let params = vec![
+        Some(("token", token.to_string())),
         request
             .before
             .as_ref()
@@ -59,12 +61,16 @@ where
 
 pub fn billable_info<R>(
     client: &R,
+    token: &str,
     request: &BillableInfoRequest,
 ) -> Result<BillableInfoResponse, BillableInfoError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![request.user.as_ref().map(|user| ("user", user.to_string()))];
+    let params = vec![
+        Some(("token", token.to_string())),
+        request.user.as_ref().map(|user| ("user", user.to_string())),
+    ];
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/team.billableInfo");
     client
@@ -79,11 +85,18 @@ where
 ///
 /// Wraps https://api.slack.com/methods/team.info
 
-pub fn info<R>(client: &R, request: &InfoRequest) -> Result<InfoResponse, InfoError<R::Error>>
+pub fn info<R>(
+    client: &R,
+    token: &str,
+    request: &InfoRequest,
+) -> Result<InfoResponse, InfoError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![request.team.as_ref().map(|team| ("team", team.to_string()))];
+    let params = vec![
+        Some(("token", token.to_string())),
+        request.team.as_ref().map(|team| ("team", team.to_string())),
+    ];
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/team.info");
     client
@@ -100,12 +113,14 @@ where
 
 pub fn integration_logs<R>(
     client: &R,
+    token: &str,
     request: &IntegrationLogsRequest,
 ) -> Result<IntegrationLogsResponse, IntegrationLogsError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
     let params = vec![
+        Some(("token", token.to_string())),
         request
             .app_id
             .as_ref()

@@ -12,9 +12,9 @@
 //
 //=============================================================================
 
-#![allow(unused_variables)]
 #![allow(unused_imports)]
-#![allow(dead_code)]
+#![allow(clippy::match_single_binding)]
+#![allow(clippy::blacklisted_name)]
 
 use crate::async_impl::SlackWebRequestSender;
 pub use crate::mod_types::admin::users::session_types::*;
@@ -25,6 +25,7 @@ pub use crate::mod_types::admin::users::session_types::*;
 
 pub async fn invalidate<R>(
     client: &R,
+    token: &str,
     request: &InvalidateRequest,
 ) -> Result<InvalidateResponse, InvalidateError<R::Error>>
 where
@@ -37,7 +38,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.users.session.invalidate");
     client
-        .post(&url, &params[..], &[])
+        .post(&url, &params[..], &[("token", token.to_string())])
         .await
         .map_err(InvalidateError::Client)
         .and_then(|result| {
@@ -51,6 +52,7 @@ where
 
 pub async fn reset<R>(
     client: &R,
+    token: &str,
     request: &ResetRequest,
 ) -> Result<ResetResponse, ResetError<R::Error>>
 where
@@ -70,7 +72,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.users.session.reset");
     client
-        .post(&url, &params[..], &[])
+        .post(&url, &params[..], &[("token", token.to_string())])
         .await
         .map_err(ResetError::Client)
         .and_then(|result| {

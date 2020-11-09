@@ -12,9 +12,9 @@
 //
 //=============================================================================
 
-#![allow(unused_variables)]
 #![allow(unused_imports)]
-#![allow(dead_code)]
+#![allow(clippy::match_single_binding)]
+#![allow(clippy::blacklisted_name)]
 
 use crate::async_impl::SlackWebRequestSender;
 pub use crate::mod_types::files::remote_types::*;
@@ -23,7 +23,11 @@ pub use crate::mod_types::files::remote_types::*;
 ///
 /// Wraps https://api.slack.com/methods/files.remote.add
 
-pub async fn add<R>(client: &R, request: &AddRequest) -> Result<AddResponse, AddError<R::Error>>
+pub async fn add<R>(
+    client: &R,
+    token: Option<&str>,
+    request: &AddRequest,
+) -> Result<AddResponse, AddError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
@@ -64,10 +68,7 @@ where
         .post(
             &url,
             &params[..],
-            &request
-                .token
-                .as_ref()
-                .map_or(vec![], |t| vec![("token", t.into())]),
+            &token.map_or(vec![], |t| vec![("token", t.to_string())]),
         )
         .await
         .map_err(AddError::Client)
@@ -80,11 +81,16 @@ where
 ///
 /// Wraps https://api.slack.com/methods/files.remote.info
 
-pub async fn info<R>(client: &R, request: &InfoRequest) -> Result<InfoResponse, InfoError<R::Error>>
+pub async fn info<R>(
+    client: &R,
+    token: Option<&str>,
+    request: &InfoRequest,
+) -> Result<InfoResponse, InfoError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
     let params = vec![
+        token.map(|token| ("token", token.to_string())),
         request
             .external_id
             .as_ref()
@@ -106,11 +112,16 @@ where
 ///
 /// Wraps https://api.slack.com/methods/files.remote.list
 
-pub async fn list<R>(client: &R, request: &ListRequest) -> Result<ListResponse, ListError<R::Error>>
+pub async fn list<R>(
+    client: &R,
+    token: Option<&str>,
+    request: &ListRequest,
+) -> Result<ListResponse, ListError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
     let params = vec![
+        token.map(|token| ("token", token.to_string())),
         request
             .channel
             .as_ref()
@@ -149,6 +160,7 @@ where
 
 pub async fn remove<R>(
     client: &R,
+    token: Option<&str>,
     request: &RemoveRequest,
 ) -> Result<RemoveResponse, RemoveError<R::Error>>
 where
@@ -167,10 +179,7 @@ where
         .post(
             &url,
             &params[..],
-            &request
-                .token
-                .as_ref()
-                .map_or(vec![], |t| vec![("token", t.into())]),
+            &token.map_or(vec![], |t| vec![("token", t.to_string())]),
         )
         .await
         .map_err(RemoveError::Client)
@@ -185,12 +194,14 @@ where
 
 pub async fn share<R>(
     client: &R,
+    token: Option<&str>,
     request: &ShareRequest,
 ) -> Result<ShareResponse, ShareError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
     let params = vec![
+        token.map(|token| ("token", token.to_string())),
         request
             .channels
             .as_ref()
@@ -218,6 +229,7 @@ where
 
 pub async fn update<R>(
     client: &R,
+    token: Option<&str>,
     request: &UpdateRequest,
 ) -> Result<UpdateResponse, UpdateError<R::Error>>
 where
@@ -261,10 +273,7 @@ where
         .post(
             &url,
             &params[..],
-            &request
-                .token
-                .as_ref()
-                .map_or(vec![], |t| vec![("token", t.into())]),
+            &token.map_or(vec![], |t| vec![("token", t.to_string())]),
         )
         .await
         .map_err(UpdateError::Client)

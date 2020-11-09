@@ -12,9 +12,9 @@
 //
 //=============================================================================
 
-#![allow(unused_variables)]
 #![allow(unused_imports)]
-#![allow(dead_code)]
+#![allow(clippy::match_single_binding)]
+#![allow(clippy::blacklisted_name)]
 
 pub use crate::mod_types::rtm_types::*;
 use crate::sync::SlackWebRequestSender;
@@ -25,12 +25,14 @@ use crate::sync::SlackWebRequestSender;
 
 pub fn connect<R>(
     client: &R,
+    token: &str,
     request: &ConnectRequest,
 ) -> Result<ConnectResponse, ConnectError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
     let params = vec![
+        Some(("token", token.to_string())),
         request
             .batch_presence_aware
             .as_ref()

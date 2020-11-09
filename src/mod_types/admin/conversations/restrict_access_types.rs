@@ -12,9 +12,9 @@
 //
 //=============================================================================
 
-#![allow(unused_variables)]
 #![allow(unused_imports)]
-#![allow(dead_code)]
+#![allow(clippy::match_single_binding)]
+#![allow(clippy::blacklisted_name)]
 
 use std::convert::From;
 use std::error::Error;
@@ -28,8 +28,6 @@ pub struct AddGroupRequest {
     pub group_id: String,
     /// The workspace where the channel exists. This argument is required for channels only tied to one workspace, and optional for channels that are shared across an organization.
     pub team_id: Option<String>,
-    /// Authentication token. Requires scope: `admin.conversations:write`
-    pub token: String,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -159,8 +157,6 @@ pub struct RemoveGroupRequest {
     pub group_id: String,
     /// The workspace where the channel exists. This argument is required for channels only tied to one workspace, and optional for channels that are shared across an organization.
     pub team_id: String,
-    /// Authentication token. Requires scope: `admin.conversations:write`
-    pub token: String,
 }
 
 #[derive(Clone, Debug, Deserialize)]

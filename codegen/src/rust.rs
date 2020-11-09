@@ -180,9 +180,9 @@ impl Module {
         };
         let data = format!(
             "{header}
-            #![allow(unused_variables)]
             #![allow(unused_imports)]
-            #![allow(dead_code)]
+            #![allow(clippy::match_single_binding)]
+            #![allow(clippy::blacklisted_name)]
         
             {modules}{imports}
             
@@ -290,6 +290,7 @@ impl Method {
         let parameters = self
             .parameters
             .iter()
+            .filter(|p| p.name != "token")
             .map(Parameter::to_rust)
             .collect::<Vec<_>>()
             .join("\n");
@@ -415,6 +416,7 @@ impl Method {
             HttpMethod::Get => self
                 .parameters
                 .iter()
+                .filter(|p| p.name != "token")
                 .map(Parameter::to_rust_fn)
                 .collect::<Vec<_>>()
                 .join("\n"),
@@ -426,34 +428,59 @@ impl Method {
                 .collect::<Vec<_>>()
                 .join("\n"),
         };
+        let token = self.parameters.iter().find(|p| p.name == "token");
         let headers = match self.http_method {
             HttpMethod::Get => "",
             HttpMethod::Post => {
-                if let Some(token) = self.parameters.iter().find(|p| p.name == "token") {
+                if let Some(token) = token {
                     if token.required {
-                        ", &[(\"token\", request.token.clone())]"
+                        ", &[(\"token\", token.to_string())]"
                     } else {
-                        ", &request.token.as_ref().map_or(vec![], |t| vec![(\"token\", t.into())])"
+                        ", &token.map_or(vec![], |t| vec![(\"token\", t.to_string())])"
                     }
                 } else {
                     ", &[]"
                 }
             }
         };
+        let params = match self.http_method {
+            HttpMethod::Post => "",
+            HttpMethod::Get => {
+                if let Some(token) = token {
+                    if token.required {
+                        "Some((\"token\", token.to_string())),"
+                    } else {
+                        "token.map(|token| (\"token\", token.to_string())),"
+                    }
+                } else {
+                    ""
+                }
+            }
+        };
+        let token_param = if let Some(token) = token {
+            if token.required {
+                "token: &str,"
+            } else {
+                "token: Option<&str>,"
+            }
+        } else {
+            ""
+        };
+        let empty_param = if parameters.is_empty() { "_" } else { "" };
         let out = format!(
             "/// {description}
             ///
             /// Wraps {doc_url}
             
             pub {fn_type} {fn_name}<R>(
-                client: &R,
-                request: &{request_type},
+                client: &R,{token_param}
+                {empty_param}request: &{request_type},
             ) -> Result<{response_type}, {error_type}<R::Error>>
             where
                 R: SlackWebRequestSender,
             {{
                 let params = vec![
-                    {parameters}
+                    {params}{parameters}
                 ];
                 let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
                 let url = crate::get_slack_url_for_method(\"{full_name}\");
@@ -477,6 +504,9 @@ impl Method {
             parameters = parameters,
             method=self.http_method.method(),
             headers=headers,
+            token_param=token_param,
+            params = params,
+            empty_param = empty_param
         );
         Ok(out)
     }
@@ -538,6 +568,7 @@ impl TryFrom<&schema::Parameter> for Parameter {
 #[derive(Clone, Debug)]
 pub enum ParameterDataType {
     Bool,
+    Decimal,
     Int,
     String,
 }
@@ -546,6 +577,7 @@ impl ParameterDataType {
     pub fn to_rust(&self, required: bool) -> String {
         let r#type = match self {
             Self::Bool => "bool",
+            Self::Decimal => "f64",
             Self::Int => "u64",
             Self::String => "String",
         };
@@ -563,7 +595,8 @@ impl FromStr for ParameterDataType {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let r#type = match s {
             "boolean" => Self::Bool,
-            "integer" | "number" => Self::Int,
+            "integer" => Self::Int,
+            "number" => Self::Decimal,
             "string" => Self::String,
             t => bail!(format!("Type {} currently not supported", t)),
         };
@@ -590,6 +623,7 @@ impl Response {
         let res = match &self.r#type {
             // Inner
             ResponseType::Bool if !top => ("bool".into(), Vec::new()),
+            ResponseType::Decimal if !top => ("f64".into(), Vec::new()),
             ResponseType::Int if !top => ("u64".into(), Vec::new()),
             ResponseType::String if !top => ("String".into(), Vec::new()),
             ResponseType::RawJson if !top => ("serde_json::Value".into(), Vec::new()),
@@ -742,6 +776,7 @@ impl TryFrom<(&str, &schema::Schema)> for Member {
 #[derive(Clone, Debug)]
 pub enum ResponseType {
     Bool,
+    Decimal,
     Int,
     String,
     Object(Vec<Member>),
@@ -770,7 +805,7 @@ impl TryFrom<&schema::Schema> for ResponseType {
             // Primitives
             (Some(schema), _, _) if schema.contains(&"boolean") => Self::Bool,
             (Some(schema), _, _) if schema.contains(&"integer") => Self::Int,
-            (Some(schema), _, _) if schema.contains(&"number") => Self::Int,
+            (Some(schema), _, _) if schema.contains(&"number") => Self::Decimal,
             (Some(schema), _, _) if schema.contains(&"string") => Self::String,
 
             // Object

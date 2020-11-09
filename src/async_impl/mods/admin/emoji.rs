@@ -12,9 +12,9 @@
 //
 //=============================================================================
 
-#![allow(unused_variables)]
 #![allow(unused_imports)]
-#![allow(dead_code)]
+#![allow(clippy::match_single_binding)]
+#![allow(clippy::blacklisted_name)]
 
 use crate::async_impl::SlackWebRequestSender;
 pub use crate::mod_types::admin::emoji_types::*;
@@ -23,7 +23,11 @@ pub use crate::mod_types::admin::emoji_types::*;
 ///
 /// Wraps https://api.slack.com/methods/admin.emoji.add
 
-pub async fn add<R>(client: &R, request: &AddRequest) -> Result<AddResponse, AddError<R::Error>>
+pub async fn add<R>(
+    client: &R,
+    token: &str,
+    request: &AddRequest,
+) -> Result<AddResponse, AddError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
@@ -34,7 +38,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.emoji.add");
     client
-        .post(&url, &params[..], &[("token", request.token.clone())])
+        .post(&url, &params[..], &[("token", token.to_string())])
         .await
         .map_err(AddError::Client)
         .and_then(|result| {
@@ -48,6 +52,7 @@ where
 
 pub async fn add_alias<R>(
     client: &R,
+    token: &str,
     request: &AddAliasRequest,
 ) -> Result<AddAliasResponse, AddAliasError<R::Error>>
 where
@@ -60,7 +65,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.emoji.addAlias");
     client
-        .post(&url, &params[..], &[("token", request.token.clone())])
+        .post(&url, &params[..], &[("token", token.to_string())])
         .await
         .map_err(AddAliasError::Client)
         .and_then(|result| {
@@ -72,11 +77,16 @@ where
 ///
 /// Wraps https://api.slack.com/methods/admin.emoji.list
 
-pub async fn list<R>(client: &R, request: &ListRequest) -> Result<ListResponse, ListError<R::Error>>
+pub async fn list<R>(
+    client: &R,
+    token: &str,
+    request: &ListRequest,
+) -> Result<ListResponse, ListError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
     let params = vec![
+        Some(("token", token.to_string())),
         request
             .cursor
             .as_ref()
@@ -103,6 +113,7 @@ where
 
 pub async fn remove<R>(
     client: &R,
+    token: &str,
     request: &RemoveRequest,
 ) -> Result<RemoveResponse, RemoveError<R::Error>>
 where
@@ -112,7 +123,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.emoji.remove");
     client
-        .post(&url, &params[..], &[("token", request.token.clone())])
+        .post(&url, &params[..], &[("token", token.to_string())])
         .await
         .map_err(RemoveError::Client)
         .and_then(|result| {
@@ -126,6 +137,7 @@ where
 
 pub async fn rename<R>(
     client: &R,
+    token: &str,
     request: &RenameRequest,
 ) -> Result<RenameResponse, RenameError<R::Error>>
 where
@@ -138,7 +150,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.emoji.rename");
     client
-        .post(&url, &params[..], &[("token", request.token.clone())])
+        .post(&url, &params[..], &[("token", token.to_string())])
         .await
         .map_err(RenameError::Client)
         .and_then(|result| {

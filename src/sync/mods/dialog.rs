@@ -12,9 +12,9 @@
 //
 //=============================================================================
 
-#![allow(unused_variables)]
 #![allow(unused_imports)]
-#![allow(dead_code)]
+#![allow(clippy::match_single_binding)]
+#![allow(clippy::blacklisted_name)]
 
 pub use crate::mod_types::dialog_types::*;
 use crate::sync::SlackWebRequestSender;
@@ -23,11 +23,16 @@ use crate::sync::SlackWebRequestSender;
 ///
 /// Wraps https://api.slack.com/methods/dialog.open
 
-pub fn open<R>(client: &R, request: &OpenRequest) -> Result<OpenResponse, OpenError<R::Error>>
+pub fn open<R>(
+    client: &R,
+    token: &str,
+    request: &OpenRequest,
+) -> Result<OpenResponse, OpenError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
     let params = vec![
+        Some(("token", token.to_string())),
         Some(("dialog", request.dialog.to_string())),
         Some(("trigger_id", request.trigger_id.to_string())),
     ];

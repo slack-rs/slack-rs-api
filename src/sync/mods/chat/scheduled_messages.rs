@@ -12,9 +12,9 @@
 //
 //=============================================================================
 
-#![allow(unused_variables)]
 #![allow(unused_imports)]
-#![allow(dead_code)]
+#![allow(clippy::match_single_binding)]
+#![allow(clippy::blacklisted_name)]
 
 pub use crate::mod_types::chat::scheduled_messages_types::*;
 use crate::sync::SlackWebRequestSender;
@@ -23,11 +23,16 @@ use crate::sync::SlackWebRequestSender;
 ///
 /// Wraps https://api.slack.com/methods/chat.scheduledMessages.list
 
-pub fn list<R>(client: &R, request: &ListRequest) -> Result<ListResponse, ListError<R::Error>>
+pub fn list<R>(
+    client: &R,
+    token: Option<&str>,
+    request: &ListRequest,
+) -> Result<ListResponse, ListError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
     let params = vec![
+        token.map(|token| ("token", token.to_string())),
         request
             .channel
             .as_ref()

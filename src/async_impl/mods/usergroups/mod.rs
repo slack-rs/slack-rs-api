@@ -12,9 +12,9 @@
 //
 //=============================================================================
 
-#![allow(unused_variables)]
 #![allow(unused_imports)]
-#![allow(dead_code)]
+#![allow(clippy::match_single_binding)]
+#![allow(clippy::blacklisted_name)]
 
 pub mod users;
 
@@ -27,6 +27,7 @@ pub use crate::mod_types::usergroups::*;
 
 pub async fn create<R>(
     client: &R,
+    token: &str,
     request: &CreateRequest,
 ) -> Result<CreateResponse, CreateError<R::Error>>
 where
@@ -54,7 +55,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/usergroups.create");
     client
-        .post(&url, &params[..], &[])
+        .post(&url, &params[..], &[("token", token.to_string())])
         .await
         .map_err(CreateError::Client)
         .and_then(|result| {
@@ -68,6 +69,7 @@ where
 
 pub async fn disable<R>(
     client: &R,
+    token: &str,
     request: &DisableRequest,
 ) -> Result<DisableResponse, DisableError<R::Error>>
 where
@@ -83,7 +85,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/usergroups.disable");
     client
-        .post(&url, &params[..], &[])
+        .post(&url, &params[..], &[("token", token.to_string())])
         .await
         .map_err(DisableError::Client)
         .and_then(|result| {
@@ -97,6 +99,7 @@ where
 
 pub async fn enable<R>(
     client: &R,
+    token: &str,
     request: &EnableRequest,
 ) -> Result<EnableResponse, EnableError<R::Error>>
 where
@@ -112,7 +115,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/usergroups.enable");
     client
-        .post(&url, &params[..], &[])
+        .post(&url, &params[..], &[("token", token.to_string())])
         .await
         .map_err(EnableError::Client)
         .and_then(|result| {
@@ -124,11 +127,16 @@ where
 ///
 /// Wraps https://api.slack.com/methods/usergroups.list
 
-pub async fn list<R>(client: &R, request: &ListRequest) -> Result<ListResponse, ListError<R::Error>>
+pub async fn list<R>(
+    client: &R,
+    token: &str,
+    request: &ListRequest,
+) -> Result<ListResponse, ListError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
     let params = vec![
+        Some(("token", token.to_string())),
         request
             .include_count
             .as_ref()
@@ -159,6 +167,7 @@ where
 
 pub async fn update<R>(
     client: &R,
+    token: &str,
     request: &UpdateRequest,
 ) -> Result<UpdateResponse, UpdateError<R::Error>>
 where
@@ -187,7 +196,7 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/usergroups.update");
     client
-        .post(&url, &params[..], &[])
+        .post(&url, &params[..], &[("token", token.to_string())])
         .await
         .map_err(UpdateError::Client)
         .and_then(|result| {

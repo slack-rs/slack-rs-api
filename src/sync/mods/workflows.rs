@@ -12,9 +12,9 @@
 //
 //=============================================================================
 
-#![allow(unused_variables)]
 #![allow(unused_imports)]
-#![allow(dead_code)]
+#![allow(clippy::match_single_binding)]
+#![allow(clippy::blacklisted_name)]
 
 pub use crate::mod_types::workflows_types::*;
 use crate::sync::SlackWebRequestSender;
@@ -25,12 +25,14 @@ use crate::sync::SlackWebRequestSender;
 
 pub fn step_completed<R>(
     client: &R,
+    token: &str,
     request: &StepCompletedRequest,
 ) -> Result<StepCompletedResponse, StepCompletedError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
     let params = vec![
+        Some(("token", token.to_string())),
         request
             .outputs
             .as_ref()
@@ -56,12 +58,14 @@ where
 
 pub fn step_failed<R>(
     client: &R,
+    token: &str,
     request: &StepFailedRequest,
 ) -> Result<StepFailedResponse, StepFailedError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
     let params = vec![
+        Some(("token", token.to_string())),
         Some(("error", request.error.to_string())),
         Some((
             "workflow_step_execute_id",
@@ -84,12 +88,14 @@ where
 
 pub fn update_step<R>(
     client: &R,
+    token: &str,
     request: &UpdateStepRequest,
 ) -> Result<UpdateStepResponse, UpdateStepError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
     let params = vec![
+        Some(("token", token.to_string())),
         request
             .inputs
             .as_ref()

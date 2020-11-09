@@ -12,9 +12,9 @@
 //
 //=============================================================================
 
-#![allow(unused_variables)]
 #![allow(unused_imports)]
-#![allow(dead_code)]
+#![allow(clippy::match_single_binding)]
+#![allow(clippy::blacklisted_name)]
 
 use std::convert::From;
 use std::error::Error;
@@ -24,8 +24,6 @@ use std::fmt;
 pub struct AddRequest {
     /// The name of the emoji to be removed. Colons (`:myemoji:`) around the value are not required, although they may be included.
     pub name: String,
-    /// Authentication token. Requires scope: `admin.teams:write`
-    pub token: String,
     /// The URL of a file to use as an image for the emoji. Square images under 128KB and with transparent backgrounds work best.
     pub url: String,
 }
@@ -92,8 +90,6 @@ pub struct AddAliasRequest {
     pub alias_for: String,
     /// The name of the emoji to be aliased. Colons (`:myemoji:`) around the value are not required, although they may be included.
     pub name: String,
-    /// Authentication token. Requires scope: `admin.teams:write`
-    pub token: String,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -220,8 +216,6 @@ impl<E: Error + 'static> Error for ListError<E> {
 pub struct RemoveRequest {
     /// The name of the emoji to be removed. Colons (`:myemoji:`) around the value are not required, although they may be included.
     pub name: String,
-    /// Authentication token. Requires scope: `admin.teams:write`
-    pub token: String,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -286,8 +280,6 @@ pub struct RenameRequest {
     pub name: String,
     /// The new name of the emoji.
     pub new_name: String,
-    /// Authentication token. Requires scope: `admin.teams:write`
-    pub token: String,
 }
 
 #[derive(Clone, Debug, Deserialize)]

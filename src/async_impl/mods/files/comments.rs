@@ -12,9 +12,9 @@
 //
 //=============================================================================
 
-#![allow(unused_variables)]
 #![allow(unused_imports)]
-#![allow(dead_code)]
+#![allow(clippy::match_single_binding)]
+#![allow(clippy::blacklisted_name)]
 
 use crate::async_impl::SlackWebRequestSender;
 pub use crate::mod_types::files::comments_types::*;
@@ -25,6 +25,7 @@ pub use crate::mod_types::files::comments_types::*;
 
 pub async fn delete<R>(
     client: &R,
+    token: Option<&str>,
     request: &DeleteRequest,
 ) -> Result<DeleteResponse, DeleteError<R::Error>>
 where
@@ -37,7 +38,11 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/files.comments.delete");
     client
-        .post(&url, &params[..], &[])
+        .post(
+            &url,
+            &params[..],
+            &token.map_or(vec![], |t| vec![("token", t.to_string())]),
+        )
         .await
         .map_err(DeleteError::Client)
         .and_then(|result| {

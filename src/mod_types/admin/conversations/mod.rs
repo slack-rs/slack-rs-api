@@ -12,9 +12,9 @@
 //
 //=============================================================================
 
-#![allow(unused_variables)]
 #![allow(unused_imports)]
-#![allow(dead_code)]
+#![allow(clippy::match_single_binding)]
+#![allow(clippy::blacklisted_name)]
 
 pub mod ekm_types;
 pub mod restrict_access_types;
@@ -1317,7 +1317,7 @@ pub struct SearchChannelsInner {
     pub num_members: Option<u64>,
     pub pending_shared: Option<Vec<String>>,
     pub previous_names: Option<Vec<String>>,
-    pub priority: Option<u64>,
+    pub priority: Option<f64>,
     pub purpose: SearchPurposeInner,
     pub topic: SearchTopicInner,
     pub unlinked: Option<u64>,

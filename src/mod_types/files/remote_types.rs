@@ -12,9 +12,9 @@
 //
 //=============================================================================
 
-#![allow(unused_variables)]
 #![allow(unused_imports)]
-#![allow(dead_code)]
+#![allow(clippy::match_single_binding)]
+#![allow(clippy::blacklisted_name)]
 
 use std::convert::From;
 use std::error::Error;
@@ -34,8 +34,6 @@ pub struct AddRequest {
     pub preview_image: Option<String>,
     /// Title of the file being shared.
     pub title: Option<String>,
-    /// Authentication token. Requires scope: `remote_files:write`
-    pub token: Option<String>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -167,9 +165,9 @@ pub struct ListRequest {
     /// The maximum number of items to return.
     pub limit: Option<u64>,
     /// Filter files created after this timestamp (inclusive).
-    pub ts_from: Option<u64>,
+    pub ts_from: Option<f64>,
     /// Filter files created before this timestamp (inclusive).
-    pub ts_to: Option<u64>,
+    pub ts_to: Option<f64>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -234,8 +232,6 @@ pub struct RemoveRequest {
     pub external_id: Option<String>,
     /// Specify a file by providing its ID.
     pub file: Option<String>,
-    /// Authentication token. Requires scope: `remote_files:write`
-    pub token: Option<String>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -376,8 +372,6 @@ pub struct UpdateRequest {
     pub preview_image: Option<String>,
     /// Title of the file being shared.
     pub title: Option<String>,
-    /// Authentication token. Requires scope: `remote_files:write`
-    pub token: Option<String>,
 }
 
 #[derive(Clone, Debug, Deserialize)]

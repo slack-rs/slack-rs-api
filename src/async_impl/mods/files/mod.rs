@@ -12,9 +12,9 @@
 //
 //=============================================================================
 
-#![allow(unused_variables)]
 #![allow(unused_imports)]
-#![allow(dead_code)]
+#![allow(clippy::match_single_binding)]
+#![allow(clippy::blacklisted_name)]
 
 pub mod comments;
 pub mod remote;
@@ -28,6 +28,7 @@ pub use crate::mod_types::files::*;
 
 pub async fn delete<R>(
     client: &R,
+    token: Option<&str>,
     request: &DeleteRequest,
 ) -> Result<DeleteResponse, DeleteError<R::Error>>
 where
@@ -37,7 +38,11 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/files.delete");
     client
-        .post(&url, &params[..], &[])
+        .post(
+            &url,
+            &params[..],
+            &token.map_or(vec![], |t| vec![("token", t.to_string())]),
+        )
         .await
         .map_err(DeleteError::Client)
         .and_then(|result| {
@@ -49,11 +54,16 @@ where
 ///
 /// Wraps https://api.slack.com/methods/files.info
 
-pub async fn info<R>(client: &R, request: &InfoRequest) -> Result<InfoResponse, InfoError<R::Error>>
+pub async fn info<R>(
+    client: &R,
+    token: Option<&str>,
+    request: &InfoRequest,
+) -> Result<InfoResponse, InfoError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
     let params = vec![
+        token.map(|token| ("token", token.to_string())),
         request
             .count
             .as_ref()
@@ -84,11 +94,16 @@ where
 ///
 /// Wraps https://api.slack.com/methods/files.list
 
-pub async fn list<R>(client: &R, request: &ListRequest) -> Result<ListResponse, ListError<R::Error>>
+pub async fn list<R>(
+    client: &R,
+    token: Option<&str>,
+    request: &ListRequest,
+) -> Result<ListResponse, ListError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
     let params = vec![
+        token.map(|token| ("token", token.to_string())),
         request
             .channel
             .as_ref()
@@ -138,6 +153,7 @@ where
 
 pub async fn revoke_public_url<R>(
     client: &R,
+    token: Option<&str>,
     request: &RevokePublicURLRequest,
 ) -> Result<RevokePublicURLResponse, RevokePublicURLError<R::Error>>
 where
@@ -147,7 +163,11 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/files.revokePublicURL");
     client
-        .post(&url, &params[..], &[])
+        .post(
+            &url,
+            &params[..],
+            &token.map_or(vec![], |t| vec![("token", t.to_string())]),
+        )
         .await
         .map_err(RevokePublicURLError::Client)
         .and_then(|result| {
@@ -161,6 +181,7 @@ where
 
 pub async fn shared_public_url<R>(
     client: &R,
+    token: Option<&str>,
     request: &SharedPublicURLRequest,
 ) -> Result<SharedPublicURLResponse, SharedPublicURLError<R::Error>>
 where
@@ -170,7 +191,11 @@ where
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/files.sharedPublicURL");
     client
-        .post(&url, &params[..], &[])
+        .post(
+            &url,
+            &params[..],
+            &token.map_or(vec![], |t| vec![("token", t.to_string())]),
+        )
         .await
         .map_err(SharedPublicURLError::Client)
         .and_then(|result| {
@@ -184,6 +209,7 @@ where
 
 pub async fn upload<R>(
     client: &R,
+    token: Option<&str>,
     request: &UploadRequest,
 ) -> Result<UploadResponse, UploadError<R::Error>>
 where
@@ -226,10 +252,7 @@ where
         .post(
             &url,
             &params[..],
-            &request
-                .token
-                .as_ref()
-                .map_or(vec![], |t| vec![("token", t.into())]),
+            &token.map_or(vec![], |t| vec![("token", t.to_string())]),
         )
         .await
         .map_err(UploadError::Client)

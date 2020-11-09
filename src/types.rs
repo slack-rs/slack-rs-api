@@ -12,6 +12,8 @@
 //
 //=============================================================================
 
+#![allow(clippy::large_enum_variant)]
+
 use std::collections::HashMap;
 
 #[derive(Clone, Debug, Deserialize)]

@@ -90,7 +90,6 @@ where
 #[cfg(test)]
 mod tests {
     use super::UserProfile;
-    use serde_json;
 
     #[test]
     fn test_user_profile_fields_empty_array_deserialize() {

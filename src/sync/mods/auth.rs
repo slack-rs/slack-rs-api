@@ -12,9 +12,9 @@
 //
 //=============================================================================
 
-#![allow(unused_variables)]
 #![allow(unused_imports)]
-#![allow(dead_code)]
+#![allow(clippy::match_single_binding)]
+#![allow(clippy::blacklisted_name)]
 
 pub use crate::mod_types::auth_types::*;
 use crate::sync::SlackWebRequestSender;
@@ -25,12 +25,16 @@ use crate::sync::SlackWebRequestSender;
 
 pub fn revoke<R>(
     client: &R,
+    token: &str,
     request: &RevokeRequest,
 ) -> Result<RevokeResponse, RevokeError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![request.test.as_ref().map(|test| ("test", test.to_string()))];
+    let params = vec![
+        Some(("token", token.to_string())),
+        request.test.as_ref().map(|test| ("test", test.to_string())),
+    ];
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/auth.revoke");
     client
@@ -45,11 +49,15 @@ where
 ///
 /// Wraps https://api.slack.com/methods/auth.test
 
-pub fn test<R>(client: &R, request: &TestRequest) -> Result<TestResponse, TestError<R::Error>>
+pub fn test<R>(
+    client: &R,
+    token: &str,
+    _request: &TestRequest,
+) -> Result<TestResponse, TestError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![];
+    let params = vec![Some(("token", token.to_string()))];
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/auth.test");
     client
