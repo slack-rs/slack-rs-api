@@ -27,7 +27,7 @@ use crate::sync::SlackWebRequestSender;
 
 pub fn delete<R>(
     client: &R,
-    token: Option<&str>,
+    token: &str,
     request: &DeleteRequest,
 ) -> Result<DeleteResponse, DeleteError<R::Error>>
 where
@@ -38,20 +38,13 @@ where
             .as_user
             .as_ref()
             .map(|as_user| ("as_user", as_user.to_string())),
-        request
-            .channel
-            .as_ref()
-            .map(|channel| ("channel", channel.to_string())),
-        request.ts.as_ref().map(|ts| ("ts", ts.to_string())),
+        Some(("channel", request.channel.to_string())),
+        Some(("ts", request.ts.to_string())),
     ];
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/chat.delete");
     client
-        .post(
-            &url,
-            &params[..],
-            &token.map_or(vec![], |t| vec![("token", t.to_string())]),
-        )
+        .post(&url, &params[..], &[("token", token.to_string())])
         .map_err(DeleteError::Client)
         .and_then(|result| {
             serde_json::from_str::<DeleteResponse>(&result)
@@ -127,27 +120,20 @@ where
 
 pub fn me_message<R>(
     client: &R,
-    token: Option<&str>,
+    token: &str,
     request: &MeMessageRequest,
 ) -> Result<MeMessageResponse, MeMessageError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
     let params = vec![
-        request
-            .channel
-            .as_ref()
-            .map(|channel| ("channel", channel.to_string())),
-        request.text.as_ref().map(|text| ("text", text.to_string())),
+        Some(("channel", request.channel.to_string())),
+        Some(("text", request.text.to_string())),
     ];
     let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/chat.meMessage");
     client
-        .post(
-            &url,
-            &params[..],
-            &token.map_or(vec![], |t| vec![("token", t.to_string())]),
-        )
+        .post(&url, &params[..], &[("token", token.to_string())])
         .map_err(MeMessageError::Client)
         .and_then(|result| {
             serde_json::from_str::<MeMessageResponse>(&result)
@@ -269,7 +255,7 @@ where
             .reply_broadcast
             .as_ref()
             .map(|reply_broadcast| ("reply_broadcast", reply_broadcast.to_string())),
-        request.text.as_ref().map(|text| ("text", text.to_string())),
+        Some(("text", request.text.to_string())),
         request
             .thread_ts
             .as_ref()
@@ -387,10 +373,7 @@ where
     let params = vec![
         Some(("channel", request.channel.to_string())),
         Some(("ts", request.ts.to_string())),
-        request
-            .unfurls
-            .as_ref()
-            .map(|unfurls| ("unfurls", unfurls.to_string())),
+        Some(("unfurls", request.unfurls.to_string())),
         request
             .user_auth_message
             .as_ref()

@@ -1,28 +1,18 @@
-#![allow(clippy::single_match)]
-
+use super::dedup_vec;
 use crate::rust::{Method, Module, ResponseType};
 
-pub fn correct(modules: &mut [Module]) {
-    for module in modules {
-        match module.name.as_str() {
-            "conversations" => correct_conversations(module),
-            _ => {}
-        }
-    }
-}
-
-fn correct_conversations(module: &mut Module) {
+pub fn correct(module: &mut Module) {
     for mut method in &mut module.methods {
         match method.name.as_str() {
-            "history" => correct_conversations_history(&mut method),
-            "info" => correct_conversations_info(&mut method),
-            "list" => correct_conversations_list(&mut method),
+            "history" => correct_history(&mut method),
+            "info" => correct_info(&mut method),
+            "list" => correct_list(&mut method),
             _ => {}
         }
     }
 }
 
-fn correct_conversations_info(method: &mut Method) {
+fn correct_info(method: &mut Method) {
     for mut param in &mut method.parameters {
         match param.name.as_str() {
             // The channel parameter is required
@@ -47,7 +37,7 @@ fn correct_conversations_info(method: &mut Method) {
     }
 }
 
-fn correct_conversations_list(method: &mut Method) {
+fn correct_list(method: &mut Method) {
     for mut param in &mut method.parameters {
         match param.name.as_str() {
             // The Token parameter is required
@@ -66,7 +56,7 @@ fn correct_conversations_list(method: &mut Method) {
     }
 }
 
-fn correct_conversations_history(method: &mut Method) {
+fn correct_history(method: &mut Method) {
     for mut param in &mut method.parameters {
         match param.name.as_str() {
             // The channel parameter is required
@@ -117,14 +107,6 @@ fn correct_conversations_history(method: &mut Method) {
                 "channel_actions_ts" => t.r#type.required = false,
                 _ => {}
             }
-        }
-    }
-}
-
-fn dedup_vec(r#type: &mut ResponseType) {
-    if let ResponseType::Vec(v) = r#type {
-        if let ResponseType::Vec(vi) = &v.r#type {
-            *v = vi.clone();
         }
     }
 }

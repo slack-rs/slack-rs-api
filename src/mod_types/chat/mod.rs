@@ -27,9 +27,9 @@ pub struct DeleteRequest {
     /// Pass true to delete the message as the authed user with `chat:write:user` scope. [Bot users](/bot-users) in this context are considered authed users. If unused or false, the message will be deleted with `chat:write:bot` scope.
     pub as_user: Option<bool>,
     /// Channel containing the message to be deleted.
-    pub channel: Option<String>,
+    pub channel: String,
     /// Timestamp of the message to be deleted.
-    pub ts: Option<f64>,
+    pub ts: f64,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -490,9 +490,9 @@ impl<E: Error + 'static> Error for GetPermalinkError<E> {
 #[derive(Clone, Default, Debug)]
 pub struct MeMessageRequest {
     /// Channel to send message to. Can be a public channel, private group or IM channel. Can be an encoded ID, or a name.
-    pub channel: Option<String>,
+    pub channel: String,
     /// Text of the message to send.
-    pub text: Option<String>,
+    pub text: String,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -842,7 +842,7 @@ pub struct PostMessageRequest {
     /// Used in conjunction with `thread_ts` and indicates whether reply should be made visible to everyone in the channel or conversation. Defaults to `false`.
     pub reply_broadcast: Option<bool>,
     /// How this field works and whether it is required depends on other fields you use in your API call. [See below](#text_usage) for more detail.
-    pub text: Option<String>,
+    pub text: String,
     /// Provide another message's `ts` value to make this message a reply. Avoid using a reply's `ts` value; use its parent instead.
     pub thread_ts: Option<String>,
     /// Pass true to enable unfurling of primarily text-based content.
@@ -1551,7 +1551,7 @@ pub struct UnfurlRequest {
     /// Timestamp of the message to add unfurl behavior to.
     pub ts: String,
     /// URL-encoded JSON map with keys set to URLs featured in the the message, pointing to their unfurl blocks or message attachments.
-    pub unfurls: Option<String>,
+    pub unfurls: String,
     /// Provide a simply-formatted string to send as an ephemeral message to the user as invitation to authenticate further and enable full unfurling behavior
     pub user_auth_message: Option<String>,
     /// Set to `true` or `1` to indicate the user must install your Slack app to trigger unfurls for this domain
