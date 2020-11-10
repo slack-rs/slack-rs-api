@@ -17,11 +17,15 @@ use rust::{GenMode, HttpMethod, Method, Module, ModuleBuilder, Parameter, Respon
 mod schema;
 use schema::{EnumValues, Operation, PathItem, Spec};
 
+mod adapt_gen;
+use adapt_gen::create_adapt_skeleton;
+
 mod adapt;
 use adapt::correct;
 
 mod vec_or_single;
 
+const ADAPT_OUT_DIR: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/src/adapt");
 const DEFAULT_OUT_DIR: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../src");
 const SLACK_API_SCHEMA: &str = "https://api.slack.com/specs/openapi/v2/slack_web.json";
 
@@ -34,6 +38,7 @@ fn main() -> Result<()> {
     let mut spec = fetch_slack_api_spec()?;
     spec.replace_refs()?;
     let mut modules = transform_to_modules(&spec)?;
+    create_adapt_skeleton(ADAPT_OUT_DIR, &modules)?;
     correct(&mut modules);
     generate(&arguments.outdir, &modules)?;
     Ok(())
