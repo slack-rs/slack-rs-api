@@ -1,3 +1,4 @@
+use super::set_parameters_required;
 use crate::rust::{Method, Module};
 
 pub fn correct(module: &mut Module) {
@@ -13,49 +14,17 @@ pub fn correct(module: &mut Module) {
 }
 
 fn correct_delete(method: &mut Method) {
-    for mut param in &mut method.parameters {
-        match param.name.as_str() {
-            // The channel parameter is required
-            "channel" => param.required = true,
-            // The Token parameter is required
-            "token" => param.required = true,
-            // The ts parameter is required
-            "ts" => param.required = true,
-            _ => {}
-        }
-    }
+    set_parameters_required(method, &["channel", "token", "ts"]);
 }
 
 fn correct_memessage(method: &mut Method) {
-    for mut param in &mut method.parameters {
-        match param.name.as_str() {
-            // The channel parameter is required
-            "channel" => param.required = true,
-            // The Token parameter is required
-            "token" => param.required = true,
-            // The text parameter is required
-            "text" => param.required = true,
-            _ => {}
-        }
-    }
+    set_parameters_required(method, &["channel", "token", "text"]);
 }
 
 fn correct_postmessage(method: &mut Method) {
-    for mut param in &mut method.parameters {
-        match param.name.as_str() {
-            // The text parameter is required
-            "text" => param.required = true,
-            _ => {}
-        }
-    }
+    set_parameters_required(method, &["text"]);
 }
 
 fn correct_unfurl(method: &mut Method) {
-    for mut param in &mut method.parameters {
-        match param.name.as_str() {
-            // The unfurls parameter is required
-            "unfurls" => param.required = true,
-            _ => {}
-        }
-    }
+    set_parameters_required(method, &["unfurls"]);
 }

@@ -1,5 +1,5 @@
-use super::dedup_vec;
-use crate::rust::{Method, Module, ResponseType};
+use super::{set_parameters_required, ResponseTypeModifier};
+use crate::rust::{Method, Module};
 
 pub fn correct(module: &mut Module) {
     for mut method in &mut module.methods {
@@ -13,100 +13,51 @@ pub fn correct(module: &mut Module) {
 }
 
 fn correct_info(method: &mut Method) {
-    for mut param in &mut method.parameters {
-        match param.name.as_str() {
-            // The channel parameter is required
-            "channel" => param.required = true,
-            // The Token parameter is required
-            "token" => param.required = true,
-            _ => {}
-        }
-    }
-    if let ResponseType::Object(o) = &mut method.response.r#type {
-        for t in o {
-            match t.name.as_str() {
-                // channel is defined as Vec<_> but returns a single _
-                "channel" => {
-                    if let ResponseType::Vec(v) = &mut t.r#type.r#type {
-                        t.r#type = (**v).clone();
-                    }
-                }
-                _ => {}
-            }
-        }
-    }
+    set_parameters_required(method, &["channel", "token"]);
+    let mut root = ResponseTypeModifier::from(method);
+
+    // channel is defined as Vec<_> but should return a single _
+    root.split()
+        .member_type("channel")
+        .set_to_inner(|inner| inner.vec_type());
 }
 
 fn correct_list(method: &mut Method) {
-    for mut param in &mut method.parameters {
-        match param.name.as_str() {
-            // The Token parameter is required
-            "token" => param.required = true,
-            _ => {}
-        }
-    }
-    if let ResponseType::Object(o) = &mut method.response.r#type {
-        for t in o {
-            match t.name.as_str() {
-                // channels is defined as Vec<Vec<_>> but the endpoint returns Vec<_>
-                "channels" => dedup_vec(&mut t.r#type.r#type),
-                _ => {}
-            }
-        }
-    }
+    set_parameters_required(method, &["token"]);
+    let mut root = ResponseTypeModifier::from(method);
+
+    // channels is defined as Vec<Vec<_>> but should return Vec<_>
+    root.split()
+        .member_type("channels")
+        .vec_type()
+        .set_to_inner(|inner| inner.vec_type());
 }
 
 fn correct_history(method: &mut Method) {
-    for mut param in &mut method.parameters {
-        match param.name.as_str() {
-            // The channel parameter is required
-            "channel" => param.required = true,
-            // The Token parameter is required
-            "token" => param.required = true,
-            _ => {}
-        }
-    }
-    if let ResponseType::Object(o) = &mut method.response.r#type {
-        for t in o {
-            match t.name.as_str() {
-                // messages can be null
-                "messages" => {
-                    t.r#type.required = false;
-                    if let ResponseType::Vec(v) = &mut t.r#type.r#type {
-                        if let ResponseType::Object(o) = &mut v.r#type {
-                            for t in o {
-                                match t.name.as_str() {
-                                    // attachments is not a vec
-                                    "attachments" => {
-                                        if let ResponseType::Vec(v) = &mut t.r#type.r#type {
-                                            if let ResponseType::Object(o) = &mut v.r#type {
-                                                for t in o {
-                                                    match t.name.as_str() {
-                                                        // id is not required
-                                                        "id" => t.r#type.required = false,
-                                                        _ => {}
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                    // bot_id is not a vec
-                                    "bot_id" => {
-                                        if let ResponseType::Vec(v) = &t.r#type.r#type {
-                                            t.r#type = (**v).clone();
-                                            t.r#type.required = false;
-                                        }
-                                    }
-                                    _ => {}
-                                }
-                            }
-                        }
-                    }
-                }
-                // channel_actions_ts can be null
-                "channel_actions_ts" => t.r#type.required = false,
-                _ => {}
-            }
-        }
-    }
+    set_parameters_required(method, &["channel", "token"]);
+    let mut root = ResponseTypeModifier::from(method);
+
+    // messages.attachments.id is not required
+    root.split()
+        .member_type("messages")
+        .vec_type()
+        .member_type("attachments")
+        .vec_type()
+        .member("id")
+        .required(false);
+
+    // messages.bot_id is defined as Vec<_> but should return a single _
+    root.split()
+        .member_type("messages")
+        .vec_type()
+        .member("bot_id")
+        .required(false)
+        .r#type()
+        .set_to_inner(|inner| inner.vec_type());
+
+    // messages can be null
+    root.split().member("messages").required(false);
+
+    // channel_actions_ts can be null
+    root.split().member("channel_actions_ts").required(false);
 }
