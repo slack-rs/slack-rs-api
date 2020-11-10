@@ -61,4 +61,5 @@ where
             serde_json::from_str::<ListOriginalConnectedChannelInfoResponse>(&result)
                 .map_err(|e| ListOriginalConnectedChannelInfoError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }

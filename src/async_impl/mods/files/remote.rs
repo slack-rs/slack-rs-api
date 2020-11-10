@@ -76,6 +76,7 @@ where
             serde_json::from_str::<AddResponse>(&result)
                 .map_err(|e| AddError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Retrieve information about a remote file added to Slack
 ///
@@ -107,6 +108,7 @@ where
             serde_json::from_str::<InfoResponse>(&result)
                 .map_err(|e| InfoError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Retrieve information about a remote file added to Slack
 ///
@@ -153,6 +155,7 @@ where
             serde_json::from_str::<ListResponse>(&result)
                 .map_err(|e| ListError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Remove a remote file.
 ///
@@ -187,6 +190,7 @@ where
             serde_json::from_str::<RemoveResponse>(&result)
                 .map_err(|e| RemoveError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Share a remote file into a channel.
 ///
@@ -222,6 +226,7 @@ where
             serde_json::from_str::<ShareResponse>(&result)
                 .map_err(|e| ShareError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Updates an existing remote file.
 ///
@@ -281,4 +286,5 @@ where
             serde_json::from_str::<UpdateResponse>(&result)
                 .map_err(|e| UpdateError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }

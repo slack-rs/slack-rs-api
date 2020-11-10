@@ -58,6 +58,7 @@ where
             serde_json::from_str::<ApproveResponse>(&result)
                 .map_err(|e| ApproveError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Restrict an app for installation on a workspace.
 ///
@@ -94,4 +95,5 @@ where
             serde_json::from_str::<RestrictResponse>(&result)
                 .map_err(|e| RestrictError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }

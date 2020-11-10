@@ -52,4 +52,5 @@ where
             serde_json::from_str::<ConnectResponse>(&result)
                 .map_err(|e| ConnectError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }

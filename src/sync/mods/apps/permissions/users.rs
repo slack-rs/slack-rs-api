@@ -51,6 +51,7 @@ where
             serde_json::from_str::<ListResponse>(&result)
                 .map_err(|e| ListError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Enables an app to trigger a permissions modal to grant an app access to a user access scope.
 ///
@@ -79,4 +80,5 @@ where
             serde_json::from_str::<RequestResponse>(&result)
                 .map_err(|e| RequestError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }

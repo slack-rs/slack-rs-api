@@ -45,6 +45,7 @@ where
             serde_json::from_str::<AddResponse>(&result)
                 .map_err(|e| AddError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Registers participants removed from a Call.
 ///
@@ -72,4 +73,5 @@ where
             serde_json::from_str::<RemoveResponse>(&result)
                 .map_err(|e| RemoveError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }

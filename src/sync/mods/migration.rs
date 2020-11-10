@@ -52,4 +52,5 @@ where
             serde_json::from_str::<ExchangeResponse>(&result)
                 .map_err(|e| ExchangeError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }

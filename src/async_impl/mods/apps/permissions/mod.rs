@@ -46,6 +46,7 @@ where
             serde_json::from_str::<InfoResponse>(&result)
                 .map_err(|e| InfoError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Allows an app to request additional scopes
 ///
@@ -74,4 +75,5 @@ where
             serde_json::from_str::<RequestResponse>(&result)
                 .map_err(|e| RequestError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }

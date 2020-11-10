@@ -62,6 +62,7 @@ where
             serde_json::from_str::<ConversationsResponse>(&result)
                 .map_err(|e| ConversationsError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Delete the user profile photo
 ///
@@ -85,6 +86,7 @@ where
             serde_json::from_str::<DeletePhotoResponse>(&result)
                 .map_err(|e| DeletePhotoError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Gets user presence information.
 ///
@@ -111,6 +113,7 @@ where
             serde_json::from_str::<GetPresenceResponse>(&result)
                 .map_err(|e| GetPresenceError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Get a user's identity.
 ///
@@ -134,6 +137,7 @@ where
             serde_json::from_str::<IdentityResponse>(&result)
                 .map_err(|e| IdentityError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Gets information about a user.
 ///
@@ -164,6 +168,7 @@ where
             serde_json::from_str::<InfoResponse>(&result)
                 .map_err(|e| InfoError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Lists all users in a Slack team.
 ///
@@ -201,6 +206,7 @@ where
             serde_json::from_str::<ListResponse>(&result)
                 .map_err(|e| ListError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Find a user with an email address.
 ///
@@ -227,6 +233,7 @@ where
             serde_json::from_str::<LookupByEmailResponse>(&result)
                 .map_err(|e| LookupByEmailError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Marked a user as active. Deprecated and non-functional.
 ///
@@ -250,6 +257,7 @@ where
             serde_json::from_str::<SetActiveResponse>(&result)
                 .map_err(|e| SetActiveError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Set the user profile photo
 ///
@@ -290,6 +298,7 @@ where
             serde_json::from_str::<SetPhotoResponse>(&result)
                 .map_err(|e| SetPhotoError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Manually sets user presence.
 ///
@@ -313,4 +322,5 @@ where
             serde_json::from_str::<SetPresenceResponse>(&result)
                 .map_err(|e| SetPresenceError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }

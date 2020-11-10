@@ -41,6 +41,7 @@ where
             serde_json::from_str::<EndDndResponse>(&result)
                 .map_err(|e| EndDndError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Ends the current user's snooze mode immediately.
 ///
@@ -64,6 +65,7 @@ where
             serde_json::from_str::<EndSnoozeResponse>(&result)
                 .map_err(|e| EndSnoozeError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Retrieves a user's current Do Not Disturb status.
 ///
@@ -90,6 +92,7 @@ where
             serde_json::from_str::<InfoResponse>(&result)
                 .map_err(|e| InfoError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Turns on Do Not Disturb mode for the current user, or changes its duration.
 ///
@@ -113,6 +116,7 @@ where
             serde_json::from_str::<SetSnoozeResponse>(&result)
                 .map_err(|e| SetSnoozeError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Retrieves the Do Not Disturb status for up to 50 users on a team.
 ///
@@ -142,4 +146,5 @@ where
             serde_json::from_str::<TeamInfoResponse>(&result)
                 .map_err(|e| TeamInfoError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }

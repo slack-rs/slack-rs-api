@@ -46,6 +46,7 @@ where
             serde_json::from_str::<OpenResponse>(&result)
                 .map_err(|e| OpenError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Publish a static view for a User.
 ///
@@ -75,6 +76,7 @@ where
             serde_json::from_str::<PublishResponse>(&result)
                 .map_err(|e| PublishError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Push a view onto the stack of a root view.
 ///
@@ -103,6 +105,7 @@ where
             serde_json::from_str::<PushResponse>(&result)
                 .map_err(|e| PushError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Update an existing view.
 ///
@@ -139,4 +142,5 @@ where
             serde_json::from_str::<UpdateResponse>(&result)
                 .map_err(|e| UpdateError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }

@@ -61,6 +61,7 @@ where
             serde_json::from_str::<CreateResponse>(&result)
                 .map_err(|e| CreateError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Disable an existing User Group
 ///
@@ -90,6 +91,7 @@ where
             serde_json::from_str::<DisableResponse>(&result)
                 .map_err(|e| DisableError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Enable a User Group
 ///
@@ -119,6 +121,7 @@ where
             serde_json::from_str::<EnableResponse>(&result)
                 .map_err(|e| EnableError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// List all User Groups for a team
 ///
@@ -156,6 +159,7 @@ where
             serde_json::from_str::<ListResponse>(&result)
                 .map_err(|e| ListError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Update an existing User Group
 ///
@@ -198,4 +202,5 @@ where
             serde_json::from_str::<UpdateResponse>(&result)
                 .map_err(|e| UpdateError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }

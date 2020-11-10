@@ -45,6 +45,7 @@ where
             serde_json::from_str::<AddResponse>(&result)
                 .map_err(|e| AddError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Marks a reminder as complete.
 ///
@@ -75,6 +76,7 @@ where
             serde_json::from_str::<CompleteResponse>(&result)
                 .map_err(|e| CompleteError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Deletes a reminder.
 ///
@@ -105,6 +107,7 @@ where
             serde_json::from_str::<DeleteResponse>(&result)
                 .map_err(|e| DeleteError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Gets information about a reminder.
 ///
@@ -134,6 +137,7 @@ where
             serde_json::from_str::<InfoResponse>(&result)
                 .map_err(|e| InfoError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Lists all reminders created by or for a given user.
 ///
@@ -157,4 +161,5 @@ where
             serde_json::from_str::<ListResponse>(&result)
                 .map_err(|e| ListError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }

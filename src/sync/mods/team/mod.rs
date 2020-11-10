@@ -54,6 +54,7 @@ where
             serde_json::from_str::<AccessLogsResponse>(&result)
                 .map_err(|e| AccessLogsError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Gets billable users information for the current team.
 ///
@@ -80,6 +81,7 @@ where
             serde_json::from_str::<BillableInfoResponse>(&result)
                 .map_err(|e| BillableInfoError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Gets information about the current team.
 ///
@@ -106,6 +108,7 @@ where
             serde_json::from_str::<InfoResponse>(&result)
                 .map_err(|e| InfoError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Gets the integration logs for the current team.
 ///
@@ -149,4 +152,5 @@ where
             serde_json::from_str::<IntegrationLogsResponse>(&result)
                 .map_err(|e| IntegrationLogsError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }

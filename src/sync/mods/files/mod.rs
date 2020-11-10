@@ -48,6 +48,7 @@ where
             serde_json::from_str::<DeleteResponse>(&result)
                 .map_err(|e| DeleteError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Gets information about a file.
 ///
@@ -87,6 +88,7 @@ where
             serde_json::from_str::<InfoResponse>(&result)
                 .map_err(|e| InfoError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// List for a team, in a channel, or from a user with applied filters.
 ///
@@ -143,6 +145,7 @@ where
             serde_json::from_str::<ListResponse>(&result)
                 .map_err(|e| ListError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Revokes public/external sharing access for a file
 ///
@@ -170,6 +173,7 @@ where
             serde_json::from_str::<RevokePublicURLResponse>(&result)
                 .map_err(|e| RevokePublicURLError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Enables a file for public/external sharing.
 ///
@@ -197,6 +201,7 @@ where
             serde_json::from_str::<SharedPublicURLResponse>(&result)
                 .map_err(|e| SharedPublicURLError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Uploads or creates a file.
 ///
@@ -254,4 +259,5 @@ where
             serde_json::from_str::<UploadResponse>(&result)
                 .map_err(|e| UploadError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }

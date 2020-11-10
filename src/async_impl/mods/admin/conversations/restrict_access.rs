@@ -49,6 +49,7 @@ where
             serde_json::from_str::<AddGroupResponse>(&result)
                 .map_err(|e| AddGroupError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// List all IDP Groups linked to a channel
 ///
@@ -80,6 +81,7 @@ where
             serde_json::from_str::<ListGroupsResponse>(&result)
                 .map_err(|e| ListGroupsError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Remove a linked IDP group linked from a private channel
 ///
@@ -108,4 +110,5 @@ where
             serde_json::from_str::<RemoveGroupResponse>(&result)
                 .map_err(|e| RemoveGroupError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }

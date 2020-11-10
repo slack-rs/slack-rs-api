@@ -48,6 +48,7 @@ where
             serde_json::from_str::<AddChannelsResponse>(&result)
                 .map_err(|e| AddChannelsError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Associate one or more default workspaces with an organization-wide IDP group.
 ///
@@ -78,6 +79,7 @@ where
             serde_json::from_str::<AddTeamsResponse>(&result)
                 .map_err(|e| AddTeamsError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// List the channels linked to an org-level IDP group (user group).
 ///
@@ -112,6 +114,7 @@ where
             serde_json::from_str::<ListChannelsResponse>(&result)
                 .map_err(|e| ListChannelsError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Remove one or more default channels from an org-level IDP group (user group).
 ///
@@ -138,4 +141,5 @@ where
             serde_json::from_str::<RemoveChannelsResponse>(&result)
                 .map_err(|e| RemoveChannelsError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }

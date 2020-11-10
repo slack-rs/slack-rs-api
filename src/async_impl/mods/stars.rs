@@ -56,6 +56,7 @@ where
             serde_json::from_str::<AddResponse>(&result)
                 .map_err(|e| AddError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Lists stars for a user.
 ///
@@ -95,6 +96,7 @@ where
             serde_json::from_str::<ListResponse>(&result)
                 .map_err(|e| ListError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Removes a star from an item.
 ///
@@ -133,4 +135,5 @@ where
             serde_json::from_str::<RemoveResponse>(&result)
                 .map_err(|e| RemoveError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }

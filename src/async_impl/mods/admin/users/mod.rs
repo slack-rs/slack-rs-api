@@ -59,6 +59,7 @@ where
             serde_json::from_str::<AssignResponse>(&result)
                 .map_err(|e| AssignError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Invite a user to a workspace.
 ///
@@ -111,6 +112,7 @@ where
             serde_json::from_str::<InviteResponse>(&result)
                 .map_err(|e| InviteError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// List users on a workspace
 ///
@@ -146,6 +148,7 @@ where
             serde_json::from_str::<ListResponse>(&result)
                 .map_err(|e| ListError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Remove a user from a workspace.
 ///
@@ -173,6 +176,7 @@ where
             serde_json::from_str::<RemoveResponse>(&result)
                 .map_err(|e| RemoveError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Set an existing guest, regular user, or owner to be an admin user.
 ///
@@ -200,6 +204,7 @@ where
             serde_json::from_str::<SetAdminResponse>(&result)
                 .map_err(|e| SetAdminError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Set an expiration for a guest user
 ///
@@ -228,6 +233,7 @@ where
             serde_json::from_str::<SetExpirationResponse>(&result)
                 .map_err(|e| SetExpirationError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Set an existing guest, regular user, or admin user to be a workspace owner.
 ///
@@ -255,6 +261,7 @@ where
             serde_json::from_str::<SetOwnerResponse>(&result)
                 .map_err(|e| SetOwnerError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Set an existing guest user, admin user, or owner to be a regular user.
 ///
@@ -282,4 +289,5 @@ where
             serde_json::from_str::<SetRegularResponse>(&result)
                 .map_err(|e| SetRegularError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }

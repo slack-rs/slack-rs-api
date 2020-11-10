@@ -44,6 +44,7 @@ where
             serde_json::from_str::<InfoResponse>(&result)
                 .map_err(|e| InfoError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Set the default channels of a workspace.
 ///
@@ -70,6 +71,7 @@ where
             serde_json::from_str::<SetDefaultChannelsResponse>(&result)
                 .map_err(|e| SetDefaultChannelsError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Set the description of a given workspace.
 ///
@@ -96,6 +98,7 @@ where
             serde_json::from_str::<SetDescriptionResponse>(&result)
                 .map_err(|e| SetDescriptionError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// An API method that allows admins to set the discoverability of a given workspace
 ///
@@ -122,6 +125,7 @@ where
             serde_json::from_str::<SetDiscoverabilityResponse>(&result)
                 .map_err(|e| SetDiscoverabilityError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Sets the icon of a workspace.
 ///
@@ -148,6 +152,7 @@ where
             serde_json::from_str::<SetIconResponse>(&result)
                 .map_err(|e| SetIconError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Set the name of a given workspace.
 ///
@@ -174,4 +179,5 @@ where
             serde_json::from_str::<SetNameResponse>(&result)
                 .map_err(|e| SetNameError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }

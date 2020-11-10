@@ -48,4 +48,5 @@ where
             serde_json::from_str::<DeleteResponse>(&result)
                 .map_err(|e| DeleteError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }

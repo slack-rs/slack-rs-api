@@ -45,6 +45,7 @@ where
             serde_json::from_str::<InvalidateResponse>(&result)
                 .map_err(|e| InvalidateError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Wipes all valid sessions on all devices for a given user
 ///
@@ -79,4 +80,5 @@ where
             serde_json::from_str::<ResetResponse>(&result)
                 .map_err(|e| ResetError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }

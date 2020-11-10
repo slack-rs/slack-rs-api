@@ -49,6 +49,7 @@ where
             serde_json::from_str::<ListResponse>(&result)
                 .map_err(|e| ListError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Update the list of users for a User Group
 ///
@@ -80,4 +81,5 @@ where
             serde_json::from_str::<UpdateResponse>(&result)
                 .map_err(|e| UpdateError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }

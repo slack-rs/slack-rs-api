@@ -47,4 +47,5 @@ where
             serde_json::from_str::<GetResponse>(&result)
                 .map_err(|e| GetError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }

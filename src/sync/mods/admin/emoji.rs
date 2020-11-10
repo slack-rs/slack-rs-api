@@ -44,6 +44,7 @@ where
             serde_json::from_str::<AddResponse>(&result)
                 .map_err(|e| AddError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Add an emoji alias.
 ///
@@ -70,6 +71,7 @@ where
             serde_json::from_str::<AddAliasResponse>(&result)
                 .map_err(|e| AddAliasError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// List emoji for an Enterprise Grid organization.
 ///
@@ -103,6 +105,7 @@ where
             serde_json::from_str::<ListResponse>(&result)
                 .map_err(|e| ListError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Remove an emoji across an Enterprise Grid organization
 ///
@@ -126,6 +129,7 @@ where
             serde_json::from_str::<RemoveResponse>(&result)
                 .map_err(|e| RemoveError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Rename an emoji.
 ///
@@ -152,4 +156,5 @@ where
             serde_json::from_str::<RenameResponse>(&result)
                 .map_err(|e| RenameError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }

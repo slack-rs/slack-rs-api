@@ -491,6 +491,7 @@ impl Method {
                         serde_json::from_str::<{response_type}>(&result)
                             .map_err(|e| {error_type}::MalformedResponse(result, e))
                     }})
+                    .and_then(|o| o.into())
             }}",
             description = self.description,
             doc_url = self.documentation_url,

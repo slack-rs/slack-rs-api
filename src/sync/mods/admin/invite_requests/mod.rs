@@ -50,6 +50,7 @@ where
             serde_json::from_str::<ApproveResponse>(&result)
                 .map_err(|e| ApproveError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Deny a workspace invite request.
 ///
@@ -79,6 +80,7 @@ where
             serde_json::from_str::<DenyResponse>(&result)
                 .map_err(|e| DenyError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// List all pending workspace invite requests.
 ///
@@ -116,4 +118,5 @@ where
             serde_json::from_str::<ListResponse>(&result)
                 .map_err(|e| ListError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }

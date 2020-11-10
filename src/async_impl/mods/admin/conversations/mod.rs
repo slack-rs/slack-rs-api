@@ -45,6 +45,7 @@ where
             serde_json::from_str::<ArchiveResponse>(&result)
                 .map_err(|e| ArchiveError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Convert a public channel to a private channel.
 ///
@@ -69,6 +70,7 @@ where
             serde_json::from_str::<ConvertToPrivateResponse>(&result)
                 .map_err(|e| ConvertToPrivateError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Create a public or private channel-based conversation.
 ///
@@ -108,6 +110,7 @@ where
             serde_json::from_str::<CreateResponse>(&result)
                 .map_err(|e| CreateError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Delete a public or private channel.
 ///
@@ -132,6 +135,7 @@ where
             serde_json::from_str::<DeleteResponse>(&result)
                 .map_err(|e| DeleteError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Disconnect a connected channel from one or more workspaces.
 ///
@@ -162,6 +166,7 @@ where
             serde_json::from_str::<DisconnectSharedResponse>(&result)
                 .map_err(|e| DisconnectSharedError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Get conversation preferences for a public or private channel.
 ///
@@ -189,6 +194,7 @@ where
             serde_json::from_str::<GetConversationPrefsResponse>(&result)
                 .map_err(|e| GetConversationPrefsError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Get all the workspaces a given public or private channel is connected to within this Enterprise org.
 ///
@@ -224,6 +230,7 @@ where
             serde_json::from_str::<GetTeamsResponse>(&result)
                 .map_err(|e| GetTeamsError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Invite a user to a public or private channel.
 ///
@@ -251,6 +258,7 @@ where
             serde_json::from_str::<InviteResponse>(&result)
                 .map_err(|e| InviteError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Rename a public or private channel.
 ///
@@ -278,6 +286,7 @@ where
             serde_json::from_str::<RenameResponse>(&result)
                 .map_err(|e| RenameError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Search for public or private channels in an Enterprise organization.
 ///
@@ -329,6 +338,7 @@ where
             serde_json::from_str::<SearchResponse>(&result)
                 .map_err(|e| SearchError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Set the posting permissions for a public or private channel.
 ///
@@ -356,6 +366,7 @@ where
             serde_json::from_str::<SetConversationPrefsResponse>(&result)
                 .map_err(|e| SetConversationPrefsError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Set the workspaces in an Enterprise grid org that connect to a public or private channel.
 ///
@@ -394,6 +405,7 @@ where
             serde_json::from_str::<SetTeamsResponse>(&result)
                 .map_err(|e| SetTeamsError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Unarchive a public or private channel.
 ///
@@ -418,4 +430,5 @@ where
             serde_json::from_str::<UnarchiveResponse>(&result)
                 .map_err(|e| UnarchiveError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }

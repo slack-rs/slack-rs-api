@@ -54,4 +54,5 @@ where
             serde_json::from_str::<UninstallResponse>(&result)
                 .map_err(|e| UninstallError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }

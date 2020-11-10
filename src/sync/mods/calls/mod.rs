@@ -70,6 +70,7 @@ where
             serde_json::from_str::<AddResponse>(&result)
                 .map_err(|e| AddError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Ends a Call.
 ///
@@ -99,6 +100,7 @@ where
             serde_json::from_str::<EndResponse>(&result)
                 .map_err(|e| EndError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Returns information about a Call.
 ///
@@ -125,6 +127,7 @@ where
             serde_json::from_str::<InfoResponse>(&result)
                 .map_err(|e| InfoError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Updates information about a Call.
 ///
@@ -162,4 +165,5 @@ where
             serde_json::from_str::<UpdateResponse>(&result)
                 .map_err(|e| UpdateError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }

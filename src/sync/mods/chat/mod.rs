@@ -57,6 +57,7 @@ where
             serde_json::from_str::<DeleteResponse>(&result)
                 .map_err(|e| DeleteError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Deletes a pending scheduled message from the queue.
 ///
@@ -90,6 +91,7 @@ where
             serde_json::from_str::<DeleteScheduledMessageResponse>(&result)
                 .map_err(|e| DeleteScheduledMessageError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Retrieve a permalink URL for a specific extant message
 ///
@@ -117,6 +119,7 @@ where
             serde_json::from_str::<GetPermalinkResponse>(&result)
                 .map_err(|e| GetPermalinkError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Share a me message into a channel.
 ///
@@ -150,6 +153,7 @@ where
             serde_json::from_str::<MeMessageResponse>(&result)
                 .map_err(|e| MeMessageError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Sends an ephemeral message to a user in a channel.
 ///
@@ -213,6 +217,7 @@ where
             serde_json::from_str::<PostEphemeralResponse>(&result)
                 .map_err(|e| PostEphemeralError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Sends a message to a channel.
 ///
@@ -291,6 +296,7 @@ where
             serde_json::from_str::<PostMessageResponse>(&result)
                 .map_err(|e| PostMessageError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Schedules a message to be sent to a channel.
 ///
@@ -364,6 +370,7 @@ where
             serde_json::from_str::<ScheduleMessageResponse>(&result)
                 .map_err(|e| ScheduleMessageError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Provide custom unfurl behavior for user-posted URLs
 ///
@@ -406,6 +413,7 @@ where
             serde_json::from_str::<UnfurlResponse>(&result)
                 .map_err(|e| UnfurlError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Updates a message.
 ///
@@ -453,4 +461,5 @@ where
             serde_json::from_str::<UpdateResponse>(&result)
                 .map_err(|e| UpdateError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }

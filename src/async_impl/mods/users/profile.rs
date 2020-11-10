@@ -49,6 +49,7 @@ where
             serde_json::from_str::<GetResponse>(&result)
                 .map_err(|e| GetError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Set the profile information for a user.
 ///
@@ -84,4 +85,5 @@ where
             serde_json::from_str::<SetResponse>(&result)
                 .map_err(|e| SetError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }

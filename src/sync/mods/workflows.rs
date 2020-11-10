@@ -51,6 +51,7 @@ where
             serde_json::from_str::<StepCompletedResponse>(&result)
                 .map_err(|e| StepCompletedError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Indicate that an app's step in a workflow failed to execute.
 ///
@@ -81,6 +82,7 @@ where
             serde_json::from_str::<StepFailedResponse>(&result)
                 .map_err(|e| StepFailedError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Update the configuration for a workflow extension step.
 ///
@@ -126,4 +128,5 @@ where
             serde_json::from_str::<UpdateStepResponse>(&result)
                 .map_err(|e| UpdateStepError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }

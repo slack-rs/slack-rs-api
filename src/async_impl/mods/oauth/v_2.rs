@@ -55,4 +55,5 @@ where
             serde_json::from_str::<AccessResponse>(&result)
                 .map_err(|e| AccessError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }

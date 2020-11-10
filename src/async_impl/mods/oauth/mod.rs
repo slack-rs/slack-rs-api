@@ -61,6 +61,7 @@ where
             serde_json::from_str::<AccessResponse>(&result)
                 .map_err(|e| AccessError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Exchanges a temporary OAuth verifier code for a workspace token.
 ///
@@ -102,4 +103,5 @@ where
             serde_json::from_str::<TokenResponse>(&result)
                 .map_err(|e| TokenError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }

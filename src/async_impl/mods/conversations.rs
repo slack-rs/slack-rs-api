@@ -49,6 +49,7 @@ where
             serde_json::from_str::<ArchiveResponse>(&result)
                 .map_err(|e| ArchiveError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Closes a direct message or multi-person direct message.
 ///
@@ -80,6 +81,7 @@ where
             serde_json::from_str::<CloseResponse>(&result)
                 .map_err(|e| CloseError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Initiates a public or private channel-based conversation
 ///
@@ -114,6 +116,7 @@ where
             serde_json::from_str::<CreateResponse>(&result)
                 .map_err(|e| CreateError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Fetches a conversation's history of messages and events.
 ///
@@ -161,6 +164,7 @@ where
             serde_json::from_str::<HistoryResponse>(&result)
                 .map_err(|e| HistoryError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Retrieve information about a conversation.
 ///
@@ -196,6 +200,7 @@ where
             serde_json::from_str::<InfoResponse>(&result)
                 .map_err(|e| InfoError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Invites users to a channel.
 ///
@@ -233,6 +238,7 @@ where
             serde_json::from_str::<InviteResponse>(&result)
                 .map_err(|e| InviteError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Joins an existing conversation.
 ///
@@ -264,6 +270,7 @@ where
             serde_json::from_str::<JoinResponse>(&result)
                 .map_err(|e| JoinError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Removes a user from a conversation.
 ///
@@ -298,6 +305,7 @@ where
             serde_json::from_str::<KickResponse>(&result)
                 .map_err(|e| KickError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Leaves a conversation.
 ///
@@ -329,6 +337,7 @@ where
             serde_json::from_str::<LeaveResponse>(&result)
                 .map_err(|e| LeaveError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Lists all channels in a Slack team.
 ///
@@ -371,6 +380,7 @@ where
             serde_json::from_str::<ListResponse>(&result)
                 .map_err(|e| ListError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Sets the read cursor in a channel.
 ///
@@ -405,6 +415,7 @@ where
             serde_json::from_str::<MarkResponse>(&result)
                 .map_err(|e| MarkError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Retrieve members of a conversation.
 ///
@@ -443,6 +454,7 @@ where
             serde_json::from_str::<MembersResponse>(&result)
                 .map_err(|e| MembersError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Opens or resumes a direct message or multi-person direct message.
 ///
@@ -484,6 +496,7 @@ where
             serde_json::from_str::<OpenResponse>(&result)
                 .map_err(|e| OpenError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Renames a conversation.
 ///
@@ -518,6 +531,7 @@ where
             serde_json::from_str::<RenameResponse>(&result)
                 .map_err(|e| RenameError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Retrieve a thread of messages posted to a conversation
 ///
@@ -569,6 +583,7 @@ where
             serde_json::from_str::<RepliesResponse>(&result)
                 .map_err(|e| RepliesError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Sets the purpose for a conversation.
 ///
@@ -606,6 +621,7 @@ where
             serde_json::from_str::<SetPurposeResponse>(&result)
                 .map_err(|e| SetPurposeError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Sets the topic for a conversation.
 ///
@@ -643,6 +659,7 @@ where
             serde_json::from_str::<SetTopicResponse>(&result)
                 .map_err(|e| SetTopicError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
 /// Reverses conversation archival.
 ///
@@ -674,4 +691,5 @@ where
             serde_json::from_str::<UnarchiveResponse>(&result)
                 .map_err(|e| UnarchiveError::MalformedResponse(result, e))
         })
+        .and_then(|o| o.into())
 }
