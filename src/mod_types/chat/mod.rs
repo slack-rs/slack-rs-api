@@ -18,16 +18,17 @@
 
 pub mod scheduled_messages_types;
 
+use std::borrow::Cow;
 use std::convert::From;
 use std::error::Error;
 use std::fmt;
 
 #[derive(Clone, Default, Debug)]
-pub struct DeleteRequest {
+pub struct DeleteRequest<'a> {
     /// Pass true to delete the message as the authed user with `chat:write:user` scope. [Bot users](/bot-users) in this context are considered authed users. If unused or false, the message will be deleted with `chat:write:bot` scope.
     pub as_user: Option<bool>,
     /// Channel containing the message to be deleted.
-    pub channel: String,
+    pub channel: Cow<'a, str>,
     /// Timestamp of the message to be deleted.
     pub ts: f64,
 }
@@ -159,13 +160,13 @@ impl<E: Error + 'static> Error for DeleteError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct DeleteScheduledMessageRequest {
+pub struct DeleteScheduledMessageRequest<'a> {
     /// Pass true to delete the message as the authed user with `chat:write:user` scope. [Bot users](/bot-users) in this context are considered authed users. If unused or false, the message will be deleted with `chat:write:bot` scope.
     pub as_user: Option<bool>,
     /// The channel the scheduled_message is posting to
-    pub channel: String,
+    pub channel: Cow<'a, str>,
     /// `scheduled_message_id` returned from call to chat.scheduleMessage
-    pub scheduled_message_id: String,
+    pub scheduled_message_id: Cow<'a, str>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -340,11 +341,11 @@ impl<E: Error + 'static> Error for DeleteScheduledMessageError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct GetPermalinkRequest {
+pub struct GetPermalinkRequest<'a> {
     /// The ID of the conversation or channel containing the message
-    pub channel: String,
+    pub channel: Cow<'a, str>,
     /// A message's `ts` value, uniquely identifying it within a channel
-    pub message_ts: String,
+    pub message_ts: Cow<'a, str>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -488,11 +489,11 @@ impl<E: Error + 'static> Error for GetPermalinkError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct MeMessageRequest {
+pub struct MeMessageRequest<'a> {
     /// Channel to send message to. Can be a public channel, private group or IM channel. Can be an encoded ID, or a name.
-    pub channel: String,
+    pub channel: Cow<'a, str>,
     /// Text of the message to send.
-    pub text: String,
+    pub text: Cow<'a, str>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -628,31 +629,31 @@ impl<E: Error + 'static> Error for MeMessageError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct PostEphemeralRequest {
+pub struct PostEphemeralRequest<'a> {
     /// Pass true to post the message as the authed user. Defaults to true if the chat:write:bot scope is not included. Otherwise, defaults to false.
     pub as_user: Option<bool>,
     /// A JSON-based array of structured attachments, presented as a URL-encoded string.
-    pub attachments: Option<String>,
+    pub attachments: Option<Cow<'a, str>>,
     /// A JSON-based array of structured blocks, presented as a URL-encoded string.
-    pub blocks: Option<String>,
+    pub blocks: Option<Cow<'a, str>>,
     /// Channel, private group, or IM channel to send message to. Can be an encoded ID, or a name.
-    pub channel: String,
+    pub channel: Cow<'a, str>,
     /// Emoji to use as the icon for this message. Overrides `icon_url`. Must be used in conjunction with `as_user` set to `false`, otherwise ignored. See [authorship](#authorship) below.
-    pub icon_emoji: Option<String>,
+    pub icon_emoji: Option<Cow<'a, str>>,
     /// URL to an image to use as the icon for this message. Must be used in conjunction with `as_user` set to false, otherwise ignored. See [authorship](#authorship) below.
-    pub icon_url: Option<String>,
+    pub icon_url: Option<Cow<'a, str>>,
     /// Find and link channel names and usernames.
     pub link_names: Option<bool>,
     /// Change how messages are treated. Defaults to `none`. See [below](#formatting).
-    pub parse: Option<String>,
+    pub parse: Option<Cow<'a, str>>,
     /// How this field works and whether it is required depends on other fields you use in your API call. [See below](#text_usage) for more detail.
-    pub text: Option<String>,
+    pub text: Option<Cow<'a, str>>,
     /// Provide another message's `ts` value to post this message in a thread. Avoid using a reply's `ts` value; use its parent's value instead. Ephemeral messages in threads are only shown if there is already an active thread.
-    pub thread_ts: Option<String>,
+    pub thread_ts: Option<Cow<'a, str>>,
     /// `id` of the user who will receive the ephemeral message. The user should be in the channel specified by the `channel` argument.
-    pub user: String,
+    pub user: Cow<'a, str>,
     /// Set your bot's user name. Must be used in conjunction with `as_user` set to false, otherwise ignored. See [authorship](#authorship) below.
-    pub username: Option<String>,
+    pub username: Option<Cow<'a, str>>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -820,37 +821,37 @@ impl<E: Error + 'static> Error for PostEphemeralError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct PostMessageRequest {
+pub struct PostMessageRequest<'a> {
     /// Pass true to post the message as the authed user, instead of as a bot. Defaults to false. See [authorship](#authorship) below.
-    pub as_user: Option<String>,
+    pub as_user: Option<Cow<'a, str>>,
     /// A JSON-based array of structured attachments, presented as a URL-encoded string.
-    pub attachments: Option<String>,
+    pub attachments: Option<Cow<'a, str>>,
     /// A JSON-based array of structured blocks, presented as a URL-encoded string.
-    pub blocks: Option<String>,
+    pub blocks: Option<Cow<'a, str>>,
     /// Channel, private group, or IM channel to send message to. Can be an encoded ID, or a name. See [below](#channels) for more details.
-    pub channel: String,
+    pub channel: Cow<'a, str>,
     /// Emoji to use as the icon for this message. Overrides `icon_url`. Must be used in conjunction with `as_user` set to `false`, otherwise ignored. See [authorship](#authorship) below.
-    pub icon_emoji: Option<String>,
+    pub icon_emoji: Option<Cow<'a, str>>,
     /// URL to an image to use as the icon for this message. Must be used in conjunction with `as_user` set to false, otherwise ignored. See [authorship](#authorship) below.
-    pub icon_url: Option<String>,
+    pub icon_url: Option<Cow<'a, str>>,
     /// Find and link channel names and usernames.
     pub link_names: Option<bool>,
     /// Disable Slack markup parsing by setting to `false`. Enabled by default.
     pub mrkdwn: Option<bool>,
     /// Change how messages are treated. Defaults to `none`. See [below](#formatting).
-    pub parse: Option<String>,
+    pub parse: Option<Cow<'a, str>>,
     /// Used in conjunction with `thread_ts` and indicates whether reply should be made visible to everyone in the channel or conversation. Defaults to `false`.
     pub reply_broadcast: Option<bool>,
     /// How this field works and whether it is required depends on other fields you use in your API call. [See below](#text_usage) for more detail.
-    pub text: String,
+    pub text: Cow<'a, str>,
     /// Provide another message's `ts` value to make this message a reply. Avoid using a reply's `ts` value; use its parent instead.
-    pub thread_ts: Option<String>,
+    pub thread_ts: Option<Cow<'a, str>>,
     /// Pass true to enable unfurling of primarily text-based content.
     pub unfurl_links: Option<bool>,
     /// Pass false to disable unfurling of media content.
     pub unfurl_media: Option<bool>,
     /// Set your bot's user name. Must be used in conjunction with `as_user` set to false, otherwise ignored. See [authorship](#authorship) below.
-    pub username: Option<String>,
+    pub username: Option<Cow<'a, str>>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -1277,25 +1278,25 @@ impl<E: Error + 'static> Error for PostMessageError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct ScheduleMessageRequest {
+pub struct ScheduleMessageRequest<'a> {
     /// Pass true to post the message as the authed user, instead of as a bot. Defaults to false. See [chat.postMessage](chat.postMessage#authorship).
     pub as_user: Option<bool>,
     /// A JSON-based array of structured attachments, presented as a URL-encoded string.
-    pub attachments: Option<String>,
+    pub attachments: Option<Cow<'a, str>>,
     /// A JSON-based array of structured blocks, presented as a URL-encoded string.
-    pub blocks: Option<String>,
+    pub blocks: Option<Cow<'a, str>>,
     /// Channel, private group, or DM channel to send message to. Can be an encoded ID, or a name. See [below](#channels) for more details.
-    pub channel: Option<String>,
+    pub channel: Option<Cow<'a, str>>,
     /// Find and link channel names and usernames.
     pub link_names: Option<bool>,
     /// Change how messages are treated. Defaults to `none`. See [chat.postMessage](chat.postMessage#formatting).
-    pub parse: Option<String>,
+    pub parse: Option<Cow<'a, str>>,
     /// Unix EPOCH timestamp of time in future to send the message.
-    pub post_at: Option<String>,
+    pub post_at: Option<Cow<'a, str>>,
     /// Used in conjunction with `thread_ts` and indicates whether reply should be made visible to everyone in the channel or conversation. Defaults to `false`.
     pub reply_broadcast: Option<bool>,
     /// How this field works and whether it is required depends on other fields you use in your API call. [See below](#text_usage) for more detail.
-    pub text: Option<String>,
+    pub text: Option<Cow<'a, str>>,
     /// Provide another message's `ts` value to make this message a reply. Avoid using a reply's `ts` value; use its parent instead.
     pub thread_ts: Option<f64>,
     /// Pass true to enable unfurling of primarily text-based content.
@@ -1545,19 +1546,19 @@ impl<E: Error + 'static> Error for ScheduleMessageError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct UnfurlRequest {
+pub struct UnfurlRequest<'a> {
     /// Channel ID of the message
-    pub channel: String,
+    pub channel: Cow<'a, str>,
     /// Timestamp of the message to add unfurl behavior to.
-    pub ts: String,
+    pub ts: Cow<'a, str>,
     /// URL-encoded JSON map with keys set to URLs featured in the the message, pointing to their unfurl blocks or message attachments.
-    pub unfurls: String,
+    pub unfurls: Cow<'a, str>,
     /// Provide a simply-formatted string to send as an ephemeral message to the user as invitation to authenticate further and enable full unfurling behavior
-    pub user_auth_message: Option<String>,
+    pub user_auth_message: Option<Cow<'a, str>>,
     /// Set to `true` or `1` to indicate the user must install your Slack app to trigger unfurls for this domain
     pub user_auth_required: Option<bool>,
     /// Send users to this custom URL where they will complete authentication in your app to fully trigger unfurling. Value should be properly URL-encoded.
-    pub user_auth_url: Option<String>,
+    pub user_auth_url: Option<Cow<'a, str>>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -1688,23 +1689,23 @@ impl<E: Error + 'static> Error for UnfurlError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct UpdateRequest {
+pub struct UpdateRequest<'a> {
     /// Pass true to update the message as the authed user. [Bot users](/bot-users) in this context are considered authed users.
-    pub as_user: Option<String>,
+    pub as_user: Option<Cow<'a, str>>,
     /// A JSON-based array of structured attachments, presented as a URL-encoded string. This field is required when not presenting `text`. If you don't include this field, the message's previous `attachments` will be retained. To remove previous `attachments`, include an empty array for this field.
-    pub attachments: Option<String>,
+    pub attachments: Option<Cow<'a, str>>,
     /// A JSON-based array of [structured blocks](/block-kit/building), presented as a URL-encoded string. If you don't include this field, the message's previous `blocks` will be retained. To remove previous `blocks`, include an empty array for this field.
-    pub blocks: Option<String>,
+    pub blocks: Option<Cow<'a, str>>,
     /// Channel containing the message to be updated.
-    pub channel: String,
+    pub channel: Cow<'a, str>,
     /// Find and link channel names and usernames. Defaults to `none`. If you do not specify a value for this field, the original value set for the message will be overwritten with the default, `none`.
-    pub link_names: Option<String>,
+    pub link_names: Option<Cow<'a, str>>,
     /// Change how messages are treated. Defaults to `client`, unlike `chat.postMessage`. Accepts either `none` or `full`. If you do not specify a value for this field, the original value set for the message will be overwritten with the default, `client`.
-    pub parse: Option<String>,
+    pub parse: Option<Cow<'a, str>>,
     /// New text for the message, using the [default formatting rules](/reference/surfaces/formatting). It's not required when presenting `blocks` or `attachments`.
-    pub text: Option<String>,
+    pub text: Option<Cow<'a, str>>,
     /// Timestamp of the message to be updated.
-    pub ts: String,
+    pub ts: Cow<'a, str>,
 }
 
 #[derive(Clone, Debug, Deserialize)]

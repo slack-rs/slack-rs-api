@@ -16,18 +16,19 @@
 #![allow(clippy::match_single_binding)]
 #![allow(clippy::blacklisted_name)]
 
+use std::borrow::Cow;
 use std::convert::From;
 use std::error::Error;
 use std::fmt;
 
 #[derive(Clone, Default, Debug)]
-pub struct ListRequest {
+pub struct ListRequest<'a> {
     /// Set `cursor` to `next_cursor` returned by the previous call to list items in the next page
-    pub cursor: Option<String>,
-    pub enterprise_id: Option<String>,
+    pub cursor: Option<Cow<'a, str>>,
+    pub enterprise_id: Option<Cow<'a, str>>,
     /// The maximum number of items to return. Must be between 1 - 1000 both inclusive.
     pub limit: Option<u64>,
-    pub team_id: Option<String>,
+    pub team_id: Option<Cow<'a, str>>,
 }
 
 #[derive(Clone, Debug, Deserialize)]

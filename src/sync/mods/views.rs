@@ -18,6 +18,7 @@
 
 pub use crate::mod_types::views_types::*;
 use crate::sync::SlackWebRequestSender;
+use std::borrow::Cow;
 
 /// Open a view for a user.
 ///
@@ -26,17 +27,17 @@ use crate::sync::SlackWebRequestSender;
 pub fn open<R>(
     client: &R,
     token: &str,
-    request: &OpenRequest,
+    request: &OpenRequest<'_>,
 ) -> Result<OpenResponse, OpenError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
-        Some(("token", token.to_string())),
-        Some(("trigger_id", request.trigger_id.to_string())),
-        Some(("view", request.view.to_string())),
+    let params: Vec<Option<(&str, &str)>> = vec![
+        Some(("token", token)),
+        Some(("trigger_id", request.trigger_id.as_ref())),
+        Some(("view", request.view.as_ref())),
     ];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/views.open");
     client
         .get(&url, &params[..])
@@ -54,18 +55,18 @@ where
 pub fn publish<R>(
     client: &R,
     token: &str,
-    request: &PublishRequest,
+    request: &PublishRequest<'_>,
 ) -> Result<PublishResponse, PublishError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
-        Some(("token", token.to_string())),
-        request.hash.as_ref().map(|hash| ("hash", hash.to_string())),
-        Some(("user_id", request.user_id.to_string())),
-        Some(("view", request.view.to_string())),
+    let params: Vec<Option<(&str, &str)>> = vec![
+        Some(("token", token)),
+        request.hash.as_ref().map(|hash| ("hash", hash.as_ref())),
+        Some(("user_id", request.user_id.as_ref())),
+        Some(("view", request.view.as_ref())),
     ];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/views.publish");
     client
         .get(&url, &params[..])
@@ -83,17 +84,17 @@ where
 pub fn push<R>(
     client: &R,
     token: &str,
-    request: &PushRequest,
+    request: &PushRequest<'_>,
 ) -> Result<PushResponse, PushError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
-        Some(("token", token.to_string())),
-        Some(("trigger_id", request.trigger_id.to_string())),
-        Some(("view", request.view.to_string())),
+    let params: Vec<Option<(&str, &str)>> = vec![
+        Some(("token", token)),
+        Some(("trigger_id", request.trigger_id.as_ref())),
+        Some(("view", request.view.as_ref())),
     ];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/views.push");
     client
         .get(&url, &params[..])
@@ -111,25 +112,25 @@ where
 pub fn update<R>(
     client: &R,
     token: &str,
-    request: &UpdateRequest,
+    request: &UpdateRequest<'_>,
 ) -> Result<UpdateResponse, UpdateError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
-        Some(("token", token.to_string())),
+    let params: Vec<Option<(&str, &str)>> = vec![
+        Some(("token", token)),
         request
             .external_id
             .as_ref()
-            .map(|external_id| ("external_id", external_id.to_string())),
-        request.hash.as_ref().map(|hash| ("hash", hash.to_string())),
-        request.view.as_ref().map(|view| ("view", view.to_string())),
+            .map(|external_id| ("external_id", external_id.as_ref())),
+        request.hash.as_ref().map(|hash| ("hash", hash.as_ref())),
+        request.view.as_ref().map(|view| ("view", view.as_ref())),
         request
             .view_id
             .as_ref()
-            .map(|view_id| ("view_id", view_id.to_string())),
+            .map(|view_id| ("view_id", view_id.as_ref())),
     ];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/views.update");
     client
         .get(&url, &params[..])

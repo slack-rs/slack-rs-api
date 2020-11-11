@@ -20,6 +20,7 @@ pub mod session;
 
 pub use crate::mod_types::admin::users::*;
 use crate::sync::SlackWebRequestSender;
+use std::borrow::Cow;
 
 /// Add an Enterprise user to a workspace.
 ///
@@ -28,31 +29,37 @@ use crate::sync::SlackWebRequestSender;
 pub fn assign<R>(
     client: &R,
     token: &str,
-    request: &AssignRequest,
+    request: &AssignRequest<'_>,
 ) -> Result<AssignResponse, AssignError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
+    let is_restricted: Option<Cow<'_, str>> = request
+        .is_restricted
+        .as_ref()
+        .map(|is_restricted| is_restricted.to_string().into());
+    let is_ultra_restricted: Option<Cow<'_, str>> = request
+        .is_ultra_restricted
+        .as_ref()
+        .map(|is_ultra_restricted| is_ultra_restricted.to_string().into());
+    let params: Vec<Option<(&str, &str)>> = vec![
         request
             .channel_ids
             .as_ref()
-            .map(|channel_ids| ("channel_ids", channel_ids.to_string())),
-        request
-            .is_restricted
+            .map(|channel_ids| ("channel_ids", channel_ids.as_ref())),
+        is_restricted
             .as_ref()
-            .map(|is_restricted| ("is_restricted", is_restricted.to_string())),
-        request
-            .is_ultra_restricted
+            .map(|is_restricted| ("is_restricted", is_restricted.as_ref())),
+        is_ultra_restricted
             .as_ref()
-            .map(|is_ultra_restricted| ("is_ultra_restricted", is_ultra_restricted.to_string())),
-        Some(("team_id", request.team_id.to_string())),
-        Some(("user_id", request.user_id.to_string())),
+            .map(|is_ultra_restricted| ("is_ultra_restricted", is_ultra_restricted.as_ref())),
+        Some(("team_id", request.team_id.as_ref())),
+        Some(("user_id", request.user_id.as_ref())),
     ];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.users.assign");
     client
-        .post(&url, &params[..], &[("token", token.to_string())])
+        .post(&url, &params[..], &[("token", token)])
         .map_err(AssignError::Client)
         .and_then(|result| {
             serde_json::from_str::<AssignResponse>(&result)
@@ -67,44 +74,51 @@ where
 pub fn invite<R>(
     client: &R,
     token: &str,
-    request: &InviteRequest,
+    request: &InviteRequest<'_>,
 ) -> Result<InviteResponse, InviteError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
-        Some(("channel_ids", request.channel_ids.to_string())),
+    let is_restricted: Option<Cow<'_, str>> = request
+        .is_restricted
+        .as_ref()
+        .map(|is_restricted| is_restricted.to_string().into());
+    let is_ultra_restricted: Option<Cow<'_, str>> = request
+        .is_ultra_restricted
+        .as_ref()
+        .map(|is_ultra_restricted| is_ultra_restricted.to_string().into());
+    let resend: Option<Cow<'_, str>> = request
+        .resend
+        .as_ref()
+        .map(|resend| resend.to_string().into());
+    let params: Vec<Option<(&str, &str)>> = vec![
+        Some(("channel_ids", request.channel_ids.as_ref())),
         request
             .custom_message
             .as_ref()
-            .map(|custom_message| ("custom_message", custom_message.to_string())),
-        Some(("email", request.email.to_string())),
+            .map(|custom_message| ("custom_message", custom_message.as_ref())),
+        Some(("email", request.email.as_ref())),
         request
             .guest_expiration_ts
             .as_ref()
-            .map(|guest_expiration_ts| ("guest_expiration_ts", guest_expiration_ts.to_string())),
-        request
-            .is_restricted
+            .map(|guest_expiration_ts| ("guest_expiration_ts", guest_expiration_ts.as_ref())),
+        is_restricted
             .as_ref()
-            .map(|is_restricted| ("is_restricted", is_restricted.to_string())),
-        request
-            .is_ultra_restricted
+            .map(|is_restricted| ("is_restricted", is_restricted.as_ref())),
+        is_ultra_restricted
             .as_ref()
-            .map(|is_ultra_restricted| ("is_ultra_restricted", is_ultra_restricted.to_string())),
+            .map(|is_ultra_restricted| ("is_ultra_restricted", is_ultra_restricted.as_ref())),
         request
             .real_name
             .as_ref()
-            .map(|real_name| ("real_name", real_name.to_string())),
-        request
-            .resend
-            .as_ref()
-            .map(|resend| ("resend", resend.to_string())),
-        Some(("team_id", request.team_id.to_string())),
+            .map(|real_name| ("real_name", real_name.as_ref())),
+        resend.as_ref().map(|resend| ("resend", resend.as_ref())),
+        Some(("team_id", request.team_id.as_ref())),
     ];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.users.invite");
     client
-        .post(&url, &params[..], &[("token", token.to_string())])
+        .post(&url, &params[..], &[("token", token)])
         .map_err(InviteError::Client)
         .and_then(|result| {
             serde_json::from_str::<InviteResponse>(&result)
@@ -119,24 +133,22 @@ where
 pub fn list<R>(
     client: &R,
     token: &str,
-    request: &ListRequest,
+    request: &ListRequest<'_>,
 ) -> Result<ListResponse, ListError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
-        Some(("token", token.to_string())),
+    let limit: Option<Cow<'_, str>> = request.limit.as_ref().map(|limit| limit.to_string().into());
+    let params: Vec<Option<(&str, &str)>> = vec![
+        Some(("token", token)),
         request
             .cursor
             .as_ref()
-            .map(|cursor| ("cursor", cursor.to_string())),
-        request
-            .limit
-            .as_ref()
-            .map(|limit| ("limit", limit.to_string())),
-        Some(("team_id", request.team_id.to_string())),
+            .map(|cursor| ("cursor", cursor.as_ref())),
+        limit.as_ref().map(|limit| ("limit", limit.as_ref())),
+        Some(("team_id", request.team_id.as_ref())),
     ];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.users.list");
     client
         .get(&url, &params[..])
@@ -154,19 +166,19 @@ where
 pub fn remove<R>(
     client: &R,
     token: &str,
-    request: &RemoveRequest,
+    request: &RemoveRequest<'_>,
 ) -> Result<RemoveResponse, RemoveError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
-        Some(("team_id", request.team_id.to_string())),
-        Some(("user_id", request.user_id.to_string())),
+    let params: Vec<Option<(&str, &str)>> = vec![
+        Some(("team_id", request.team_id.as_ref())),
+        Some(("user_id", request.user_id.as_ref())),
     ];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.users.remove");
     client
-        .post(&url, &params[..], &[("token", token.to_string())])
+        .post(&url, &params[..], &[("token", token)])
         .map_err(RemoveError::Client)
         .and_then(|result| {
             serde_json::from_str::<RemoveResponse>(&result)
@@ -181,19 +193,19 @@ where
 pub fn set_admin<R>(
     client: &R,
     token: &str,
-    request: &SetAdminRequest,
+    request: &SetAdminRequest<'_>,
 ) -> Result<SetAdminResponse, SetAdminError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
-        Some(("team_id", request.team_id.to_string())),
-        Some(("user_id", request.user_id.to_string())),
+    let params: Vec<Option<(&str, &str)>> = vec![
+        Some(("team_id", request.team_id.as_ref())),
+        Some(("user_id", request.user_id.as_ref())),
     ];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.users.setAdmin");
     client
-        .post(&url, &params[..], &[("token", token.to_string())])
+        .post(&url, &params[..], &[("token", token)])
         .map_err(SetAdminError::Client)
         .and_then(|result| {
             serde_json::from_str::<SetAdminResponse>(&result)
@@ -208,20 +220,23 @@ where
 pub fn set_expiration<R>(
     client: &R,
     token: &str,
-    request: &SetExpirationRequest,
+    request: &SetExpirationRequest<'_>,
 ) -> Result<SetExpirationResponse, SetExpirationError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
-        Some(("expiration_ts", request.expiration_ts.to_string())),
-        Some(("team_id", request.team_id.to_string())),
-        Some(("user_id", request.user_id.to_string())),
+    let expiration_ts: Option<Cow<'_, str>> = Some(request.expiration_ts.to_string().into());
+    let params: Vec<Option<(&str, &str)>> = vec![
+        expiration_ts
+            .as_ref()
+            .map(|expiration_ts| ("expiration_ts", expiration_ts.as_ref())),
+        Some(("team_id", request.team_id.as_ref())),
+        Some(("user_id", request.user_id.as_ref())),
     ];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.users.setExpiration");
     client
-        .post(&url, &params[..], &[("token", token.to_string())])
+        .post(&url, &params[..], &[("token", token)])
         .map_err(SetExpirationError::Client)
         .and_then(|result| {
             serde_json::from_str::<SetExpirationResponse>(&result)
@@ -236,19 +251,19 @@ where
 pub fn set_owner<R>(
     client: &R,
     token: &str,
-    request: &SetOwnerRequest,
+    request: &SetOwnerRequest<'_>,
 ) -> Result<SetOwnerResponse, SetOwnerError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
-        Some(("team_id", request.team_id.to_string())),
-        Some(("user_id", request.user_id.to_string())),
+    let params: Vec<Option<(&str, &str)>> = vec![
+        Some(("team_id", request.team_id.as_ref())),
+        Some(("user_id", request.user_id.as_ref())),
     ];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.users.setOwner");
     client
-        .post(&url, &params[..], &[("token", token.to_string())])
+        .post(&url, &params[..], &[("token", token)])
         .map_err(SetOwnerError::Client)
         .and_then(|result| {
             serde_json::from_str::<SetOwnerResponse>(&result)
@@ -263,19 +278,19 @@ where
 pub fn set_regular<R>(
     client: &R,
     token: &str,
-    request: &SetRegularRequest,
+    request: &SetRegularRequest<'_>,
 ) -> Result<SetRegularResponse, SetRegularError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
-        Some(("team_id", request.team_id.to_string())),
-        Some(("user_id", request.user_id.to_string())),
+    let params: Vec<Option<(&str, &str)>> = vec![
+        Some(("team_id", request.team_id.as_ref())),
+        Some(("user_id", request.user_id.as_ref())),
     ];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.users.setRegular");
     client
-        .post(&url, &params[..], &[("token", token.to_string())])
+        .post(&url, &params[..], &[("token", token)])
         .map_err(SetRegularError::Client)
         .and_then(|result| {
             serde_json::from_str::<SetRegularResponse>(&result)

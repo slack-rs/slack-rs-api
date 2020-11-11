@@ -20,6 +20,7 @@ pub mod profile;
 
 pub use crate::mod_types::team::*;
 use crate::sync::SlackWebRequestSender;
+use std::borrow::Cow;
 
 /// Gets the access logs for the current team.
 ///
@@ -28,24 +29,24 @@ use crate::sync::SlackWebRequestSender;
 pub fn access_logs<R>(
     client: &R,
     token: &str,
-    request: &AccessLogsRequest,
+    request: &AccessLogsRequest<'_>,
 ) -> Result<AccessLogsResponse, AccessLogsError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
-        Some(("token", token.to_string())),
+    let params: Vec<Option<(&str, &str)>> = vec![
+        Some(("token", token)),
         request
             .before
             .as_ref()
-            .map(|before| ("before", before.to_string())),
+            .map(|before| ("before", before.as_ref())),
         request
             .count
             .as_ref()
-            .map(|count| ("count", count.to_string())),
-        request.page.as_ref().map(|page| ("page", page.to_string())),
+            .map(|count| ("count", count.as_ref())),
+        request.page.as_ref().map(|page| ("page", page.as_ref())),
     ];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/team.accessLogs");
     client
         .get(&url, &params[..])
@@ -63,16 +64,16 @@ where
 pub fn billable_info<R>(
     client: &R,
     token: &str,
-    request: &BillableInfoRequest,
+    request: &BillableInfoRequest<'_>,
 ) -> Result<BillableInfoResponse, BillableInfoError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
-        Some(("token", token.to_string())),
-        request.user.as_ref().map(|user| ("user", user.to_string())),
+    let params: Vec<Option<(&str, &str)>> = vec![
+        Some(("token", token)),
+        request.user.as_ref().map(|user| ("user", user.as_ref())),
     ];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/team.billableInfo");
     client
         .get(&url, &params[..])
@@ -90,16 +91,16 @@ where
 pub fn info<R>(
     client: &R,
     token: &str,
-    request: &InfoRequest,
+    request: &InfoRequest<'_>,
 ) -> Result<InfoResponse, InfoError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
-        Some(("token", token.to_string())),
-        request.team.as_ref().map(|team| ("team", team.to_string())),
+    let params: Vec<Option<(&str, &str)>> = vec![
+        Some(("token", token)),
+        request.team.as_ref().map(|team| ("team", team.as_ref())),
     ];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/team.info");
     client
         .get(&url, &params[..])
@@ -117,33 +118,33 @@ where
 pub fn integration_logs<R>(
     client: &R,
     token: &str,
-    request: &IntegrationLogsRequest,
+    request: &IntegrationLogsRequest<'_>,
 ) -> Result<IntegrationLogsResponse, IntegrationLogsError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
-        Some(("token", token.to_string())),
+    let params: Vec<Option<(&str, &str)>> = vec![
+        Some(("token", token)),
         request
             .app_id
             .as_ref()
-            .map(|app_id| ("app_id", app_id.to_string())),
+            .map(|app_id| ("app_id", app_id.as_ref())),
         request
             .change_type
             .as_ref()
-            .map(|change_type| ("change_type", change_type.to_string())),
+            .map(|change_type| ("change_type", change_type.as_ref())),
         request
             .count
             .as_ref()
-            .map(|count| ("count", count.to_string())),
-        request.page.as_ref().map(|page| ("page", page.to_string())),
+            .map(|count| ("count", count.as_ref())),
+        request.page.as_ref().map(|page| ("page", page.as_ref())),
         request
             .service_id
             .as_ref()
-            .map(|service_id| ("service_id", service_id.to_string())),
-        request.user.as_ref().map(|user| ("user", user.to_string())),
+            .map(|service_id| ("service_id", service_id.as_ref())),
+        request.user.as_ref().map(|user| ("user", user.as_ref())),
     ];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/team.integrationLogs");
     client
         .get(&url, &params[..])

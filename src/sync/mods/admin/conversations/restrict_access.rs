@@ -18,6 +18,7 @@
 
 pub use crate::mod_types::admin::conversations::restrict_access_types::*;
 use crate::sync::SlackWebRequestSender;
+use std::borrow::Cow;
 
 /// Add an allowlist of IDP groups for accessing a channel
 ///
@@ -26,23 +27,23 @@ use crate::sync::SlackWebRequestSender;
 pub fn add_group<R>(
     client: &R,
     token: &str,
-    request: &AddGroupRequest,
+    request: &AddGroupRequest<'_>,
 ) -> Result<AddGroupResponse, AddGroupError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
-        Some(("channel_id", request.channel_id.to_string())),
-        Some(("group_id", request.group_id.to_string())),
+    let params: Vec<Option<(&str, &str)>> = vec![
+        Some(("channel_id", request.channel_id.as_ref())),
+        Some(("group_id", request.group_id.as_ref())),
         request
             .team_id
             .as_ref()
-            .map(|team_id| ("team_id", team_id.to_string())),
+            .map(|team_id| ("team_id", team_id.as_ref())),
     ];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.conversations.restrictAccess.addGroup");
     client
-        .post(&url, &params[..], &[("token", token.to_string())])
+        .post(&url, &params[..], &[("token", token)])
         .map_err(AddGroupError::Client)
         .and_then(|result| {
             serde_json::from_str::<AddGroupResponse>(&result)
@@ -57,20 +58,20 @@ where
 pub fn list_groups<R>(
     client: &R,
     token: &str,
-    request: &ListGroupsRequest,
+    request: &ListGroupsRequest<'_>,
 ) -> Result<ListGroupsResponse, ListGroupsError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
-        Some(("token", token.to_string())),
-        Some(("channel_id", request.channel_id.to_string())),
+    let params: Vec<Option<(&str, &str)>> = vec![
+        Some(("token", token)),
+        Some(("channel_id", request.channel_id.as_ref())),
         request
             .team_id
             .as_ref()
-            .map(|team_id| ("team_id", team_id.to_string())),
+            .map(|team_id| ("team_id", team_id.as_ref())),
     ];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.conversations.restrictAccess.listGroups");
     client
         .get(&url, &params[..])
@@ -88,20 +89,20 @@ where
 pub fn remove_group<R>(
     client: &R,
     token: &str,
-    request: &RemoveGroupRequest,
+    request: &RemoveGroupRequest<'_>,
 ) -> Result<RemoveGroupResponse, RemoveGroupError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
-        Some(("channel_id", request.channel_id.to_string())),
-        Some(("group_id", request.group_id.to_string())),
-        Some(("team_id", request.team_id.to_string())),
+    let params: Vec<Option<(&str, &str)>> = vec![
+        Some(("channel_id", request.channel_id.as_ref())),
+        Some(("group_id", request.group_id.as_ref())),
+        Some(("team_id", request.team_id.as_ref())),
     ];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.conversations.restrictAccess.removeGroup");
     client
-        .post(&url, &params[..], &[("token", token.to_string())])
+        .post(&url, &params[..], &[("token", token)])
         .map_err(RemoveGroupError::Client)
         .and_then(|result| {
             serde_json::from_str::<RemoveGroupResponse>(&result)

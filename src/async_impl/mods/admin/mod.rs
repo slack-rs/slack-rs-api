@@ -26,3 +26,4 @@ pub mod users;
 
 use crate::async_impl::SlackWebRequestSender;
 pub use crate::mod_types::admin::*;
+use std::borrow::Cow;

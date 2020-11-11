@@ -16,20 +16,21 @@
 #![allow(clippy::match_single_binding)]
 #![allow(clippy::blacklisted_name)]
 
+use std::borrow::Cow;
 use std::convert::From;
 use std::error::Error;
 use std::fmt;
 
 #[derive(Clone, Default, Debug)]
-pub struct AddRequest {
+pub struct AddRequest<'a> {
     /// Channel to add star to, or channel where the message to add star to was posted (used with `timestamp`).
-    pub channel: Option<String>,
+    pub channel: Option<Cow<'a, str>>,
     /// File to add star to.
-    pub file: Option<String>,
+    pub file: Option<Cow<'a, str>>,
     /// File comment to add star to.
-    pub file_comment: Option<String>,
+    pub file_comment: Option<Cow<'a, str>>,
     /// Timestamp of the message to add star to.
-    pub timestamp: Option<String>,
+    pub timestamp: Option<Cow<'a, str>>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -166,13 +167,13 @@ impl<E: Error + 'static> Error for AddError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct ListRequest {
-    pub count: Option<String>,
+pub struct ListRequest<'a> {
+    pub count: Option<Cow<'a, str>>,
     /// Parameter for pagination. Set `cursor` equal to the `next_cursor` attribute returned by the previous request's `response_metadata`. This parameter is optional, but pagination is mandatory: the default value simply fetches the first "page" of the collection. See [pagination](/docs/pagination) for more details.
-    pub cursor: Option<String>,
+    pub cursor: Option<Cow<'a, str>>,
     /// The maximum number of items to return. Fewer than the requested number of items may be returned, even if the end of the list hasn't been reached.
     pub limit: Option<u64>,
-    pub page: Option<String>,
+    pub page: Option<Cow<'a, str>>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -611,15 +612,15 @@ impl<E: Error + 'static> Error for ListError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct RemoveRequest {
+pub struct RemoveRequest<'a> {
     /// Channel to remove star from, or channel where the message to remove star from was posted (used with `timestamp`).
-    pub channel: Option<String>,
+    pub channel: Option<Cow<'a, str>>,
     /// File to remove star from.
-    pub file: Option<String>,
+    pub file: Option<Cow<'a, str>>,
     /// File comment to remove star from.
-    pub file_comment: Option<String>,
+    pub file_comment: Option<Cow<'a, str>>,
     /// Timestamp of the message to remove star from.
-    pub timestamp: Option<String>,
+    pub timestamp: Option<Cow<'a, str>>,
 }
 
 #[derive(Clone, Debug, Deserialize)]

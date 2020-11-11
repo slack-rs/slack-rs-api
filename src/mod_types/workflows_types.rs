@@ -16,16 +16,17 @@
 #![allow(clippy::match_single_binding)]
 #![allow(clippy::blacklisted_name)]
 
+use std::borrow::Cow;
 use std::convert::From;
 use std::error::Error;
 use std::fmt;
 
 #[derive(Clone, Default, Debug)]
-pub struct StepCompletedRequest {
+pub struct StepCompletedRequest<'a> {
     /// Key-value object of outputs from your step. Keys of this object reflect the configured `key` properties of your [`outputs`](/reference/workflows/workflow_step#output) array from your `workflow_step` object.
-    pub outputs: Option<String>,
+    pub outputs: Option<Cow<'a, str>>,
     /// Context identifier that maps to the correct workflow step execution.
-    pub workflow_step_execute_id: String,
+    pub workflow_step_execute_id: Cow<'a, str>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -87,11 +88,11 @@ impl<E: Error + 'static> Error for StepCompletedError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct StepFailedRequest {
+pub struct StepFailedRequest<'a> {
     /// A JSON-based object with a `message` property that should contain a human readable error message.
-    pub error: String,
+    pub error: Cow<'a, str>,
     /// Context identifier that maps to the correct workflow step execution.
-    pub workflow_step_execute_id: String,
+    pub workflow_step_execute_id: Cow<'a, str>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -151,17 +152,17 @@ impl<E: Error + 'static> Error for StepFailedError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct UpdateStepRequest {
+pub struct UpdateStepRequest<'a> {
     /// A JSON key-value map of inputs required from a user during configuration. This is the data your app expects to receive when the workflow step starts. **Please note**: the embedded variable format is set and replaced by the workflow system. You cannot create custom variables that will be replaced at runtime. [Read more about variables in workflow steps here](/workflows/steps#variables).
-    pub inputs: Option<String>,
+    pub inputs: Option<Cow<'a, str>>,
     /// An JSON array of output objects used during step execution. This is the data your app agrees to provide when your workflow step was executed.
-    pub outputs: Option<String>,
+    pub outputs: Option<Cow<'a, str>>,
     /// An optional field that can be used to override app image that is shown in the Workflow Builder.
-    pub step_image_url: Option<String>,
+    pub step_image_url: Option<Cow<'a, str>>,
     /// An optional field that can be used to override the step name that is shown in the Workflow Builder.
-    pub step_name: Option<String>,
+    pub step_name: Option<Cow<'a, str>>,
     /// A context identifier provided with `view_submission` payloads used to call back to `workflows.updateStep`.
-    pub workflow_step_edit_id: String,
+    pub workflow_step_edit_id: Cow<'a, str>,
 }
 
 #[derive(Clone, Debug, Deserialize)]

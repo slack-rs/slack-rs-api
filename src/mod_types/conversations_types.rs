@@ -16,14 +16,15 @@
 #![allow(clippy::match_single_binding)]
 #![allow(clippy::blacklisted_name)]
 
+use std::borrow::Cow;
 use std::convert::From;
 use std::error::Error;
 use std::fmt;
 
 #[derive(Clone, Default, Debug)]
-pub struct ArchiveRequest {
+pub struct ArchiveRequest<'a> {
     /// ID of conversation to archive
-    pub channel: Option<String>,
+    pub channel: Option<Cow<'a, str>>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -174,9 +175,9 @@ impl<E: Error + 'static> Error for ArchiveError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct CloseRequest {
+pub struct CloseRequest<'a> {
     /// Conversation to close.
-    pub channel: Option<String>,
+    pub channel: Option<Cow<'a, str>>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -299,11 +300,11 @@ impl<E: Error + 'static> Error for CloseError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct CreateRequest {
+pub struct CreateRequest<'a> {
     /// Create a private channel instead of a public one
     pub is_private: Option<bool>,
     /// Name of the public or private channel to create
-    pub name: Option<String>,
+    pub name: Option<Cow<'a, str>>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -917,11 +918,11 @@ impl<E: Error + 'static> Error for CreateError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct HistoryRequest {
+pub struct HistoryRequest<'a> {
     /// Conversation ID to fetch history for.
-    pub channel: String,
+    pub channel: Cow<'a, str>,
     /// Paginate through collections of data by setting the `cursor` parameter to a `next_cursor` attribute returned by a previous request's `response_metadata`. Default value fetches the first "page" of the collection. See [pagination](/docs/pagination) for more detail.
-    pub cursor: Option<String>,
+    pub cursor: Option<Cow<'a, str>>,
     /// Include messages with latest or oldest timestamp in results only when either timestamp is specified.
     pub inclusive: Option<bool>,
     /// End of time range of messages to include in results.
@@ -1349,9 +1350,9 @@ impl<E: Error + 'static> Error for HistoryError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct InfoRequest {
+pub struct InfoRequest<'a> {
     /// Conversation ID to learn more about
-    pub channel: String,
+    pub channel: Cow<'a, str>,
     /// Set this to `true` to receive the locale for this conversation. Defaults to `false`
     pub include_locale: Option<bool>,
     /// Set to `true` to include the member count for the specified conversation. Defaults to `false`
@@ -1925,11 +1926,11 @@ impl<E: Error + 'static> Error for InfoError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct InviteRequest {
+pub struct InviteRequest<'a> {
     /// The ID of the public or private channel to invite user(s) to.
-    pub channel: Option<String>,
+    pub channel: Option<Cow<'a, str>>,
     /// A comma separated list of user IDs. Up to 1000 users may be listed.
-    pub users: Option<String>,
+    pub users: Option<Cow<'a, str>>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -2562,9 +2563,9 @@ impl<E: Error + 'static> Error for InviteError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct JoinRequest {
+pub struct JoinRequest<'a> {
     /// ID of conversation to join
-    pub channel: Option<String>,
+    pub channel: Option<Cow<'a, str>>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -3167,11 +3168,11 @@ impl<E: Error + 'static> Error for JoinError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct KickRequest {
+pub struct KickRequest<'a> {
     /// ID of conversation to remove user from.
-    pub channel: Option<String>,
+    pub channel: Option<Cow<'a, str>>,
     /// User ID to be removed.
-    pub user: Option<String>,
+    pub user: Option<Cow<'a, str>>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -3307,9 +3308,9 @@ impl<E: Error + 'static> Error for KickError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct LeaveRequest {
+pub struct LeaveRequest<'a> {
     /// Conversation to leave
-    pub channel: Option<String>,
+    pub channel: Option<Cow<'a, str>>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -3454,15 +3455,15 @@ impl<E: Error + 'static> Error for LeaveError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct ListRequest {
+pub struct ListRequest<'a> {
     /// Paginate through collections of data by setting the `cursor` parameter to a `next_cursor` attribute returned by a previous request's `response_metadata`. Default value fetches the first "page" of the collection. See [pagination](/docs/pagination) for more detail.
-    pub cursor: Option<String>,
+    pub cursor: Option<Cow<'a, str>>,
     /// Set to `true` to exclude archived channels from the list
     pub exclude_archived: Option<bool>,
     /// The maximum number of items to return. Fewer than the requested number of items may be returned, even if the end of the list hasn't been reached. Must be an integer no larger than 1000.
     pub limit: Option<u64>,
     /// Mix and match channel types by providing a comma-separated list of any combination of `public_channel`, `private_channel`, `mpim`, `im`
-    pub types: Option<String>,
+    pub types: Option<Cow<'a, str>>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -4032,9 +4033,9 @@ impl<E: Error + 'static> Error for ListError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct MarkRequest {
+pub struct MarkRequest<'a> {
     /// Channel or conversation to set the read cursor for.
-    pub channel: Option<String>,
+    pub channel: Option<Cow<'a, str>>,
     /// Unique identifier of message you want marked as most recently seen in this conversation.
     pub ts: Option<f64>,
 }
@@ -4160,11 +4161,11 @@ impl<E: Error + 'static> Error for MarkError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct MembersRequest {
+pub struct MembersRequest<'a> {
     /// ID of the conversation to retrieve members for
-    pub channel: Option<String>,
+    pub channel: Option<Cow<'a, str>>,
     /// Paginate through collections of data by setting the `cursor` parameter to a `next_cursor` attribute returned by a previous request's `response_metadata`. Default value fetches the first "page" of the collection. See [pagination](/docs/pagination) for more detail.
-    pub cursor: Option<String>,
+    pub cursor: Option<Cow<'a, str>>,
     /// The maximum number of items to return. Fewer than the requested number of items may be returned, even if the end of the users list hasn't been reached.
     pub limit: Option<u64>,
 }
@@ -4289,13 +4290,13 @@ impl<E: Error + 'static> Error for MembersError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct OpenRequest {
+pub struct OpenRequest<'a> {
     /// Resume a conversation by supplying an `im` or `mpim`'s ID. Or provide the `users` field instead.
-    pub channel: Option<String>,
+    pub channel: Option<Cow<'a, str>>,
     /// Boolean, indicates you want the full IM channel definition in the response.
     pub return_im: Option<bool>,
     /// Comma separated lists of users. If only one user is included, this creates a 1:1 DM.  The ordering of the users is preserved whenever a multi-person direct message is returned. Supply a `channel` when not supplying `users`.
-    pub users: Option<String>,
+    pub users: Option<Cow<'a, str>>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -4893,11 +4894,11 @@ impl<E: Error + 'static> Error for OpenError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct RenameRequest {
+pub struct RenameRequest<'a> {
     /// ID of conversation to rename
-    pub channel: Option<String>,
+    pub channel: Option<Cow<'a, str>>,
     /// New name for conversation.
-    pub name: Option<String>,
+    pub name: Option<Cow<'a, str>>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -5507,11 +5508,11 @@ impl<E: Error + 'static> Error for RenameError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct RepliesRequest {
+pub struct RepliesRequest<'a> {
     /// Conversation ID to fetch thread from.
-    pub channel: Option<String>,
+    pub channel: Option<Cow<'a, str>>,
     /// Paginate through collections of data by setting the `cursor` parameter to a `next_cursor` attribute returned by a previous request's `response_metadata`. Default value fetches the first "page" of the collection. See [pagination](/docs/pagination) for more detail.
-    pub cursor: Option<String>,
+    pub cursor: Option<Cow<'a, str>>,
     /// Include messages with latest or oldest timestamp in results only when either timestamp is specified.
     pub inclusive: Option<bool>,
     /// End of time range of messages to include in results.
@@ -5671,11 +5672,11 @@ impl<E: Error + 'static> Error for RepliesError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct SetPurposeRequest {
+pub struct SetPurposeRequest<'a> {
     /// Conversation to set the purpose of
-    pub channel: Option<String>,
+    pub channel: Option<Cow<'a, str>>,
     /// A new, specialer purpose
-    pub purpose: Option<String>,
+    pub purpose: Option<Cow<'a, str>>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -6277,11 +6278,11 @@ impl<E: Error + 'static> Error for SetPurposeError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct SetTopicRequest {
+pub struct SetTopicRequest<'a> {
     /// Conversation to set the topic of
-    pub channel: Option<String>,
+    pub channel: Option<Cow<'a, str>>,
     /// The new topic string. Does not support formatting or linkification.
-    pub topic: Option<String>,
+    pub topic: Option<Cow<'a, str>>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -6873,9 +6874,9 @@ impl<E: Error + 'static> Error for SetTopicError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct UnarchiveRequest {
+pub struct UnarchiveRequest<'a> {
     /// ID of conversation to unarchive
-    pub channel: Option<String>,
+    pub channel: Option<Cow<'a, str>>,
 }
 
 #[derive(Clone, Debug, Deserialize)]

@@ -16,18 +16,19 @@
 #![allow(clippy::match_single_binding)]
 #![allow(clippy::blacklisted_name)]
 
+use std::borrow::Cow;
 use std::convert::From;
 use std::error::Error;
 use std::fmt;
 
 #[derive(Clone, Default, Debug)]
-pub struct AddRequest {
+pub struct AddRequest<'a> {
     /// The content of the reminder
-    pub text: String,
+    pub text: Cow<'a, str>,
     /// When this reminder should happen: the Unix timestamp (up to five years from now), the number of seconds until the reminder (if within 24 hours), or a natural language description (Ex. "in 15 minutes," or "every Thursday")
-    pub time: String,
+    pub time: Cow<'a, str>,
     /// The user who will receive the reminder. If no user is specified, the reminder will go to user who created it.
-    pub user: Option<String>,
+    pub user: Option<Cow<'a, str>>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -176,9 +177,9 @@ impl<E: Error + 'static> Error for AddError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct CompleteRequest {
+pub struct CompleteRequest<'a> {
     /// The ID of the reminder to be marked as complete
-    pub reminder: Option<String>,
+    pub reminder: Option<Cow<'a, str>>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -310,9 +311,9 @@ impl<E: Error + 'static> Error for CompleteError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct DeleteRequest {
+pub struct DeleteRequest<'a> {
     /// The ID of the reminder
-    pub reminder: Option<String>,
+    pub reminder: Option<Cow<'a, str>>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -432,9 +433,9 @@ impl<E: Error + 'static> Error for DeleteError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct InfoRequest {
+pub struct InfoRequest<'a> {
     /// The ID of the reminder
-    pub reminder: Option<String>,
+    pub reminder: Option<Cow<'a, str>>,
 }
 
 #[derive(Clone, Debug, Deserialize)]

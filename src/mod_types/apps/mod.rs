@@ -19,16 +19,17 @@
 pub mod event;
 pub mod permissions;
 
+use std::borrow::Cow;
 use std::convert::From;
 use std::error::Error;
 use std::fmt;
 
 #[derive(Clone, Default, Debug)]
-pub struct UninstallRequest {
+pub struct UninstallRequest<'a> {
     /// Issued when you created your application.
-    pub client_id: Option<String>,
+    pub client_id: Option<Cow<'a, str>>,
     /// Issued when you created your application.
-    pub client_secret: Option<String>,
+    pub client_secret: Option<Cow<'a, str>>,
 }
 
 #[derive(Clone, Debug, Deserialize)]

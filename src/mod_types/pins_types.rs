@@ -16,16 +16,17 @@
 #![allow(clippy::match_single_binding)]
 #![allow(clippy::blacklisted_name)]
 
+use std::borrow::Cow;
 use std::convert::From;
 use std::error::Error;
 use std::fmt;
 
 #[derive(Clone, Default, Debug)]
-pub struct AddRequest {
+pub struct AddRequest<'a> {
     /// Channel to pin the item in.
-    pub channel: String,
+    pub channel: Cow<'a, str>,
     /// Timestamp of the message to pin.
-    pub timestamp: Option<String>,
+    pub timestamp: Option<Cow<'a, str>>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -154,9 +155,9 @@ impl<E: Error + 'static> Error for AddError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct ListRequest {
+pub struct ListRequest<'a> {
     /// Channel to get pinned items for.
-    pub channel: String,
+    pub channel: Cow<'a, str>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -365,11 +366,11 @@ impl<E: Error + 'static> Error for ListError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct RemoveRequest {
+pub struct RemoveRequest<'a> {
     /// Channel where the item is pinned to.
-    pub channel: String,
+    pub channel: Cow<'a, str>,
     /// Timestamp of the message to un-pin.
-    pub timestamp: Option<String>,
+    pub timestamp: Option<Cow<'a, str>>,
 }
 
 #[derive(Clone, Debug, Deserialize)]

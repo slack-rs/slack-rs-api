@@ -20,20 +20,21 @@ pub mod admins_types;
 pub mod owners_types;
 pub mod settings_types;
 
+use std::borrow::Cow;
 use std::convert::From;
 use std::error::Error;
 use std::fmt;
 
 #[derive(Clone, Default, Debug)]
-pub struct CreateRequest {
+pub struct CreateRequest<'a> {
     /// Description for the team.
-    pub team_description: Option<String>,
+    pub team_description: Option<Cow<'a, str>>,
     /// Who can join the team. A team's discoverability can be `open`, `closed`, `invite_only`, or `unlisted`.
-    pub team_discoverability: Option<String>,
+    pub team_discoverability: Option<Cow<'a, str>>,
     /// Team domain (for example, slacksoftballteam).
-    pub team_domain: String,
+    pub team_domain: Cow<'a, str>,
     /// Team name (for example, Slack Softball Team).
-    pub team_name: String,
+    pub team_name: Cow<'a, str>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -93,9 +94,9 @@ impl<E: Error + 'static> Error for CreateError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct ListRequest {
+pub struct ListRequest<'a> {
     /// Set `cursor` to `next_cursor` returned by the previous call to list items in the next page.
-    pub cursor: Option<String>,
+    pub cursor: Option<Cow<'a, str>>,
     /// The maximum number of items to return. Must be between 1 - 100 both inclusive.
     pub limit: Option<u64>,
 }

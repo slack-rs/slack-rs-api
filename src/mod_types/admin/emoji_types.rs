@@ -16,16 +16,17 @@
 #![allow(clippy::match_single_binding)]
 #![allow(clippy::blacklisted_name)]
 
+use std::borrow::Cow;
 use std::convert::From;
 use std::error::Error;
 use std::fmt;
 
 #[derive(Clone, Default, Debug)]
-pub struct AddRequest {
+pub struct AddRequest<'a> {
     /// The name of the emoji to be removed. Colons (`:myemoji:`) around the value are not required, although they may be included.
-    pub name: String,
+    pub name: Cow<'a, str>,
     /// The URL of a file to use as an image for the emoji. Square images under 128KB and with transparent backgrounds work best.
-    pub url: String,
+    pub url: Cow<'a, str>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -85,11 +86,11 @@ impl<E: Error + 'static> Error for AddError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct AddAliasRequest {
+pub struct AddAliasRequest<'a> {
     /// The alias of the emoji.
-    pub alias_for: String,
+    pub alias_for: Cow<'a, str>,
     /// The name of the emoji to be aliased. Colons (`:myemoji:`) around the value are not required, although they may be included.
-    pub name: String,
+    pub name: Cow<'a, str>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -149,9 +150,9 @@ impl<E: Error + 'static> Error for AddAliasError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct ListRequest {
+pub struct ListRequest<'a> {
     /// Set `cursor` to `next_cursor` returned by the previous call to list items in the next page
-    pub cursor: Option<String>,
+    pub cursor: Option<Cow<'a, str>>,
     /// The maximum number of items to return. Must be between 1 - 1000 both inclusive.
     pub limit: Option<u64>,
 }
@@ -213,9 +214,9 @@ impl<E: Error + 'static> Error for ListError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct RemoveRequest {
+pub struct RemoveRequest<'a> {
     /// The name of the emoji to be removed. Colons (`:myemoji:`) around the value are not required, although they may be included.
-    pub name: String,
+    pub name: Cow<'a, str>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -275,11 +276,11 @@ impl<E: Error + 'static> Error for RemoveError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct RenameRequest {
+pub struct RenameRequest<'a> {
     /// The name of the emoji to be renamed. Colons (`:myemoji:`) around the value are not required, although they may be included.
-    pub name: String,
+    pub name: Cow<'a, str>,
     /// The new name of the emoji.
-    pub new_name: String,
+    pub new_name: Cow<'a, str>,
 }
 
 #[derive(Clone, Debug, Deserialize)]

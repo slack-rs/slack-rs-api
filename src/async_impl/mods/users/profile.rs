@@ -18,6 +18,7 @@
 
 use crate::async_impl::SlackWebRequestSender;
 pub use crate::mod_types::users::profile_types::*;
+use std::borrow::Cow;
 
 /// Retrieves a user's profile information.
 ///
@@ -26,20 +27,23 @@ pub use crate::mod_types::users::profile_types::*;
 pub async fn get<R>(
     client: &R,
     token: &str,
-    request: &GetRequest,
+    request: &GetRequest<'_>,
 ) -> Result<GetResponse, GetError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
-        Some(("token", token.to_string())),
-        request
-            .include_labels
+    let include_labels: Option<Cow<'_, str>> = request
+        .include_labels
+        .as_ref()
+        .map(|include_labels| include_labels.to_string().into());
+    let params: Vec<Option<(&str, &str)>> = vec![
+        Some(("token", token)),
+        include_labels
             .as_ref()
-            .map(|include_labels| ("include_labels", include_labels.to_string())),
-        request.user.as_ref().map(|user| ("user", user.to_string())),
+            .map(|include_labels| ("include_labels", include_labels.as_ref())),
+        request.user.as_ref().map(|user| ("user", user.as_ref())),
     ];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/users.profile.get");
     client
         .get(&url, &params[..])
@@ -58,27 +62,27 @@ where
 pub async fn set<R>(
     client: &R,
     token: &str,
-    request: &SetRequest,
+    request: &SetRequest<'_>,
 ) -> Result<SetResponse, SetError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
-        request.name.as_ref().map(|name| ("name", name.to_string())),
+    let params: Vec<Option<(&str, &str)>> = vec![
+        request.name.as_ref().map(|name| ("name", name.as_ref())),
         request
             .profile
             .as_ref()
-            .map(|profile| ("profile", profile.to_string())),
-        request.user.as_ref().map(|user| ("user", user.to_string())),
+            .map(|profile| ("profile", profile.as_ref())),
+        request.user.as_ref().map(|user| ("user", user.as_ref())),
         request
             .value
             .as_ref()
-            .map(|value| ("value", value.to_string())),
+            .map(|value| ("value", value.as_ref())),
     ];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/users.profile.set");
     client
-        .post(&url, &params[..], &[("token", token.to_string())])
+        .post(&url, &params[..], &[("token", token)])
         .await
         .map_err(SetError::Client)
         .and_then(|result| {

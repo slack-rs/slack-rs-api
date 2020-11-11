@@ -18,6 +18,7 @@
 
 use crate::async_impl::SlackWebRequestSender;
 pub use crate::mod_types::auth_types::*;
+use std::borrow::Cow;
 
 /// Revokes a token.
 ///
@@ -31,11 +32,12 @@ pub async fn revoke<R>(
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
-        Some(("token", token.to_string())),
-        request.test.as_ref().map(|test| ("test", test.to_string())),
+    let test: Option<Cow<'_, str>> = request.test.as_ref().map(|test| test.to_string().into());
+    let params: Vec<Option<(&str, &str)>> = vec![
+        Some(("token", token)),
+        test.as_ref().map(|test| ("test", test.as_ref())),
     ];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/auth.revoke");
     client
         .get(&url, &params[..])
@@ -59,8 +61,8 @@ pub async fn test<R>(
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![Some(("token", token.to_string()))];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<Option<(&str, &str)>> = vec![Some(("token", token))];
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/auth.test");
     client
         .get(&url, &params[..])

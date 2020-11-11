@@ -16,16 +16,17 @@
 #![allow(clippy::match_single_binding)]
 #![allow(clippy::blacklisted_name)]
 
+use std::borrow::Cow;
 use std::convert::From;
 use std::error::Error;
 use std::fmt;
 
 #[derive(Clone, Default, Debug)]
-pub struct OpenRequest {
+pub struct OpenRequest<'a> {
     /// Exchange a trigger to post to the user.
-    pub trigger_id: String,
+    pub trigger_id: Cow<'a, str>,
     /// A [view payload](/reference/surfaces/views). This must be a JSON-encoded string.
-    pub view: String,
+    pub view: Cow<'a, str>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -85,13 +86,13 @@ impl<E: Error + 'static> Error for OpenError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct PublishRequest {
+pub struct PublishRequest<'a> {
     /// A string that represents view state to protect against possible race conditions.
-    pub hash: Option<String>,
+    pub hash: Option<Cow<'a, str>>,
     /// `id` of the user you want publish a view to.
-    pub user_id: String,
+    pub user_id: Cow<'a, str>,
     /// A [view payload](/reference/surfaces/views). This must be a JSON-encoded string.
-    pub view: String,
+    pub view: Cow<'a, str>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -151,11 +152,11 @@ impl<E: Error + 'static> Error for PublishError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct PushRequest {
+pub struct PushRequest<'a> {
     /// Exchange a trigger to post to the user.
-    pub trigger_id: String,
+    pub trigger_id: Cow<'a, str>,
     /// A [view payload](/reference/surfaces/views). This must be a JSON-encoded string.
-    pub view: String,
+    pub view: Cow<'a, str>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -215,15 +216,15 @@ impl<E: Error + 'static> Error for PushError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct UpdateRequest {
+pub struct UpdateRequest<'a> {
     /// A unique identifier of the view set by the developer. Must be unique for all views on a team. Max length of 255 characters. Either `view_id` or `external_id` is required.
-    pub external_id: Option<String>,
+    pub external_id: Option<Cow<'a, str>>,
     /// A string that represents view state to protect against possible race conditions.
-    pub hash: Option<String>,
+    pub hash: Option<Cow<'a, str>>,
     /// A [view object](/reference/surfaces/views). This must be a JSON-encoded string.
-    pub view: Option<String>,
+    pub view: Option<Cow<'a, str>>,
     /// A unique identifier of the view to be updated. Either `view_id` or `external_id` is required.
-    pub view_id: Option<String>,
+    pub view_id: Option<Cow<'a, str>>,
 }
 
 #[derive(Clone, Debug, Deserialize)]

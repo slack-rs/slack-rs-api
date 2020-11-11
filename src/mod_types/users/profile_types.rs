@@ -16,16 +16,17 @@
 #![allow(clippy::match_single_binding)]
 #![allow(clippy::blacklisted_name)]
 
+use std::borrow::Cow;
 use std::convert::From;
 use std::error::Error;
 use std::fmt;
 
 #[derive(Clone, Default, Debug)]
-pub struct GetRequest {
+pub struct GetRequest<'a> {
     /// Include labels for each ID in custom profile fields
     pub include_labels: Option<bool>,
     /// User to retrieve profile info for
-    pub user: Option<String>,
+    pub user: Option<Cow<'a, str>>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -194,15 +195,15 @@ impl<E: Error + 'static> Error for GetError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct SetRequest {
+pub struct SetRequest<'a> {
     /// Name of a single key to set. Usable only if `profile` is not passed.
-    pub name: Option<String>,
+    pub name: Option<Cow<'a, str>>,
     /// Collection of key:value pairs presented as a URL-encoded JSON hash. At most 50 fields may be set. Each field name is limited to 255 characters.
-    pub profile: Option<String>,
+    pub profile: Option<Cow<'a, str>>,
     /// ID of user to change. This argument may only be specified by team admins on paid teams.
-    pub user: Option<String>,
+    pub user: Option<Cow<'a, str>>,
     /// Value to set a single key to. Usable only if `profile` is not passed.
-    pub value: Option<String>,
+    pub value: Option<Cow<'a, str>>,
 }
 
 #[derive(Clone, Debug, Deserialize)]

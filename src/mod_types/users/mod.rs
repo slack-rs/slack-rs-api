@@ -18,22 +18,23 @@
 
 pub mod profile_types;
 
+use std::borrow::Cow;
 use std::convert::From;
 use std::error::Error;
 use std::fmt;
 
 #[derive(Clone, Default, Debug)]
-pub struct ConversationsRequest {
+pub struct ConversationsRequest<'a> {
     /// Paginate through collections of data by setting the `cursor` parameter to a `next_cursor` attribute returned by a previous request's `response_metadata`. Default value fetches the first "page" of the collection. See [pagination](/docs/pagination) for more detail.
-    pub cursor: Option<String>,
+    pub cursor: Option<Cow<'a, str>>,
     /// Set to `true` to exclude archived channels from the list
     pub exclude_archived: Option<bool>,
     /// The maximum number of items to return. Fewer than the requested number of items may be returned, even if the end of the list hasn't been reached. Must be an integer no larger than 1000.
     pub limit: Option<u64>,
     /// Mix and match channel types by providing a comma-separated list of any combination of `public_channel`, `private_channel`, `mpim`, `im`
-    pub types: Option<String>,
+    pub types: Option<Cow<'a, str>>,
     /// Browse conversations by a specific user ID's membership. Non-public channels are restricted to those where the calling user shares membership.
-    pub user: Option<String>,
+    pub user: Option<Cow<'a, str>>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -784,9 +785,9 @@ impl<E: Error + 'static> Error for DeletePhotoError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct GetPresenceRequest {
+pub struct GetPresenceRequest<'a> {
     /// User to get presence info on. Defaults to the authed user.
-    pub user: Option<String>,
+    pub user: Option<Cow<'a, str>>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -987,11 +988,11 @@ impl<E: Error + 'static> Error for IdentityError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct InfoRequest {
+pub struct InfoRequest<'a> {
     /// Set this to `true` to receive the locale for this user. Defaults to `false`
     pub include_locale: Option<bool>,
     /// User to get info on
-    pub user: Option<String>,
+    pub user: Option<Cow<'a, str>>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -1217,9 +1218,9 @@ impl<E: Error + 'static> Error for InfoError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct ListRequest {
+pub struct ListRequest<'a> {
     /// Paginate through collections of data by setting the `cursor` parameter to a `next_cursor` attribute returned by a previous request's `response_metadata`. Default value fetches the first "page" of the collection. See [pagination](/docs/pagination) for more detail.
-    pub cursor: Option<String>,
+    pub cursor: Option<Cow<'a, str>>,
     /// Set this to `true` to receive the locale for users. Defaults to `false`
     pub include_locale: Option<bool>,
     /// The maximum number of items to return. Fewer than the requested number of items may be returned, even if the end of the users list hasn't been reached. Providing no `limit` value will result in Slack attempting to deliver you the entire result set. If the collection is too large you may experience `limit_required` or HTTP 500 errors.
@@ -1462,9 +1463,9 @@ impl<E: Error + 'static> Error for ListError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct LookupByEmailRequest {
+pub struct LookupByEmailRequest<'a> {
     /// An email address belonging to a user in the workspace
-    pub email: String,
+    pub email: Cow<'a, str>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -1837,15 +1838,15 @@ impl<E: Error + 'static> Error for SetActiveError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct SetPhotoRequest {
+pub struct SetPhotoRequest<'a> {
     /// Width/height of crop box (always square)
-    pub crop_w: Option<String>,
+    pub crop_w: Option<Cow<'a, str>>,
     /// X coordinate of top-left corner of crop box
-    pub crop_x: Option<String>,
+    pub crop_x: Option<Cow<'a, str>>,
     /// Y coordinate of top-left corner of crop box
-    pub crop_y: Option<String>,
+    pub crop_y: Option<Cow<'a, str>>,
     /// File contents via `multipart/form-data`.
-    pub image: Option<String>,
+    pub image: Option<Cow<'a, str>>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -1993,9 +1994,9 @@ impl<E: Error + 'static> Error for SetPhotoError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct SetPresenceRequest {
+pub struct SetPresenceRequest<'a> {
     /// Either `auto` or `away`
-    pub presence: String,
+    pub presence: Cow<'a, str>,
 }
 
 #[derive(Clone, Debug, Deserialize)]

@@ -19,14 +19,15 @@
 pub mod comments_types;
 pub mod remote_types;
 
+use std::borrow::Cow;
 use std::convert::From;
 use std::error::Error;
 use std::fmt;
 
 #[derive(Clone, Default, Debug)]
-pub struct DeleteRequest {
+pub struct DeleteRequest<'a> {
     /// ID of file to delete.
-    pub file: Option<String>,
+    pub file: Option<Cow<'a, str>>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -140,15 +141,15 @@ impl<E: Error + 'static> Error for DeleteError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct InfoRequest {
-    pub count: Option<String>,
+pub struct InfoRequest<'a> {
+    pub count: Option<Cow<'a, str>>,
     /// Parameter for pagination. File comments are paginated for a single file. Set `cursor` equal to the `next_cursor` attribute returned by the previous request's `response_metadata`. This parameter is optional, but pagination is mandatory: the default value simply fetches the first "page" of the collection of comments. See [pagination](/docs/pagination) for more details.
-    pub cursor: Option<String>,
+    pub cursor: Option<Cow<'a, str>>,
     /// Specify a file by providing its ID.
-    pub file: Option<String>,
+    pub file: Option<Cow<'a, str>>,
     /// The maximum number of items to return. Fewer than the requested number of items may be returned, even if the end of the list hasn't been reached.
     pub limit: Option<u64>,
-    pub page: Option<String>,
+    pub page: Option<Cow<'a, str>>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -372,11 +373,11 @@ impl<E: Error + 'static> Error for InfoError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct ListRequest {
+pub struct ListRequest<'a> {
     /// Filter files appearing in a specific channel, indicated by its ID.
-    pub channel: Option<String>,
-    pub count: Option<String>,
-    pub page: Option<String>,
+    pub channel: Option<Cow<'a, str>>,
+    pub count: Option<Cow<'a, str>>,
+    pub page: Option<Cow<'a, str>>,
     /// Show truncated file info for files hidden due to being too old, and the team who owns the file being over the file limit.
     pub show_files_hidden_by_limit: Option<bool>,
     /// Filter files created after this timestamp (inclusive).
@@ -384,9 +385,9 @@ pub struct ListRequest {
     /// Filter files created before this timestamp (inclusive).
     pub ts_to: Option<f64>,
     /// Filter files by type ([see below](#file_types)). You can pass multiple values in the types argument, like `types=spaces,snippets`.The default value is `all`, which does not filter the list.
-    pub types: Option<String>,
+    pub types: Option<Cow<'a, str>>,
     /// Filter files created by a single user.
-    pub user: Option<String>,
+    pub user: Option<Cow<'a, str>>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -599,9 +600,9 @@ impl<E: Error + 'static> Error for ListError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct RevokePublicURLRequest {
+pub struct RevokePublicURLRequest<'a> {
     /// File to revoke
-    pub file: Option<String>,
+    pub file: Option<Cow<'a, str>>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -840,9 +841,9 @@ impl<E: Error + 'static> Error for RevokePublicURLError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct SharedPublicURLRequest {
+pub struct SharedPublicURLRequest<'a> {
     /// File to share
-    pub file: Option<String>,
+    pub file: Option<Cow<'a, str>>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -1084,23 +1085,23 @@ impl<E: Error + 'static> Error for SharedPublicURLError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct UploadRequest {
+pub struct UploadRequest<'a> {
     /// Comma-separated list of channel names or IDs where the file will be shared.
-    pub channels: Option<String>,
+    pub channels: Option<Cow<'a, str>>,
     /// File contents via a POST variable. If omitting this parameter, you must provide a `file`.
-    pub content: Option<String>,
+    pub content: Option<Cow<'a, str>>,
     /// File contents via `multipart/form-data`. If omitting this parameter, you must submit `content`.
-    pub file: Option<String>,
+    pub file: Option<Cow<'a, str>>,
     /// Filename of file.
-    pub filename: Option<String>,
+    pub filename: Option<Cow<'a, str>>,
     /// A [file type](/types/file#file_types) identifier.
-    pub filetype: Option<String>,
+    pub filetype: Option<Cow<'a, str>>,
     /// The message text introducing the file in specified `channels`.
-    pub initial_comment: Option<String>,
+    pub initial_comment: Option<Cow<'a, str>>,
     /// Provide another message's `ts` value to upload this file as a reply. Never use a reply's `ts` value; use its parent instead.
     pub thread_ts: Option<f64>,
     /// Title of file.
-    pub title: Option<String>,
+    pub title: Option<Cow<'a, str>>,
 }
 
 #[derive(Clone, Debug, Deserialize)]

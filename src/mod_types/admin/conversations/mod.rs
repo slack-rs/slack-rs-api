@@ -19,14 +19,15 @@
 pub mod ekm_types;
 pub mod restrict_access_types;
 
+use std::borrow::Cow;
 use std::convert::From;
 use std::error::Error;
 use std::fmt;
 
 #[derive(Clone, Default, Debug)]
-pub struct ArchiveRequest {
+pub struct ArchiveRequest<'a> {
     /// The channel to archive.
-    pub channel_id: String,
+    pub channel_id: Cow<'a, str>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -119,9 +120,9 @@ impl<E: Error + 'static> Error for ArchiveError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct ConvertToPrivateRequest {
+pub struct ConvertToPrivateRequest<'a> {
     /// The channel to convert to private.
-    pub channel_id: String,
+    pub channel_id: Cow<'a, str>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -228,17 +229,17 @@ impl<E: Error + 'static> Error for ConvertToPrivateError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct CreateRequest {
+pub struct CreateRequest<'a> {
     /// Description of the public or private channel to create.
-    pub description: Option<String>,
+    pub description: Option<Cow<'a, str>>,
     /// When `true`, creates a private channel instead of a public channel
     pub is_private: bool,
     /// Name of the public or private channel to create.
-    pub name: String,
+    pub name: Cow<'a, str>,
     /// When `true`, the channel will be available org-wide. Note: if the channel is not `org_wide=true`, you must specify a `team_id` for this channel
     pub org_wide: Option<bool>,
     /// The workspace to create the channel in. Note: this argument is required unless you set `org_wide=true`.
-    pub team_id: Option<String>,
+    pub team_id: Option<Cow<'a, str>>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -328,9 +329,9 @@ impl<E: Error + 'static> Error for CreateError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct DeleteRequest {
+pub struct DeleteRequest<'a> {
     /// The channel to delete.
-    pub channel_id: String,
+    pub channel_id: Cow<'a, str>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -421,11 +422,11 @@ impl<E: Error + 'static> Error for DeleteError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct DisconnectSharedRequest {
+pub struct DisconnectSharedRequest<'a> {
     /// The channel to be disconnected from some workspaces.
-    pub channel_id: String,
+    pub channel_id: Cow<'a, str>,
     /// The team to be removed from the channel. Currently only a single team id can be specified.
-    pub leaving_team_ids: Option<String>,
+    pub leaving_team_ids: Option<Cow<'a, str>>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -545,9 +546,9 @@ impl<E: Error + 'static> Error for DisconnectSharedError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct GetConversationPrefsRequest {
+pub struct GetConversationPrefsRequest<'a> {
     /// The channel to get preferences for.
-    pub channel_id: String,
+    pub channel_id: Cow<'a, str>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -669,11 +670,11 @@ impl<E: Error + 'static> Error for GetConversationPrefsError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct GetTeamsRequest {
+pub struct GetTeamsRequest<'a> {
     /// The channel to determine connected workspaces within the organization for.
-    pub channel_id: String,
+    pub channel_id: Cow<'a, str>,
     /// Set `cursor` to `next_cursor` returned by the previous call to list items in the next page
-    pub cursor: Option<String>,
+    pub cursor: Option<Cow<'a, str>>,
     /// The maximum number of items to return. Must be between 1 - 1000 both inclusive.
     pub limit: Option<u64>,
 }
@@ -773,11 +774,11 @@ impl<E: Error + 'static> Error for GetTeamsError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct InviteRequest {
+pub struct InviteRequest<'a> {
     /// The channel that the users will be invited to.
-    pub channel_id: String,
+    pub channel_id: Cow<'a, str>,
     /// The users to invite.
-    pub user_ids: String,
+    pub user_ids: Cow<'a, str>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -865,10 +866,10 @@ impl<E: Error + 'static> Error for InviteError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct RenameRequest {
+pub struct RenameRequest<'a> {
     /// The channel to rename.
-    pub channel_id: String,
-    pub name: String,
+    pub channel_id: Cow<'a, str>,
+    pub name: Cow<'a, str>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -956,21 +957,21 @@ impl<E: Error + 'static> Error for RenameError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct SearchRequest {
+pub struct SearchRequest<'a> {
     /// Set `cursor` to `next_cursor` returned by the previous call to list items in the next page.
-    pub cursor: Option<String>,
+    pub cursor: Option<Cow<'a, str>>,
     /// Maximum number of items to be returned. Must be between 1 - 20 both inclusive. Default is 10.
     pub limit: Option<u64>,
     /// Name of the the channel to query by.
-    pub query: Option<String>,
+    pub query: Option<Cow<'a, str>>,
     /// The type of channel to include or exclude in the search. For example `private` will search private channels, while `private_exclude` will exclude them. For a full list of types, check the [Types section](#types).
-    pub search_channel_types: Option<String>,
+    pub search_channel_types: Option<Cow<'a, str>>,
     /// Possible values are `relevant` (search ranking based on what we think is closest), `name` (alphabetical), `member_count` (number of users in the channel), and `created` (date channel was created). You can optionally pair this with the `sort_dir` arg to change how it is sorted
-    pub sort: Option<String>,
+    pub sort: Option<Cow<'a, str>>,
     /// Sort direction. Possible values are `asc` for ascending order like (1, 2, 3) or (a, b, c), and `desc` for descending order like (3, 2, 1) or (c, b, a)
-    pub sort_dir: Option<String>,
+    pub sort_dir: Option<Cow<'a, str>>,
     /// Comma separated string of team IDs, signifying the workspaces to search through.
-    pub team_ids: Option<String>,
+    pub team_ids: Option<Cow<'a, str>>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -1417,11 +1418,11 @@ impl<E: Error + 'static> Error for SearchError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct SetConversationPrefsRequest {
+pub struct SetConversationPrefsRequest<'a> {
     /// The channel to set the prefs for
-    pub channel_id: String,
+    pub channel_id: Cow<'a, str>,
     /// The prefs for this channel in a stringified JSON format.
-    pub prefs: String,
+    pub prefs: Cow<'a, str>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -1522,15 +1523,15 @@ impl<E: Error + 'static> Error for SetConversationPrefsError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct SetTeamsRequest {
+pub struct SetTeamsRequest<'a> {
     /// The encoded `channel_id` to add or remove to workspaces.
-    pub channel_id: String,
+    pub channel_id: Cow<'a, str>,
     /// True if channel has to be converted to an org channel
     pub org_channel: Option<bool>,
     /// A comma-separated list of workspaces to which the channel should be shared. Not required if the channel is being shared org-wide.
-    pub target_team_ids: Option<String>,
+    pub target_team_ids: Option<Cow<'a, str>>,
     /// The workspace to which the channel belongs. Omit this argument if the channel is a cross-workspace shared channel.
-    pub team_id: Option<String>,
+    pub team_id: Option<Cow<'a, str>>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -1590,9 +1591,9 @@ impl<E: Error + 'static> Error for SetTeamsError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct UnarchiveRequest {
+pub struct UnarchiveRequest<'a> {
     /// The channel to unarchive.
-    pub channel_id: String,
+    pub channel_id: Cow<'a, str>,
 }
 
 #[derive(Clone, Debug, Deserialize)]

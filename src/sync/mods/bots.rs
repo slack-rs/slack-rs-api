@@ -18,6 +18,7 @@
 
 pub use crate::mod_types::bots_types::*;
 use crate::sync::SlackWebRequestSender;
+use std::borrow::Cow;
 
 /// Gets information about a bot user.
 ///
@@ -26,16 +27,16 @@ use crate::sync::SlackWebRequestSender;
 pub fn info<R>(
     client: &R,
     token: &str,
-    request: &InfoRequest,
+    request: &InfoRequest<'_>,
 ) -> Result<InfoResponse, InfoError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
-        Some(("token", token.to_string())),
-        request.bot.as_ref().map(|bot| ("bot", bot.to_string())),
+    let params: Vec<Option<(&str, &str)>> = vec![
+        Some(("token", token)),
+        request.bot.as_ref().map(|bot| ("bot", bot.as_ref())),
     ];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/bots.info");
     client
         .get(&url, &params[..])

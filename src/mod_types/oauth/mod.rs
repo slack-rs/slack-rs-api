@@ -18,20 +18,21 @@
 
 pub mod v_2_types;
 
+use std::borrow::Cow;
 use std::convert::From;
 use std::error::Error;
 use std::fmt;
 
 #[derive(Clone, Default, Debug)]
-pub struct AccessRequest {
+pub struct AccessRequest<'a> {
     /// Issued when you created your application.
-    pub client_id: Option<String>,
+    pub client_id: Option<Cow<'a, str>>,
     /// Issued when you created your application.
-    pub client_secret: Option<String>,
+    pub client_secret: Option<Cow<'a, str>>,
     /// The `code` param returned via the OAuth callback.
-    pub code: Option<String>,
+    pub code: Option<Cow<'a, str>>,
     /// This must match the originally submitted URI (if one was sent).
-    pub redirect_uri: Option<String>,
+    pub redirect_uri: Option<Cow<'a, str>>,
     /// Request the user to add your app only to a single channel. Only valid with a [legacy workspace app](https://api.slack.com/legacy-workspace-apps).
     pub single_channel: Option<bool>,
 }
@@ -93,15 +94,15 @@ impl<E: Error + 'static> Error for AccessError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct TokenRequest {
+pub struct TokenRequest<'a> {
     /// Issued when you created your application.
-    pub client_id: Option<String>,
+    pub client_id: Option<Cow<'a, str>>,
     /// Issued when you created your application.
-    pub client_secret: Option<String>,
+    pub client_secret: Option<Cow<'a, str>>,
     /// The `code` param returned via the OAuth callback.
-    pub code: Option<String>,
+    pub code: Option<Cow<'a, str>>,
     /// This must match the originally submitted URI (if one was sent).
-    pub redirect_uri: Option<String>,
+    pub redirect_uri: Option<Cow<'a, str>>,
     /// Request the user to add your app only to a single channel.
     pub single_channel: Option<bool>,
 }

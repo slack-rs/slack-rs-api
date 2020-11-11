@@ -18,6 +18,7 @@
 
 pub use crate::mod_types::admin::usergroups_types::*;
 use crate::sync::SlackWebRequestSender;
+use std::borrow::Cow;
 
 /// Add one or more default channels to an IDP group.
 ///
@@ -26,23 +27,23 @@ use crate::sync::SlackWebRequestSender;
 pub fn add_channels<R>(
     client: &R,
     token: &str,
-    request: &AddChannelsRequest,
+    request: &AddChannelsRequest<'_>,
 ) -> Result<AddChannelsResponse, AddChannelsError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
-        Some(("channel_ids", request.channel_ids.to_string())),
+    let params: Vec<Option<(&str, &str)>> = vec![
+        Some(("channel_ids", request.channel_ids.as_ref())),
         request
             .team_id
             .as_ref()
-            .map(|team_id| ("team_id", team_id.to_string())),
-        Some(("usergroup_id", request.usergroup_id.to_string())),
+            .map(|team_id| ("team_id", team_id.as_ref())),
+        Some(("usergroup_id", request.usergroup_id.as_ref())),
     ];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.usergroups.addChannels");
     client
-        .post(&url, &params[..], &[("token", token.to_string())])
+        .post(&url, &params[..], &[("token", token)])
         .map_err(AddChannelsError::Client)
         .and_then(|result| {
             serde_json::from_str::<AddChannelsResponse>(&result)
@@ -57,23 +58,26 @@ where
 pub fn add_teams<R>(
     client: &R,
     token: &str,
-    request: &AddTeamsRequest,
+    request: &AddTeamsRequest<'_>,
 ) -> Result<AddTeamsResponse, AddTeamsError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
-        request
-            .auto_provision
+    let auto_provision: Option<Cow<'_, str>> = request
+        .auto_provision
+        .as_ref()
+        .map(|auto_provision| auto_provision.to_string().into());
+    let params: Vec<Option<(&str, &str)>> = vec![
+        auto_provision
             .as_ref()
-            .map(|auto_provision| ("auto_provision", auto_provision.to_string())),
-        Some(("team_ids", request.team_ids.to_string())),
-        Some(("usergroup_id", request.usergroup_id.to_string())),
+            .map(|auto_provision| ("auto_provision", auto_provision.as_ref())),
+        Some(("team_ids", request.team_ids.as_ref())),
+        Some(("usergroup_id", request.usergroup_id.as_ref())),
     ];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.usergroups.addTeams");
     client
-        .post(&url, &params[..], &[("token", token.to_string())])
+        .post(&url, &params[..], &[("token", token)])
         .map_err(AddTeamsError::Client)
         .and_then(|result| {
             serde_json::from_str::<AddTeamsResponse>(&result)
@@ -88,24 +92,27 @@ where
 pub fn list_channels<R>(
     client: &R,
     token: &str,
-    request: &ListChannelsRequest,
+    request: &ListChannelsRequest<'_>,
 ) -> Result<ListChannelsResponse, ListChannelsError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
-        Some(("token", token.to_string())),
-        request
-            .include_num_members
+    let include_num_members: Option<Cow<'_, str>> = request
+        .include_num_members
+        .as_ref()
+        .map(|include_num_members| include_num_members.to_string().into());
+    let params: Vec<Option<(&str, &str)>> = vec![
+        Some(("token", token)),
+        include_num_members
             .as_ref()
-            .map(|include_num_members| ("include_num_members", include_num_members.to_string())),
+            .map(|include_num_members| ("include_num_members", include_num_members.as_ref())),
         request
             .team_id
             .as_ref()
-            .map(|team_id| ("team_id", team_id.to_string())),
-        Some(("usergroup_id", request.usergroup_id.to_string())),
+            .map(|team_id| ("team_id", team_id.as_ref())),
+        Some(("usergroup_id", request.usergroup_id.as_ref())),
     ];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.usergroups.listChannels");
     client
         .get(&url, &params[..])
@@ -123,19 +130,19 @@ where
 pub fn remove_channels<R>(
     client: &R,
     token: &str,
-    request: &RemoveChannelsRequest,
+    request: &RemoveChannelsRequest<'_>,
 ) -> Result<RemoveChannelsResponse, RemoveChannelsError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
-        Some(("channel_ids", request.channel_ids.to_string())),
-        Some(("usergroup_id", request.usergroup_id.to_string())),
+    let params: Vec<Option<(&str, &str)>> = vec![
+        Some(("channel_ids", request.channel_ids.as_ref())),
+        Some(("usergroup_id", request.usergroup_id.as_ref())),
     ];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.usergroups.removeChannels");
     client
-        .post(&url, &params[..], &[("token", token.to_string())])
+        .post(&url, &params[..], &[("token", token)])
         .map_err(RemoveChannelsError::Client)
         .and_then(|result| {
             serde_json::from_str::<RemoveChannelsResponse>(&result)

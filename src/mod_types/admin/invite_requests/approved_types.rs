@@ -16,18 +16,19 @@
 #![allow(clippy::match_single_binding)]
 #![allow(clippy::blacklisted_name)]
 
+use std::borrow::Cow;
 use std::convert::From;
 use std::error::Error;
 use std::fmt;
 
 #[derive(Clone, Default, Debug)]
-pub struct ListRequest {
+pub struct ListRequest<'a> {
     /// Value of the `next_cursor` field sent as part of the previous API response
-    pub cursor: Option<String>,
+    pub cursor: Option<Cow<'a, str>>,
     /// The number of results that will be returned by the API on each invocation. Must be between 1 - 1000, both inclusive
     pub limit: Option<u64>,
     /// ID for the workspace where the invite requests were made.
-    pub team_id: Option<String>,
+    pub team_id: Option<Cow<'a, str>>,
 }
 
 #[derive(Clone, Debug, Deserialize)]

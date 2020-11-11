@@ -18,6 +18,7 @@
 
 use crate::async_impl::SlackWebRequestSender;
 pub use crate::mod_types::admin::users::session_types::*;
+use std::borrow::Cow;
 
 /// Invalidate a single session for a user by session_id
 ///
@@ -26,19 +27,22 @@ pub use crate::mod_types::admin::users::session_types::*;
 pub async fn invalidate<R>(
     client: &R,
     token: &str,
-    request: &InvalidateRequest,
+    request: &InvalidateRequest<'_>,
 ) -> Result<InvalidateResponse, InvalidateError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
-        Some(("session_id", request.session_id.to_string())),
-        Some(("team_id", request.team_id.to_string())),
+    let session_id: Option<Cow<'_, str>> = Some(request.session_id.to_string().into());
+    let params: Vec<Option<(&str, &str)>> = vec![
+        session_id
+            .as_ref()
+            .map(|session_id| ("session_id", session_id.as_ref())),
+        Some(("team_id", request.team_id.as_ref())),
     ];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.users.session.invalidate");
     client
-        .post(&url, &params[..], &[("token", token.to_string())])
+        .post(&url, &params[..], &[("token", token)])
         .await
         .map_err(InvalidateError::Client)
         .and_then(|result| {
@@ -54,26 +58,32 @@ where
 pub async fn reset<R>(
     client: &R,
     token: &str,
-    request: &ResetRequest,
+    request: &ResetRequest<'_>,
 ) -> Result<ResetResponse, ResetError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
-        request
-            .mobile_only
+    let mobile_only: Option<Cow<'_, str>> = request
+        .mobile_only
+        .as_ref()
+        .map(|mobile_only| mobile_only.to_string().into());
+    let web_only: Option<Cow<'_, str>> = request
+        .web_only
+        .as_ref()
+        .map(|web_only| web_only.to_string().into());
+    let params: Vec<Option<(&str, &str)>> = vec![
+        mobile_only
             .as_ref()
-            .map(|mobile_only| ("mobile_only", mobile_only.to_string())),
-        Some(("user_id", request.user_id.to_string())),
-        request
-            .web_only
+            .map(|mobile_only| ("mobile_only", mobile_only.as_ref())),
+        Some(("user_id", request.user_id.as_ref())),
+        web_only
             .as_ref()
-            .map(|web_only| ("web_only", web_only.to_string())),
+            .map(|web_only| ("web_only", web_only.as_ref())),
     ];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.users.session.reset");
     client
-        .post(&url, &params[..], &[("token", token.to_string())])
+        .post(&url, &params[..], &[("token", token)])
         .await
         .map_err(ResetError::Client)
         .and_then(|result| {

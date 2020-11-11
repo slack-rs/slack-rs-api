@@ -16,18 +16,19 @@
 #![allow(clippy::match_single_binding)]
 #![allow(clippy::blacklisted_name)]
 
+use std::borrow::Cow;
 use std::convert::From;
 use std::error::Error;
 use std::fmt;
 
 #[derive(Clone, Default, Debug)]
-pub struct AddGroupRequest {
+pub struct AddGroupRequest<'a> {
     /// The channel to link this group to.
-    pub channel_id: String,
+    pub channel_id: Cow<'a, str>,
     /// The [IDP Group](https://slack.com/help/articles/115001435788-Connect-identity-provider-groups-to-your-Enterprise-Grid-org) ID to be an allowlist for the private channel.
-    pub group_id: String,
+    pub group_id: Cow<'a, str>,
     /// The workspace where the channel exists. This argument is required for channels only tied to one workspace, and optional for channels that are shared across an organization.
-    pub team_id: Option<String>,
+    pub team_id: Option<Cow<'a, str>>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -87,10 +88,10 @@ impl<E: Error + 'static> Error for AddGroupError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct ListGroupsRequest {
-    pub channel_id: String,
+pub struct ListGroupsRequest<'a> {
+    pub channel_id: Cow<'a, str>,
     /// The workspace where the channel exists. This argument is required for channels only tied to one workspace, and optional for channels that are shared across an organization.
-    pub team_id: Option<String>,
+    pub team_id: Option<Cow<'a, str>>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -150,13 +151,13 @@ impl<E: Error + 'static> Error for ListGroupsError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct RemoveGroupRequest {
+pub struct RemoveGroupRequest<'a> {
     /// The channel to remove the linked group from.
-    pub channel_id: String,
+    pub channel_id: Cow<'a, str>,
     /// The [IDP Group](https://slack.com/help/articles/115001435788-Connect-identity-provider-groups-to-your-Enterprise-Grid-org) ID to remove from the private channel.
-    pub group_id: String,
+    pub group_id: Cow<'a, str>,
     /// The workspace where the channel exists. This argument is required for channels only tied to one workspace, and optional for channels that are shared across an organization.
-    pub team_id: String,
+    pub team_id: Cow<'a, str>,
 }
 
 #[derive(Clone, Debug, Deserialize)]

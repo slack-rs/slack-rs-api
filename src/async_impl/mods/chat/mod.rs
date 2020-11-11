@@ -20,6 +20,7 @@ pub mod scheduled_messages;
 
 use crate::async_impl::SlackWebRequestSender;
 pub use crate::mod_types::chat::*;
+use std::borrow::Cow;
 
 /// Deletes a message.
 ///
@@ -28,23 +29,27 @@ pub use crate::mod_types::chat::*;
 pub async fn delete<R>(
     client: &R,
     token: &str,
-    request: &DeleteRequest,
+    request: &DeleteRequest<'_>,
 ) -> Result<DeleteResponse, DeleteError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
-        request
-            .as_user
+    let as_user: Option<Cow<'_, str>> = request
+        .as_user
+        .as_ref()
+        .map(|as_user| as_user.to_string().into());
+    let ts: Option<Cow<'_, str>> = Some(request.ts.to_string().into());
+    let params: Vec<Option<(&str, &str)>> = vec![
+        as_user
             .as_ref()
-            .map(|as_user| ("as_user", as_user.to_string())),
-        Some(("channel", request.channel.to_string())),
-        Some(("ts", request.ts.to_string())),
+            .map(|as_user| ("as_user", as_user.as_ref())),
+        Some(("channel", request.channel.as_ref())),
+        ts.as_ref().map(|ts| ("ts", ts.as_ref())),
     ];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/chat.delete");
     client
-        .post(&url, &params[..], &[("token", token.to_string())])
+        .post(&url, &params[..], &[("token", token)])
         .await
         .map_err(DeleteError::Client)
         .and_then(|result| {
@@ -60,26 +65,29 @@ where
 pub async fn delete_scheduled_message<R>(
     client: &R,
     token: &str,
-    request: &DeleteScheduledMessageRequest,
+    request: &DeleteScheduledMessageRequest<'_>,
 ) -> Result<DeleteScheduledMessageResponse, DeleteScheduledMessageError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
-        request
-            .as_user
+    let as_user: Option<Cow<'_, str>> = request
+        .as_user
+        .as_ref()
+        .map(|as_user| as_user.to_string().into());
+    let params: Vec<Option<(&str, &str)>> = vec![
+        as_user
             .as_ref()
-            .map(|as_user| ("as_user", as_user.to_string())),
-        Some(("channel", request.channel.to_string())),
+            .map(|as_user| ("as_user", as_user.as_ref())),
+        Some(("channel", request.channel.as_ref())),
         Some((
             "scheduled_message_id",
-            request.scheduled_message_id.to_string(),
+            request.scheduled_message_id.as_ref(),
         )),
     ];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/chat.deleteScheduledMessage");
     client
-        .post(&url, &params[..], &[("token", token.to_string())])
+        .post(&url, &params[..], &[("token", token)])
         .await
         .map_err(DeleteScheduledMessageError::Client)
         .and_then(|result| {
@@ -95,17 +103,17 @@ where
 pub async fn get_permalink<R>(
     client: &R,
     token: &str,
-    request: &GetPermalinkRequest,
+    request: &GetPermalinkRequest<'_>,
 ) -> Result<GetPermalinkResponse, GetPermalinkError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
-        Some(("token", token.to_string())),
-        Some(("channel", request.channel.to_string())),
-        Some(("message_ts", request.message_ts.to_string())),
+    let params: Vec<Option<(&str, &str)>> = vec![
+        Some(("token", token)),
+        Some(("channel", request.channel.as_ref())),
+        Some(("message_ts", request.message_ts.as_ref())),
     ];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/chat.getPermalink");
     client
         .get(&url, &params[..])
@@ -124,19 +132,19 @@ where
 pub async fn me_message<R>(
     client: &R,
     token: &str,
-    request: &MeMessageRequest,
+    request: &MeMessageRequest<'_>,
 ) -> Result<MeMessageResponse, MeMessageError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
-        Some(("channel", request.channel.to_string())),
-        Some(("text", request.text.to_string())),
+    let params: Vec<Option<(&str, &str)>> = vec![
+        Some(("channel", request.channel.as_ref())),
+        Some(("text", request.text.as_ref())),
     ];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/chat.meMessage");
     client
-        .post(&url, &params[..], &[("token", token.to_string())])
+        .post(&url, &params[..], &[("token", token)])
         .await
         .map_err(MeMessageError::Client)
         .and_then(|result| {
@@ -152,56 +160,62 @@ where
 pub async fn post_ephemeral<R>(
     client: &R,
     token: &str,
-    request: &PostEphemeralRequest,
+    request: &PostEphemeralRequest<'_>,
 ) -> Result<PostEphemeralResponse, PostEphemeralError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
-        request
-            .as_user
+    let as_user: Option<Cow<'_, str>> = request
+        .as_user
+        .as_ref()
+        .map(|as_user| as_user.to_string().into());
+    let link_names: Option<Cow<'_, str>> = request
+        .link_names
+        .as_ref()
+        .map(|link_names| link_names.to_string().into());
+    let params: Vec<Option<(&str, &str)>> = vec![
+        as_user
             .as_ref()
-            .map(|as_user| ("as_user", as_user.to_string())),
+            .map(|as_user| ("as_user", as_user.as_ref())),
         request
             .attachments
             .as_ref()
-            .map(|attachments| ("attachments", attachments.to_string())),
+            .map(|attachments| ("attachments", attachments.as_ref())),
         request
             .blocks
             .as_ref()
-            .map(|blocks| ("blocks", blocks.to_string())),
-        Some(("channel", request.channel.to_string())),
+            .map(|blocks| ("blocks", blocks.as_ref())),
+        Some(("channel", request.channel.as_ref())),
         request
             .icon_emoji
             .as_ref()
-            .map(|icon_emoji| ("icon_emoji", icon_emoji.to_string())),
+            .map(|icon_emoji| ("icon_emoji", icon_emoji.as_ref())),
         request
             .icon_url
             .as_ref()
-            .map(|icon_url| ("icon_url", icon_url.to_string())),
-        request
-            .link_names
+            .map(|icon_url| ("icon_url", icon_url.as_ref())),
+        link_names
             .as_ref()
-            .map(|link_names| ("link_names", link_names.to_string())),
+            .map(|link_names| ("link_names", link_names.as_ref())),
         request
             .parse
             .as_ref()
-            .map(|parse| ("parse", parse.to_string())),
-        request.text.as_ref().map(|text| ("text", text.to_string())),
+            .map(|parse| ("parse", parse.as_ref())),
+        request.text.as_ref().map(|text| ("text", text.as_ref())),
         request
             .thread_ts
             .as_ref()
-            .map(|thread_ts| ("thread_ts", thread_ts.to_string())),
-        Some(("user", request.user.to_string())),
+            .map(|thread_ts| ("thread_ts", thread_ts.as_ref())),
+        Some(("user", request.user.as_ref())),
         request
             .username
             .as_ref()
-            .map(|username| ("username", username.to_string())),
+            .map(|username| ("username", username.as_ref())),
     ];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/chat.postEphemeral");
     client
-        .post(&url, &params[..], &[("token", token.to_string())])
+        .post(&url, &params[..], &[("token", token)])
         .await
         .map_err(PostEphemeralError::Client)
         .and_then(|result| {
@@ -217,71 +231,84 @@ where
 pub async fn post_message<R>(
     client: &R,
     token: &str,
-    request: &PostMessageRequest,
+    request: &PostMessageRequest<'_>,
 ) -> Result<PostMessageResponse, PostMessageError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
+    let link_names: Option<Cow<'_, str>> = request
+        .link_names
+        .as_ref()
+        .map(|link_names| link_names.to_string().into());
+    let mrkdwn: Option<Cow<'_, str>> = request
+        .mrkdwn
+        .as_ref()
+        .map(|mrkdwn| mrkdwn.to_string().into());
+    let reply_broadcast: Option<Cow<'_, str>> = request
+        .reply_broadcast
+        .as_ref()
+        .map(|reply_broadcast| reply_broadcast.to_string().into());
+    let unfurl_links: Option<Cow<'_, str>> = request
+        .unfurl_links
+        .as_ref()
+        .map(|unfurl_links| unfurl_links.to_string().into());
+    let unfurl_media: Option<Cow<'_, str>> = request
+        .unfurl_media
+        .as_ref()
+        .map(|unfurl_media| unfurl_media.to_string().into());
+    let params: Vec<Option<(&str, &str)>> = vec![
         request
             .as_user
             .as_ref()
-            .map(|as_user| ("as_user", as_user.to_string())),
+            .map(|as_user| ("as_user", as_user.as_ref())),
         request
             .attachments
             .as_ref()
-            .map(|attachments| ("attachments", attachments.to_string())),
+            .map(|attachments| ("attachments", attachments.as_ref())),
         request
             .blocks
             .as_ref()
-            .map(|blocks| ("blocks", blocks.to_string())),
-        Some(("channel", request.channel.to_string())),
+            .map(|blocks| ("blocks", blocks.as_ref())),
+        Some(("channel", request.channel.as_ref())),
         request
             .icon_emoji
             .as_ref()
-            .map(|icon_emoji| ("icon_emoji", icon_emoji.to_string())),
+            .map(|icon_emoji| ("icon_emoji", icon_emoji.as_ref())),
         request
             .icon_url
             .as_ref()
-            .map(|icon_url| ("icon_url", icon_url.to_string())),
-        request
-            .link_names
+            .map(|icon_url| ("icon_url", icon_url.as_ref())),
+        link_names
             .as_ref()
-            .map(|link_names| ("link_names", link_names.to_string())),
-        request
-            .mrkdwn
-            .as_ref()
-            .map(|mrkdwn| ("mrkdwn", mrkdwn.to_string())),
+            .map(|link_names| ("link_names", link_names.as_ref())),
+        mrkdwn.as_ref().map(|mrkdwn| ("mrkdwn", mrkdwn.as_ref())),
         request
             .parse
             .as_ref()
-            .map(|parse| ("parse", parse.to_string())),
-        request
-            .reply_broadcast
+            .map(|parse| ("parse", parse.as_ref())),
+        reply_broadcast
             .as_ref()
-            .map(|reply_broadcast| ("reply_broadcast", reply_broadcast.to_string())),
-        Some(("text", request.text.to_string())),
+            .map(|reply_broadcast| ("reply_broadcast", reply_broadcast.as_ref())),
+        Some(("text", request.text.as_ref())),
         request
             .thread_ts
             .as_ref()
-            .map(|thread_ts| ("thread_ts", thread_ts.to_string())),
-        request
-            .unfurl_links
+            .map(|thread_ts| ("thread_ts", thread_ts.as_ref())),
+        unfurl_links
             .as_ref()
-            .map(|unfurl_links| ("unfurl_links", unfurl_links.to_string())),
-        request
-            .unfurl_media
+            .map(|unfurl_links| ("unfurl_links", unfurl_links.as_ref())),
+        unfurl_media
             .as_ref()
-            .map(|unfurl_media| ("unfurl_media", unfurl_media.to_string())),
+            .map(|unfurl_media| ("unfurl_media", unfurl_media.as_ref())),
         request
             .username
             .as_ref()
-            .map(|username| ("username", username.to_string())),
+            .map(|username| ("username", username.as_ref())),
     ];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/chat.postMessage");
     client
-        .post(&url, &params[..], &[("token", token.to_string())])
+        .post(&url, &params[..], &[("token", token)])
         .await
         .map_err(PostMessageError::Client)
         .and_then(|result| {
@@ -297,65 +324,83 @@ where
 pub async fn schedule_message<R>(
     client: &R,
     token: Option<&str>,
-    request: &ScheduleMessageRequest,
+    request: &ScheduleMessageRequest<'_>,
 ) -> Result<ScheduleMessageResponse, ScheduleMessageError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
-        request
-            .as_user
+    let as_user: Option<Cow<'_, str>> = request
+        .as_user
+        .as_ref()
+        .map(|as_user| as_user.to_string().into());
+    let link_names: Option<Cow<'_, str>> = request
+        .link_names
+        .as_ref()
+        .map(|link_names| link_names.to_string().into());
+    let reply_broadcast: Option<Cow<'_, str>> = request
+        .reply_broadcast
+        .as_ref()
+        .map(|reply_broadcast| reply_broadcast.to_string().into());
+    let thread_ts: Option<Cow<'_, str>> = request
+        .thread_ts
+        .as_ref()
+        .map(|thread_ts| thread_ts.to_string().into());
+    let unfurl_links: Option<Cow<'_, str>> = request
+        .unfurl_links
+        .as_ref()
+        .map(|unfurl_links| unfurl_links.to_string().into());
+    let unfurl_media: Option<Cow<'_, str>> = request
+        .unfurl_media
+        .as_ref()
+        .map(|unfurl_media| unfurl_media.to_string().into());
+    let params: Vec<Option<(&str, &str)>> = vec![
+        as_user
             .as_ref()
-            .map(|as_user| ("as_user", as_user.to_string())),
+            .map(|as_user| ("as_user", as_user.as_ref())),
         request
             .attachments
             .as_ref()
-            .map(|attachments| ("attachments", attachments.to_string())),
+            .map(|attachments| ("attachments", attachments.as_ref())),
         request
             .blocks
             .as_ref()
-            .map(|blocks| ("blocks", blocks.to_string())),
+            .map(|blocks| ("blocks", blocks.as_ref())),
         request
             .channel
             .as_ref()
-            .map(|channel| ("channel", channel.to_string())),
-        request
-            .link_names
+            .map(|channel| ("channel", channel.as_ref())),
+        link_names
             .as_ref()
-            .map(|link_names| ("link_names", link_names.to_string())),
+            .map(|link_names| ("link_names", link_names.as_ref())),
         request
             .parse
             .as_ref()
-            .map(|parse| ("parse", parse.to_string())),
+            .map(|parse| ("parse", parse.as_ref())),
         request
             .post_at
             .as_ref()
-            .map(|post_at| ("post_at", post_at.to_string())),
-        request
-            .reply_broadcast
+            .map(|post_at| ("post_at", post_at.as_ref())),
+        reply_broadcast
             .as_ref()
-            .map(|reply_broadcast| ("reply_broadcast", reply_broadcast.to_string())),
-        request.text.as_ref().map(|text| ("text", text.to_string())),
-        request
-            .thread_ts
+            .map(|reply_broadcast| ("reply_broadcast", reply_broadcast.as_ref())),
+        request.text.as_ref().map(|text| ("text", text.as_ref())),
+        thread_ts
             .as_ref()
-            .map(|thread_ts| ("thread_ts", thread_ts.to_string())),
-        request
-            .unfurl_links
+            .map(|thread_ts| ("thread_ts", thread_ts.as_ref())),
+        unfurl_links
             .as_ref()
-            .map(|unfurl_links| ("unfurl_links", unfurl_links.to_string())),
-        request
-            .unfurl_media
+            .map(|unfurl_links| ("unfurl_links", unfurl_links.as_ref())),
+        unfurl_media
             .as_ref()
-            .map(|unfurl_media| ("unfurl_media", unfurl_media.to_string())),
+            .map(|unfurl_media| ("unfurl_media", unfurl_media.as_ref())),
     ];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/chat.scheduleMessage");
     client
         .post(
             &url,
             &params[..],
-            &token.map_or(vec![], |t| vec![("token", t.to_string())]),
+            &token.map_or(vec![], |t| vec![("token", t)]),
         )
         .await
         .map_err(ScheduleMessageError::Client)
@@ -372,32 +417,35 @@ where
 pub async fn unfurl<R>(
     client: &R,
     token: &str,
-    request: &UnfurlRequest,
+    request: &UnfurlRequest<'_>,
 ) -> Result<UnfurlResponse, UnfurlError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
-        Some(("channel", request.channel.to_string())),
-        Some(("ts", request.ts.to_string())),
-        Some(("unfurls", request.unfurls.to_string())),
+    let user_auth_required: Option<Cow<'_, str>> = request
+        .user_auth_required
+        .as_ref()
+        .map(|user_auth_required| user_auth_required.to_string().into());
+    let params: Vec<Option<(&str, &str)>> = vec![
+        Some(("channel", request.channel.as_ref())),
+        Some(("ts", request.ts.as_ref())),
+        Some(("unfurls", request.unfurls.as_ref())),
         request
             .user_auth_message
             .as_ref()
-            .map(|user_auth_message| ("user_auth_message", user_auth_message.to_string())),
-        request
-            .user_auth_required
+            .map(|user_auth_message| ("user_auth_message", user_auth_message.as_ref())),
+        user_auth_required
             .as_ref()
-            .map(|user_auth_required| ("user_auth_required", user_auth_required.to_string())),
+            .map(|user_auth_required| ("user_auth_required", user_auth_required.as_ref())),
         request
             .user_auth_url
             .as_ref()
-            .map(|user_auth_url| ("user_auth_url", user_auth_url.to_string())),
+            .map(|user_auth_url| ("user_auth_url", user_auth_url.as_ref())),
     ];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/chat.unfurl");
     client
-        .post(&url, &params[..], &[("token", token.to_string())])
+        .post(&url, &params[..], &[("token", token)])
         .await
         .map_err(UnfurlError::Client)
         .and_then(|result| {
@@ -413,40 +461,40 @@ where
 pub async fn update<R>(
     client: &R,
     token: &str,
-    request: &UpdateRequest,
+    request: &UpdateRequest<'_>,
 ) -> Result<UpdateResponse, UpdateError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
+    let params: Vec<Option<(&str, &str)>> = vec![
         request
             .as_user
             .as_ref()
-            .map(|as_user| ("as_user", as_user.to_string())),
+            .map(|as_user| ("as_user", as_user.as_ref())),
         request
             .attachments
             .as_ref()
-            .map(|attachments| ("attachments", attachments.to_string())),
+            .map(|attachments| ("attachments", attachments.as_ref())),
         request
             .blocks
             .as_ref()
-            .map(|blocks| ("blocks", blocks.to_string())),
-        Some(("channel", request.channel.to_string())),
+            .map(|blocks| ("blocks", blocks.as_ref())),
+        Some(("channel", request.channel.as_ref())),
         request
             .link_names
             .as_ref()
-            .map(|link_names| ("link_names", link_names.to_string())),
+            .map(|link_names| ("link_names", link_names.as_ref())),
         request
             .parse
             .as_ref()
-            .map(|parse| ("parse", parse.to_string())),
-        request.text.as_ref().map(|text| ("text", text.to_string())),
-        Some(("ts", request.ts.to_string())),
+            .map(|parse| ("parse", parse.as_ref())),
+        request.text.as_ref().map(|text| ("text", text.as_ref())),
+        Some(("ts", request.ts.as_ref())),
     ];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/chat.update");
     client
-        .post(&url, &params[..], &[("token", token.to_string())])
+        .post(&url, &params[..], &[("token", token)])
         .await
         .map_err(UpdateError::Client)
         .and_then(|result| {

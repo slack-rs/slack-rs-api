@@ -21,6 +21,7 @@ pub mod remote;
 
 use crate::async_impl::SlackWebRequestSender;
 pub use crate::mod_types::files::*;
+use std::borrow::Cow;
 
 /// Deletes a file.
 ///
@@ -29,19 +30,20 @@ pub use crate::mod_types::files::*;
 pub async fn delete<R>(
     client: &R,
     token: Option<&str>,
-    request: &DeleteRequest,
+    request: &DeleteRequest<'_>,
 ) -> Result<DeleteResponse, DeleteError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![request.file.as_ref().map(|file| ("file", file.to_string()))];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<Option<(&str, &str)>> =
+        vec![request.file.as_ref().map(|file| ("file", file.as_ref()))];
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/files.delete");
     client
         .post(
             &url,
             &params[..],
-            &token.map_or(vec![], |t| vec![("token", t.to_string())]),
+            &token.map_or(vec![], |t| vec![("token", t)]),
         )
         .await
         .map_err(DeleteError::Client)
@@ -58,29 +60,27 @@ where
 pub async fn info<R>(
     client: &R,
     token: Option<&str>,
-    request: &InfoRequest,
+    request: &InfoRequest<'_>,
 ) -> Result<InfoResponse, InfoError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
-        token.map(|token| ("token", token.to_string())),
+    let limit: Option<Cow<'_, str>> = request.limit.as_ref().map(|limit| limit.to_string().into());
+    let params: Vec<Option<(&str, &str)>> = vec![
+        token.map(|token| ("token", token)),
         request
             .count
             .as_ref()
-            .map(|count| ("count", count.to_string())),
+            .map(|count| ("count", count.as_ref())),
         request
             .cursor
             .as_ref()
-            .map(|cursor| ("cursor", cursor.to_string())),
-        request.file.as_ref().map(|file| ("file", file.to_string())),
-        request
-            .limit
-            .as_ref()
-            .map(|limit| ("limit", limit.to_string())),
-        request.page.as_ref().map(|page| ("page", page.to_string())),
+            .map(|cursor| ("cursor", cursor.as_ref())),
+        request.file.as_ref().map(|file| ("file", file.as_ref())),
+        limit.as_ref().map(|limit| ("limit", limit.as_ref())),
+        request.page.as_ref().map(|page| ("page", page.as_ref())),
     ];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/files.info");
     client
         .get(&url, &params[..])
@@ -99,46 +99,50 @@ where
 pub async fn list<R>(
     client: &R,
     token: Option<&str>,
-    request: &ListRequest,
+    request: &ListRequest<'_>,
 ) -> Result<ListResponse, ListError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
-        token.map(|token| ("token", token.to_string())),
+    let show_files_hidden_by_limit: Option<Cow<'_, str>> = request
+        .show_files_hidden_by_limit
+        .as_ref()
+        .map(|show_files_hidden_by_limit| show_files_hidden_by_limit.to_string().into());
+    let ts_from: Option<Cow<'_, str>> = request
+        .ts_from
+        .as_ref()
+        .map(|ts_from| ts_from.to_string().into());
+    let ts_to: Option<Cow<'_, str>> = request.ts_to.as_ref().map(|ts_to| ts_to.to_string().into());
+    let params: Vec<Option<(&str, &str)>> = vec![
+        token.map(|token| ("token", token)),
         request
             .channel
             .as_ref()
-            .map(|channel| ("channel", channel.to_string())),
+            .map(|channel| ("channel", channel.as_ref())),
         request
             .count
             .as_ref()
-            .map(|count| ("count", count.to_string())),
-        request.page.as_ref().map(|page| ("page", page.to_string())),
-        request
-            .show_files_hidden_by_limit
+            .map(|count| ("count", count.as_ref())),
+        request.page.as_ref().map(|page| ("page", page.as_ref())),
+        show_files_hidden_by_limit
             .as_ref()
             .map(|show_files_hidden_by_limit| {
                 (
                     "show_files_hidden_by_limit",
-                    show_files_hidden_by_limit.to_string(),
+                    show_files_hidden_by_limit.as_ref(),
                 )
             }),
-        request
-            .ts_from
+        ts_from
             .as_ref()
-            .map(|ts_from| ("ts_from", ts_from.to_string())),
-        request
-            .ts_to
-            .as_ref()
-            .map(|ts_to| ("ts_to", ts_to.to_string())),
+            .map(|ts_from| ("ts_from", ts_from.as_ref())),
+        ts_to.as_ref().map(|ts_to| ("ts_to", ts_to.as_ref())),
         request
             .types
             .as_ref()
-            .map(|types| ("types", types.to_string())),
-        request.user.as_ref().map(|user| ("user", user.to_string())),
+            .map(|types| ("types", types.as_ref())),
+        request.user.as_ref().map(|user| ("user", user.as_ref())),
     ];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/files.list");
     client
         .get(&url, &params[..])
@@ -157,19 +161,20 @@ where
 pub async fn revoke_public_url<R>(
     client: &R,
     token: Option<&str>,
-    request: &RevokePublicURLRequest,
+    request: &RevokePublicURLRequest<'_>,
 ) -> Result<RevokePublicURLResponse, RevokePublicURLError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![request.file.as_ref().map(|file| ("file", file.to_string()))];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<Option<(&str, &str)>> =
+        vec![request.file.as_ref().map(|file| ("file", file.as_ref()))];
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/files.revokePublicURL");
     client
         .post(
             &url,
             &params[..],
-            &token.map_or(vec![], |t| vec![("token", t.to_string())]),
+            &token.map_or(vec![], |t| vec![("token", t)]),
         )
         .await
         .map_err(RevokePublicURLError::Client)
@@ -186,19 +191,20 @@ where
 pub async fn shared_public_url<R>(
     client: &R,
     token: Option<&str>,
-    request: &SharedPublicURLRequest,
+    request: &SharedPublicURLRequest<'_>,
 ) -> Result<SharedPublicURLResponse, SharedPublicURLError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![request.file.as_ref().map(|file| ("file", file.to_string()))];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<Option<(&str, &str)>> =
+        vec![request.file.as_ref().map(|file| ("file", file.as_ref()))];
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/files.sharedPublicURL");
     client
         .post(
             &url,
             &params[..],
-            &token.map_or(vec![], |t| vec![("token", t.to_string())]),
+            &token.map_or(vec![], |t| vec![("token", t)]),
         )
         .await
         .map_err(SharedPublicURLError::Client)
@@ -215,49 +221,52 @@ where
 pub async fn upload<R>(
     client: &R,
     token: Option<&str>,
-    request: &UploadRequest,
+    request: &UploadRequest<'_>,
 ) -> Result<UploadResponse, UploadError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
+    let thread_ts: Option<Cow<'_, str>> = request
+        .thread_ts
+        .as_ref()
+        .map(|thread_ts| thread_ts.to_string().into());
+    let params: Vec<Option<(&str, &str)>> = vec![
         request
             .channels
             .as_ref()
-            .map(|channels| ("channels", channels.to_string())),
+            .map(|channels| ("channels", channels.as_ref())),
         request
             .content
             .as_ref()
-            .map(|content| ("content", content.to_string())),
-        request.file.as_ref().map(|file| ("file", file.to_string())),
+            .map(|content| ("content", content.as_ref())),
+        request.file.as_ref().map(|file| ("file", file.as_ref())),
         request
             .filename
             .as_ref()
-            .map(|filename| ("filename", filename.to_string())),
+            .map(|filename| ("filename", filename.as_ref())),
         request
             .filetype
             .as_ref()
-            .map(|filetype| ("filetype", filetype.to_string())),
+            .map(|filetype| ("filetype", filetype.as_ref())),
         request
             .initial_comment
             .as_ref()
-            .map(|initial_comment| ("initial_comment", initial_comment.to_string())),
-        request
-            .thread_ts
+            .map(|initial_comment| ("initial_comment", initial_comment.as_ref())),
+        thread_ts
             .as_ref()
-            .map(|thread_ts| ("thread_ts", thread_ts.to_string())),
+            .map(|thread_ts| ("thread_ts", thread_ts.as_ref())),
         request
             .title
             .as_ref()
-            .map(|title| ("title", title.to_string())),
+            .map(|title| ("title", title.as_ref())),
     ];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/files.upload");
     client
         .post(
             &url,
             &params[..],
-            &token.map_or(vec![], |t| vec![("token", t.to_string())]),
+            &token.map_or(vec![], |t| vec![("token", t)]),
         )
         .await
         .map_err(UploadError::Client)

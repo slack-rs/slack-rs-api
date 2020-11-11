@@ -18,6 +18,7 @@
 
 pub use crate::mod_types::pins_types::*;
 use crate::sync::SlackWebRequestSender;
+use std::borrow::Cow;
 
 /// Pins an item to a channel.
 ///
@@ -26,22 +27,22 @@ use crate::sync::SlackWebRequestSender;
 pub fn add<R>(
     client: &R,
     token: &str,
-    request: &AddRequest,
+    request: &AddRequest<'_>,
 ) -> Result<AddResponse, AddError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
-        Some(("channel", request.channel.to_string())),
+    let params: Vec<Option<(&str, &str)>> = vec![
+        Some(("channel", request.channel.as_ref())),
         request
             .timestamp
             .as_ref()
-            .map(|timestamp| ("timestamp", timestamp.to_string())),
+            .map(|timestamp| ("timestamp", timestamp.as_ref())),
     ];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/pins.add");
     client
-        .post(&url, &params[..], &[("token", token.to_string())])
+        .post(&url, &params[..], &[("token", token)])
         .map_err(AddError::Client)
         .and_then(|result| {
             serde_json::from_str::<AddResponse>(&result)
@@ -56,16 +57,16 @@ where
 pub fn list<R>(
     client: &R,
     token: &str,
-    request: &ListRequest,
+    request: &ListRequest<'_>,
 ) -> Result<ListResponse, ListError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
-        Some(("token", token.to_string())),
-        Some(("channel", request.channel.to_string())),
+    let params: Vec<Option<(&str, &str)>> = vec![
+        Some(("token", token)),
+        Some(("channel", request.channel.as_ref())),
     ];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/pins.list");
     client
         .get(&url, &params[..])
@@ -83,22 +84,22 @@ where
 pub fn remove<R>(
     client: &R,
     token: &str,
-    request: &RemoveRequest,
+    request: &RemoveRequest<'_>,
 ) -> Result<RemoveResponse, RemoveError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
-        Some(("channel", request.channel.to_string())),
+    let params: Vec<Option<(&str, &str)>> = vec![
+        Some(("channel", request.channel.as_ref())),
         request
             .timestamp
             .as_ref()
-            .map(|timestamp| ("timestamp", timestamp.to_string())),
+            .map(|timestamp| ("timestamp", timestamp.as_ref())),
     ];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/pins.remove");
     client
-        .post(&url, &params[..], &[("token", token.to_string())])
+        .post(&url, &params[..], &[("token", token)])
         .map_err(RemoveError::Client)
         .and_then(|result| {
             serde_json::from_str::<RemoveResponse>(&result)

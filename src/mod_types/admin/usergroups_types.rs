@@ -16,18 +16,19 @@
 #![allow(clippy::match_single_binding)]
 #![allow(clippy::blacklisted_name)]
 
+use std::borrow::Cow;
 use std::convert::From;
 use std::error::Error;
 use std::fmt;
 
 #[derive(Clone, Default, Debug)]
-pub struct AddChannelsRequest {
+pub struct AddChannelsRequest<'a> {
     /// Comma separated string of channel IDs.
-    pub channel_ids: String,
+    pub channel_ids: Cow<'a, str>,
     /// The workspace to add default channels in.
-    pub team_id: Option<String>,
+    pub team_id: Option<Cow<'a, str>>,
     /// ID of the IDP group to add default channels for.
-    pub usergroup_id: String,
+    pub usergroup_id: Cow<'a, str>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -87,13 +88,13 @@ impl<E: Error + 'static> Error for AddChannelsError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct AddTeamsRequest {
+pub struct AddTeamsRequest<'a> {
     /// When `true`, this method automatically creates new workspace accounts for the IDP group members.
     pub auto_provision: Option<bool>,
     /// A comma separated list of encoded team (workspace) IDs. Each workspace *MUST* belong to the organization associated with the token.
-    pub team_ids: String,
+    pub team_ids: Cow<'a, str>,
     /// An encoded usergroup (IDP Group) ID.
-    pub usergroup_id: String,
+    pub usergroup_id: Cow<'a, str>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -153,13 +154,13 @@ impl<E: Error + 'static> Error for AddTeamsError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct ListChannelsRequest {
+pub struct ListChannelsRequest<'a> {
     /// Flag to include or exclude the count of members per channel.
     pub include_num_members: Option<bool>,
     /// ID of the the workspace.
-    pub team_id: Option<String>,
+    pub team_id: Option<Cow<'a, str>>,
     /// ID of the IDP group to list default channels for.
-    pub usergroup_id: String,
+    pub usergroup_id: Cow<'a, str>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -219,11 +220,11 @@ impl<E: Error + 'static> Error for ListChannelsError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct RemoveChannelsRequest {
+pub struct RemoveChannelsRequest<'a> {
     /// Comma-separated string of channel IDs
-    pub channel_ids: String,
+    pub channel_ids: Cow<'a, str>,
     /// ID of the IDP Group
-    pub usergroup_id: String,
+    pub usergroup_id: Cow<'a, str>,
 }
 
 #[derive(Clone, Debug, Deserialize)]

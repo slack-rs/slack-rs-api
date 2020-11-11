@@ -20,7 +20,7 @@ pub trait SlackWebRequestSender {
 
     /// Make an get API call to Slack. Takes a map of parameters that get appended to the request as query
     /// params.
-    fn get<S>(&self, method_url: S, params: &[(&str, String)]) -> Result<String, Self::Error>
+    fn get<S>(&self, method_url: S, params: &[(&str, &str)]) -> Result<String, Self::Error>
     where
         S: AsRef<str> + Send;
 
@@ -29,8 +29,8 @@ pub trait SlackWebRequestSender {
     fn post<S>(
         &self,
         method_url: S,
-        form: &[(&str, String)],
-        headers: &[(&str, String)],
+        form: &[(&str, &str)],
+        headers: &[(&str, &str)],
     ) -> Result<String, Self::Error>
     where
         S: AsRef<str> + Send;

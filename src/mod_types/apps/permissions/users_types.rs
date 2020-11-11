@@ -16,14 +16,15 @@
 #![allow(clippy::match_single_binding)]
 #![allow(clippy::blacklisted_name)]
 
+use std::borrow::Cow;
 use std::convert::From;
 use std::error::Error;
 use std::fmt;
 
 #[derive(Clone, Default, Debug)]
-pub struct ListRequest {
+pub struct ListRequest<'a> {
     /// Paginate through collections of data by setting the `cursor` parameter to a `next_cursor` attribute returned by a previous request's `response_metadata`. Default value fetches the first "page" of the collection. See [pagination](/docs/pagination) for more detail.
-    pub cursor: Option<String>,
+    pub cursor: Option<Cow<'a, str>>,
     /// The maximum number of items to return.
     pub limit: Option<u64>,
 }
@@ -85,13 +86,13 @@ impl<E: Error + 'static> Error for ListError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct RequestRequest {
+pub struct RequestRequest<'a> {
     /// A comma separated list of user scopes to request for
-    pub scopes: String,
+    pub scopes: Cow<'a, str>,
     /// Token used to trigger the request
-    pub trigger_id: String,
+    pub trigger_id: Cow<'a, str>,
     /// The user this scope is being requested for
-    pub user: String,
+    pub user: Cow<'a, str>,
 }
 
 #[derive(Clone, Debug, Deserialize)]

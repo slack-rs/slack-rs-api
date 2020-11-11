@@ -16,16 +16,17 @@
 #![allow(clippy::match_single_binding)]
 #![allow(clippy::blacklisted_name)]
 
+use std::borrow::Cow;
 use std::convert::From;
 use std::error::Error;
 use std::fmt;
 
 #[derive(Clone, Default, Debug)]
-pub struct OpenRequest {
+pub struct OpenRequest<'a> {
     /// The dialog definition. This must be a JSON-encoded string.
-    pub dialog: String,
+    pub dialog: Cow<'a, str>,
     /// Exchange a trigger to post to the user.
-    pub trigger_id: String,
+    pub trigger_id: Cow<'a, str>,
 }
 
 #[derive(Clone, Debug, Deserialize)]

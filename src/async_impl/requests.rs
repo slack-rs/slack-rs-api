@@ -17,7 +17,7 @@ mod reqwest_support {
         async fn get<S>(
             &self,
             method_url: S,
-            params: &[(&str, String)],
+            params: &[(&str, &str)],
         ) -> Result<String, Self::Error>
         where
             S: AsRef<str> + Send,
@@ -32,8 +32,8 @@ mod reqwest_support {
         async fn post<S>(
             &self,
             method_url: S,
-            form: &[(&str, String)],
-            headers: &[(&str, String)],
+            form: &[(&str, &str)],
+            headers: &[(&str, &str)],
         ) -> Result<String, Self::Error>
         where
             S: AsRef<str> + Send,
@@ -41,7 +41,7 @@ mod reqwest_support {
             let url = reqwest::Url::parse(method_url.as_ref()).expect("Unable to parse url");
             let mut req = self.post(url).form(form);
             for (k, v) in headers {
-                req = req.header(*k, v);
+                req = req.header(*k, *v);
             }
             Ok(req.send().await?.text().await?)
         }

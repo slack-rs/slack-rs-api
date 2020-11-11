@@ -18,6 +18,7 @@
 
 use crate::async_impl::SlackWebRequestSender;
 pub use crate::mod_types::search_types::*;
+use std::borrow::Cow;
 
 /// Searches for messages matching a query.
 ///
@@ -26,30 +27,32 @@ pub use crate::mod_types::search_types::*;
 pub async fn messages<R>(
     client: &R,
     token: &str,
-    request: &MessagesRequest,
+    request: &MessagesRequest<'_>,
 ) -> Result<MessagesResponse, MessagesError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
-        Some(("token", token.to_string())),
-        request
-            .count
+    let count: Option<Cow<'_, str>> = request.count.as_ref().map(|count| count.to_string().into());
+    let highlight: Option<Cow<'_, str>> = request
+        .highlight
+        .as_ref()
+        .map(|highlight| highlight.to_string().into());
+    let page: Option<Cow<'_, str>> = request.page.as_ref().map(|page| page.to_string().into());
+    let params: Vec<Option<(&str, &str)>> = vec![
+        Some(("token", token)),
+        count.as_ref().map(|count| ("count", count.as_ref())),
+        highlight
             .as_ref()
-            .map(|count| ("count", count.to_string())),
-        request
-            .highlight
-            .as_ref()
-            .map(|highlight| ("highlight", highlight.to_string())),
-        request.page.as_ref().map(|page| ("page", page.to_string())),
-        Some(("query", request.query.to_string())),
-        request.sort.as_ref().map(|sort| ("sort", sort.to_string())),
+            .map(|highlight| ("highlight", highlight.as_ref())),
+        page.as_ref().map(|page| ("page", page.as_ref())),
+        Some(("query", request.query.as_ref())),
+        request.sort.as_ref().map(|sort| ("sort", sort.as_ref())),
         request
             .sort_dir
             .as_ref()
-            .map(|sort_dir| ("sort_dir", sort_dir.to_string())),
+            .map(|sort_dir| ("sort_dir", sort_dir.as_ref())),
     ];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/search.messages");
     client
         .get(&url, &params[..])

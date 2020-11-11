@@ -18,6 +18,7 @@
 
 pub use crate::mod_types::migration_types::*;
 use crate::sync::SlackWebRequestSender;
+use std::borrow::Cow;
 
 /// For Enterprise Grid workspaces, map local user IDs to global user IDs
 ///
@@ -26,24 +27,25 @@ use crate::sync::SlackWebRequestSender;
 pub fn exchange<R>(
     client: &R,
     token: &str,
-    request: &ExchangeRequest,
+    request: &ExchangeRequest<'_>,
 ) -> Result<ExchangeResponse, ExchangeError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
-        Some(("token", token.to_string())),
+    let to_old: Option<Cow<'_, str>> = request
+        .to_old
+        .as_ref()
+        .map(|to_old| to_old.to_string().into());
+    let params: Vec<Option<(&str, &str)>> = vec![
+        Some(("token", token)),
         request
             .team_id
             .as_ref()
-            .map(|team_id| ("team_id", team_id.to_string())),
-        request
-            .to_old
-            .as_ref()
-            .map(|to_old| ("to_old", to_old.to_string())),
-        Some(("users", request.users.to_string())),
+            .map(|team_id| ("team_id", team_id.as_ref())),
+        to_old.as_ref().map(|to_old| ("to_old", to_old.as_ref())),
+        Some(("users", request.users.as_ref())),
     ];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/migration.exchange");
     client
         .get(&url, &params[..])

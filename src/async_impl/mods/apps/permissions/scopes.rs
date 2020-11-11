@@ -18,6 +18,7 @@
 
 use crate::async_impl::SlackWebRequestSender;
 pub use crate::mod_types::apps::permissions::scopes_types::*;
+use std::borrow::Cow;
 
 /// Returns list of scopes this app has on a team.
 ///
@@ -31,8 +32,8 @@ pub async fn list<R>(
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![Some(("token", token.to_string()))];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<Option<(&str, &str)>> = vec![Some(("token", token))];
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/apps.permissions.scopes.list");
     client
         .get(&url, &params[..])

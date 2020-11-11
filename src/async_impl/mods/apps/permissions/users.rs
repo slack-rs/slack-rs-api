@@ -18,6 +18,7 @@
 
 use crate::async_impl::SlackWebRequestSender;
 pub use crate::mod_types::apps::permissions::users_types::*;
+use std::borrow::Cow;
 
 /// Returns list of user grants and corresponding scopes this app has on a team.
 ///
@@ -26,23 +27,21 @@ pub use crate::mod_types::apps::permissions::users_types::*;
 pub async fn list<R>(
     client: &R,
     token: &str,
-    request: &ListRequest,
+    request: &ListRequest<'_>,
 ) -> Result<ListResponse, ListError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
-        Some(("token", token.to_string())),
+    let limit: Option<Cow<'_, str>> = request.limit.as_ref().map(|limit| limit.to_string().into());
+    let params: Vec<Option<(&str, &str)>> = vec![
+        Some(("token", token)),
         request
             .cursor
             .as_ref()
-            .map(|cursor| ("cursor", cursor.to_string())),
-        request
-            .limit
-            .as_ref()
-            .map(|limit| ("limit", limit.to_string())),
+            .map(|cursor| ("cursor", cursor.as_ref())),
+        limit.as_ref().map(|limit| ("limit", limit.as_ref())),
     ];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/apps.permissions.users.list");
     client
         .get(&url, &params[..])
@@ -61,18 +60,18 @@ where
 pub async fn request<R>(
     client: &R,
     token: &str,
-    request: &RequestRequest,
+    request: &RequestRequest<'_>,
 ) -> Result<RequestResponse, RequestError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
-        Some(("token", token.to_string())),
-        Some(("scopes", request.scopes.to_string())),
-        Some(("trigger_id", request.trigger_id.to_string())),
-        Some(("user", request.user.to_string())),
+    let params: Vec<Option<(&str, &str)>> = vec![
+        Some(("token", token)),
+        Some(("scopes", request.scopes.as_ref())),
+        Some(("trigger_id", request.trigger_id.as_ref())),
+        Some(("user", request.user.as_ref())),
     ];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/apps.permissions.users.request");
     client
         .get(&url, &params[..])

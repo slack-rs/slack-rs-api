@@ -18,6 +18,7 @@
 
 pub mod authorizations_types;
 
+use std::borrow::Cow;
 use std::convert::From;
 use std::error::Error;
 use std::fmt;

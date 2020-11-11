@@ -16,20 +16,21 @@
 #![allow(clippy::match_single_binding)]
 #![allow(clippy::blacklisted_name)]
 
+use std::borrow::Cow;
 use std::convert::From;
 use std::error::Error;
 use std::fmt;
 
 #[derive(Clone, Default, Debug)]
-pub struct ListOriginalConnectedChannelInfoRequest {
+pub struct ListOriginalConnectedChannelInfoRequest<'a> {
     /// A comma-separated list of channels to filter to.
-    pub channel_ids: Option<String>,
+    pub channel_ids: Option<Cow<'a, str>>,
     /// Set `cursor` to `next_cursor` returned by the previous call to list items in the next page.
-    pub cursor: Option<String>,
+    pub cursor: Option<Cow<'a, str>>,
     /// The maximum number of items to return. Must be between 1 - 1000 both inclusive.
     pub limit: Option<u64>,
     /// A comma-separated list of the workspaces to which the channels you would like returned belong.
-    pub team_ids: Option<String>,
+    pub team_ids: Option<Cow<'a, str>>,
 }
 
 #[derive(Clone, Debug, Deserialize)]

@@ -22,6 +22,7 @@ pub mod restricted;
 
 use crate::async_impl::SlackWebRequestSender;
 pub use crate::mod_types::admin::apps::*;
+use std::borrow::Cow;
 
 /// Approve an app for installation on a workspace.
 ///
@@ -30,29 +31,29 @@ pub use crate::mod_types::admin::apps::*;
 pub async fn approve<R>(
     client: &R,
     token: &str,
-    request: &ApproveRequest,
+    request: &ApproveRequest<'_>,
 ) -> Result<ApproveResponse, ApproveError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
+    let params: Vec<Option<(&str, &str)>> = vec![
         request
             .app_id
             .as_ref()
-            .map(|app_id| ("app_id", app_id.to_string())),
+            .map(|app_id| ("app_id", app_id.as_ref())),
         request
             .request_id
             .as_ref()
-            .map(|request_id| ("request_id", request_id.to_string())),
+            .map(|request_id| ("request_id", request_id.as_ref())),
         request
             .team_id
             .as_ref()
-            .map(|team_id| ("team_id", team_id.to_string())),
+            .map(|team_id| ("team_id", team_id.as_ref())),
     ];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.apps.approve");
     client
-        .post(&url, &params[..], &[("token", token.to_string())])
+        .post(&url, &params[..], &[("token", token)])
         .await
         .map_err(ApproveError::Client)
         .and_then(|result| {
@@ -68,29 +69,29 @@ where
 pub async fn restrict<R>(
     client: &R,
     token: &str,
-    request: &RestrictRequest,
+    request: &RestrictRequest<'_>,
 ) -> Result<RestrictResponse, RestrictError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
+    let params: Vec<Option<(&str, &str)>> = vec![
         request
             .app_id
             .as_ref()
-            .map(|app_id| ("app_id", app_id.to_string())),
+            .map(|app_id| ("app_id", app_id.as_ref())),
         request
             .request_id
             .as_ref()
-            .map(|request_id| ("request_id", request_id.to_string())),
+            .map(|request_id| ("request_id", request_id.as_ref())),
         request
             .team_id
             .as_ref()
-            .map(|team_id| ("team_id", team_id.to_string())),
+            .map(|team_id| ("team_id", team_id.as_ref())),
     ];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.apps.restrict");
     client
-        .post(&url, &params[..], &[("token", token.to_string())])
+        .post(&url, &params[..], &[("token", token)])
         .await
         .map_err(RestrictError::Client)
         .and_then(|result| {

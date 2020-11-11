@@ -18,6 +18,7 @@
 
 pub use crate::mod_types::files::comments_types::*;
 use crate::sync::SlackWebRequestSender;
+use std::borrow::Cow;
 
 /// Deletes an existing comment on a file.
 ///
@@ -26,22 +27,22 @@ use crate::sync::SlackWebRequestSender;
 pub fn delete<R>(
     client: &R,
     token: Option<&str>,
-    request: &DeleteRequest,
+    request: &DeleteRequest<'_>,
 ) -> Result<DeleteResponse, DeleteError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
-        request.file.as_ref().map(|file| ("file", file.to_string())),
-        request.id.as_ref().map(|id| ("id", id.to_string())),
+    let params: Vec<Option<(&str, &str)>> = vec![
+        request.file.as_ref().map(|file| ("file", file.as_ref())),
+        request.id.as_ref().map(|id| ("id", id.as_ref())),
     ];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/files.comments.delete");
     client
         .post(
             &url,
             &params[..],
-            &token.map_or(vec![], |t| vec![("token", t.to_string())]),
+            &token.map_or(vec![], |t| vec![("token", t)]),
         )
         .map_err(DeleteError::Client)
         .and_then(|result| {

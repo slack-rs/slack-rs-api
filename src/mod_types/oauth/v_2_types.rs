@@ -16,20 +16,21 @@
 #![allow(clippy::match_single_binding)]
 #![allow(clippy::blacklisted_name)]
 
+use std::borrow::Cow;
 use std::convert::From;
 use std::error::Error;
 use std::fmt;
 
 #[derive(Clone, Default, Debug)]
-pub struct AccessRequest {
+pub struct AccessRequest<'a> {
     /// Issued when you created your application.
-    pub client_id: Option<String>,
+    pub client_id: Option<Cow<'a, str>>,
     /// Issued when you created your application.
-    pub client_secret: Option<String>,
+    pub client_secret: Option<Cow<'a, str>>,
     /// The `code` param returned via the OAuth callback.
-    pub code: String,
+    pub code: Cow<'a, str>,
     /// This must match the originally submitted URI (if one was sent).
-    pub redirect_uri: Option<String>,
+    pub redirect_uri: Option<Cow<'a, str>>,
 }
 
 #[derive(Clone, Debug, Deserialize)]

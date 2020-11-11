@@ -18,6 +18,7 @@
 
 use crate::async_impl::SlackWebRequestSender;
 pub use crate::mod_types::usergroups::users_types::*;
+use std::borrow::Cow;
 
 /// List all users in a User Group
 ///
@@ -26,20 +27,23 @@ pub use crate::mod_types::usergroups::users_types::*;
 pub async fn list<R>(
     client: &R,
     token: &str,
-    request: &ListRequest,
+    request: &ListRequest<'_>,
 ) -> Result<ListResponse, ListError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
-        Some(("token", token.to_string())),
-        request
-            .include_disabled
+    let include_disabled: Option<Cow<'_, str>> = request
+        .include_disabled
+        .as_ref()
+        .map(|include_disabled| include_disabled.to_string().into());
+    let params: Vec<Option<(&str, &str)>> = vec![
+        Some(("token", token)),
+        include_disabled
             .as_ref()
-            .map(|include_disabled| ("include_disabled", include_disabled.to_string())),
-        Some(("usergroup", request.usergroup.to_string())),
+            .map(|include_disabled| ("include_disabled", include_disabled.as_ref())),
+        Some(("usergroup", request.usergroup.as_ref())),
     ];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/usergroups.users.list");
     client
         .get(&url, &params[..])
@@ -58,23 +62,26 @@ where
 pub async fn update<R>(
     client: &R,
     token: &str,
-    request: &UpdateRequest,
+    request: &UpdateRequest<'_>,
 ) -> Result<UpdateResponse, UpdateError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
-        request
-            .include_count
+    let include_count: Option<Cow<'_, str>> = request
+        .include_count
+        .as_ref()
+        .map(|include_count| include_count.to_string().into());
+    let params: Vec<Option<(&str, &str)>> = vec![
+        include_count
             .as_ref()
-            .map(|include_count| ("include_count", include_count.to_string())),
-        Some(("usergroup", request.usergroup.to_string())),
-        Some(("users", request.users.to_string())),
+            .map(|include_count| ("include_count", include_count.as_ref())),
+        Some(("usergroup", request.usergroup.as_ref())),
+        Some(("users", request.users.as_ref())),
     ];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/usergroups.users.update");
     client
-        .post(&url, &params[..], &[("token", token.to_string())])
+        .post(&url, &params[..], &[("token", token)])
         .await
         .map_err(UpdateError::Client)
         .and_then(|result| {

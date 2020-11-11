@@ -22,6 +22,7 @@ pub mod settings;
 
 pub use crate::mod_types::admin::teams::*;
 use crate::sync::SlackWebRequestSender;
+use std::borrow::Cow;
 
 /// Create an Enterprise team.
 ///
@@ -30,27 +31,27 @@ use crate::sync::SlackWebRequestSender;
 pub fn create<R>(
     client: &R,
     token: &str,
-    request: &CreateRequest,
+    request: &CreateRequest<'_>,
 ) -> Result<CreateResponse, CreateError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
+    let params: Vec<Option<(&str, &str)>> = vec![
         request
             .team_description
             .as_ref()
-            .map(|team_description| ("team_description", team_description.to_string())),
+            .map(|team_description| ("team_description", team_description.as_ref())),
         request
             .team_discoverability
             .as_ref()
-            .map(|team_discoverability| ("team_discoverability", team_discoverability.to_string())),
-        Some(("team_domain", request.team_domain.to_string())),
-        Some(("team_name", request.team_name.to_string())),
+            .map(|team_discoverability| ("team_discoverability", team_discoverability.as_ref())),
+        Some(("team_domain", request.team_domain.as_ref())),
+        Some(("team_name", request.team_name.as_ref())),
     ];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.teams.create");
     client
-        .post(&url, &params[..], &[("token", token.to_string())])
+        .post(&url, &params[..], &[("token", token)])
         .map_err(CreateError::Client)
         .and_then(|result| {
             serde_json::from_str::<CreateResponse>(&result)
@@ -65,23 +66,21 @@ where
 pub fn list<R>(
     client: &R,
     token: &str,
-    request: &ListRequest,
+    request: &ListRequest<'_>,
 ) -> Result<ListResponse, ListError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
-        Some(("token", token.to_string())),
+    let limit: Option<Cow<'_, str>> = request.limit.as_ref().map(|limit| limit.to_string().into());
+    let params: Vec<Option<(&str, &str)>> = vec![
+        Some(("token", token)),
         request
             .cursor
             .as_ref()
-            .map(|cursor| ("cursor", cursor.to_string())),
-        request
-            .limit
-            .as_ref()
-            .map(|limit| ("limit", limit.to_string())),
+            .map(|cursor| ("cursor", cursor.as_ref())),
+        limit.as_ref().map(|limit| ("limit", limit.as_ref())),
     ];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/admin.teams.list");
     client
         .get(&url, &params[..])

@@ -18,28 +18,29 @@
 
 pub mod participants_types;
 
+use std::borrow::Cow;
 use std::convert::From;
 use std::error::Error;
 use std::fmt;
 
 #[derive(Clone, Default, Debug)]
-pub struct AddRequest {
+pub struct AddRequest<'a> {
     /// The valid Slack user ID of the user who created this Call. When this method is called with a user token, the `created_by` field is optional and defaults to the authed user of the token. Otherwise, the field is required.
-    pub created_by: Option<String>,
+    pub created_by: Option<Cow<'a, str>>,
     /// Call start time in UTC UNIX timestamp format
     pub date_start: Option<u64>,
     /// When supplied, available Slack clients will attempt to directly launch the 3rd-party Call with this URL.
-    pub desktop_app_join_url: Option<String>,
+    pub desktop_app_join_url: Option<Cow<'a, str>>,
     /// An optional, human-readable ID supplied by the 3rd-party Call provider. If supplied, this ID will be displayed in the Call object.
-    pub external_display_id: Option<String>,
+    pub external_display_id: Option<Cow<'a, str>>,
     /// An ID supplied by the 3rd-party Call provider. It must be unique across all Calls from that service.
-    pub external_unique_id: String,
+    pub external_unique_id: Cow<'a, str>,
     /// The URL required for a client to join the Call.
-    pub join_url: String,
+    pub join_url: Cow<'a, str>,
     /// The name of the Call.
-    pub title: Option<String>,
+    pub title: Option<Cow<'a, str>>,
     /// The list of users to register as participants in the Call. [Read more on how to specify users here](/apis/calls#users).
-    pub users: Option<String>,
+    pub users: Option<Cow<'a, str>>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -99,11 +100,11 @@ impl<E: Error + 'static> Error for AddError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct EndRequest {
+pub struct EndRequest<'a> {
     /// Call duration in seconds
     pub duration: Option<u64>,
     /// `id` returned when registering the call using the [`calls.add`](/methods/calls.add) method.
-    pub id: String,
+    pub id: Cow<'a, str>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -163,9 +164,9 @@ impl<E: Error + 'static> Error for EndError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct InfoRequest {
+pub struct InfoRequest<'a> {
     /// `id` of the Call returned by the [`calls.add`](/methods/calls.add) method.
-    pub id: String,
+    pub id: Cow<'a, str>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -225,15 +226,15 @@ impl<E: Error + 'static> Error for InfoError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct UpdateRequest {
+pub struct UpdateRequest<'a> {
     /// When supplied, available Slack clients will attempt to directly launch the 3rd-party Call with this URL.
-    pub desktop_app_join_url: Option<String>,
+    pub desktop_app_join_url: Option<Cow<'a, str>>,
     /// `id` returned by the [`calls.add`](/methods/calls.add) method.
-    pub id: String,
+    pub id: Cow<'a, str>,
     /// The URL required for a client to join the Call.
-    pub join_url: Option<String>,
+    pub join_url: Option<Cow<'a, str>>,
     /// The name of the Call.
-    pub title: Option<String>,
+    pub title: Option<Cow<'a, str>>,
 }
 
 #[derive(Clone, Debug, Deserialize)]

@@ -16,14 +16,15 @@
 #![allow(clippy::match_single_binding)]
 #![allow(clippy::blacklisted_name)]
 
+use std::borrow::Cow;
 use std::convert::From;
 use std::error::Error;
 use std::fmt;
 
 #[derive(Clone, Default, Debug)]
-pub struct ListRequest {
-    pub cursor: Option<String>,
-    pub event_context: String,
+pub struct ListRequest<'a> {
+    pub cursor: Option<Cow<'a, str>>,
+    pub event_context: Cow<'a, str>,
     pub limit: Option<u64>,
 }
 

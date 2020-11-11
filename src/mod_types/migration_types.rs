@@ -16,18 +16,19 @@
 #![allow(clippy::match_single_binding)]
 #![allow(clippy::blacklisted_name)]
 
+use std::borrow::Cow;
 use std::convert::From;
 use std::error::Error;
 use std::fmt;
 
 #[derive(Clone, Default, Debug)]
-pub struct ExchangeRequest {
+pub struct ExchangeRequest<'a> {
     /// Specify team_id starts with `T` in case of Org Token
-    pub team_id: Option<String>,
+    pub team_id: Option<Cow<'a, str>>,
     /// Specify `true` to convert `W` global user IDs to workspace-specific `U` IDs. Defaults to `false`.
     pub to_old: Option<bool>,
     /// A comma-separated list of user ids, up to 400 per request
-    pub users: String,
+    pub users: Cow<'a, str>,
 }
 
 #[derive(Clone, Debug, Deserialize)]

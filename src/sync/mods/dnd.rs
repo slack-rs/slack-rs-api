@@ -18,6 +18,7 @@
 
 pub use crate::mod_types::dnd_types::*;
 use crate::sync::SlackWebRequestSender;
+use std::borrow::Cow;
 
 /// Ends the current user's Do Not Disturb session immediately.
 ///
@@ -31,11 +32,11 @@ pub fn end_dnd<R>(
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<Option<(&str, &str)>> = vec![];
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/dnd.endDnd");
     client
-        .post(&url, &params[..], &[("token", token.to_string())])
+        .post(&url, &params[..], &[("token", token)])
         .map_err(EndDndError::Client)
         .and_then(|result| {
             serde_json::from_str::<EndDndResponse>(&result)
@@ -55,11 +56,11 @@ pub fn end_snooze<R>(
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<Option<(&str, &str)>> = vec![];
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/dnd.endSnooze");
     client
-        .post(&url, &params[..], &[("token", token.to_string())])
+        .post(&url, &params[..], &[("token", token)])
         .map_err(EndSnoozeError::Client)
         .and_then(|result| {
             serde_json::from_str::<EndSnoozeResponse>(&result)
@@ -74,16 +75,16 @@ where
 pub fn info<R>(
     client: &R,
     token: Option<&str>,
-    request: &InfoRequest,
+    request: &InfoRequest<'_>,
 ) -> Result<InfoResponse, InfoError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
-        token.map(|token| ("token", token.to_string())),
-        request.user.as_ref().map(|user| ("user", user.to_string())),
+    let params: Vec<Option<(&str, &str)>> = vec![
+        token.map(|token| ("token", token)),
+        request.user.as_ref().map(|user| ("user", user.as_ref())),
     ];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/dnd.info");
     client
         .get(&url, &params[..])
@@ -101,16 +102,17 @@ where
 pub fn set_snooze<R>(
     client: &R,
     token: &str,
-    request: &SetSnoozeRequest,
+    request: &SetSnoozeRequest<'_>,
 ) -> Result<SetSnoozeResponse, SetSnoozeError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![Some(("num_minutes", request.num_minutes.to_string()))];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<Option<(&str, &str)>> =
+        vec![Some(("num_minutes", request.num_minutes.as_ref()))];
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/dnd.setSnooze");
     client
-        .post(&url, &params[..], &[("token", token.to_string())])
+        .post(&url, &params[..], &[("token", token)])
         .map_err(SetSnoozeError::Client)
         .and_then(|result| {
             serde_json::from_str::<SetSnoozeResponse>(&result)
@@ -125,19 +127,19 @@ where
 pub fn team_info<R>(
     client: &R,
     token: Option<&str>,
-    request: &TeamInfoRequest,
+    request: &TeamInfoRequest<'_>,
 ) -> Result<TeamInfoResponse, TeamInfoError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
-        token.map(|token| ("token", token.to_string())),
+    let params: Vec<Option<(&str, &str)>> = vec![
+        token.map(|token| ("token", token)),
         request
             .users
             .as_ref()
-            .map(|users| ("users", users.to_string())),
+            .map(|users| ("users", users.as_ref())),
     ];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/dnd.teamInfo");
     client
         .get(&url, &params[..])

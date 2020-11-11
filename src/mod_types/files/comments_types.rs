@@ -16,16 +16,17 @@
 #![allow(clippy::match_single_binding)]
 #![allow(clippy::blacklisted_name)]
 
+use std::borrow::Cow;
 use std::convert::From;
 use std::error::Error;
 use std::fmt;
 
 #[derive(Clone, Default, Debug)]
-pub struct DeleteRequest {
+pub struct DeleteRequest<'a> {
     /// File to delete a comment from.
-    pub file: Option<String>,
+    pub file: Option<Cow<'a, str>>,
     /// The comment to delete.
-    pub id: Option<String>,
+    pub id: Option<Cow<'a, str>>,
 }
 
 #[derive(Clone, Debug, Deserialize)]

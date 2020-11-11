@@ -16,16 +16,17 @@
 #![allow(clippy::match_single_binding)]
 #![allow(clippy::blacklisted_name)]
 
+use std::borrow::Cow;
 use std::convert::From;
 use std::error::Error;
 use std::fmt;
 
 #[derive(Clone, Default, Debug)]
-pub struct ListRequest {
+pub struct ListRequest<'a> {
     /// The channel of the scheduled messages
-    pub channel: Option<String>,
+    pub channel: Option<Cow<'a, str>>,
     /// For pagination purposes, this is the `cursor` value returned from a previous call to `chat.scheduledmessages.list` indicating where you want to start this call from.
-    pub cursor: Option<String>,
+    pub cursor: Option<Cow<'a, str>>,
     /// A UNIX timestamp of the latest value in the time range
     pub latest: Option<f64>,
     /// Maximum number of original entries to return.

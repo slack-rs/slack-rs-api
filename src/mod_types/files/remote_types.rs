@@ -16,24 +16,25 @@
 #![allow(clippy::match_single_binding)]
 #![allow(clippy::blacklisted_name)]
 
+use std::borrow::Cow;
 use std::convert::From;
 use std::error::Error;
 use std::fmt;
 
 #[derive(Clone, Default, Debug)]
-pub struct AddRequest {
+pub struct AddRequest<'a> {
     /// Creator defined GUID for the file.
-    pub external_id: Option<String>,
+    pub external_id: Option<Cow<'a, str>>,
     /// URL of the remote file.
-    pub external_url: Option<String>,
+    pub external_url: Option<Cow<'a, str>>,
     /// type of file
-    pub filetype: Option<String>,
+    pub filetype: Option<Cow<'a, str>>,
     /// A text file (txt, pdf, doc, etc.) containing textual search terms that are used to improve discovery of the remote file.
-    pub indexable_file_contents: Option<String>,
+    pub indexable_file_contents: Option<Cow<'a, str>>,
     /// Preview of the document via `multipart/form-data`.
-    pub preview_image: Option<String>,
+    pub preview_image: Option<Cow<'a, str>>,
     /// Title of the file being shared.
-    pub title: Option<String>,
+    pub title: Option<Cow<'a, str>>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -93,11 +94,11 @@ impl<E: Error + 'static> Error for AddError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct InfoRequest {
+pub struct InfoRequest<'a> {
     /// Creator defined GUID for the file.
-    pub external_id: Option<String>,
+    pub external_id: Option<Cow<'a, str>>,
     /// Specify a file by providing its ID.
-    pub file: Option<String>,
+    pub file: Option<Cow<'a, str>>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -157,11 +158,11 @@ impl<E: Error + 'static> Error for InfoError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct ListRequest {
+pub struct ListRequest<'a> {
     /// Filter files appearing in a specific channel, indicated by its ID.
-    pub channel: Option<String>,
+    pub channel: Option<Cow<'a, str>>,
     /// Paginate through collections of data by setting the `cursor` parameter to a `next_cursor` attribute returned by a previous request's `response_metadata`. Default value fetches the first "page" of the collection. See [pagination](/docs/pagination) for more detail.
-    pub cursor: Option<String>,
+    pub cursor: Option<Cow<'a, str>>,
     /// The maximum number of items to return.
     pub limit: Option<u64>,
     /// Filter files created after this timestamp (inclusive).
@@ -227,11 +228,11 @@ impl<E: Error + 'static> Error for ListError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct RemoveRequest {
+pub struct RemoveRequest<'a> {
     /// Creator defined GUID for the file.
-    pub external_id: Option<String>,
+    pub external_id: Option<Cow<'a, str>>,
     /// Specify a file by providing its ID.
-    pub file: Option<String>,
+    pub file: Option<Cow<'a, str>>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -291,13 +292,13 @@ impl<E: Error + 'static> Error for RemoveError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct ShareRequest {
+pub struct ShareRequest<'a> {
     /// Comma-separated list of channel IDs where the file will be shared.
-    pub channels: Option<String>,
+    pub channels: Option<Cow<'a, str>>,
     /// The globally unique identifier (GUID) for the file, as set by the app registering the file with Slack.  Either this field or `file` or both are required.
-    pub external_id: Option<String>,
+    pub external_id: Option<Cow<'a, str>>,
     /// Specify a file registered with Slack by providing its ID. Either this field or `external_id` or both are required.
-    pub file: Option<String>,
+    pub file: Option<Cow<'a, str>>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -357,21 +358,21 @@ impl<E: Error + 'static> Error for ShareError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct UpdateRequest {
+pub struct UpdateRequest<'a> {
     /// Creator defined GUID for the file.
-    pub external_id: Option<String>,
+    pub external_id: Option<Cow<'a, str>>,
     /// URL of the remote file.
-    pub external_url: Option<String>,
+    pub external_url: Option<Cow<'a, str>>,
     /// Specify a file by providing its ID.
-    pub file: Option<String>,
+    pub file: Option<Cow<'a, str>>,
     /// type of file
-    pub filetype: Option<String>,
+    pub filetype: Option<Cow<'a, str>>,
     /// File containing contents that can be used to improve searchability for the remote file.
-    pub indexable_file_contents: Option<String>,
+    pub indexable_file_contents: Option<Cow<'a, str>>,
     /// Preview of the document via `multipart/form-data`.
-    pub preview_image: Option<String>,
+    pub preview_image: Option<Cow<'a, str>>,
     /// Title of the file being shared.
-    pub title: Option<String>,
+    pub title: Option<Cow<'a, str>>,
 }
 
 #[derive(Clone, Debug, Deserialize)]

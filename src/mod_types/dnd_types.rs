@@ -16,6 +16,7 @@
 #![allow(clippy::match_single_binding)]
 #![allow(clippy::blacklisted_name)]
 
+use std::borrow::Cow;
 use std::convert::From;
 use std::error::Error;
 use std::fmt;
@@ -268,9 +269,9 @@ impl<E: Error + 'static> Error for EndSnoozeError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct InfoRequest {
+pub struct InfoRequest<'a> {
     /// User to fetch status for (defaults to current user)
-    pub user: Option<String>,
+    pub user: Option<Cow<'a, str>>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -393,9 +394,9 @@ impl<E: Error + 'static> Error for InfoError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct SetSnoozeRequest {
+pub struct SetSnoozeRequest<'a> {
     /// Number of minutes, from now, to snooze until.
-    pub num_minutes: String,
+    pub num_minutes: Cow<'a, str>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -526,9 +527,9 @@ impl<E: Error + 'static> Error for SetSnoozeError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct TeamInfoRequest {
+pub struct TeamInfoRequest<'a> {
     /// Comma-separated list of users to fetch Do Not Disturb status for
-    pub users: Option<String>,
+    pub users: Option<Cow<'a, str>>,
 }
 
 #[derive(Clone, Debug, Deserialize)]

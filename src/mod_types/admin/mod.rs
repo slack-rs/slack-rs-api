@@ -24,6 +24,7 @@ pub mod teams;
 pub mod usergroups_types;
 pub mod users;
 
+use std::borrow::Cow;
 use std::convert::From;
 use std::error::Error;
 use std::fmt;

@@ -20,3 +20,4 @@ pub mod authorizations;
 
 use crate::async_impl::SlackWebRequestSender;
 pub use crate::mod_types::apps::event::*;
+use std::borrow::Cow;

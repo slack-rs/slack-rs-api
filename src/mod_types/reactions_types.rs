@@ -16,18 +16,19 @@
 #![allow(clippy::match_single_binding)]
 #![allow(clippy::blacklisted_name)]
 
+use std::borrow::Cow;
 use std::convert::From;
 use std::error::Error;
 use std::fmt;
 
 #[derive(Clone, Default, Debug)]
-pub struct AddRequest {
+pub struct AddRequest<'a> {
     /// Channel where the message to add reaction to was posted.
-    pub channel: String,
+    pub channel: Cow<'a, str>,
     /// Reaction (emoji) name.
-    pub name: String,
+    pub name: Cow<'a, str>,
     /// Timestamp of the message to add reaction to.
-    pub timestamp: String,
+    pub timestamp: Cow<'a, str>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -153,17 +154,17 @@ impl<E: Error + 'static> Error for AddError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct GetRequest {
+pub struct GetRequest<'a> {
     /// Channel where the message to get reactions for was posted.
-    pub channel: Option<String>,
+    pub channel: Option<Cow<'a, str>>,
     /// File to get reactions for.
-    pub file: Option<String>,
+    pub file: Option<Cow<'a, str>>,
     /// File comment to get reactions for.
-    pub file_comment: Option<String>,
+    pub file_comment: Option<Cow<'a, str>>,
     /// If true always return the complete reaction list.
     pub full: Option<bool>,
     /// Timestamp of the message to get reactions for.
-    pub timestamp: Option<String>,
+    pub timestamp: Option<Cow<'a, str>>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -282,17 +283,17 @@ impl<E: Error + 'static> Error for GetError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct ListRequest {
+pub struct ListRequest<'a> {
     pub count: Option<u64>,
     /// Parameter for pagination. Set `cursor` equal to the `next_cursor` attribute returned by the previous request's `response_metadata`. This parameter is optional, but pagination is mandatory: the default value simply fetches the first "page" of the collection. See [pagination](/docs/pagination) for more details.
-    pub cursor: Option<String>,
+    pub cursor: Option<Cow<'a, str>>,
     /// If true always return the complete reaction list.
     pub full: Option<bool>,
     /// The maximum number of items to return. Fewer than the requested number of items may be returned, even if the end of the list hasn't been reached.
     pub limit: Option<u64>,
     pub page: Option<u64>,
     /// Show reactions made by this user. Defaults to the authed user.
-    pub user: Option<String>,
+    pub user: Option<Cow<'a, str>>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -730,17 +731,17 @@ impl<E: Error + 'static> Error for ListError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct RemoveRequest {
+pub struct RemoveRequest<'a> {
     /// Channel where the message to remove reaction from was posted.
-    pub channel: Option<String>,
+    pub channel: Option<Cow<'a, str>>,
     /// File to remove reaction from.
-    pub file: Option<String>,
+    pub file: Option<Cow<'a, str>>,
     /// File comment to remove reaction from.
-    pub file_comment: Option<String>,
+    pub file_comment: Option<Cow<'a, str>>,
     /// Reaction (emoji) name.
-    pub name: String,
+    pub name: Cow<'a, str>,
     /// Timestamp of the message to remove reaction from.
-    pub timestamp: Option<String>,
+    pub timestamp: Option<Cow<'a, str>>,
 }
 
 #[derive(Clone, Debug, Deserialize)]

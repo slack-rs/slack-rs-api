@@ -18,6 +18,7 @@
 
 pub use crate::mod_types::admin::conversations::ekm_types::*;
 use crate::sync::SlackWebRequestSender;
+use std::borrow::Cow;
 
 /// List all disconnected channels—i.e., channels that were once connected to other workspaces and then disconnected—and the corresponding original channel IDs for key revocation with EKM.
 ///
@@ -26,31 +27,29 @@ use crate::sync::SlackWebRequestSender;
 pub fn list_original_connected_channel_info<R>(
     client: &R,
     token: &str,
-    request: &ListOriginalConnectedChannelInfoRequest,
+    request: &ListOriginalConnectedChannelInfoRequest<'_>,
 ) -> Result<ListOriginalConnectedChannelInfoResponse, ListOriginalConnectedChannelInfoError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
-        Some(("token", token.to_string())),
+    let limit: Option<Cow<'_, str>> = request.limit.as_ref().map(|limit| limit.to_string().into());
+    let params: Vec<Option<(&str, &str)>> = vec![
+        Some(("token", token)),
         request
             .channel_ids
             .as_ref()
-            .map(|channel_ids| ("channel_ids", channel_ids.to_string())),
+            .map(|channel_ids| ("channel_ids", channel_ids.as_ref())),
         request
             .cursor
             .as_ref()
-            .map(|cursor| ("cursor", cursor.to_string())),
-        request
-            .limit
-            .as_ref()
-            .map(|limit| ("limit", limit.to_string())),
+            .map(|cursor| ("cursor", cursor.as_ref())),
+        limit.as_ref().map(|limit| ("limit", limit.as_ref())),
         request
             .team_ids
             .as_ref()
-            .map(|team_ids| ("team_ids", team_ids.to_string())),
+            .map(|team_ids| ("team_ids", team_ids.as_ref())),
     ];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method(
         "/admin.conversations.ekm.listOriginalConnectedChannelInfo",
     );

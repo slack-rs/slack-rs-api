@@ -16,16 +16,17 @@
 #![allow(clippy::match_single_binding)]
 #![allow(clippy::blacklisted_name)]
 
+use std::borrow::Cow;
 use std::convert::From;
 use std::error::Error;
 use std::fmt;
 
 #[derive(Clone, Default, Debug)]
-pub struct ListRequest {
+pub struct ListRequest<'a> {
     /// Allow results that involve disabled User Groups.
     pub include_disabled: Option<bool>,
     /// The encoded ID of the User Group to update.
-    pub usergroup: String,
+    pub usergroup: Cow<'a, str>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -152,13 +153,13 @@ impl<E: Error + 'static> Error for ListError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct UpdateRequest {
+pub struct UpdateRequest<'a> {
     /// Include the number of users in the User Group.
     pub include_count: Option<bool>,
     /// The encoded ID of the User Group to update.
-    pub usergroup: String,
+    pub usergroup: Cow<'a, str>,
     /// A comma separated string of encoded user IDs that represent the entire list of users for the User Group.
-    pub users: String,
+    pub users: Cow<'a, str>,
 }
 
 #[derive(Clone, Debug, Deserialize)]

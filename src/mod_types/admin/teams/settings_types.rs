@@ -16,13 +16,14 @@
 #![allow(clippy::match_single_binding)]
 #![allow(clippy::blacklisted_name)]
 
+use std::borrow::Cow;
 use std::convert::From;
 use std::error::Error;
 use std::fmt;
 
 #[derive(Clone, Default, Debug)]
-pub struct InfoRequest {
-    pub team_id: String,
+pub struct InfoRequest<'a> {
+    pub team_id: Cow<'a, str>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -82,11 +83,11 @@ impl<E: Error + 'static> Error for InfoError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct SetDefaultChannelsRequest {
+pub struct SetDefaultChannelsRequest<'a> {
     /// An array of channel IDs.
-    pub channel_ids: String,
+    pub channel_ids: Cow<'a, str>,
     /// ID for the workspace to set the default channel for.
-    pub team_id: String,
+    pub team_id: Cow<'a, str>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -148,11 +149,11 @@ impl<E: Error + 'static> Error for SetDefaultChannelsError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct SetDescriptionRequest {
+pub struct SetDescriptionRequest<'a> {
     /// The new description for the workspace.
-    pub description: String,
+    pub description: Cow<'a, str>,
     /// ID for the workspace to set the description for.
-    pub team_id: String,
+    pub team_id: Cow<'a, str>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -214,11 +215,11 @@ impl<E: Error + 'static> Error for SetDescriptionError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct SetDiscoverabilityRequest {
+pub struct SetDiscoverabilityRequest<'a> {
     /// This workspace's discovery setting. It must be set to one of `open`, `invite_only`, `closed`, or `unlisted`.
-    pub discoverability: String,
+    pub discoverability: Cow<'a, str>,
     /// The ID of the workspace to set discoverability on.
-    pub team_id: String,
+    pub team_id: Cow<'a, str>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -280,11 +281,11 @@ impl<E: Error + 'static> Error for SetDiscoverabilityError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct SetIconRequest {
+pub struct SetIconRequest<'a> {
     /// Image URL for the icon
-    pub image_url: String,
+    pub image_url: Cow<'a, str>,
     /// ID for the workspace to set the icon for.
-    pub team_id: String,
+    pub team_id: Cow<'a, str>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -344,11 +345,11 @@ impl<E: Error + 'static> Error for SetIconError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct SetNameRequest {
+pub struct SetNameRequest<'a> {
     /// The new name of the workspace.
-    pub name: String,
+    pub name: Cow<'a, str>,
     /// ID for the workspace to set the name for.
-    pub team_id: String,
+    pub team_id: Cow<'a, str>,
 }
 
 #[derive(Clone, Debug, Deserialize)]

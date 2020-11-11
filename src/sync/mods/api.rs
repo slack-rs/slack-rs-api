@@ -18,23 +18,24 @@
 
 pub use crate::mod_types::api_types::*;
 use crate::sync::SlackWebRequestSender;
+use std::borrow::Cow;
 
 /// Checks API calling code.
 ///
 /// Wraps https://api.slack.com/methods/api.test
 
-pub fn test<R>(client: &R, request: &TestRequest) -> Result<TestResponse, TestError<R::Error>>
+pub fn test<R>(client: &R, request: &TestRequest<'_>) -> Result<TestResponse, TestError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
+    let params: Vec<Option<(&str, &str)>> = vec![
         request
             .error
             .as_ref()
-            .map(|error| ("error", error.to_string())),
-        request.foo.as_ref().map(|foo| ("foo", foo.to_string())),
+            .map(|error| ("error", error.as_ref())),
+        request.foo.as_ref().map(|foo| ("foo", foo.as_ref())),
     ];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/api.test");
     client
         .get(&url, &params[..])

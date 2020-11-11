@@ -162,17 +162,19 @@ impl Module {
         let (body, imports) = if gen_mode == GenMode::Types {
             (
                 self.build_types()?,
-                "use std::convert::From;
-            use std::error::Error;
-            use std::fmt;"
+                "use std::borrow::Cow;
+                use std::convert::From;
+                use std::error::Error;
+                use std::fmt;"
                     .into(),
             )
         } else {
             (
                 self.build_calls(gen_mode)?,
                 format!(
-                    "{import}
-            pub use crate::mod_types::{path}::*;",
+                    "use std::borrow::Cow;
+                    {import}
+                    pub use crate::mod_types::{path}::*;",
                     import = gen_mode.import(),
                     path = path,
                 ),
@@ -287,6 +289,16 @@ impl Method {
     fn build_request_type(&self) -> Result<String> {
         let type_prefix = self.name.to_pascal_case();
         let struct_name = format!("{}Request", type_prefix);
+        let lifetime = if self
+            .parameters
+            .iter()
+            .filter(|p| p.name != "token")
+            .any(|p| p.param_type == ParameterDataType::String)
+        {
+            "<'a>"
+        } else {
+            ""
+        };
         let parameters = self
             .parameters
             .iter()
@@ -296,11 +308,12 @@ impl Method {
             .join("\n");
         let out = format!(
             "#[derive(Clone, Default, Debug)]
-            pub struct {name} {{
+            pub struct {name}{lifetime} {{
                 {parameters}
             }}",
             name = struct_name,
-            parameters = parameters
+            parameters = parameters,
+            lifetime = lifetime,
         );
         Ok(out)
     }
@@ -408,35 +421,44 @@ impl Method {
 
     fn build_call_method(&self, gen_mode: GenMode) -> Result<String> {
         let type_prefix = self.name.to_pascal_case();
-        let request_type = format!("{}Request", type_prefix);
+        let req_lt = if self
+            .parameters
+            .iter()
+            .filter(|p| p.name != "token")
+            .any(|p| p.param_type == ParameterDataType::String)
+        {
+            "<'_>"
+        } else {
+            ""
+        };
+        let request_type = format!("{}Request{}", type_prefix, req_lt);
         let response_type = format!("{}Response", type_prefix);
         let error_type = format!("{}Error", type_prefix);
         let fn_name = self.name.to_snake_case();
-        let parameters = match self.http_method {
-            HttpMethod::Get => self
-                .parameters
-                .iter()
-                .filter(|p| p.name != "token")
-                .map(Parameter::to_rust_fn)
-                .collect::<Vec<_>>()
-                .join("\n"),
-            HttpMethod::Post => self
-                .parameters
-                .iter()
-                .filter(|p| p.name != "token")
-                .map(Parameter::to_rust_fn)
-                .collect::<Vec<_>>()
-                .join("\n"),
-        };
+        let parameter_converts = self
+            .parameters
+            .iter()
+            .filter(|p| p.name != "token")
+            .filter(|p| p.param_type != ParameterDataType::String)
+            .map(Parameter::to_rust_fn_convert)
+            .collect::<Vec<_>>()
+            .join("\n");
+        let parameters = self
+            .parameters
+            .iter()
+            .filter(|p| p.name != "token")
+            .map(Parameter::to_rust_fn)
+            .collect::<Vec<_>>()
+            .join("\n");
         let token = self.parameters.iter().find(|p| p.name == "token");
         let headers = match self.http_method {
             HttpMethod::Get => "",
             HttpMethod::Post => {
                 if let Some(token) = token {
                     if token.required {
-                        ", &[(\"token\", token.to_string())]"
+                        ", &[(\"token\", token)]"
                     } else {
-                        ", &token.map_or(vec![], |t| vec![(\"token\", t.to_string())])"
+                        ", &token.map_or(vec![], |t| vec![(\"token\", t)])"
                     }
                 } else {
                     ", &[]"
@@ -448,9 +470,9 @@ impl Method {
             HttpMethod::Get => {
                 if let Some(token) = token {
                     if token.required {
-                        "Some((\"token\", token.to_string())),"
+                        "Some((\"token\", token)),"
                     } else {
-                        "token.map(|token| (\"token\", token.to_string())),"
+                        "token.map(|token| (\"token\", token)),"
                     }
                 } else {
                     ""
@@ -479,10 +501,11 @@ impl Method {
             where
                 R: SlackWebRequestSender,
             {{
-                let params = vec![
+                {parameter_converts}
+                let params: Vec<Option<(&str, &str)>> = vec![
                     {params}{parameters}
                 ];
-                let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+                let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
                 let url = crate::get_slack_url_for_method(\"{full_name}\");
                 client
                     .{method}(&url, &params[..]{headers}){dot_await}
@@ -507,7 +530,8 @@ impl Method {
             headers=headers,
             token_param=token_param,
             params = params,
-            empty_param = empty_param
+            empty_param = empty_param,
+            parameter_converts = parameter_converts,
         );
         Ok(out)
     }
@@ -528,15 +552,38 @@ impl Parameter {
         format!("{description}pub {name}: {type},", description = description, name=self.name, type=r#type)
     }
 
-    fn to_rust_fn(&self) -> String {
-        if self.required {
+    fn to_rust_fn_convert(&self) -> String {
+        if self.param_type == ParameterDataType::String {
+            panic!("Not required for string types");
+        } else if self.required {
             format!(
-                "Some((\"{name}\", request.{name}.to_string())),",
+                "let {name}: Option<Cow<'_, str>> = Some(request.{name}.to_string().into());",
                 name = self.name
             )
         } else {
             format!(
-                "request.{name}.as_ref().map(|{name}| (\"{name}\", {name}.to_string())),",
+                    "let {name}: Option<Cow<'_, str>> = request.{name}.as_ref().map(|{name}| {name}.to_string().into());",
+                    name = self.name
+                )
+        }
+    }
+
+    fn to_rust_fn(&self) -> String {
+        if self.param_type == ParameterDataType::String {
+            if self.required {
+                format!(
+                    "Some((\"{name}\", request.{name}.as_ref())),",
+                    name = self.name
+                )
+            } else {
+                format!(
+                    "request.{name}.as_ref().map(|{name}| (\"{name}\", {name}.as_ref())),",
+                    name = self.name
+                )
+            }
+        } else {
+            format!(
+                "{name}.as_ref().map(|{name}| (\"{name}\", {name}.as_ref())),",
                 name = self.name
             )
         }
@@ -566,7 +613,7 @@ impl TryFrom<&schema::Parameter> for Parameter {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum ParameterDataType {
     Bool,
     Decimal,
@@ -580,7 +627,7 @@ impl ParameterDataType {
             Self::Bool => "bool",
             Self::Decimal => "f64",
             Self::Int => "u64",
-            Self::String => "String",
+            Self::String => "Cow<'a, str>",
         };
         if required {
             r#type.to_string()

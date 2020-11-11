@@ -18,22 +18,23 @@
 
 pub mod session_types;
 
+use std::borrow::Cow;
 use std::convert::From;
 use std::error::Error;
 use std::fmt;
 
 #[derive(Clone, Default, Debug)]
-pub struct AssignRequest {
+pub struct AssignRequest<'a> {
     /// Comma separated values of channel IDs to add user in the new workspace.
-    pub channel_ids: Option<String>,
+    pub channel_ids: Option<Cow<'a, str>>,
     /// True if user should be added to the workspace as a guest.
     pub is_restricted: Option<bool>,
     /// True if user should be added to the workspace as a single-channel guest.
     pub is_ultra_restricted: Option<bool>,
     /// The ID (`T1234`) of the workspace.
-    pub team_id: String,
+    pub team_id: Cow<'a, str>,
     /// The ID of the user to add to the workspace.
-    pub user_id: String,
+    pub user_id: Cow<'a, str>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -93,25 +94,25 @@ impl<E: Error + 'static> Error for AssignError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct InviteRequest {
+pub struct InviteRequest<'a> {
     /// A comma-separated list of `channel_id`s for this user to join. At least one channel is required.
-    pub channel_ids: String,
+    pub channel_ids: Cow<'a, str>,
     /// An optional message to send to the user in the invite email.
-    pub custom_message: Option<String>,
+    pub custom_message: Option<Cow<'a, str>>,
     /// The email address of the person to invite.
-    pub email: String,
+    pub email: Cow<'a, str>,
     /// Timestamp when guest account should be disabled. Only include this timestamp if you are inviting a guest user and you want their account to expire on a certain date.
-    pub guest_expiration_ts: Option<String>,
+    pub guest_expiration_ts: Option<Cow<'a, str>>,
     /// Is this user a multi-channel guest user? (default: false)
     pub is_restricted: Option<bool>,
     /// Is this user a single channel guest user? (default: false)
     pub is_ultra_restricted: Option<bool>,
     /// Full name of the user.
-    pub real_name: Option<String>,
+    pub real_name: Option<Cow<'a, str>>,
     /// Allow this invite to be resent in the future if a user has not signed up yet. (default: false)
     pub resend: Option<bool>,
     /// The ID (`T1234`) of the workspace.
-    pub team_id: String,
+    pub team_id: Cow<'a, str>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -171,13 +172,13 @@ impl<E: Error + 'static> Error for InviteError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct ListRequest {
+pub struct ListRequest<'a> {
     /// Set `cursor` to `next_cursor` returned by the previous call to list items in the next page.
-    pub cursor: Option<String>,
+    pub cursor: Option<Cow<'a, str>>,
     /// Limit for how many users to be retrieved per page
     pub limit: Option<u64>,
     /// The ID (`T1234`) of the workspace.
-    pub team_id: String,
+    pub team_id: Cow<'a, str>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -237,11 +238,11 @@ impl<E: Error + 'static> Error for ListError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct RemoveRequest {
+pub struct RemoveRequest<'a> {
     /// The ID (`T1234`) of the workspace.
-    pub team_id: String,
+    pub team_id: Cow<'a, str>,
     /// The ID of the user to remove.
-    pub user_id: String,
+    pub user_id: Cow<'a, str>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -301,11 +302,11 @@ impl<E: Error + 'static> Error for RemoveError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct SetAdminRequest {
+pub struct SetAdminRequest<'a> {
     /// The ID (`T1234`) of the workspace.
-    pub team_id: String,
+    pub team_id: Cow<'a, str>,
     /// The ID of the user to designate as an admin.
-    pub user_id: String,
+    pub user_id: Cow<'a, str>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -365,13 +366,13 @@ impl<E: Error + 'static> Error for SetAdminError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct SetExpirationRequest {
+pub struct SetExpirationRequest<'a> {
     /// Timestamp when guest account should be disabled.
     pub expiration_ts: u64,
     /// The ID (`T1234`) of the workspace.
-    pub team_id: String,
+    pub team_id: Cow<'a, str>,
     /// The ID of the user to set an expiration for.
-    pub user_id: String,
+    pub user_id: Cow<'a, str>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -433,11 +434,11 @@ impl<E: Error + 'static> Error for SetExpirationError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct SetOwnerRequest {
+pub struct SetOwnerRequest<'a> {
     /// The ID (`T1234`) of the workspace.
-    pub team_id: String,
+    pub team_id: Cow<'a, str>,
     /// Id of the user to promote to owner.
-    pub user_id: String,
+    pub user_id: Cow<'a, str>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -497,11 +498,11 @@ impl<E: Error + 'static> Error for SetOwnerError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct SetRegularRequest {
+pub struct SetRegularRequest<'a> {
     /// The ID (`T1234`) of the workspace.
-    pub team_id: String,
+    pub team_id: Cow<'a, str>,
     /// The ID of the user to designate as a regular user.
-    pub user_id: String,
+    pub user_id: Cow<'a, str>,
 }
 
 #[derive(Clone, Debug, Deserialize)]

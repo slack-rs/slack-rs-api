@@ -18,6 +18,7 @@
 
 pub use crate::mod_types::dialog_types::*;
 use crate::sync::SlackWebRequestSender;
+use std::borrow::Cow;
 
 /// Open a dialog with a user
 ///
@@ -26,17 +27,17 @@ use crate::sync::SlackWebRequestSender;
 pub fn open<R>(
     client: &R,
     token: &str,
-    request: &OpenRequest,
+    request: &OpenRequest<'_>,
 ) -> Result<OpenResponse, OpenError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
-        Some(("token", token.to_string())),
-        Some(("dialog", request.dialog.to_string())),
-        Some(("trigger_id", request.trigger_id.to_string())),
+    let params: Vec<Option<(&str, &str)>> = vec![
+        Some(("token", token)),
+        Some(("dialog", request.dialog.as_ref())),
+        Some(("trigger_id", request.trigger_id.as_ref())),
     ];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/dialog.open");
     client
         .get(&url, &params[..])

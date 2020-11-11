@@ -18,6 +18,7 @@
 
 use crate::async_impl::SlackWebRequestSender;
 pub use crate::mod_types::rtm_types::*;
+use std::borrow::Cow;
 
 /// Starts a Real Time Messaging session.
 ///
@@ -31,18 +32,24 @@ pub async fn connect<R>(
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
-        Some(("token", token.to_string())),
-        request
-            .batch_presence_aware
+    let batch_presence_aware: Option<Cow<'_, str>> = request
+        .batch_presence_aware
+        .as_ref()
+        .map(|batch_presence_aware| batch_presence_aware.to_string().into());
+    let presence_sub: Option<Cow<'_, str>> = request
+        .presence_sub
+        .as_ref()
+        .map(|presence_sub| presence_sub.to_string().into());
+    let params: Vec<Option<(&str, &str)>> = vec![
+        Some(("token", token)),
+        batch_presence_aware
             .as_ref()
-            .map(|batch_presence_aware| ("batch_presence_aware", batch_presence_aware.to_string())),
-        request
-            .presence_sub
+            .map(|batch_presence_aware| ("batch_presence_aware", batch_presence_aware.as_ref())),
+        presence_sub
             .as_ref()
-            .map(|presence_sub| ("presence_sub", presence_sub.to_string())),
+            .map(|presence_sub| ("presence_sub", presence_sub.as_ref())),
     ];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/rtm.connect");
     client
         .get(&url, &params[..])

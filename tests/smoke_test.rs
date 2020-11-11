@@ -69,7 +69,7 @@ async fn smoke_channels() -> Result<(), Box<dyn std::error::Error>> {
             &client,
             &token,
             &slack::conversations::HistoryRequest {
-                channel: channel_id.clone(),
+                channel: channel_id.into(),
                 oldest: Some(1234567890.1234),
                 ..Default::default()
             },

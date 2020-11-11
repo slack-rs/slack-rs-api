@@ -18,22 +18,23 @@
 
 pub mod users_types;
 
+use std::borrow::Cow;
 use std::convert::From;
 use std::error::Error;
 use std::fmt;
 
 #[derive(Clone, Default, Debug)]
-pub struct CreateRequest {
+pub struct CreateRequest<'a> {
     /// A comma separated string of encoded channel IDs for which the User Group uses as a default.
-    pub channels: Option<String>,
+    pub channels: Option<Cow<'a, str>>,
     /// A short description of the User Group.
-    pub description: Option<String>,
+    pub description: Option<Cow<'a, str>>,
     /// A mention handle. Must be unique among channels, users and User Groups.
-    pub handle: Option<String>,
+    pub handle: Option<Cow<'a, str>>,
     /// Include the number of users in each User Group.
     pub include_count: Option<bool>,
     /// A name for the User Group. Must be unique among User Groups.
-    pub name: String,
+    pub name: Cow<'a, str>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -188,11 +189,11 @@ impl<E: Error + 'static> Error for CreateError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct DisableRequest {
+pub struct DisableRequest<'a> {
     /// Include the number of users in the User Group.
     pub include_count: Option<bool>,
     /// The encoded ID of the User Group to disable.
-    pub usergroup: String,
+    pub usergroup: Cow<'a, str>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -347,11 +348,11 @@ impl<E: Error + 'static> Error for DisableError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct EnableRequest {
+pub struct EnableRequest<'a> {
     /// Include the number of users in the User Group.
     pub include_count: Option<bool>,
     /// The encoded ID of the User Group to enable.
-    pub usergroup: String,
+    pub usergroup: Cow<'a, str>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -675,19 +676,19 @@ impl<E: Error + 'static> Error for ListError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct UpdateRequest {
+pub struct UpdateRequest<'a> {
     /// A comma separated string of encoded channel IDs for which the User Group uses as a default.
-    pub channels: Option<String>,
+    pub channels: Option<Cow<'a, str>>,
     /// A short description of the User Group.
-    pub description: Option<String>,
+    pub description: Option<Cow<'a, str>>,
     /// A mention handle. Must be unique among channels, users and User Groups.
-    pub handle: Option<String>,
+    pub handle: Option<Cow<'a, str>>,
     /// Include the number of users in the User Group.
     pub include_count: Option<bool>,
     /// A name for the User Group. Must be unique among User Groups.
-    pub name: Option<String>,
+    pub name: Option<Cow<'a, str>>,
     /// The encoded ID of the User Group to update.
-    pub usergroup: String,
+    pub usergroup: Cow<'a, str>,
 }
 
 #[derive(Clone, Debug, Deserialize)]

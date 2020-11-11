@@ -20,6 +20,7 @@ pub mod resources_types;
 pub mod scopes_types;
 pub mod users_types;
 
+use std::borrow::Cow;
 use std::convert::From;
 use std::error::Error;
 use std::fmt;
@@ -230,11 +231,11 @@ impl<E: Error + 'static> Error for InfoError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct RequestRequest {
+pub struct RequestRequest<'a> {
     /// A comma separated list of scopes to request for
-    pub scopes: String,
+    pub scopes: Cow<'a, str>,
     /// Token used to trigger the permissions API
-    pub trigger_id: String,
+    pub trigger_id: Cow<'a, str>,
 }
 
 #[derive(Clone, Debug, Deserialize)]

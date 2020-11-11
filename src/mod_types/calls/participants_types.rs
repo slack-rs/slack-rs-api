@@ -16,16 +16,17 @@
 #![allow(clippy::match_single_binding)]
 #![allow(clippy::blacklisted_name)]
 
+use std::borrow::Cow;
 use std::convert::From;
 use std::error::Error;
 use std::fmt;
 
 #[derive(Clone, Default, Debug)]
-pub struct AddRequest {
+pub struct AddRequest<'a> {
     /// `id` returned by the [`calls.add`](/methods/calls.add) method.
-    pub id: String,
+    pub id: Cow<'a, str>,
     /// The list of users to add as participants in the Call. [Read more on how to specify users here](/apis/calls#users).
-    pub users: String,
+    pub users: Cow<'a, str>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -85,11 +86,11 @@ impl<E: Error + 'static> Error for AddError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct RemoveRequest {
+pub struct RemoveRequest<'a> {
     /// `id` returned by the [`calls.add`](/methods/calls.add) method.
-    pub id: String,
+    pub id: Cow<'a, str>,
     /// The list of users to remove as participants in the Call. [Read more on how to specify users here](/apis/calls#users).
-    pub users: String,
+    pub users: Cow<'a, str>,
 }
 
 #[derive(Clone, Debug, Deserialize)]

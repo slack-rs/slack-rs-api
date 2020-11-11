@@ -16,23 +16,24 @@
 #![allow(clippy::match_single_binding)]
 #![allow(clippy::blacklisted_name)]
 
+use std::borrow::Cow;
 use std::convert::From;
 use std::error::Error;
 use std::fmt;
 
 #[derive(Clone, Default, Debug)]
-pub struct MessagesRequest {
+pub struct MessagesRequest<'a> {
     /// Pass the number of results you want per "page". Maximum of `100`.
     pub count: Option<u64>,
     /// Pass a value of `true` to enable query highlight markers (see below).
     pub highlight: Option<bool>,
     pub page: Option<u64>,
     /// Search query.
-    pub query: String,
+    pub query: Cow<'a, str>,
     /// Return matches sorted by either `score` or `timestamp`.
-    pub sort: Option<String>,
+    pub sort: Option<Cow<'a, str>>,
     /// Change sort direction to ascending (`asc`) or descending (`desc`).
-    pub sort_dir: Option<String>,
+    pub sort_dir: Option<Cow<'a, str>>,
 }
 
 #[derive(Clone, Debug, Deserialize)]

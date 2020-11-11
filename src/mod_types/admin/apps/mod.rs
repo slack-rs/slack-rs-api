@@ -20,17 +20,18 @@ pub mod approved_types;
 pub mod requests_types;
 pub mod restricted_types;
 
+use std::borrow::Cow;
 use std::convert::From;
 use std::error::Error;
 use std::fmt;
 
 #[derive(Clone, Default, Debug)]
-pub struct ApproveRequest {
+pub struct ApproveRequest<'a> {
     /// The id of the app to approve.
-    pub app_id: Option<String>,
+    pub app_id: Option<Cow<'a, str>>,
     /// The id of the request to approve.
-    pub request_id: Option<String>,
-    pub team_id: Option<String>,
+    pub request_id: Option<Cow<'a, str>>,
+    pub team_id: Option<Cow<'a, str>>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -90,12 +91,12 @@ impl<E: Error + 'static> Error for ApproveError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct RestrictRequest {
+pub struct RestrictRequest<'a> {
     /// The id of the app to restrict.
-    pub app_id: Option<String>,
+    pub app_id: Option<Cow<'a, str>>,
     /// The id of the request to restrict.
-    pub request_id: Option<String>,
-    pub team_id: Option<String>,
+    pub request_id: Option<Cow<'a, str>>,
+    pub team_id: Option<Cow<'a, str>>,
 }
 
 #[derive(Clone, Debug, Deserialize)]

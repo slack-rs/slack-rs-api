@@ -16,14 +16,15 @@
 #![allow(clippy::match_single_binding)]
 #![allow(clippy::blacklisted_name)]
 
+use std::borrow::Cow;
 use std::convert::From;
 use std::error::Error;
 use std::fmt;
 
 #[derive(Clone, Default, Debug)]
-pub struct GetRequest {
+pub struct GetRequest<'a> {
     /// Filter by visibility.
-    pub visibility: Option<String>,
+    pub visibility: Option<Cow<'a, str>>,
 }
 
 #[derive(Clone, Debug, Deserialize)]

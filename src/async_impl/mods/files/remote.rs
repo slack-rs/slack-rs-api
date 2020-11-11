@@ -18,6 +18,7 @@
 
 use crate::async_impl::SlackWebRequestSender;
 pub use crate::mod_types::files::remote_types::*;
+use std::borrow::Cow;
 
 /// Adds a file from a remote service
 ///
@@ -26,49 +27,46 @@ pub use crate::mod_types::files::remote_types::*;
 pub async fn add<R>(
     client: &R,
     token: Option<&str>,
-    request: &AddRequest,
+    request: &AddRequest<'_>,
 ) -> Result<AddResponse, AddError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
+    let params: Vec<Option<(&str, &str)>> = vec![
         request
             .external_id
             .as_ref()
-            .map(|external_id| ("external_id", external_id.to_string())),
+            .map(|external_id| ("external_id", external_id.as_ref())),
         request
             .external_url
             .as_ref()
-            .map(|external_url| ("external_url", external_url.to_string())),
+            .map(|external_url| ("external_url", external_url.as_ref())),
         request
             .filetype
             .as_ref()
-            .map(|filetype| ("filetype", filetype.to_string())),
+            .map(|filetype| ("filetype", filetype.as_ref())),
         request
             .indexable_file_contents
             .as_ref()
             .map(|indexable_file_contents| {
-                (
-                    "indexable_file_contents",
-                    indexable_file_contents.to_string(),
-                )
+                ("indexable_file_contents", indexable_file_contents.as_ref())
             }),
         request
             .preview_image
             .as_ref()
-            .map(|preview_image| ("preview_image", preview_image.to_string())),
+            .map(|preview_image| ("preview_image", preview_image.as_ref())),
         request
             .title
             .as_ref()
-            .map(|title| ("title", title.to_string())),
+            .map(|title| ("title", title.as_ref())),
     ];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/files.remote.add");
     client
         .post(
             &url,
             &params[..],
-            &token.map_or(vec![], |t| vec![("token", t.to_string())]),
+            &token.map_or(vec![], |t| vec![("token", t)]),
         )
         .await
         .map_err(AddError::Client)
@@ -85,20 +83,20 @@ where
 pub async fn info<R>(
     client: &R,
     token: Option<&str>,
-    request: &InfoRequest,
+    request: &InfoRequest<'_>,
 ) -> Result<InfoResponse, InfoError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
-        token.map(|token| ("token", token.to_string())),
+    let params: Vec<Option<(&str, &str)>> = vec![
+        token.map(|token| ("token", token)),
         request
             .external_id
             .as_ref()
-            .map(|external_id| ("external_id", external_id.to_string())),
-        request.file.as_ref().map(|file| ("file", file.to_string())),
+            .map(|external_id| ("external_id", external_id.as_ref())),
+        request.file.as_ref().map(|file| ("file", file.as_ref())),
     ];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/files.remote.info");
     client
         .get(&url, &params[..])
@@ -117,35 +115,34 @@ where
 pub async fn list<R>(
     client: &R,
     token: Option<&str>,
-    request: &ListRequest,
+    request: &ListRequest<'_>,
 ) -> Result<ListResponse, ListError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
-        token.map(|token| ("token", token.to_string())),
+    let limit: Option<Cow<'_, str>> = request.limit.as_ref().map(|limit| limit.to_string().into());
+    let ts_from: Option<Cow<'_, str>> = request
+        .ts_from
+        .as_ref()
+        .map(|ts_from| ts_from.to_string().into());
+    let ts_to: Option<Cow<'_, str>> = request.ts_to.as_ref().map(|ts_to| ts_to.to_string().into());
+    let params: Vec<Option<(&str, &str)>> = vec![
+        token.map(|token| ("token", token)),
         request
             .channel
             .as_ref()
-            .map(|channel| ("channel", channel.to_string())),
+            .map(|channel| ("channel", channel.as_ref())),
         request
             .cursor
             .as_ref()
-            .map(|cursor| ("cursor", cursor.to_string())),
-        request
-            .limit
+            .map(|cursor| ("cursor", cursor.as_ref())),
+        limit.as_ref().map(|limit| ("limit", limit.as_ref())),
+        ts_from
             .as_ref()
-            .map(|limit| ("limit", limit.to_string())),
-        request
-            .ts_from
-            .as_ref()
-            .map(|ts_from| ("ts_from", ts_from.to_string())),
-        request
-            .ts_to
-            .as_ref()
-            .map(|ts_to| ("ts_to", ts_to.to_string())),
+            .map(|ts_from| ("ts_from", ts_from.as_ref())),
+        ts_to.as_ref().map(|ts_to| ("ts_to", ts_to.as_ref())),
     ];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/files.remote.list");
     client
         .get(&url, &params[..])
@@ -164,25 +161,25 @@ where
 pub async fn remove<R>(
     client: &R,
     token: Option<&str>,
-    request: &RemoveRequest,
+    request: &RemoveRequest<'_>,
 ) -> Result<RemoveResponse, RemoveError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
+    let params: Vec<Option<(&str, &str)>> = vec![
         request
             .external_id
             .as_ref()
-            .map(|external_id| ("external_id", external_id.to_string())),
-        request.file.as_ref().map(|file| ("file", file.to_string())),
+            .map(|external_id| ("external_id", external_id.as_ref())),
+        request.file.as_ref().map(|file| ("file", file.as_ref())),
     ];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/files.remote.remove");
     client
         .post(
             &url,
             &params[..],
-            &token.map_or(vec![], |t| vec![("token", t.to_string())]),
+            &token.map_or(vec![], |t| vec![("token", t)]),
         )
         .await
         .map_err(RemoveError::Client)
@@ -199,24 +196,24 @@ where
 pub async fn share<R>(
     client: &R,
     token: Option<&str>,
-    request: &ShareRequest,
+    request: &ShareRequest<'_>,
 ) -> Result<ShareResponse, ShareError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
-        token.map(|token| ("token", token.to_string())),
+    let params: Vec<Option<(&str, &str)>> = vec![
+        token.map(|token| ("token", token)),
         request
             .channels
             .as_ref()
-            .map(|channels| ("channels", channels.to_string())),
+            .map(|channels| ("channels", channels.as_ref())),
         request
             .external_id
             .as_ref()
-            .map(|external_id| ("external_id", external_id.to_string())),
-        request.file.as_ref().map(|file| ("file", file.to_string())),
+            .map(|external_id| ("external_id", external_id.as_ref())),
+        request.file.as_ref().map(|file| ("file", file.as_ref())),
     ];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/files.remote.share");
     client
         .get(&url, &params[..])
@@ -235,50 +232,47 @@ where
 pub async fn update<R>(
     client: &R,
     token: Option<&str>,
-    request: &UpdateRequest,
+    request: &UpdateRequest<'_>,
 ) -> Result<UpdateResponse, UpdateError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
+    let params: Vec<Option<(&str, &str)>> = vec![
         request
             .external_id
             .as_ref()
-            .map(|external_id| ("external_id", external_id.to_string())),
+            .map(|external_id| ("external_id", external_id.as_ref())),
         request
             .external_url
             .as_ref()
-            .map(|external_url| ("external_url", external_url.to_string())),
-        request.file.as_ref().map(|file| ("file", file.to_string())),
+            .map(|external_url| ("external_url", external_url.as_ref())),
+        request.file.as_ref().map(|file| ("file", file.as_ref())),
         request
             .filetype
             .as_ref()
-            .map(|filetype| ("filetype", filetype.to_string())),
+            .map(|filetype| ("filetype", filetype.as_ref())),
         request
             .indexable_file_contents
             .as_ref()
             .map(|indexable_file_contents| {
-                (
-                    "indexable_file_contents",
-                    indexable_file_contents.to_string(),
-                )
+                ("indexable_file_contents", indexable_file_contents.as_ref())
             }),
         request
             .preview_image
             .as_ref()
-            .map(|preview_image| ("preview_image", preview_image.to_string())),
+            .map(|preview_image| ("preview_image", preview_image.as_ref())),
         request
             .title
             .as_ref()
-            .map(|title| ("title", title.to_string())),
+            .map(|title| ("title", title.as_ref())),
     ];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/files.remote.update");
     client
         .post(
             &url,
             &params[..],
-            &token.map_or(vec![], |t| vec![("token", t.to_string())]),
+            &token.map_or(vec![], |t| vec![("token", t)]),
         )
         .await
         .map_err(UpdateError::Client)

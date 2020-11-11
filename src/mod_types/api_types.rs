@@ -16,16 +16,17 @@
 #![allow(clippy::match_single_binding)]
 #![allow(clippy::blacklisted_name)]
 
+use std::borrow::Cow;
 use std::convert::From;
 use std::error::Error;
 use std::fmt;
 
 #[derive(Clone, Default, Debug)]
-pub struct TestRequest {
+pub struct TestRequest<'a> {
     /// Error response to return
-    pub error: Option<String>,
+    pub error: Option<Cow<'a, str>>,
     /// example property to return
-    pub foo: Option<String>,
+    pub foo: Option<Cow<'a, str>>,
 }
 
 #[derive(Clone, Debug, Deserialize)]

@@ -20,6 +20,7 @@ pub mod profile;
 
 pub use crate::mod_types::users::*;
 use crate::sync::SlackWebRequestSender;
+use std::borrow::Cow;
 
 /// List conversations the calling user may access.
 ///
@@ -28,32 +29,33 @@ use crate::sync::SlackWebRequestSender;
 pub fn conversations<R>(
     client: &R,
     token: Option<&str>,
-    request: &ConversationsRequest,
+    request: &ConversationsRequest<'_>,
 ) -> Result<ConversationsResponse, ConversationsError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
-        token.map(|token| ("token", token.to_string())),
+    let exclude_archived: Option<Cow<'_, str>> = request
+        .exclude_archived
+        .as_ref()
+        .map(|exclude_archived| exclude_archived.to_string().into());
+    let limit: Option<Cow<'_, str>> = request.limit.as_ref().map(|limit| limit.to_string().into());
+    let params: Vec<Option<(&str, &str)>> = vec![
+        token.map(|token| ("token", token)),
         request
             .cursor
             .as_ref()
-            .map(|cursor| ("cursor", cursor.to_string())),
-        request
-            .exclude_archived
+            .map(|cursor| ("cursor", cursor.as_ref())),
+        exclude_archived
             .as_ref()
-            .map(|exclude_archived| ("exclude_archived", exclude_archived.to_string())),
-        request
-            .limit
-            .as_ref()
-            .map(|limit| ("limit", limit.to_string())),
+            .map(|exclude_archived| ("exclude_archived", exclude_archived.as_ref())),
+        limit.as_ref().map(|limit| ("limit", limit.as_ref())),
         request
             .types
             .as_ref()
-            .map(|types| ("types", types.to_string())),
-        request.user.as_ref().map(|user| ("user", user.to_string())),
+            .map(|types| ("types", types.as_ref())),
+        request.user.as_ref().map(|user| ("user", user.as_ref())),
     ];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/users.conversations");
     client
         .get(&url, &params[..])
@@ -76,11 +78,11 @@ pub fn delete_photo<R>(
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<Option<(&str, &str)>> = vec![];
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/users.deletePhoto");
     client
-        .post(&url, &params[..], &[("token", token.to_string())])
+        .post(&url, &params[..], &[("token", token)])
         .map_err(DeletePhotoError::Client)
         .and_then(|result| {
             serde_json::from_str::<DeletePhotoResponse>(&result)
@@ -95,16 +97,16 @@ where
 pub fn get_presence<R>(
     client: &R,
     token: &str,
-    request: &GetPresenceRequest,
+    request: &GetPresenceRequest<'_>,
 ) -> Result<GetPresenceResponse, GetPresenceError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
-        Some(("token", token.to_string())),
-        request.user.as_ref().map(|user| ("user", user.to_string())),
+    let params: Vec<Option<(&str, &str)>> = vec![
+        Some(("token", token)),
+        request.user.as_ref().map(|user| ("user", user.as_ref())),
     ];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/users.getPresence");
     client
         .get(&url, &params[..])
@@ -127,8 +129,8 @@ pub fn identity<R>(
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![token.map(|token| ("token", token.to_string()))];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<Option<(&str, &str)>> = vec![token.map(|token| ("token", token))];
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/users.identity");
     client
         .get(&url, &params[..])
@@ -146,20 +148,23 @@ where
 pub fn info<R>(
     client: &R,
     token: &str,
-    request: &InfoRequest,
+    request: &InfoRequest<'_>,
 ) -> Result<InfoResponse, InfoError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
-        Some(("token", token.to_string())),
-        request
-            .include_locale
+    let include_locale: Option<Cow<'_, str>> = request
+        .include_locale
+        .as_ref()
+        .map(|include_locale| include_locale.to_string().into());
+    let params: Vec<Option<(&str, &str)>> = vec![
+        Some(("token", token)),
+        include_locale
             .as_ref()
-            .map(|include_locale| ("include_locale", include_locale.to_string())),
-        request.user.as_ref().map(|user| ("user", user.to_string())),
+            .map(|include_locale| ("include_locale", include_locale.as_ref())),
+        request.user.as_ref().map(|user| ("user", user.as_ref())),
     ];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/users.info");
     client
         .get(&url, &params[..])
@@ -177,27 +182,28 @@ where
 pub fn list<R>(
     client: &R,
     token: Option<&str>,
-    request: &ListRequest,
+    request: &ListRequest<'_>,
 ) -> Result<ListResponse, ListError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
-        token.map(|token| ("token", token.to_string())),
+    let include_locale: Option<Cow<'_, str>> = request
+        .include_locale
+        .as_ref()
+        .map(|include_locale| include_locale.to_string().into());
+    let limit: Option<Cow<'_, str>> = request.limit.as_ref().map(|limit| limit.to_string().into());
+    let params: Vec<Option<(&str, &str)>> = vec![
+        token.map(|token| ("token", token)),
         request
             .cursor
             .as_ref()
-            .map(|cursor| ("cursor", cursor.to_string())),
-        request
-            .include_locale
+            .map(|cursor| ("cursor", cursor.as_ref())),
+        include_locale
             .as_ref()
-            .map(|include_locale| ("include_locale", include_locale.to_string())),
-        request
-            .limit
-            .as_ref()
-            .map(|limit| ("limit", limit.to_string())),
+            .map(|include_locale| ("include_locale", include_locale.as_ref())),
+        limit.as_ref().map(|limit| ("limit", limit.as_ref())),
     ];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/users.list");
     client
         .get(&url, &params[..])
@@ -215,16 +221,16 @@ where
 pub fn lookup_by_email<R>(
     client: &R,
     token: &str,
-    request: &LookupByEmailRequest,
+    request: &LookupByEmailRequest<'_>,
 ) -> Result<LookupByEmailResponse, LookupByEmailError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
-        Some(("token", token.to_string())),
-        Some(("email", request.email.to_string())),
+    let params: Vec<Option<(&str, &str)>> = vec![
+        Some(("token", token)),
+        Some(("email", request.email.as_ref())),
     ];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/users.lookupByEmail");
     client
         .get(&url, &params[..])
@@ -247,11 +253,11 @@ pub fn set_active<R>(
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<Option<(&str, &str)>> = vec![];
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/users.setActive");
     client
-        .post(&url, &params[..], &[("token", token.to_string())])
+        .post(&url, &params[..], &[("token", token)])
         .map_err(SetActiveError::Client)
         .and_then(|result| {
             serde_json::from_str::<SetActiveResponse>(&result)
@@ -266,33 +272,33 @@ where
 pub fn set_photo<R>(
     client: &R,
     token: &str,
-    request: &SetPhotoRequest,
+    request: &SetPhotoRequest<'_>,
 ) -> Result<SetPhotoResponse, SetPhotoError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
+    let params: Vec<Option<(&str, &str)>> = vec![
         request
             .crop_w
             .as_ref()
-            .map(|crop_w| ("crop_w", crop_w.to_string())),
+            .map(|crop_w| ("crop_w", crop_w.as_ref())),
         request
             .crop_x
             .as_ref()
-            .map(|crop_x| ("crop_x", crop_x.to_string())),
+            .map(|crop_x| ("crop_x", crop_x.as_ref())),
         request
             .crop_y
             .as_ref()
-            .map(|crop_y| ("crop_y", crop_y.to_string())),
+            .map(|crop_y| ("crop_y", crop_y.as_ref())),
         request
             .image
             .as_ref()
-            .map(|image| ("image", image.to_string())),
+            .map(|image| ("image", image.as_ref())),
     ];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/users.setPhoto");
     client
-        .post(&url, &params[..], &[("token", token.to_string())])
+        .post(&url, &params[..], &[("token", token)])
         .map_err(SetPhotoError::Client)
         .and_then(|result| {
             serde_json::from_str::<SetPhotoResponse>(&result)
@@ -307,16 +313,16 @@ where
 pub fn set_presence<R>(
     client: &R,
     token: &str,
-    request: &SetPresenceRequest,
+    request: &SetPresenceRequest<'_>,
 ) -> Result<SetPresenceResponse, SetPresenceError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![Some(("presence", request.presence.to_string()))];
-    let params: Vec<(&str, String)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params: Vec<Option<(&str, &str)>> = vec![Some(("presence", request.presence.as_ref()))];
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("/users.setPresence");
     client
-        .post(&url, &params[..], &[("token", token.to_string())])
+        .post(&url, &params[..], &[("token", token)])
         .map_err(SetPresenceError::Client)
         .and_then(|result| {
             serde_json::from_str::<SetPresenceResponse>(&result)
