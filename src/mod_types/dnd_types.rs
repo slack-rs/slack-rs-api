@@ -12,16 +12,21 @@
 //
 //=============================================================================
 
-//! Adjust and view Do Not Disturb settings for team members.
+#![allow(unused_imports)]
+#![allow(clippy::match_single_binding)]
+#![allow(clippy::blacklisted_name)]
 
-#[allow(unused_imports)]
-use std::collections::HashMap;
+use std::borrow::Cow;
 use std::convert::From;
 use std::error::Error;
 use std::fmt;
 
+#[derive(Clone, Default, Debug)]
+pub struct EndDndRequest {}
+
 #[derive(Clone, Debug, Deserialize)]
 pub struct EndDndResponse {
+    pub callstack: Option<String>,
     error: Option<String>,
     #[serde(default)]
     ok: bool,
@@ -36,34 +41,29 @@ impl<E: Error> Into<Result<EndDndResponse, EndDndError<E>>> for EndDndResponse {
         }
     }
 }
+
 #[derive(Debug)]
 pub enum EndDndError<E: Error> {
-    /// There was a mysterious problem ending the user's Do Not Disturb session
-    UnknownError,
-    /// No authentication token provided.
-    NotAuthed,
-    /// Invalid authentication token.
-    InvalidAuth,
-    /// Authentication token is for a deleted user or team.
     AccountInactive,
-    /// This method cannot be called by a bot user.
-    UserIsBot,
-    /// The method was passed an argument whose name falls outside the bounds of common decency. This includes very long names and names with non-alphanumeric characters other than _. If you get this error, it is typically an indication that you have made a very malformed API call.
+    FatalError,
     InvalidArgName,
-    /// The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API.
     InvalidArrayArg,
-    /// The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1.
+    InvalidAuth,
     InvalidCharset,
-    /// The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid.
     InvalidFormData,
-    /// The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/x-www-form-urlencoded multipart/form-data text/plain.
+    InvalidJson,
     InvalidPostType,
-    /// The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.
+    JsonNotObject,
     MissingPostType,
-    /// The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.
-    TeamAddedToOrg,
-    /// The method was called via a POST request, but the POST data was either missing or truncated.
+    NoPermission,
+    NotAuthed,
+    OrgLoginRequired,
     RequestTimeout,
+    TeamAddedToOrg,
+    TokenRevoked,
+    UnknownError,
+    UpgradeRequired,
+    UserIsBot,
     /// The response was not parseable as the expected object
     MalformedResponse(String, serde_json::error::Error),
     /// The response returned an error that was unknown to the library
@@ -75,19 +75,26 @@ pub enum EndDndError<E: Error> {
 impl<'a, E: Error> From<&'a str> for EndDndError<E> {
     fn from(s: &'a str) -> Self {
         match s {
-            "unknown_error" => EndDndError::UnknownError,
-            "not_authed" => EndDndError::NotAuthed,
-            "invalid_auth" => EndDndError::InvalidAuth,
             "account_inactive" => EndDndError::AccountInactive,
-            "user_is_bot" => EndDndError::UserIsBot,
+            "fatal_error" => EndDndError::FatalError,
             "invalid_arg_name" => EndDndError::InvalidArgName,
             "invalid_array_arg" => EndDndError::InvalidArrayArg,
+            "invalid_auth" => EndDndError::InvalidAuth,
             "invalid_charset" => EndDndError::InvalidCharset,
             "invalid_form_data" => EndDndError::InvalidFormData,
+            "invalid_json" => EndDndError::InvalidJson,
             "invalid_post_type" => EndDndError::InvalidPostType,
+            "json_not_object" => EndDndError::JsonNotObject,
             "missing_post_type" => EndDndError::MissingPostType,
-            "team_added_to_org" => EndDndError::TeamAddedToOrg,
+            "no_permission" => EndDndError::NoPermission,
+            "not_authed" => EndDndError::NotAuthed,
+            "org_login_required" => EndDndError::OrgLoginRequired,
             "request_timeout" => EndDndError::RequestTimeout,
+            "team_added_to_org" => EndDndError::TeamAddedToOrg,
+            "token_revoked" => EndDndError::TokenRevoked,
+            "unknown_error" => EndDndError::UnknownError,
+            "upgrade_required" => EndDndError::UpgradeRequired,
+            "user_is_bot" => EndDndError::UserIsBot,
             _ => EndDndError::Unknown(s.to_owned()),
         }
     }
@@ -95,25 +102,31 @@ impl<'a, E: Error> From<&'a str> for EndDndError<E> {
 
 impl<E: Error> fmt::Display for EndDndError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let d = match *self {
-                        EndDndError::UnknownError => "unknown_error: There was a mysterious problem ending the user's Do Not Disturb session",
-EndDndError::NotAuthed => "not_authed: No authentication token provided.",
-EndDndError::InvalidAuth => "invalid_auth: Invalid authentication token.",
-EndDndError::AccountInactive => "account_inactive: Authentication token is for a deleted user or team.",
-EndDndError::UserIsBot => "user_is_bot: This method cannot be called by a bot user.",
-EndDndError::InvalidArgName => "invalid_arg_name: The method was passed an argument whose name falls outside the bounds of common decency. This includes very long names and names with non-alphanumeric characters other than _. If you get this error, it is typically an indication that you have made a very malformed API call.",
-EndDndError::InvalidArrayArg => "invalid_array_arg: The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API.",
-EndDndError::InvalidCharset => "invalid_charset: The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1.",
-EndDndError::InvalidFormData => "invalid_form_data: The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid.",
-EndDndError::InvalidPostType => "invalid_post_type: The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/x-www-form-urlencoded multipart/form-data text/plain.",
-EndDndError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
-EndDndError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
-EndDndError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        EndDndError::MalformedResponse(_, ref e) => return write!(f, "{}", e),
-                        EndDndError::Unknown(ref s) => return write!(f, "{}", s),
-                        EndDndError::Client(ref inner) => return write!(f, "{}", inner),
-                    };
-        write!(f, "{}", d)
+        match *self {
+            EndDndError::AccountInactive => write!(f, "Server returned error account_inactive"),
+            EndDndError::FatalError => write!(f, "Server returned error fatal_error"),
+            EndDndError::InvalidArgName => write!(f, "Server returned error invalid_arg_name"),
+            EndDndError::InvalidArrayArg => write!(f, "Server returned error invalid_array_arg"),
+            EndDndError::InvalidAuth => write!(f, "Server returned error invalid_auth"),
+            EndDndError::InvalidCharset => write!(f, "Server returned error invalid_charset"),
+            EndDndError::InvalidFormData => write!(f, "Server returned error invalid_form_data"),
+            EndDndError::InvalidJson => write!(f, "Server returned error invalid_json"),
+            EndDndError::InvalidPostType => write!(f, "Server returned error invalid_post_type"),
+            EndDndError::JsonNotObject => write!(f, "Server returned error json_not_object"),
+            EndDndError::MissingPostType => write!(f, "Server returned error missing_post_type"),
+            EndDndError::NoPermission => write!(f, "Server returned error no_permission"),
+            EndDndError::NotAuthed => write!(f, "Server returned error not_authed"),
+            EndDndError::OrgLoginRequired => write!(f, "Server returned error org_login_required"),
+            EndDndError::RequestTimeout => write!(f, "Server returned error request_timeout"),
+            EndDndError::TeamAddedToOrg => write!(f, "Server returned error team_added_to_org"),
+            EndDndError::TokenRevoked => write!(f, "Server returned error token_revoked"),
+            EndDndError::UnknownError => write!(f, "Server returned error unknown_error"),
+            EndDndError::UpgradeRequired => write!(f, "Server returned error upgrade_required"),
+            EndDndError::UserIsBot => write!(f, "Server returned error user_is_bot"),
+            EndDndError::MalformedResponse(_, ref e) => write!(f, "{}", e),
+            EndDndError::Unknown(ref s) => write!(f, "{}", s),
+            EndDndError::Client(ref inner) => write!(f, "{}", inner),
+        }
     }
 }
 
@@ -127,15 +140,19 @@ impl<E: Error + 'static> Error for EndDndError<E> {
     }
 }
 
+#[derive(Clone, Default, Debug)]
+pub struct EndSnoozeRequest {}
+
 #[derive(Clone, Debug, Deserialize)]
 pub struct EndSnoozeResponse {
-    pub dnd_enabled: Option<bool>,
+    pub callstack: Option<String>,
+    pub dnd_enabled: bool,
     error: Option<String>,
-    pub next_dnd_end_ts: Option<crate::Timestamp>,
-    pub next_dnd_start_ts: Option<crate::Timestamp>,
+    pub next_dnd_end_ts: u64,
+    pub next_dnd_start_ts: u64,
     #[serde(default)]
     ok: bool,
-    pub snooze_enabled: Option<bool>,
+    pub snooze_enabled: bool,
 }
 
 impl<E: Error> Into<Result<EndSnoozeResponse, EndSnoozeError<E>>> for EndSnoozeResponse {
@@ -147,36 +164,30 @@ impl<E: Error> Into<Result<EndSnoozeResponse, EndSnoozeError<E>>> for EndSnoozeR
         }
     }
 }
+
 #[derive(Debug)]
 pub enum EndSnoozeError<E: Error> {
-    /// Snooze is not active for this user and cannot be ended
-    SnoozeNotActive,
-    /// There was a problem setting the user's Do Not Disturb status
-    SnoozeEndFailed,
-    /// No authentication token provided.
-    NotAuthed,
-    /// Invalid authentication token.
-    InvalidAuth,
-    /// Authentication token is for a deleted user or team.
     AccountInactive,
-    /// This method cannot be called by a bot user.
-    UserIsBot,
-    /// The method was passed an argument whose name falls outside the bounds of common decency. This includes very long names and names with non-alphanumeric characters other than _. If you get this error, it is typically an indication that you have made a very malformed API call.
+    FatalError,
     InvalidArgName,
-    /// The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API.
     InvalidArrayArg,
-    /// The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1.
+    InvalidAuth,
     InvalidCharset,
-    /// The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid.
     InvalidFormData,
-    /// The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/x-www-form-urlencoded multipart/form-data text/plain.
+    InvalidJson,
     InvalidPostType,
-    /// The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.
+    JsonNotObject,
     MissingPostType,
-    /// The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.
-    TeamAddedToOrg,
-    /// The method was called via a POST request, but the POST data was either missing or truncated.
+    NoPermission,
+    NotAuthed,
+    OrgLoginRequired,
     RequestTimeout,
+    SnoozeEndFailed,
+    SnoozeNotActive,
+    TeamAddedToOrg,
+    TokenRevoked,
+    UpgradeRequired,
+    UserIsBot,
     /// The response was not parseable as the expected object
     MalformedResponse(String, serde_json::error::Error),
     /// The response returned an error that was unknown to the library
@@ -188,20 +199,27 @@ pub enum EndSnoozeError<E: Error> {
 impl<'a, E: Error> From<&'a str> for EndSnoozeError<E> {
     fn from(s: &'a str) -> Self {
         match s {
-            "snooze_not_active" => EndSnoozeError::SnoozeNotActive,
-            "snooze_end_failed" => EndSnoozeError::SnoozeEndFailed,
-            "not_authed" => EndSnoozeError::NotAuthed,
-            "invalid_auth" => EndSnoozeError::InvalidAuth,
             "account_inactive" => EndSnoozeError::AccountInactive,
-            "user_is_bot" => EndSnoozeError::UserIsBot,
+            "fatal_error" => EndSnoozeError::FatalError,
             "invalid_arg_name" => EndSnoozeError::InvalidArgName,
             "invalid_array_arg" => EndSnoozeError::InvalidArrayArg,
+            "invalid_auth" => EndSnoozeError::InvalidAuth,
             "invalid_charset" => EndSnoozeError::InvalidCharset,
             "invalid_form_data" => EndSnoozeError::InvalidFormData,
+            "invalid_json" => EndSnoozeError::InvalidJson,
             "invalid_post_type" => EndSnoozeError::InvalidPostType,
+            "json_not_object" => EndSnoozeError::JsonNotObject,
             "missing_post_type" => EndSnoozeError::MissingPostType,
-            "team_added_to_org" => EndSnoozeError::TeamAddedToOrg,
+            "no_permission" => EndSnoozeError::NoPermission,
+            "not_authed" => EndSnoozeError::NotAuthed,
+            "org_login_required" => EndSnoozeError::OrgLoginRequired,
             "request_timeout" => EndSnoozeError::RequestTimeout,
+            "snooze_end_failed" => EndSnoozeError::SnoozeEndFailed,
+            "snooze_not_active" => EndSnoozeError::SnoozeNotActive,
+            "team_added_to_org" => EndSnoozeError::TeamAddedToOrg,
+            "token_revoked" => EndSnoozeError::TokenRevoked,
+            "upgrade_required" => EndSnoozeError::UpgradeRequired,
+            "user_is_bot" => EndSnoozeError::UserIsBot,
             _ => EndSnoozeError::Unknown(s.to_owned()),
         }
     }
@@ -209,26 +227,34 @@ impl<'a, E: Error> From<&'a str> for EndSnoozeError<E> {
 
 impl<E: Error> fmt::Display for EndSnoozeError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let d = match *self {
-                        EndSnoozeError::SnoozeNotActive => "snooze_not_active: Snooze is not active for this user and cannot be ended",
-EndSnoozeError::SnoozeEndFailed => "snooze_end_failed: There was a problem setting the user's Do Not Disturb status",
-EndSnoozeError::NotAuthed => "not_authed: No authentication token provided.",
-EndSnoozeError::InvalidAuth => "invalid_auth: Invalid authentication token.",
-EndSnoozeError::AccountInactive => "account_inactive: Authentication token is for a deleted user or team.",
-EndSnoozeError::UserIsBot => "user_is_bot: This method cannot be called by a bot user.",
-EndSnoozeError::InvalidArgName => "invalid_arg_name: The method was passed an argument whose name falls outside the bounds of common decency. This includes very long names and names with non-alphanumeric characters other than _. If you get this error, it is typically an indication that you have made a very malformed API call.",
-EndSnoozeError::InvalidArrayArg => "invalid_array_arg: The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API.",
-EndSnoozeError::InvalidCharset => "invalid_charset: The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1.",
-EndSnoozeError::InvalidFormData => "invalid_form_data: The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid.",
-EndSnoozeError::InvalidPostType => "invalid_post_type: The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/x-www-form-urlencoded multipart/form-data text/plain.",
-EndSnoozeError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
-EndSnoozeError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
-EndSnoozeError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        EndSnoozeError::MalformedResponse(_, ref e) => return write!(f, "{}", e),
-                        EndSnoozeError::Unknown(ref s) => return write!(f, "{}", s),
-                        EndSnoozeError::Client(ref inner) => return write!(f, "{}", inner),
-                    };
-        write!(f, "{}", d)
+        match *self {
+            EndSnoozeError::AccountInactive => write!(f, "Server returned error account_inactive"),
+            EndSnoozeError::FatalError => write!(f, "Server returned error fatal_error"),
+            EndSnoozeError::InvalidArgName => write!(f, "Server returned error invalid_arg_name"),
+            EndSnoozeError::InvalidArrayArg => write!(f, "Server returned error invalid_array_arg"),
+            EndSnoozeError::InvalidAuth => write!(f, "Server returned error invalid_auth"),
+            EndSnoozeError::InvalidCharset => write!(f, "Server returned error invalid_charset"),
+            EndSnoozeError::InvalidFormData => write!(f, "Server returned error invalid_form_data"),
+            EndSnoozeError::InvalidJson => write!(f, "Server returned error invalid_json"),
+            EndSnoozeError::InvalidPostType => write!(f, "Server returned error invalid_post_type"),
+            EndSnoozeError::JsonNotObject => write!(f, "Server returned error json_not_object"),
+            EndSnoozeError::MissingPostType => write!(f, "Server returned error missing_post_type"),
+            EndSnoozeError::NoPermission => write!(f, "Server returned error no_permission"),
+            EndSnoozeError::NotAuthed => write!(f, "Server returned error not_authed"),
+            EndSnoozeError::OrgLoginRequired => {
+                write!(f, "Server returned error org_login_required")
+            }
+            EndSnoozeError::RequestTimeout => write!(f, "Server returned error request_timeout"),
+            EndSnoozeError::SnoozeEndFailed => write!(f, "Server returned error snooze_end_failed"),
+            EndSnoozeError::SnoozeNotActive => write!(f, "Server returned error snooze_not_active"),
+            EndSnoozeError::TeamAddedToOrg => write!(f, "Server returned error team_added_to_org"),
+            EndSnoozeError::TokenRevoked => write!(f, "Server returned error token_revoked"),
+            EndSnoozeError::UpgradeRequired => write!(f, "Server returned error upgrade_required"),
+            EndSnoozeError::UserIsBot => write!(f, "Server returned error user_is_bot"),
+            EndSnoozeError::MalformedResponse(_, ref e) => write!(f, "{}", e),
+            EndSnoozeError::Unknown(ref s) => write!(f, "{}", s),
+            EndSnoozeError::Client(ref inner) => write!(f, "{}", inner),
+        }
     }
 }
 
@@ -245,20 +271,21 @@ impl<E: Error + 'static> Error for EndSnoozeError<E> {
 #[derive(Clone, Default, Debug)]
 pub struct InfoRequest<'a> {
     /// User to fetch status for (defaults to current user)
-    pub user: Option<&'a str>,
+    pub user: Option<Cow<'a, str>>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct InfoResponse {
-    pub dnd_enabled: Option<bool>,
+    pub callstack: Option<String>,
+    pub dnd_enabled: bool,
     error: Option<String>,
-    pub next_dnd_end_ts: Option<crate::Timestamp>,
-    pub next_dnd_start_ts: Option<crate::Timestamp>,
+    pub next_dnd_end_ts: u64,
+    pub next_dnd_start_ts: u64,
     #[serde(default)]
     ok: bool,
     pub snooze_enabled: Option<bool>,
-    pub snooze_endtime: Option<crate::Timestamp>,
-    pub snooze_remaining: Option<f32>,
+    pub snooze_endtime: Option<u64>,
+    pub snooze_remaining: Option<u64>,
 }
 
 impl<E: Error> Into<Result<InfoResponse, InfoError<E>>> for InfoResponse {
@@ -270,32 +297,28 @@ impl<E: Error> Into<Result<InfoResponse, InfoError<E>>> for InfoResponse {
         }
     }
 }
+
 #[derive(Debug)]
 pub enum InfoError<E: Error> {
-    /// Value passed for user was invalid.
-    UserNotFound,
-    /// No authentication token provided.
-    NotAuthed,
-    /// Invalid authentication token.
-    InvalidAuth,
-    /// Authentication token is for a deleted user or team.
     AccountInactive,
-    /// The method was passed an argument whose name falls outside the bounds of common decency. This includes very long names and names with non-alphanumeric characters other than _. If you get this error, it is typically an indication that you have made a very malformed API call.
+    FatalError,
     InvalidArgName,
-    /// The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API.
     InvalidArrayArg,
-    /// The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1.
+    InvalidAuth,
     InvalidCharset,
-    /// The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid.
     InvalidFormData,
-    /// The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/x-www-form-urlencoded multipart/form-data text/plain.
+    InvalidJson,
     InvalidPostType,
-    /// The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.
+    JsonNotObject,
     MissingPostType,
-    /// The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.
-    TeamAddedToOrg,
-    /// The method was called via a POST request, but the POST data was either missing or truncated.
+    NoPermission,
+    NotAuthed,
+    OrgLoginRequired,
     RequestTimeout,
+    TeamAddedToOrg,
+    TokenRevoked,
+    UpgradeRequired,
+    UserNotFound,
     /// The response was not parseable as the expected object
     MalformedResponse(String, serde_json::error::Error),
     /// The response returned an error that was unknown to the library
@@ -307,18 +330,25 @@ pub enum InfoError<E: Error> {
 impl<'a, E: Error> From<&'a str> for InfoError<E> {
     fn from(s: &'a str) -> Self {
         match s {
-            "user_not_found" => InfoError::UserNotFound,
-            "not_authed" => InfoError::NotAuthed,
-            "invalid_auth" => InfoError::InvalidAuth,
             "account_inactive" => InfoError::AccountInactive,
+            "fatal_error" => InfoError::FatalError,
             "invalid_arg_name" => InfoError::InvalidArgName,
             "invalid_array_arg" => InfoError::InvalidArrayArg,
+            "invalid_auth" => InfoError::InvalidAuth,
             "invalid_charset" => InfoError::InvalidCharset,
             "invalid_form_data" => InfoError::InvalidFormData,
+            "invalid_json" => InfoError::InvalidJson,
             "invalid_post_type" => InfoError::InvalidPostType,
+            "json_not_object" => InfoError::JsonNotObject,
             "missing_post_type" => InfoError::MissingPostType,
-            "team_added_to_org" => InfoError::TeamAddedToOrg,
+            "no_permission" => InfoError::NoPermission,
+            "not_authed" => InfoError::NotAuthed,
+            "org_login_required" => InfoError::OrgLoginRequired,
             "request_timeout" => InfoError::RequestTimeout,
+            "team_added_to_org" => InfoError::TeamAddedToOrg,
+            "token_revoked" => InfoError::TokenRevoked,
+            "upgrade_required" => InfoError::UpgradeRequired,
+            "user_not_found" => InfoError::UserNotFound,
             _ => InfoError::Unknown(s.to_owned()),
         }
     }
@@ -326,24 +356,30 @@ impl<'a, E: Error> From<&'a str> for InfoError<E> {
 
 impl<E: Error> fmt::Display for InfoError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let d = match *self {
-                        InfoError::UserNotFound => "user_not_found: Value passed for user was invalid.",
-InfoError::NotAuthed => "not_authed: No authentication token provided.",
-InfoError::InvalidAuth => "invalid_auth: Invalid authentication token.",
-InfoError::AccountInactive => "account_inactive: Authentication token is for a deleted user or team.",
-InfoError::InvalidArgName => "invalid_arg_name: The method was passed an argument whose name falls outside the bounds of common decency. This includes very long names and names with non-alphanumeric characters other than _. If you get this error, it is typically an indication that you have made a very malformed API call.",
-InfoError::InvalidArrayArg => "invalid_array_arg: The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API.",
-InfoError::InvalidCharset => "invalid_charset: The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1.",
-InfoError::InvalidFormData => "invalid_form_data: The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid.",
-InfoError::InvalidPostType => "invalid_post_type: The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/x-www-form-urlencoded multipart/form-data text/plain.",
-InfoError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
-InfoError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
-InfoError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        InfoError::MalformedResponse(_, ref e) => return write!(f, "{}", e),
-                        InfoError::Unknown(ref s) => return write!(f, "{}", s),
-                        InfoError::Client(ref inner) => return write!(f, "{}", inner),
-                    };
-        write!(f, "{}", d)
+        match *self {
+            InfoError::AccountInactive => write!(f, "Server returned error account_inactive"),
+            InfoError::FatalError => write!(f, "Server returned error fatal_error"),
+            InfoError::InvalidArgName => write!(f, "Server returned error invalid_arg_name"),
+            InfoError::InvalidArrayArg => write!(f, "Server returned error invalid_array_arg"),
+            InfoError::InvalidAuth => write!(f, "Server returned error invalid_auth"),
+            InfoError::InvalidCharset => write!(f, "Server returned error invalid_charset"),
+            InfoError::InvalidFormData => write!(f, "Server returned error invalid_form_data"),
+            InfoError::InvalidJson => write!(f, "Server returned error invalid_json"),
+            InfoError::InvalidPostType => write!(f, "Server returned error invalid_post_type"),
+            InfoError::JsonNotObject => write!(f, "Server returned error json_not_object"),
+            InfoError::MissingPostType => write!(f, "Server returned error missing_post_type"),
+            InfoError::NoPermission => write!(f, "Server returned error no_permission"),
+            InfoError::NotAuthed => write!(f, "Server returned error not_authed"),
+            InfoError::OrgLoginRequired => write!(f, "Server returned error org_login_required"),
+            InfoError::RequestTimeout => write!(f, "Server returned error request_timeout"),
+            InfoError::TeamAddedToOrg => write!(f, "Server returned error team_added_to_org"),
+            InfoError::TokenRevoked => write!(f, "Server returned error token_revoked"),
+            InfoError::UpgradeRequired => write!(f, "Server returned error upgrade_required"),
+            InfoError::UserNotFound => write!(f, "Server returned error user_not_found"),
+            InfoError::MalformedResponse(_, ref e) => write!(f, "{}", e),
+            InfoError::Unknown(ref s) => write!(f, "{}", s),
+            InfoError::Client(ref inner) => write!(f, "{}", inner),
+        }
     }
 }
 
@@ -358,19 +394,20 @@ impl<E: Error + 'static> Error for InfoError<E> {
 }
 
 #[derive(Clone, Default, Debug)]
-pub struct SetSnoozeRequest {
+pub struct SetSnoozeRequest<'a> {
     /// Number of minutes, from now, to snooze until.
-    pub num_minutes: u32,
+    pub num_minutes: Cow<'a, str>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct SetSnoozeResponse {
+    pub callstack: Option<String>,
     error: Option<String>,
     #[serde(default)]
     ok: bool,
-    pub snooze_enabled: Option<bool>,
-    pub snooze_endtime: Option<crate::Timestamp>,
-    pub snooze_remaining: Option<f32>,
+    pub snooze_enabled: bool,
+    pub snooze_endtime: u64,
+    pub snooze_remaining: u64,
 }
 
 impl<E: Error> Into<Result<SetSnoozeResponse, SetSnoozeError<E>>> for SetSnoozeResponse {
@@ -382,36 +419,31 @@ impl<E: Error> Into<Result<SetSnoozeResponse, SetSnoozeError<E>>> for SetSnoozeR
         }
     }
 }
+
 #[derive(Debug)]
 pub enum SetSnoozeError<E: Error> {
-    /// No value provided for num_minutes
-    MissingDuration,
-    /// There was a problem setting the user's Do Not Disturb status
-    SnoozeFailed,
-    /// No authentication token provided.
-    NotAuthed,
-    /// Invalid authentication token.
-    InvalidAuth,
-    /// Authentication token is for a deleted user or team.
     AccountInactive,
-    /// This method cannot be called by a bot user.
-    UserIsBot,
-    /// The method was passed an argument whose name falls outside the bounds of common decency. This includes very long names and names with non-alphanumeric characters other than _. If you get this error, it is typically an indication that you have made a very malformed API call.
+    FatalError,
     InvalidArgName,
-    /// The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API.
     InvalidArrayArg,
-    /// The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1.
+    InvalidAuth,
     InvalidCharset,
-    /// The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid.
     InvalidFormData,
-    /// The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/x-www-form-urlencoded multipart/form-data text/plain.
+    InvalidJson,
     InvalidPostType,
-    /// The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.
+    JsonNotObject,
+    MissingDuration,
     MissingPostType,
-    /// The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.
-    TeamAddedToOrg,
-    /// The method was called via a POST request, but the POST data was either missing or truncated.
+    NoPermission,
+    NotAuthed,
+    OrgLoginRequired,
     RequestTimeout,
+    SnoozeFailed,
+    TeamAddedToOrg,
+    TokenRevoked,
+    TooLong,
+    UpgradeRequired,
+    UserIsBot,
     /// The response was not parseable as the expected object
     MalformedResponse(String, serde_json::error::Error),
     /// The response returned an error that was unknown to the library
@@ -423,20 +455,28 @@ pub enum SetSnoozeError<E: Error> {
 impl<'a, E: Error> From<&'a str> for SetSnoozeError<E> {
     fn from(s: &'a str) -> Self {
         match s {
-            "missing_duration" => SetSnoozeError::MissingDuration,
-            "snooze_failed" => SetSnoozeError::SnoozeFailed,
-            "not_authed" => SetSnoozeError::NotAuthed,
-            "invalid_auth" => SetSnoozeError::InvalidAuth,
             "account_inactive" => SetSnoozeError::AccountInactive,
-            "user_is_bot" => SetSnoozeError::UserIsBot,
+            "fatal_error" => SetSnoozeError::FatalError,
             "invalid_arg_name" => SetSnoozeError::InvalidArgName,
             "invalid_array_arg" => SetSnoozeError::InvalidArrayArg,
+            "invalid_auth" => SetSnoozeError::InvalidAuth,
             "invalid_charset" => SetSnoozeError::InvalidCharset,
             "invalid_form_data" => SetSnoozeError::InvalidFormData,
+            "invalid_json" => SetSnoozeError::InvalidJson,
             "invalid_post_type" => SetSnoozeError::InvalidPostType,
+            "json_not_object" => SetSnoozeError::JsonNotObject,
+            "missing_duration" => SetSnoozeError::MissingDuration,
             "missing_post_type" => SetSnoozeError::MissingPostType,
-            "team_added_to_org" => SetSnoozeError::TeamAddedToOrg,
+            "no_permission" => SetSnoozeError::NoPermission,
+            "not_authed" => SetSnoozeError::NotAuthed,
+            "org_login_required" => SetSnoozeError::OrgLoginRequired,
             "request_timeout" => SetSnoozeError::RequestTimeout,
+            "snooze_failed" => SetSnoozeError::SnoozeFailed,
+            "team_added_to_org" => SetSnoozeError::TeamAddedToOrg,
+            "token_revoked" => SetSnoozeError::TokenRevoked,
+            "too_long" => SetSnoozeError::TooLong,
+            "upgrade_required" => SetSnoozeError::UpgradeRequired,
+            "user_is_bot" => SetSnoozeError::UserIsBot,
             _ => SetSnoozeError::Unknown(s.to_owned()),
         }
     }
@@ -444,26 +484,35 @@ impl<'a, E: Error> From<&'a str> for SetSnoozeError<E> {
 
 impl<E: Error> fmt::Display for SetSnoozeError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let d = match *self {
-                        SetSnoozeError::MissingDuration => "missing_duration: No value provided for num_minutes",
-SetSnoozeError::SnoozeFailed => "snooze_failed: There was a problem setting the user's Do Not Disturb status",
-SetSnoozeError::NotAuthed => "not_authed: No authentication token provided.",
-SetSnoozeError::InvalidAuth => "invalid_auth: Invalid authentication token.",
-SetSnoozeError::AccountInactive => "account_inactive: Authentication token is for a deleted user or team.",
-SetSnoozeError::UserIsBot => "user_is_bot: This method cannot be called by a bot user.",
-SetSnoozeError::InvalidArgName => "invalid_arg_name: The method was passed an argument whose name falls outside the bounds of common decency. This includes very long names and names with non-alphanumeric characters other than _. If you get this error, it is typically an indication that you have made a very malformed API call.",
-SetSnoozeError::InvalidArrayArg => "invalid_array_arg: The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API.",
-SetSnoozeError::InvalidCharset => "invalid_charset: The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1.",
-SetSnoozeError::InvalidFormData => "invalid_form_data: The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid.",
-SetSnoozeError::InvalidPostType => "invalid_post_type: The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/x-www-form-urlencoded multipart/form-data text/plain.",
-SetSnoozeError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
-SetSnoozeError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
-SetSnoozeError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        SetSnoozeError::MalformedResponse(_, ref e) => return write!(f, "{}", e),
-                        SetSnoozeError::Unknown(ref s) => return write!(f, "{}", s),
-                        SetSnoozeError::Client(ref inner) => return write!(f, "{}", inner),
-                    };
-        write!(f, "{}", d)
+        match *self {
+            SetSnoozeError::AccountInactive => write!(f, "Server returned error account_inactive"),
+            SetSnoozeError::FatalError => write!(f, "Server returned error fatal_error"),
+            SetSnoozeError::InvalidArgName => write!(f, "Server returned error invalid_arg_name"),
+            SetSnoozeError::InvalidArrayArg => write!(f, "Server returned error invalid_array_arg"),
+            SetSnoozeError::InvalidAuth => write!(f, "Server returned error invalid_auth"),
+            SetSnoozeError::InvalidCharset => write!(f, "Server returned error invalid_charset"),
+            SetSnoozeError::InvalidFormData => write!(f, "Server returned error invalid_form_data"),
+            SetSnoozeError::InvalidJson => write!(f, "Server returned error invalid_json"),
+            SetSnoozeError::InvalidPostType => write!(f, "Server returned error invalid_post_type"),
+            SetSnoozeError::JsonNotObject => write!(f, "Server returned error json_not_object"),
+            SetSnoozeError::MissingDuration => write!(f, "Server returned error missing_duration"),
+            SetSnoozeError::MissingPostType => write!(f, "Server returned error missing_post_type"),
+            SetSnoozeError::NoPermission => write!(f, "Server returned error no_permission"),
+            SetSnoozeError::NotAuthed => write!(f, "Server returned error not_authed"),
+            SetSnoozeError::OrgLoginRequired => {
+                write!(f, "Server returned error org_login_required")
+            }
+            SetSnoozeError::RequestTimeout => write!(f, "Server returned error request_timeout"),
+            SetSnoozeError::SnoozeFailed => write!(f, "Server returned error snooze_failed"),
+            SetSnoozeError::TeamAddedToOrg => write!(f, "Server returned error team_added_to_org"),
+            SetSnoozeError::TokenRevoked => write!(f, "Server returned error token_revoked"),
+            SetSnoozeError::TooLong => write!(f, "Server returned error too_long"),
+            SetSnoozeError::UpgradeRequired => write!(f, "Server returned error upgrade_required"),
+            SetSnoozeError::UserIsBot => write!(f, "Server returned error user_is_bot"),
+            SetSnoozeError::MalformedResponse(_, ref e) => write!(f, "{}", e),
+            SetSnoozeError::Unknown(ref s) => write!(f, "{}", s),
+            SetSnoozeError::Client(ref inner) => write!(f, "{}", inner),
+        }
     }
 }
 
@@ -480,15 +529,13 @@ impl<E: Error + 'static> Error for SetSnoozeError<E> {
 #[derive(Clone, Default, Debug)]
 pub struct TeamInfoRequest<'a> {
     /// Comma-separated list of users to fetch Do Not Disturb status for
-    pub users: Option<&'a str>,
+    pub users: Option<Cow<'a, str>>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct TeamInfoResponse {
-    error: Option<String>,
     #[serde(default)]
     ok: bool,
-    pub users: Option<HashMap<String, bool>>,
 }
 
 impl<E: Error> Into<Result<TeamInfoResponse, TeamInfoError<E>>> for TeamInfoResponse {
@@ -496,34 +543,15 @@ impl<E: Error> Into<Result<TeamInfoResponse, TeamInfoError<E>>> for TeamInfoResp
         if self.ok {
             Ok(self)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(TeamInfoError::Unknown(
+                "Server failed without providing an error message.".into(),
+            ))
         }
     }
 }
+
 #[derive(Debug)]
 pub enum TeamInfoError<E: Error> {
-    /// No authentication token provided.
-    NotAuthed,
-    /// Invalid authentication token.
-    InvalidAuth,
-    /// Authentication token is for a deleted user or team.
-    AccountInactive,
-    /// The method was passed an argument whose name falls outside the bounds of common decency. This includes very long names and names with non-alphanumeric characters other than _. If you get this error, it is typically an indication that you have made a very malformed API call.
-    InvalidArgName,
-    /// The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API.
-    InvalidArrayArg,
-    /// The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1.
-    InvalidCharset,
-    /// The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid.
-    InvalidFormData,
-    /// The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/x-www-form-urlencoded multipart/form-data text/plain.
-    InvalidPostType,
-    /// The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.
-    MissingPostType,
-    /// The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.
-    TeamAddedToOrg,
-    /// The method was called via a POST request, but the POST data was either missing or truncated.
-    RequestTimeout,
     /// The response was not parseable as the expected object
     MalformedResponse(String, serde_json::error::Error),
     /// The response returned an error that was unknown to the library
@@ -535,17 +563,6 @@ pub enum TeamInfoError<E: Error> {
 impl<'a, E: Error> From<&'a str> for TeamInfoError<E> {
     fn from(s: &'a str) -> Self {
         match s {
-            "not_authed" => TeamInfoError::NotAuthed,
-            "invalid_auth" => TeamInfoError::InvalidAuth,
-            "account_inactive" => TeamInfoError::AccountInactive,
-            "invalid_arg_name" => TeamInfoError::InvalidArgName,
-            "invalid_array_arg" => TeamInfoError::InvalidArrayArg,
-            "invalid_charset" => TeamInfoError::InvalidCharset,
-            "invalid_form_data" => TeamInfoError::InvalidFormData,
-            "invalid_post_type" => TeamInfoError::InvalidPostType,
-            "missing_post_type" => TeamInfoError::MissingPostType,
-            "team_added_to_org" => TeamInfoError::TeamAddedToOrg,
-            "request_timeout" => TeamInfoError::RequestTimeout,
             _ => TeamInfoError::Unknown(s.to_owned()),
         }
     }
@@ -553,23 +570,11 @@ impl<'a, E: Error> From<&'a str> for TeamInfoError<E> {
 
 impl<E: Error> fmt::Display for TeamInfoError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let d = match *self {
-                        TeamInfoError::NotAuthed => "not_authed: No authentication token provided.",
-TeamInfoError::InvalidAuth => "invalid_auth: Invalid authentication token.",
-TeamInfoError::AccountInactive => "account_inactive: Authentication token is for a deleted user or team.",
-TeamInfoError::InvalidArgName => "invalid_arg_name: The method was passed an argument whose name falls outside the bounds of common decency. This includes very long names and names with non-alphanumeric characters other than _. If you get this error, it is typically an indication that you have made a very malformed API call.",
-TeamInfoError::InvalidArrayArg => "invalid_array_arg: The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API.",
-TeamInfoError::InvalidCharset => "invalid_charset: The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1.",
-TeamInfoError::InvalidFormData => "invalid_form_data: The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid.",
-TeamInfoError::InvalidPostType => "invalid_post_type: The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/x-www-form-urlencoded multipart/form-data text/plain.",
-TeamInfoError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
-TeamInfoError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
-TeamInfoError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        TeamInfoError::MalformedResponse(_, ref e) => return write!(f, "{}", e),
-                        TeamInfoError::Unknown(ref s) => return write!(f, "{}", s),
-                        TeamInfoError::Client(ref inner) => return write!(f, "{}", inner),
-                    };
-        write!(f, "{}", d)
+        match *self {
+            TeamInfoError::MalformedResponse(_, ref e) => write!(f, "{}", e),
+            TeamInfoError::Unknown(ref s) => write!(f, "{}", s),
+            TeamInfoError::Client(ref inner) => write!(f, "{}", inner),
+        }
     }
 }
 

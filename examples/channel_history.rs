@@ -9,14 +9,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let token = env::var("SLACK_API_TOKEN").map_err(|_| "SLACK_API_TOKEN env var must be set")?;
     let client = slack::default_client().map_err(|_| "Could not get default_client")?;
 
-    let response = slack::channels::history(
+    let response = slack::conversations::history(
         &client,
         &token,
-        &slack::channels::HistoryRequest {
-            channel: &env::args()
+        &slack::conversations::HistoryRequest {
+            channel: env::args()
                 .nth(1)
                 .ok_or("must specify channel id as argument e.g. C09123456")?,
-            ..slack::channels::HistoryRequest::default()
+            ..slack::conversations::HistoryRequest::default()
         },
     )
     .await;

@@ -12,21 +12,31 @@
 //
 //=============================================================================
 
+#![allow(unused_imports)]
+#![allow(clippy::match_single_binding)]
+#![allow(clippy::blacklisted_name)]
+
+use crate::async_impl::SlackWebRequestSender;
 pub use crate::mod_types::emoji_types::*;
-use crate::requests::SlackWebRequestSender;
+use std::borrow::Cow;
 
 /// Lists custom emoji for a team.
 ///
 /// Wraps https://api.slack.com/methods/emoji.list
 
-pub async fn list<R>(client: &R, token: &str) -> Result<ListResponse, ListError<R::Error>>
+pub async fn list<R>(
+    client: &R,
+    token: &str,
+    _request: &ListRequest,
+) -> Result<ListResponse, ListError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = &[("token", token)];
-    let url = crate::get_slack_url_for_method("emoji.list");
+    let params: Vec<Option<(&str, &str)>> = vec![Some(("token", token))];
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = crate::get_slack_url_for_method("/emoji.list");
     client
-        .send(&url, &params[..])
+        .get(&url, &params[..])
         .await
         .map_err(ListError::Client)
         .and_then(|result| {

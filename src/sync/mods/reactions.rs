@@ -12,8 +12,13 @@
 //
 //=============================================================================
 
+#![allow(unused_imports)]
+#![allow(clippy::match_single_binding)]
+#![allow(clippy::blacklisted_name)]
+
 pub use crate::mod_types::reactions_types::*;
-use crate::sync::requests::SlackWebRequestSender;
+use crate::sync::SlackWebRequestSender;
+use std::borrow::Cow;
 
 /// Adds a reaction to an item.
 ///
@@ -27,23 +32,15 @@ pub fn add<R>(
 where
     R: SlackWebRequestSender,
 {
-    let timestamp = request.timestamp.as_ref().map(|t| t.to_param_value());
-    let params = vec![
-        Some(("token", token)),
-        Some(("name", request.name)),
-        request.file.map(|file| ("file", file)),
-        request
-            .file_comment
-            .map(|file_comment| ("file_comment", file_comment)),
-        request.channel.map(|channel| ("channel", channel)),
-        timestamp
-            .as_ref()
-            .map(|timestamp| ("timestamp", &timestamp[..])),
+    let params: Vec<Option<(&str, &str)>> = vec![
+        Some(("channel", request.channel.as_ref())),
+        Some(("name", request.name.as_ref())),
+        Some(("timestamp", request.timestamp.as_ref())),
     ];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    let url = crate::get_slack_url_for_method("reactions.add");
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = crate::get_slack_url_for_method("/reactions.add");
     client
-        .send(&url, &params[..])
+        .post(&url, &params[..], &[("token", token)])
         .map_err(AddError::Client)
         .and_then(|result| {
             serde_json::from_str::<AddResponse>(&result)
@@ -51,7 +48,6 @@ where
         })
         .and_then(|o| o.into())
 }
-
 /// Gets reactions for an item.
 ///
 /// Wraps https://api.slack.com/methods/reactions.get
@@ -64,25 +60,28 @@ pub fn get<R>(
 where
     R: SlackWebRequestSender,
 {
-    let timestamp = request.timestamp.as_ref().map(|t| t.to_param_value());
-    let params = vec![
+    let full: Option<Cow<'_, str>> = request.full.as_ref().map(|full| full.to_string().into());
+    let params: Vec<Option<(&str, &str)>> = vec![
         Some(("token", token)),
-        request.file.map(|file| ("file", file)),
+        request
+            .channel
+            .as_ref()
+            .map(|channel| ("channel", channel.as_ref())),
+        request.file.as_ref().map(|file| ("file", file.as_ref())),
         request
             .file_comment
-            .map(|file_comment| ("file_comment", file_comment)),
-        request.channel.map(|channel| ("channel", channel)),
-        timestamp
             .as_ref()
-            .map(|timestamp| ("timestamp", &timestamp[..])),
+            .map(|file_comment| ("file_comment", file_comment.as_ref())),
+        full.as_ref().map(|full| ("full", full.as_ref())),
         request
-            .full
-            .map(|full| ("full", if full { "1" } else { "0" })),
+            .timestamp
+            .as_ref()
+            .map(|timestamp| ("timestamp", timestamp.as_ref())),
     ];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    let url = crate::get_slack_url_for_method("reactions.get");
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = crate::get_slack_url_for_method("/reactions.get");
     client
-        .send(&url, &params[..])
+        .get(&url, &params[..])
         .map_err(GetError::Client)
         .and_then(|result| {
             serde_json::from_str::<GetResponse>(&result)
@@ -90,7 +89,6 @@ where
         })
         .and_then(|o| o.into())
 }
-
 /// Lists reactions made by a user.
 ///
 /// Wraps https://api.slack.com/methods/reactions.list
@@ -103,21 +101,26 @@ pub fn list<R>(
 where
     R: SlackWebRequestSender,
 {
-    let count = request.count.map(|count| count.to_string());
-    let page = request.page.map(|page| page.to_string());
-    let params = vec![
+    let count: Option<Cow<'_, str>> = request.count.as_ref().map(|count| count.to_string().into());
+    let full: Option<Cow<'_, str>> = request.full.as_ref().map(|full| full.to_string().into());
+    let limit: Option<Cow<'_, str>> = request.limit.as_ref().map(|limit| limit.to_string().into());
+    let page: Option<Cow<'_, str>> = request.page.as_ref().map(|page| page.to_string().into());
+    let params: Vec<Option<(&str, &str)>> = vec![
         Some(("token", token)),
-        request.user.map(|user| ("user", user)),
+        count.as_ref().map(|count| ("count", count.as_ref())),
         request
-            .full
-            .map(|full| ("full", if full { "1" } else { "0" })),
-        count.as_ref().map(|count| ("count", &count[..])),
-        page.as_ref().map(|page| ("page", &page[..])),
+            .cursor
+            .as_ref()
+            .map(|cursor| ("cursor", cursor.as_ref())),
+        full.as_ref().map(|full| ("full", full.as_ref())),
+        limit.as_ref().map(|limit| ("limit", limit.as_ref())),
+        page.as_ref().map(|page| ("page", page.as_ref())),
+        request.user.as_ref().map(|user| ("user", user.as_ref())),
     ];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    let url = crate::get_slack_url_for_method("reactions.list");
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = crate::get_slack_url_for_method("/reactions.list");
     client
-        .send(&url, &params[..])
+        .get(&url, &params[..])
         .map_err(ListError::Client)
         .and_then(|result| {
             serde_json::from_str::<ListResponse>(&result)
@@ -125,7 +128,6 @@ where
         })
         .and_then(|o| o.into())
 }
-
 /// Removes a reaction from an item.
 ///
 /// Wraps https://api.slack.com/methods/reactions.remove
@@ -138,23 +140,26 @@ pub fn remove<R>(
 where
     R: SlackWebRequestSender,
 {
-    let timestamp = request.timestamp.as_ref().map(|t| t.to_param_value());
-    let params = vec![
-        Some(("token", token)),
-        Some(("name", request.name)),
-        request.file.map(|file| ("file", file)),
+    let params: Vec<Option<(&str, &str)>> = vec![
+        request
+            .channel
+            .as_ref()
+            .map(|channel| ("channel", channel.as_ref())),
+        request.file.as_ref().map(|file| ("file", file.as_ref())),
         request
             .file_comment
-            .map(|file_comment| ("file_comment", file_comment)),
-        request.channel.map(|channel| ("channel", channel)),
-        timestamp
             .as_ref()
-            .map(|timestamp| ("timestamp", &timestamp[..])),
+            .map(|file_comment| ("file_comment", file_comment.as_ref())),
+        Some(("name", request.name.as_ref())),
+        request
+            .timestamp
+            .as_ref()
+            .map(|timestamp| ("timestamp", timestamp.as_ref())),
     ];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    let url = crate::get_slack_url_for_method("reactions.remove");
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = crate::get_slack_url_for_method("/reactions.remove");
     client
-        .send(&url, &params[..])
+        .post(&url, &params[..], &[("token", token)])
         .map_err(RemoveError::Client)
         .and_then(|result| {
             serde_json::from_str::<RemoveResponse>(&result)

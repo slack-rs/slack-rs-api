@@ -12,8 +12,13 @@
 //
 //=============================================================================
 
+#![allow(unused_imports)]
+#![allow(clippy::match_single_binding)]
+#![allow(clippy::blacklisted_name)]
+
 pub use crate::mod_types::api_types::*;
-use crate::sync::requests::SlackWebRequestSender;
+use crate::sync::SlackWebRequestSender;
+use std::borrow::Cow;
 
 /// Checks API calling code.
 ///
@@ -23,14 +28,17 @@ pub fn test<R>(client: &R, request: &TestRequest<'_>) -> Result<TestResponse, Te
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
-        request.error.map(|error| ("error", error)),
-        request.foo.map(|foo| ("foo", foo)),
+    let params: Vec<Option<(&str, &str)>> = vec![
+        request
+            .error
+            .as_ref()
+            .map(|error| ("error", error.as_ref())),
+        request.foo.as_ref().map(|foo| ("foo", foo.as_ref())),
     ];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    let url = crate::get_slack_url_for_method("api.test");
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = crate::get_slack_url_for_method("/api.test");
     client
-        .send(&url, &params[..])
+        .get(&url, &params[..])
         .map_err(TestError::Client)
         .and_then(|result| {
             serde_json::from_str::<TestResponse>(&result)

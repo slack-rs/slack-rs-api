@@ -12,8 +12,13 @@
 //
 //=============================================================================
 
+#![allow(unused_imports)]
+#![allow(clippy::match_single_binding)]
+#![allow(clippy::blacklisted_name)]
+
+use crate::async_impl::SlackWebRequestSender;
 pub use crate::mod_types::reminders_types::*;
-use crate::requests::SlackWebRequestSender;
+use std::borrow::Cow;
 
 /// Creates a reminder.
 ///
@@ -27,17 +32,15 @@ pub async fn add<R>(
 where
     R: SlackWebRequestSender,
 {
-    let time = request.time.to_string();
-    let params = vec![
-        Some(("token", token)),
-        Some(("text", request.text)),
-        Some(("time", &time[..])),
-        request.user.map(|user| ("user", user)),
+    let params: Vec<Option<(&str, &str)>> = vec![
+        Some(("text", request.text.as_ref())),
+        Some(("time", request.time.as_ref())),
+        request.user.as_ref().map(|user| ("user", user.as_ref())),
     ];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    let url = crate::get_slack_url_for_method("reminders.add");
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = crate::get_slack_url_for_method("/reminders.add");
     client
-        .send(&url, &params[..])
+        .post(&url, &params[..], &[("token", token)])
         .await
         .map_err(AddError::Client)
         .and_then(|result| {
@@ -46,24 +49,30 @@ where
         })
         .and_then(|o| o.into())
 }
-
 /// Marks a reminder as complete.
 ///
 /// Wraps https://api.slack.com/methods/reminders.complete
 
 pub async fn complete<R>(
     client: &R,
-    token: &str,
+    token: Option<&str>,
     request: &CompleteRequest<'_>,
 ) -> Result<CompleteResponse, CompleteError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![Some(("token", token)), Some(("reminder", request.reminder))];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    let url = crate::get_slack_url_for_method("reminders.complete");
+    let params: Vec<Option<(&str, &str)>> = vec![request
+        .reminder
+        .as_ref()
+        .map(|reminder| ("reminder", reminder.as_ref()))];
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = crate::get_slack_url_for_method("/reminders.complete");
     client
-        .send(&url, &params[..])
+        .post(
+            &url,
+            &params[..],
+            &token.map_or(vec![], |t| vec![("token", t)]),
+        )
         .await
         .map_err(CompleteError::Client)
         .and_then(|result| {
@@ -72,24 +81,30 @@ where
         })
         .and_then(|o| o.into())
 }
-
 /// Deletes a reminder.
 ///
 /// Wraps https://api.slack.com/methods/reminders.delete
 
 pub async fn delete<R>(
     client: &R,
-    token: &str,
+    token: Option<&str>,
     request: &DeleteRequest<'_>,
 ) -> Result<DeleteResponse, DeleteError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![Some(("token", token)), Some(("reminder", request.reminder))];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    let url = crate::get_slack_url_for_method("reminders.delete");
+    let params: Vec<Option<(&str, &str)>> = vec![request
+        .reminder
+        .as_ref()
+        .map(|reminder| ("reminder", reminder.as_ref()))];
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = crate::get_slack_url_for_method("/reminders.delete");
     client
-        .send(&url, &params[..])
+        .post(
+            &url,
+            &params[..],
+            &token.map_or(vec![], |t| vec![("token", t)]),
+        )
         .await
         .map_err(DeleteError::Client)
         .and_then(|result| {
@@ -98,24 +113,29 @@ where
         })
         .and_then(|o| o.into())
 }
-
 /// Gets information about a reminder.
 ///
 /// Wraps https://api.slack.com/methods/reminders.info
 
 pub async fn info<R>(
     client: &R,
-    token: &str,
+    token: Option<&str>,
     request: &InfoRequest<'_>,
 ) -> Result<InfoResponse, InfoError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![Some(("token", token)), Some(("reminder", request.reminder))];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    let url = crate::get_slack_url_for_method("reminders.info");
+    let params: Vec<Option<(&str, &str)>> = vec![
+        token.map(|token| ("token", token)),
+        request
+            .reminder
+            .as_ref()
+            .map(|reminder| ("reminder", reminder.as_ref())),
+    ];
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = crate::get_slack_url_for_method("/reminders.info");
     client
-        .send(&url, &params[..])
+        .get(&url, &params[..])
         .await
         .map_err(InfoError::Client)
         .and_then(|result| {
@@ -124,19 +144,23 @@ where
         })
         .and_then(|o| o.into())
 }
-
 /// Lists all reminders created by or for a given user.
 ///
 /// Wraps https://api.slack.com/methods/reminders.list
 
-pub async fn list<R>(client: &R, token: &str) -> Result<ListResponse, ListError<R::Error>>
+pub async fn list<R>(
+    client: &R,
+    token: Option<&str>,
+    _request: &ListRequest,
+) -> Result<ListResponse, ListError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = &[("token", token)];
-    let url = crate::get_slack_url_for_method("reminders.list");
+    let params: Vec<Option<(&str, &str)>> = vec![token.map(|token| ("token", token))];
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = crate::get_slack_url_for_method("/reminders.list");
     client
-        .send(&url, &params[..])
+        .get(&url, &params[..])
         .await
         .map_err(ListError::Client)
         .and_then(|result| {

@@ -1,139 +1,50 @@
-#[macro_use]
-extern crate serde_derive;
+#![allow(dead_code)]
+#![allow(unused_variables)]
 
-use serde_json;
+use std::collections::HashMap;
+use std::convert::TryFrom;
+use std::fs;
+use std::iter::Peekable;
+use std::path::{Path, PathBuf};
 
-use std::fs::{self, File, OpenOptions};
-use std::io::{self, Read, Write};
-use std::path::Path;
-use std::process::Command;
-
+use anyhow::{bail, Context, Result};
 use clap::{App, Arg};
-use inflector::Inflector;
+use reqwest::blocking::Client;
 
-mod json_schema;
-use crate::json_schema::{JsonSchema, PropType};
+mod rust;
+use rust::{GenMode, HttpMethod, Method, Module, ModuleBuilder, Parameter, Response};
 
-mod generator;
-use crate::generator::*;
+mod schema;
+use schema::{EnumValues, Operation, PathItem, Spec};
 
-const SCHEMA_DIR: &'static str = concat!(env!("CARGO_MANIFEST_DIR"), "/slack-api-schemas");
-const DEFAULT_OUT_DIR: &'static str = concat!(env!("CARGO_MANIFEST_DIR"), "/../src");
+mod adapt_gen;
+use adapt_gen::create_adapt_skeleton;
 
-fn generate_types(output_path: &Path) -> io::Result<()> {
-    let codegen_filepath = output_path.join("types.rs");
+mod adapt;
+use adapt::correct;
 
-    let mut types_file = OpenOptions::new()
-        .write(true)
-        .truncate(true)
-        .create(true)
-        .open(&codegen_filepath)?;
+mod vec_or_single;
 
-    types_file.write_all(generator::AUTOGEN_HEADER.as_bytes())?;
-    types_file.write_all(b"use std::collections::HashMap;\n\n")?;
+const ADAPT_OUT_DIR: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/src/adapt");
+const DEFAULT_OUT_DIR: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../src");
+const SLACK_API_SCHEMA: &str = "https://api.slack.com/specs/openapi/v2/slack_web.json";
 
-    let schema_path = Path::new(SCHEMA_DIR);
+struct Arguments {
+    outdir: PathBuf,
+}
 
-    for entry in fs::read_dir(schema_path.join("objects"))? {
-        if let Ok(e) = entry {
-            let path = e.path();
-            if path.is_file() {
-                let mut schema_file = File::open(&path)?;
-                let mut schema_contents = String::new();
-                schema_file.read_to_string(&mut schema_contents)?;
-
-                let schema = serde_json::from_str::<JsonSchema>(&schema_contents).expect(&format!(
-                    "Could not parse object schema for {}",
-                    path.display()
-                ));
-
-                let ty_name = path.file_stem().unwrap().to_str().unwrap().to_pascal_case();
-
-                let ty = match PropType::from_schema(&schema, &ty_name) {
-                    PropType::Obj(ref o) => o.to_code(),
-                    PropType::Enum(ref e) => e.to_code(),
-                    _ => panic!("Object schema is not an object."),
-                };
-
-                types_file.write_all(ty.as_bytes())?;
-            }
-        }
-    }
-
-    Command::new("rustfmt")
-        .args(&["--edition", "2018"])
-        .arg(codegen_filepath)
-        .output()?;
-
+fn main() -> Result<()> {
+    let arguments = handle_arguments()?;
+    let mut spec = fetch_slack_api_spec()?;
+    spec.replace_refs()?;
+    let mut modules = transform_to_modules(&spec)?;
+    create_adapt_skeleton(ADAPT_OUT_DIR, &modules)?;
+    correct(&mut modules);
+    generate(&arguments.outdir, &modules)?;
     Ok(())
 }
 
-fn generate_modules(output_path: &Path, gen_mode: GenMode) -> io::Result<()> {
-    let mut mods = vec![];
-
-    let schema_path = Path::new(SCHEMA_DIR);
-
-    let postfix = if gen_mode == GenMode::Types {
-        "_types"
-    } else {
-        ""
-    };
-
-    for entry in fs::read_dir(schema_path.join("web"))? {
-        if let Ok(e) = entry {
-            let path = e.path();
-            if path.is_file() {
-                let mut schema_file = File::open(&path)?;
-                let mut schema_contents = String::new();
-                schema_file.read_to_string(&mut schema_contents)?;
-
-                let module = serde_json::from_str::<Module>(&schema_contents).expect(&format!(
-                    "Could not parse module schema for {}",
-                    path.display()
-                ));
-
-                let mod_name = format!("{}{}", module.get_safe_name(), postfix);
-
-                mods.push(mod_name.clone());
-
-                let out_filepath = output_path.join(format!("{}.rs", mod_name));
-
-                {
-                    let mut out_file = OpenOptions::new()
-                        .write(true)
-                        .truncate(true)
-                        .create(true)
-                        .open(&out_filepath)?;
-
-                    out_file.write_all(module.generate(gen_mode).as_bytes())?;
-                }
-
-                Command::new("rustfmt")
-                    .args(&["--edition", "2018"])
-                    .arg(out_filepath)
-                    .output()?;
-            }
-        }
-    }
-
-    let mut mod_file = OpenOptions::new()
-        .write(true)
-        .truncate(true)
-        .create(true)
-        .open(output_path.join("mod.rs"))?;
-
-    mod_file.write_all(
-        mods.iter()
-            .map(|modname| format!("pub mod {};", modname))
-            .collect::<Vec<_>>()
-            .join("\n")
-            .as_bytes(),
-    )?;
-
-    Ok(())
-}
-
-fn main() {
+fn handle_arguments() -> Result<Arguments> {
     let matches = App::new("slack-rs API Code Generator")
         .arg(
             Arg::with_name("out_dir")
@@ -152,37 +63,192 @@ fn main() {
         )
         .get_matches();
 
-    let outdir = Path::new(matches.value_of_os("out_dir").unwrap());
+    let outdir = PathBuf::from(
+        matches
+            .value_of_os("out_dir")
+            .context("argument `out_dir missing`")?,
+    );
+    Ok(Arguments { outdir })
+}
+
+fn fetch_slack_api_spec() -> Result<Spec> {
+    Client::new()
+        .get(SLACK_API_SCHEMA)
+        .send()
+        .context("Unable to send request to slack api")?
+        .error_for_status()
+        .context("Slack Server send failure code")?
+        .json()
+        .context("Unable to deserialize slack server response")
+}
+
+fn transform_to_modules(spec: &Spec) -> Result<Vec<Module>> {
+    let mut modules: HashMap<&str, ModuleBuilder> = HashMap::new();
+    for (full_name, path) in &spec.paths {
+        let mut module_names = module_iterator(full_name);
+        let top_path = first_path_from_iterator(&mut module_names, full_name)?;
+        let mut module = add_module_if_not_exists(&mut modules, top_path);
+        add_submodules(&mut module_names, &mut module, path, full_name)?;
+    }
+    Ok(modules.into_iter().map(|(_, v)| v.build()).collect())
+}
+
+fn module_iterator<'a>(full_name: &'a str) -> Peekable<impl Iterator<Item = &'a str>> {
+    full_name.trim_start_matches('/').split('.').peekable()
+}
+
+fn first_path_from_iterator<'a>(
+    i: &mut impl Iterator<Item = &'a str>,
+    full_name: &str,
+) -> Result<&'a str> {
+    i.next()
+        .with_context(|| format!("Path does not have a top name: {}", full_name))
+}
+
+fn add_module_if_not_exists<'a, 'b>(
+    modules: &'b mut HashMap<&'a str, ModuleBuilder<'a>>,
+    name: &'a str,
+) -> &'b mut ModuleBuilder<'a> {
+    modules
+        .entry(name)
+        .or_insert_with(|| ModuleBuilder::new(name))
+}
+
+fn add_submodules<'a>(
+    module_names: &mut Peekable<impl Iterator<Item = &'a str>>,
+    mut module: &mut ModuleBuilder<'a>,
+    path: &PathItem,
+    full_name: &'a str,
+) -> Result<()> {
+    while let Some(name) = module_names.next() {
+        if module_names.peek().is_some() {
+            module = add_module_if_not_exists(&mut module.submodules, name);
+        } else {
+            if let Some(op) = &path.get {
+                add_method_if_not_exists(module, name, op, HttpMethod::Get, full_name)?;
+            }
+            if let Some(op) = &path.post {
+                add_method_if_not_exists(module, name, op, HttpMethod::Post, full_name)?;
+            }
+        }
+    }
+    Ok(())
+}
+
+fn add_method_if_not_exists<'a>(
+    module: &mut ModuleBuilder<'a>,
+    name: &'a str,
+    op: &Operation,
+    http_method: HttpMethod,
+    full_name: &'a str,
+) -> Result<()> {
+    let method = create_method(module, name, op, http_method, full_name)?;
+    if let Some(cur) = module.methods.get(name) {
+        bail!(format!(
+            "Method with the name {} already exists for module {}. \nOld: {:#?}\nNew: {:#?}",
+            name, module.name, cur, method,
+        ));
+    } else {
+        module.methods.insert(name, method);
+    }
+    Ok(())
+}
+
+fn create_method(
+    module: &mut ModuleBuilder<'_>,
+    name: &str,
+    op: &Operation,
+    http_method: HttpMethod,
+    full_name: &str,
+) -> Result<Method> {
+    let response: schema::Schema = op
+        .responses
+        .get("200")
+        .with_context(|| {
+            format!(
+                "Method {} in module {} is missing the 200 response",
+                name, module.name
+            )
+        })?
+        .schema
+        .clone();
+    let response = op.responses.values().fold(response, |mut acc, res| {
+        acc.merge(&res.schema);
+        acc
+    });
+    let mut errors: Vec<String> = response
+        .properties
+        .as_ref()
+        .and_then(|m| m.get("error"))
+        .and_then(|s| s.enum_values.as_ref())
+        .map_or_else(Vec::new, |e| {
+            e.iter()
+                .filter_map(|v| match v {
+                    EnumValues::Bool(_) => None,
+                    EnumValues::String(s) => Some(s.clone()),
+                })
+                .collect()
+        });
+    errors.sort_unstable();
+    let response = Response::try_from(&response).with_context(|| {
+        format!(
+            "Unable to convert type in method {} in module {}",
+            name, module.name
+        )
+    })?;
+    let mut method = Method {
+        name: name.into(),
+        full_name: full_name.into(),
+        description: op.description.clone(),
+        documentation_url: op.external_docs.url.clone(),
+        parameters: Vec::new(),
+        response,
+        http_method,
+        errors,
+    };
+    for parameter in &op.parameters {
+        let parameter = match parameter.location.as_ref() {
+            "header" if parameter.name == "token" => Parameter::try_from(parameter)?,
+            "formData" | "query" => Parameter::try_from(parameter)?,
+            loc => bail!(format!(
+                "Unsupported paramter location {} for {}",
+                loc, parameter.name
+            )),
+        };
+        method.parameters.push(parameter);
+    }
+    method
+        .parameters
+        .sort_unstable_by(|a, b| a.name.cmp(&b.name));
+
+    Ok(method)
+}
+
+fn generate(outdir: &Path, modules: &[Module]) -> Result<()> {
     if !outdir.exists() {
-        let _ = fs::create_dir(outdir);
+        fs::create_dir_all(outdir)
+            .with_context(|| format!("Unable to create directory at: {:?}", outdir))?;
     }
 
-    {
-        let moddir = outdir.join("mod_types");
-        if !moddir.exists() {
-            let _ = fs::create_dir(&moddir);
-        }
-
-        generate_modules(&moddir, GenMode::Types).unwrap();
+    let moddir = outdir.join("mod_types");
+    if !moddir.exists() {
+        fs::create_dir_all(&moddir)
+            .with_context(|| format!("Unable to create directory at: {:?}", moddir))?;
     }
+    Module::generate(&modules, &moddir, GenMode::Types)?;
 
-    {
-        let moddir = outdir.join("async_impl").join("mods");
-        if !moddir.exists() {
-            let _ = fs::create_dir(&moddir);
-        }
-
-        generate_modules(&moddir, GenMode::Async).unwrap();
+    let moddir = outdir.join("async_impl").join("mods");
+    if !moddir.exists() {
+        fs::create_dir_all(&moddir)
+            .with_context(|| format!("Unable to create directory at: {:?}", moddir))?;
     }
+    Module::generate(&modules, &moddir, GenMode::Async)?;
 
-    {
-        let moddir = outdir.join("sync").join("mods");
-        if !moddir.exists() {
-            let _ = fs::create_dir(&moddir);
-        }
-
-        generate_modules(&moddir, GenMode::Sync).unwrap();
+    let moddir = outdir.join("sync").join("mods");
+    if !moddir.exists() {
+        fs::create_dir_all(&moddir)
+            .with_context(|| format!("Unable to create directory at: {:?}", moddir))?;
     }
-
-    generate_types(outdir).unwrap();
+    Module::generate(&modules, &moddir, GenMode::Sync)?;
+    Ok(())
 }

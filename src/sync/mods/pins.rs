@@ -12,8 +12,13 @@
 //
 //=============================================================================
 
+#![allow(unused_imports)]
+#![allow(clippy::match_single_binding)]
+#![allow(clippy::blacklisted_name)]
+
 pub use crate::mod_types::pins_types::*;
-use crate::sync::requests::SlackWebRequestSender;
+use crate::sync::SlackWebRequestSender;
+use std::borrow::Cow;
 
 /// Pins an item to a channel.
 ///
@@ -27,22 +32,17 @@ pub fn add<R>(
 where
     R: SlackWebRequestSender,
 {
-    let timestamp = request.timestamp.as_ref().map(|t| t.to_param_value());
-    let params = vec![
-        Some(("token", token)),
-        Some(("channel", request.channel)),
-        request.file.map(|file| ("file", file)),
+    let params: Vec<Option<(&str, &str)>> = vec![
+        Some(("channel", request.channel.as_ref())),
         request
-            .file_comment
-            .map(|file_comment| ("file_comment", file_comment)),
-        timestamp
+            .timestamp
             .as_ref()
-            .map(|timestamp| ("timestamp", &timestamp[..])),
+            .map(|timestamp| ("timestamp", timestamp.as_ref())),
     ];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    let url = crate::get_slack_url_for_method("pins.add");
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = crate::get_slack_url_for_method("/pins.add");
     client
-        .send(&url, &params[..])
+        .post(&url, &params[..], &[("token", token)])
         .map_err(AddError::Client)
         .and_then(|result| {
             serde_json::from_str::<AddResponse>(&result)
@@ -50,7 +50,6 @@ where
         })
         .and_then(|o| o.into())
 }
-
 /// Lists items pinned to a channel.
 ///
 /// Wraps https://api.slack.com/methods/pins.list
@@ -63,11 +62,14 @@ pub fn list<R>(
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![Some(("token", token)), Some(("channel", request.channel))];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    let url = crate::get_slack_url_for_method("pins.list");
+    let params: Vec<Option<(&str, &str)>> = vec![
+        Some(("token", token)),
+        Some(("channel", request.channel.as_ref())),
+    ];
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = crate::get_slack_url_for_method("/pins.list");
     client
-        .send(&url, &params[..])
+        .get(&url, &params[..])
         .map_err(ListError::Client)
         .and_then(|result| {
             serde_json::from_str::<ListResponse>(&result)
@@ -75,7 +77,6 @@ where
         })
         .and_then(|o| o.into())
 }
-
 /// Un-pins an item from a channel.
 ///
 /// Wraps https://api.slack.com/methods/pins.remove
@@ -88,22 +89,17 @@ pub fn remove<R>(
 where
     R: SlackWebRequestSender,
 {
-    let timestamp = request.timestamp.as_ref().map(|t| t.to_param_value());
-    let params = vec![
-        Some(("token", token)),
-        Some(("channel", request.channel)),
-        request.file.map(|file| ("file", file)),
+    let params: Vec<Option<(&str, &str)>> = vec![
+        Some(("channel", request.channel.as_ref())),
         request
-            .file_comment
-            .map(|file_comment| ("file_comment", file_comment)),
-        timestamp
+            .timestamp
             .as_ref()
-            .map(|timestamp| ("timestamp", &timestamp[..])),
+            .map(|timestamp| ("timestamp", timestamp.as_ref())),
     ];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    let url = crate::get_slack_url_for_method("pins.remove");
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = crate::get_slack_url_for_method("/pins.remove");
     client
-        .send(&url, &params[..])
+        .post(&url, &params[..], &[("token", token)])
         .map_err(RemoveError::Client)
         .and_then(|result| {
             serde_json::from_str::<RemoveResponse>(&result)

@@ -12,8 +12,13 @@
 //
 //=============================================================================
 
+#![allow(unused_imports)]
+#![allow(clippy::match_single_binding)]
+#![allow(clippy::blacklisted_name)]
+
+use crate::async_impl::SlackWebRequestSender;
 pub use crate::mod_types::stars_types::*;
-use crate::requests::SlackWebRequestSender;
+use std::borrow::Cow;
 
 /// Adds a star to an item.
 ///
@@ -27,22 +32,25 @@ pub async fn add<R>(
 where
     R: SlackWebRequestSender,
 {
-    let timestamp = request.timestamp.as_ref().map(|t| t.to_param_value());
-    let params = vec![
-        Some(("token", token)),
-        request.file.map(|file| ("file", file)),
+    let params: Vec<Option<(&str, &str)>> = vec![
+        request
+            .channel
+            .as_ref()
+            .map(|channel| ("channel", channel.as_ref())),
+        request.file.as_ref().map(|file| ("file", file.as_ref())),
         request
             .file_comment
-            .map(|file_comment| ("file_comment", file_comment)),
-        request.channel.map(|channel| ("channel", channel)),
-        timestamp
             .as_ref()
-            .map(|timestamp| ("timestamp", &timestamp[..])),
+            .map(|file_comment| ("file_comment", file_comment.as_ref())),
+        request
+            .timestamp
+            .as_ref()
+            .map(|timestamp| ("timestamp", timestamp.as_ref())),
     ];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    let url = crate::get_slack_url_for_method("stars.add");
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = crate::get_slack_url_for_method("/stars.add");
     client
-        .send(&url, &params[..])
+        .post(&url, &params[..], &[("token", token)])
         .await
         .map_err(AddError::Client)
         .and_then(|result| {
@@ -51,30 +59,36 @@ where
         })
         .and_then(|o| o.into())
 }
-
 /// Lists stars for a user.
 ///
 /// Wraps https://api.slack.com/methods/stars.list
 
 pub async fn list<R>(
     client: &R,
-    token: &str,
-    request: &ListRequest,
+    token: Option<&str>,
+    request: &ListRequest<'_>,
 ) -> Result<ListResponse, ListError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let count = request.count.map(|count| count.to_string());
-    let page = request.page.map(|page| page.to_string());
-    let params = vec![
-        Some(("token", token)),
-        count.as_ref().map(|count| ("count", &count[..])),
-        page.as_ref().map(|page| ("page", &page[..])),
+    let limit: Option<Cow<'_, str>> = request.limit.as_ref().map(|limit| limit.to_string().into());
+    let params: Vec<Option<(&str, &str)>> = vec![
+        token.map(|token| ("token", token)),
+        request
+            .count
+            .as_ref()
+            .map(|count| ("count", count.as_ref())),
+        request
+            .cursor
+            .as_ref()
+            .map(|cursor| ("cursor", cursor.as_ref())),
+        limit.as_ref().map(|limit| ("limit", limit.as_ref())),
+        request.page.as_ref().map(|page| ("page", page.as_ref())),
     ];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    let url = crate::get_slack_url_for_method("stars.list");
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = crate::get_slack_url_for_method("/stars.list");
     client
-        .send(&url, &params[..])
+        .get(&url, &params[..])
         .await
         .map_err(ListError::Client)
         .and_then(|result| {
@@ -83,7 +97,6 @@ where
         })
         .and_then(|o| o.into())
 }
-
 /// Removes a star from an item.
 ///
 /// Wraps https://api.slack.com/methods/stars.remove
@@ -96,22 +109,25 @@ pub async fn remove<R>(
 where
     R: SlackWebRequestSender,
 {
-    let timestamp = request.timestamp.as_ref().map(|t| t.to_param_value());
-    let params = vec![
-        Some(("token", token)),
-        request.file.map(|file| ("file", file)),
+    let params: Vec<Option<(&str, &str)>> = vec![
+        request
+            .channel
+            .as_ref()
+            .map(|channel| ("channel", channel.as_ref())),
+        request.file.as_ref().map(|file| ("file", file.as_ref())),
         request
             .file_comment
-            .map(|file_comment| ("file_comment", file_comment)),
-        request.channel.map(|channel| ("channel", channel)),
-        timestamp
             .as_ref()
-            .map(|timestamp| ("timestamp", &timestamp[..])),
+            .map(|file_comment| ("file_comment", file_comment.as_ref())),
+        request
+            .timestamp
+            .as_ref()
+            .map(|timestamp| ("timestamp", timestamp.as_ref())),
     ];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    let url = crate::get_slack_url_for_method("stars.remove");
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = crate::get_slack_url_for_method("/stars.remove");
     client
-        .send(&url, &params[..])
+        .post(&url, &params[..], &[("token", token)])
         .await
         .map_err(RemoveError::Client)
         .and_then(|result| {

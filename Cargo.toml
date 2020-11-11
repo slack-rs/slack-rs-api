@@ -52,11 +52,6 @@ features = [
 ]
 
 [[example]]
-name = "start_rtm"
-path = "examples/start_rtm.rs"
-required-features = ["reqwest"]
-
-[[example]]
 name = "channel_history"
 path = "examples/channel_history.rs"
 required-features = ["reqwest"]

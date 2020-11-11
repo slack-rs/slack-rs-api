@@ -12,8 +12,13 @@
 //
 //=============================================================================
 
+#![allow(unused_imports)]
+#![allow(clippy::match_single_binding)]
+#![allow(clippy::blacklisted_name)]
+
 pub use crate::mod_types::bots_types::*;
-use crate::sync::requests::SlackWebRequestSender;
+use crate::sync::SlackWebRequestSender;
+use std::borrow::Cow;
 
 /// Gets information about a bot user.
 ///
@@ -27,11 +32,14 @@ pub fn info<R>(
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![Some(("token", token)), request.bot.map(|bot| ("bot", bot))];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    let url = crate::get_slack_url_for_method("bots.info");
+    let params: Vec<Option<(&str, &str)>> = vec![
+        Some(("token", token)),
+        request.bot.as_ref().map(|bot| ("bot", bot.as_ref())),
+    ];
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = crate::get_slack_url_for_method("/bots.info");
     client
-        .send(&url, &params[..])
+        .get(&url, &params[..])
         .map_err(InfoError::Client)
         .and_then(|result| {
             serde_json::from_str::<InfoResponse>(&result)

@@ -12,84 +12,13 @@
 //
 //=============================================================================
 
-//! Search your team's files and messages.
+#![allow(unused_imports)]
+#![allow(clippy::match_single_binding)]
+#![allow(clippy::blacklisted_name)]
 
 pub use crate::mod_types::search_types::*;
-use crate::sync::requests::SlackWebRequestSender;
-
-/// Searches for messages and files matching a query.
-///
-/// Wraps https://api.slack.com/methods/search.all
-
-pub fn all<R>(
-    client: &R,
-    token: &str,
-    request: &AllRequest<'_>,
-) -> Result<AllResponse, AllError<R::Error>>
-where
-    R: SlackWebRequestSender,
-{
-    let count = request.count.map(|count| count.to_string());
-    let page = request.page.map(|page| page.to_string());
-    let params = vec![
-        Some(("token", token)),
-        Some(("query", request.query)),
-        request.sort.map(|sort| ("sort", sort)),
-        request.sort_dir.map(|sort_dir| ("sort_dir", sort_dir)),
-        request
-            .highlight
-            .map(|highlight| ("highlight", if highlight { "1" } else { "0" })),
-        count.as_ref().map(|count| ("count", &count[..])),
-        page.as_ref().map(|page| ("page", &page[..])),
-    ];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    let url = crate::get_slack_url_for_method("search.all");
-    client
-        .send(&url, &params[..])
-        .map_err(AllError::Client)
-        .and_then(|result| {
-            serde_json::from_str::<AllResponse>(&result)
-                .map_err(|e| AllError::MalformedResponse(result, e))
-        })
-        .and_then(|o| o.into())
-}
-
-/// Searches for files matching a query.
-///
-/// Wraps https://api.slack.com/methods/search.files
-
-pub fn files<R>(
-    client: &R,
-    token: &str,
-    request: &FilesRequest<'_>,
-) -> Result<FilesResponse, FilesError<R::Error>>
-where
-    R: SlackWebRequestSender,
-{
-    let count = request.count.map(|count| count.to_string());
-    let page = request.page.map(|page| page.to_string());
-    let params = vec![
-        Some(("token", token)),
-        Some(("query", request.query)),
-        request.sort.map(|sort| ("sort", sort)),
-        request.sort_dir.map(|sort_dir| ("sort_dir", sort_dir)),
-        request
-            .highlight
-            .map(|highlight| ("highlight", if highlight { "1" } else { "0" })),
-        count.as_ref().map(|count| ("count", &count[..])),
-        page.as_ref().map(|page| ("page", &page[..])),
-    ];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    let url = crate::get_slack_url_for_method("search.files");
-    client
-        .send(&url, &params[..])
-        .map_err(FilesError::Client)
-        .and_then(|result| {
-            serde_json::from_str::<FilesResponse>(&result)
-                .map_err(|e| FilesError::MalformedResponse(result, e))
-        })
-        .and_then(|o| o.into())
-}
+use crate::sync::SlackWebRequestSender;
+use std::borrow::Cow;
 
 /// Searches for messages matching a query.
 ///
@@ -103,23 +32,30 @@ pub fn messages<R>(
 where
     R: SlackWebRequestSender,
 {
-    let count = request.count.map(|count| count.to_string());
-    let page = request.page.map(|page| page.to_string());
-    let params = vec![
+    let count: Option<Cow<'_, str>> = request.count.as_ref().map(|count| count.to_string().into());
+    let highlight: Option<Cow<'_, str>> = request
+        .highlight
+        .as_ref()
+        .map(|highlight| highlight.to_string().into());
+    let page: Option<Cow<'_, str>> = request.page.as_ref().map(|page| page.to_string().into());
+    let params: Vec<Option<(&str, &str)>> = vec![
         Some(("token", token)),
-        Some(("query", request.query)),
-        request.sort.map(|sort| ("sort", sort)),
-        request.sort_dir.map(|sort_dir| ("sort_dir", sort_dir)),
+        count.as_ref().map(|count| ("count", count.as_ref())),
+        highlight
+            .as_ref()
+            .map(|highlight| ("highlight", highlight.as_ref())),
+        page.as_ref().map(|page| ("page", page.as_ref())),
+        Some(("query", request.query.as_ref())),
+        request.sort.as_ref().map(|sort| ("sort", sort.as_ref())),
         request
-            .highlight
-            .map(|highlight| ("highlight", if highlight { "1" } else { "0" })),
-        count.as_ref().map(|count| ("count", &count[..])),
-        page.as_ref().map(|page| ("page", &page[..])),
+            .sort_dir
+            .as_ref()
+            .map(|sort_dir| ("sort_dir", sort_dir.as_ref())),
     ];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    let url = crate::get_slack_url_for_method("search.messages");
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = crate::get_slack_url_for_method("/search.messages");
     client
-        .send(&url, &params[..])
+        .get(&url, &params[..])
         .map_err(MessagesError::Client)
         .and_then(|result| {
             serde_json::from_str::<MessagesResponse>(&result)

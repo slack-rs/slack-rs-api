@@ -12,8 +12,13 @@
 //
 //=============================================================================
 
+#![allow(unused_imports)]
+#![allow(clippy::match_single_binding)]
+#![allow(clippy::blacklisted_name)]
+
+use crate::async_impl::SlackWebRequestSender;
 pub use crate::mod_types::auth_types::*;
-use crate::requests::SlackWebRequestSender;
+use std::borrow::Cow;
 
 /// Revokes a token.
 ///
@@ -27,16 +32,15 @@ pub async fn revoke<R>(
 where
     R: SlackWebRequestSender,
 {
-    let params = vec![
+    let test: Option<Cow<'_, str>> = request.test.as_ref().map(|test| test.to_string().into());
+    let params: Vec<Option<(&str, &str)>> = vec![
         Some(("token", token)),
-        request
-            .test
-            .map(|test| ("test", if test { "1" } else { "0" })),
+        test.as_ref().map(|test| ("test", test.as_ref())),
     ];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
-    let url = crate::get_slack_url_for_method("auth.revoke");
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = crate::get_slack_url_for_method("/auth.revoke");
     client
-        .send(&url, &params[..])
+        .get(&url, &params[..])
         .await
         .map_err(RevokeError::Client)
         .and_then(|result| {
@@ -45,19 +49,23 @@ where
         })
         .and_then(|o| o.into())
 }
-
 /// Checks authentication & identity.
 ///
 /// Wraps https://api.slack.com/methods/auth.test
 
-pub async fn test<R>(client: &R, token: &str) -> Result<TestResponse, TestError<R::Error>>
+pub async fn test<R>(
+    client: &R,
+    token: &str,
+    _request: &TestRequest,
+) -> Result<TestResponse, TestError<R::Error>>
 where
     R: SlackWebRequestSender,
 {
-    let params = &[("token", token)];
-    let url = crate::get_slack_url_for_method("auth.test");
+    let params: Vec<Option<(&str, &str)>> = vec![Some(("token", token))];
+    let params: Vec<(&str, &str)> = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = crate::get_slack_url_for_method("/auth.test");
     client
-        .send(&url, &params[..])
+        .get(&url, &params[..])
         .await
         .map_err(TestError::Client)
         .and_then(|result| {

@@ -4,8 +4,7 @@ use slack_api as slack;
 
 use std::env;
 
-fn get_setup(
-) -> Result<(String, impl slack::requests::SlackWebRequestSender), Box<dyn std::error::Error>> {
+fn get_setup() -> Result<(String, impl slack::SlackWebRequestSender), Box<dyn std::error::Error>> {
     // You can generate a legacy token to quickly test these apis
     // https://api.slack.com/custom-integrations/legacy-tokens
     let token = env::var("SLACK_API_TOKEN").map_err(|_| "SLACK_API_TOKEN env var must be set")?;
@@ -21,8 +20,8 @@ async fn smoke_test() -> Result<(), Box<dyn std::error::Error>> {
     let resp = slack::api::test(
         &client,
         &slack::api::TestRequest {
-            error: Some("my_error"),
-            foo: Some("it's me, foo"),
+            error: Some("my_error".into()),
+            foo: Some("it's me, foo".into()),
         },
     )
     .await
@@ -38,56 +37,53 @@ async fn smoke_test() -> Result<(), Box<dyn std::error::Error>> {
 async fn smoke_channels() -> Result<(), Box<dyn std::error::Error>> {
     let (token, client) = get_setup()?;
 
-    let all_channels = slack::channels::list(
+    let all_channels = slack::conversations::list(
         &client,
         &token,
-        &slack::channels::ListRequest {
-            ..slack::channels::ListRequest::default()
+        &slack::conversations::ListRequest {
+            ..slack::conversations::ListRequest::default()
         },
     )
     .await?
-    .channels
-    .ok_or("Expected some channels")?;
+    .channels;
 
-    assert!(all_channels.len() > 0);
+    assert!(!all_channels.is_empty());
 
     for channel in &all_channels[..10] {
-        let channel_id = channel.id.as_ref().ok_or("expected channel id")?;
+        let channel_id = &channel.id;
 
-        let channel_info = slack::channels::info(
+        let channel_info = slack::conversations::info(
             &client,
             &token,
-            &slack::channels::InfoRequest {
-                channel: &channel_id,
+            &slack::conversations::InfoRequest {
+                channel: channel_id.into(),
                 ..Default::default()
             },
         )
         .await?
-        .channel
-        .ok_or("Expected some channel")?;
+        .channel;
 
         dbg!(channel_info.name);
 
-        let _channel_history = slack::channels::history(
+        let _channel_history = slack::conversations::history(
             &client,
             &token,
-            &slack::channels::HistoryRequest {
-                channel: &channel_id,
-                oldest: Some(1234567890.1234.into()),
+            &slack::conversations::HistoryRequest {
+                channel: channel_id.into(),
+                oldest: Some(1234567890.1234),
                 ..Default::default()
             },
         )
         .await
         .map_err(|e| {
-            if let slack::channels::HistoryError::MalformedResponse(r, inner_e) = e {
+            if let slack::conversations::HistoryError::MalformedResponse(r, inner_e) = e {
                 println!("{}", r);
                 Box::new(inner_e) as Box<dyn std::error::Error>
             } else {
                 Box::new(e)
             }
         })?
-        .messages
-        .ok_or("Expected some messages")?;
+        .messages;
     }
 
     Ok(())

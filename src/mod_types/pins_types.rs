@@ -12,8 +12,11 @@
 //
 //=============================================================================
 
-#[allow(unused_imports)]
-use std::collections::HashMap;
+#![allow(unused_imports)]
+#![allow(clippy::match_single_binding)]
+#![allow(clippy::blacklisted_name)]
+
+use std::borrow::Cow;
 use std::convert::From;
 use std::error::Error;
 use std::fmt;
@@ -21,17 +24,14 @@ use std::fmt;
 #[derive(Clone, Default, Debug)]
 pub struct AddRequest<'a> {
     /// Channel to pin the item in.
-    pub channel: &'a str,
-    /// File to pin.
-    pub file: Option<&'a str>,
-    /// File comment to pin.
-    pub file_comment: Option<&'a str>,
+    pub channel: Cow<'a, str>,
     /// Timestamp of the message to pin.
-    pub timestamp: Option<crate::Timestamp>,
+    pub timestamp: Option<Cow<'a, str>>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct AddResponse {
+    pub callstack: Option<String>,
     error: Option<String>,
     #[serde(default)]
     ok: bool,
@@ -46,48 +46,32 @@ impl<E: Error> Into<Result<AddResponse, AddError<E>>> for AddResponse {
         }
     }
 }
+
 #[derive(Debug)]
 pub enum AddError<E: Error> {
-    /// Value passed for timestamp was invalid.
-    BadTimestamp,
-    /// File specified by file does not exist.
-    FileNotFound,
-    /// File comment specified by file_comment does not exist.
-    FileCommentNotFound,
-    /// Message specified by channel and timestamp does not exist.
-    MessageNotFound,
-    /// The channel argument was not specified or was invalid
-    ChannelNotFound,
-    /// One of file, file_comment, or timestamp was not specified.
-    NoItemSpecified,
-    /// The specified item is already pinned to the channel.
-    AlreadyPinned,
-    /// The user does not have permission to add pins to the channel.
-    PermissionDenied,
-    /// File specified by file is not public nor shared to the channel.
-    FileNotShared,
-    /// No authentication token provided.
-    NotAuthed,
-    /// Invalid authentication token.
-    InvalidAuth,
-    /// Authentication token is for a deleted user or team.
     AccountInactive,
-    /// The method was passed an argument whose name falls outside the bounds of common decency. This includes very long names and names with non-alphanumeric characters other than _. If you get this error, it is typically an indication that you have made a very malformed API call.
+    AlreadyPinned,
+    BadTimestamp,
+    ChannelNotFound,
+    FileNotShared,
     InvalidArgName,
-    /// The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API.
     InvalidArrayArg,
-    /// The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1.
+    InvalidAuth,
     InvalidCharset,
-    /// The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid.
     InvalidFormData,
-    /// The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/x-www-form-urlencoded multipart/form-data text/plain.
+    InvalidJson,
     InvalidPostType,
-    /// The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.
+    JsonNotObject,
+    MessageNotFound,
     MissingPostType,
-    /// The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.
-    TeamAddedToOrg,
-    /// The method was called via a POST request, but the POST data was either missing or truncated.
+    NoItemSpecified,
+    NoPermission,
+    NotAuthed,
+    NotPinnable,
+    PermissionDenied,
     RequestTimeout,
+    TeamAddedToOrg,
+    UpgradeRequired,
     /// The response was not parseable as the expected object
     MalformedResponse(String, serde_json::error::Error),
     /// The response returned an error that was unknown to the library
@@ -99,26 +83,29 @@ pub enum AddError<E: Error> {
 impl<'a, E: Error> From<&'a str> for AddError<E> {
     fn from(s: &'a str) -> Self {
         match s {
-            "bad_timestamp" => AddError::BadTimestamp,
-            "file_not_found" => AddError::FileNotFound,
-            "file_comment_not_found" => AddError::FileCommentNotFound,
-            "message_not_found" => AddError::MessageNotFound,
-            "channel_not_found" => AddError::ChannelNotFound,
-            "no_item_specified" => AddError::NoItemSpecified,
-            "already_pinned" => AddError::AlreadyPinned,
-            "permission_denied" => AddError::PermissionDenied,
-            "file_not_shared" => AddError::FileNotShared,
-            "not_authed" => AddError::NotAuthed,
-            "invalid_auth" => AddError::InvalidAuth,
             "account_inactive" => AddError::AccountInactive,
+            "already_pinned" => AddError::AlreadyPinned,
+            "bad_timestamp" => AddError::BadTimestamp,
+            "channel_not_found" => AddError::ChannelNotFound,
+            "file_not_shared" => AddError::FileNotShared,
             "invalid_arg_name" => AddError::InvalidArgName,
             "invalid_array_arg" => AddError::InvalidArrayArg,
+            "invalid_auth" => AddError::InvalidAuth,
             "invalid_charset" => AddError::InvalidCharset,
             "invalid_form_data" => AddError::InvalidFormData,
+            "invalid_json" => AddError::InvalidJson,
             "invalid_post_type" => AddError::InvalidPostType,
+            "json_not_object" => AddError::JsonNotObject,
+            "message_not_found" => AddError::MessageNotFound,
             "missing_post_type" => AddError::MissingPostType,
-            "team_added_to_org" => AddError::TeamAddedToOrg,
+            "no_item_specified" => AddError::NoItemSpecified,
+            "no_permission" => AddError::NoPermission,
+            "not_authed" => AddError::NotAuthed,
+            "not_pinnable" => AddError::NotPinnable,
+            "permission_denied" => AddError::PermissionDenied,
             "request_timeout" => AddError::RequestTimeout,
+            "team_added_to_org" => AddError::TeamAddedToOrg,
+            "upgrade_required" => AddError::UpgradeRequired,
             _ => AddError::Unknown(s.to_owned()),
         }
     }
@@ -126,32 +113,34 @@ impl<'a, E: Error> From<&'a str> for AddError<E> {
 
 impl<E: Error> fmt::Display for AddError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let d = match *self {
-                        AddError::BadTimestamp => "bad_timestamp: Value passed for timestamp was invalid.",
-AddError::FileNotFound => "file_not_found: File specified by file does not exist.",
-AddError::FileCommentNotFound => "file_comment_not_found: File comment specified by file_comment does not exist.",
-AddError::MessageNotFound => "message_not_found: Message specified by channel and timestamp does not exist.",
-AddError::ChannelNotFound => "channel_not_found: The channel argument was not specified or was invalid",
-AddError::NoItemSpecified => "no_item_specified: One of file, file_comment, or timestamp was not specified.",
-AddError::AlreadyPinned => "already_pinned: The specified item is already pinned to the channel.",
-AddError::PermissionDenied => "permission_denied: The user does not have permission to add pins to the channel.",
-AddError::FileNotShared => "file_not_shared: File specified by file is not public nor shared to the channel.",
-AddError::NotAuthed => "not_authed: No authentication token provided.",
-AddError::InvalidAuth => "invalid_auth: Invalid authentication token.",
-AddError::AccountInactive => "account_inactive: Authentication token is for a deleted user or team.",
-AddError::InvalidArgName => "invalid_arg_name: The method was passed an argument whose name falls outside the bounds of common decency. This includes very long names and names with non-alphanumeric characters other than _. If you get this error, it is typically an indication that you have made a very malformed API call.",
-AddError::InvalidArrayArg => "invalid_array_arg: The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API.",
-AddError::InvalidCharset => "invalid_charset: The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1.",
-AddError::InvalidFormData => "invalid_form_data: The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid.",
-AddError::InvalidPostType => "invalid_post_type: The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/x-www-form-urlencoded multipart/form-data text/plain.",
-AddError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
-AddError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
-AddError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        AddError::MalformedResponse(_, ref e) => return write!(f, "{}", e),
-                        AddError::Unknown(ref s) => return write!(f, "{}", s),
-                        AddError::Client(ref inner) => return write!(f, "{}", inner),
-                    };
-        write!(f, "{}", d)
+        match *self {
+            AddError::AccountInactive => write!(f, "Server returned error account_inactive"),
+            AddError::AlreadyPinned => write!(f, "Server returned error already_pinned"),
+            AddError::BadTimestamp => write!(f, "Server returned error bad_timestamp"),
+            AddError::ChannelNotFound => write!(f, "Server returned error channel_not_found"),
+            AddError::FileNotShared => write!(f, "Server returned error file_not_shared"),
+            AddError::InvalidArgName => write!(f, "Server returned error invalid_arg_name"),
+            AddError::InvalidArrayArg => write!(f, "Server returned error invalid_array_arg"),
+            AddError::InvalidAuth => write!(f, "Server returned error invalid_auth"),
+            AddError::InvalidCharset => write!(f, "Server returned error invalid_charset"),
+            AddError::InvalidFormData => write!(f, "Server returned error invalid_form_data"),
+            AddError::InvalidJson => write!(f, "Server returned error invalid_json"),
+            AddError::InvalidPostType => write!(f, "Server returned error invalid_post_type"),
+            AddError::JsonNotObject => write!(f, "Server returned error json_not_object"),
+            AddError::MessageNotFound => write!(f, "Server returned error message_not_found"),
+            AddError::MissingPostType => write!(f, "Server returned error missing_post_type"),
+            AddError::NoItemSpecified => write!(f, "Server returned error no_item_specified"),
+            AddError::NoPermission => write!(f, "Server returned error no_permission"),
+            AddError::NotAuthed => write!(f, "Server returned error not_authed"),
+            AddError::NotPinnable => write!(f, "Server returned error not_pinnable"),
+            AddError::PermissionDenied => write!(f, "Server returned error permission_denied"),
+            AddError::RequestTimeout => write!(f, "Server returned error request_timeout"),
+            AddError::TeamAddedToOrg => write!(f, "Server returned error team_added_to_org"),
+            AddError::UpgradeRequired => write!(f, "Server returned error upgrade_required"),
+            AddError::MalformedResponse(_, ref e) => write!(f, "{}", e),
+            AddError::Unknown(ref s) => write!(f, "{}", s),
+            AddError::Client(ref inner) => write!(f, "{}", inner),
+        }
     }
 }
 
@@ -168,126 +157,146 @@ impl<E: Error + 'static> Error for AddError<E> {
 #[derive(Clone, Default, Debug)]
 pub struct ListRequest<'a> {
     /// Channel to get pinned items for.
-    pub channel: &'a str,
+    pub channel: Cow<'a, str>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
-pub struct ListResponse {
-    error: Option<String>,
-    pub items: Option<Vec<ListResponseItem>>,
+pub struct ListReactionsInner {
+    pub count: u64,
+    pub name: String,
+    pub users: Vec<String>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct ListSharesInner {
+    pub private: Option<serde_json::Value>,
+    pub public: Option<serde_json::Value>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct ListFileInner {
+    pub channels: Option<Vec<String>>,
+    pub comments_count: Option<u64>,
+    pub created: Option<u64>,
+    pub date_delete: Option<u64>,
+    pub display_as_bot: Option<bool>,
+    pub editable: Option<bool>,
+    pub editor: Option<String>,
+    pub external_id: Option<String>,
+    pub external_type: Option<String>,
+    pub external_url: Option<String>,
+    pub filetype: Option<String>,
+    pub groups: Option<Vec<String>>,
+    pub has_rich_preview: Option<bool>,
+    pub id: Option<String>,
+    pub image_exif_rotation: Option<u64>,
+    pub ims: Option<Vec<String>>,
+    pub is_external: Option<bool>,
+    pub is_public: Option<bool>,
+    pub is_starred: Option<bool>,
+    pub is_tombstoned: Option<bool>,
+    pub last_editor: Option<String>,
+    pub mimetype: Option<String>,
+    pub mode: Option<String>,
+    pub name: Option<String>,
+    pub non_owner_editable: Option<bool>,
+    pub num_stars: Option<u64>,
+    pub original_h: Option<u64>,
+    pub original_w: Option<u64>,
+    pub permalink: Option<String>,
+    pub permalink_public: Option<String>,
+    pub pinned_info: Option<serde_json::Value>,
+    pub pinned_to: Option<Vec<String>>,
+    pub pretty_type: Option<String>,
+    pub preview: Option<String>,
+    pub public_url_shared: Option<bool>,
+    pub reactions: Option<Vec<ListReactionsInner>>,
+    pub shares: Option<ListSharesInner>,
+    pub size: Option<u64>,
+    pub source_team: Option<String>,
+    pub state: Option<String>,
+    pub thumb_1024: Option<String>,
+    pub thumb_1024_h: Option<u64>,
+    pub thumb_1024_w: Option<u64>,
+    pub thumb_160: Option<String>,
+    pub thumb_360: Option<String>,
+    pub thumb_360_h: Option<u64>,
+    pub thumb_360_w: Option<u64>,
+    pub thumb_480: Option<String>,
+    pub thumb_480_h: Option<u64>,
+    pub thumb_480_w: Option<u64>,
+    pub thumb_64: Option<String>,
+    pub thumb_720: Option<String>,
+    pub thumb_720_h: Option<u64>,
+    pub thumb_720_w: Option<u64>,
+    pub thumb_80: Option<String>,
+    pub thumb_800: Option<String>,
+    pub thumb_800_h: Option<u64>,
+    pub thumb_800_w: Option<u64>,
+    pub thumb_960: Option<String>,
+    pub thumb_960_h: Option<u64>,
+    pub thumb_960_w: Option<u64>,
+    pub thumb_tiny: Option<String>,
+    pub timestamp: Option<u64>,
+    pub title: Option<String>,
+    pub updated: Option<u64>,
+    pub url_private: Option<String>,
+    pub url_private_download: Option<String>,
+    pub user: Option<String>,
+    pub user_team: Option<String>,
+    pub username: Option<String>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct ListItemsInner {
+    pub created: Option<u64>,
+    pub created_by: Option<String>,
+    pub file: Option<ListFileInner>,
+    pub r#type: Option<String>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct ListResultInner {
+    pub items: Vec<ListItemsInner>,
     #[serde(default)]
     ok: bool,
 }
 
-#[derive(Clone, Debug)]
-pub enum ListResponseItem {
-    Message(ListResponseItemMessage),
-    File(ListResponseItemFile),
-    FileComment(ListResponseItemFileComment),
-}
-
-impl<'de> ::serde::Deserialize<'de> for ListResponseItem {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: ::serde::Deserializer<'de>,
-    {
-        use ::serde::de::Error as SerdeError;
-
-        const VARIANTS: &[&str] = &["message", "file", "file_comment"];
-
-        let value = ::serde_json::Value::deserialize(deserializer)?;
-        if let Some(ty_val) = value.get("type") {
-            if let Some(ty) = ty_val.as_str() {
-                match ty {
-                    "message" => ::serde_json::from_value::<ListResponseItemMessage>(value.clone())
-                        .map(ListResponseItem::Message)
-                        .map_err(|e| D::Error::custom(&format!("{}", e))),
-                    "file" => ::serde_json::from_value::<ListResponseItemFile>(value.clone())
-                        .map(ListResponseItem::File)
-                        .map_err(|e| D::Error::custom(&format!("{}", e))),
-                    "file_comment" => {
-                        ::serde_json::from_value::<ListResponseItemFileComment>(value.clone())
-                            .map(ListResponseItem::FileComment)
-                            .map_err(|e| D::Error::custom(&format!("{}", e)))
-                    }
-                    _ => Err(D::Error::unknown_variant(ty, VARIANTS)),
-                }
-            } else {
-                Err(D::Error::invalid_type(
-                    ::serde::de::Unexpected::Unit,
-                    &"a string",
-                ))
-            }
-        } else {
-            Err(D::Error::missing_field("type"))
-        }
-    }
-}
-
 #[derive(Clone, Debug, Deserialize)]
-pub struct ListResponseItemFile {
-    pub created: Option<f32>,
-    pub created_by: Option<String>,
-    pub file: crate::File,
-    #[serde(rename = "type")]
-    pub ty: String,
-}
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct ListResponseItemFileComment {
-    pub comment: crate::FileComment,
-    pub created: Option<f32>,
-    pub created_by: Option<String>,
-    pub file: crate::File,
-    #[serde(rename = "type")]
-    pub ty: String,
-}
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct ListResponseItemMessage {
-    pub channel: String,
-    pub created: Option<f32>,
-    pub created_by: Option<String>,
-    pub message: crate::Message,
-    #[serde(rename = "type")]
-    pub ty: String,
+pub struct ListResponse {
+    pub result: ListResultInner,
 }
 
 impl<E: Error> Into<Result<ListResponse, ListError<E>>> for ListResponse {
     fn into(self) -> Result<ListResponse, ListError<E>> {
-        if self.ok {
+        if self.result.ok {
             Ok(self)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(ListError::Unknown(
+                "Server failed without providing an error message.".into(),
+            ))
         }
     }
 }
+
 #[derive(Debug)]
 pub enum ListError<E: Error> {
-    /// Value passed for channel was invalid.
-    ChannelNotFound,
-    /// No authentication token provided.
-    NotAuthed,
-    /// Invalid authentication token.
-    InvalidAuth,
-    /// Authentication token is for a deleted user or team.
     AccountInactive,
-    /// The method was passed an argument whose name falls outside the bounds of common decency. This includes very long names and names with non-alphanumeric characters other than _. If you get this error, it is typically an indication that you have made a very malformed API call.
+    ChannelNotFound,
     InvalidArgName,
-    /// The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API.
     InvalidArrayArg,
-    /// The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1.
+    InvalidAuth,
     InvalidCharset,
-    /// The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid.
     InvalidFormData,
-    /// The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/x-www-form-urlencoded multipart/form-data text/plain.
+    InvalidJson,
     InvalidPostType,
-    /// The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.
+    JsonNotObject,
     MissingPostType,
-    /// The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.
-    TeamAddedToOrg,
-    /// The method was called via a POST request, but the POST data was either missing or truncated.
+    NoPermission,
+    NotAuthed,
     RequestTimeout,
+    TeamAddedToOrg,
+    UpgradeRequired,
     /// The response was not parseable as the expected object
     MalformedResponse(String, serde_json::error::Error),
     /// The response returned an error that was unknown to the library
@@ -299,18 +308,22 @@ pub enum ListError<E: Error> {
 impl<'a, E: Error> From<&'a str> for ListError<E> {
     fn from(s: &'a str) -> Self {
         match s {
-            "channel_not_found" => ListError::ChannelNotFound,
-            "not_authed" => ListError::NotAuthed,
-            "invalid_auth" => ListError::InvalidAuth,
             "account_inactive" => ListError::AccountInactive,
+            "channel_not_found" => ListError::ChannelNotFound,
             "invalid_arg_name" => ListError::InvalidArgName,
             "invalid_array_arg" => ListError::InvalidArrayArg,
+            "invalid_auth" => ListError::InvalidAuth,
             "invalid_charset" => ListError::InvalidCharset,
             "invalid_form_data" => ListError::InvalidFormData,
+            "invalid_json" => ListError::InvalidJson,
             "invalid_post_type" => ListError::InvalidPostType,
+            "json_not_object" => ListError::JsonNotObject,
             "missing_post_type" => ListError::MissingPostType,
-            "team_added_to_org" => ListError::TeamAddedToOrg,
+            "no_permission" => ListError::NoPermission,
+            "not_authed" => ListError::NotAuthed,
             "request_timeout" => ListError::RequestTimeout,
+            "team_added_to_org" => ListError::TeamAddedToOrg,
+            "upgrade_required" => ListError::UpgradeRequired,
             _ => ListError::Unknown(s.to_owned()),
         }
     }
@@ -318,24 +331,27 @@ impl<'a, E: Error> From<&'a str> for ListError<E> {
 
 impl<E: Error> fmt::Display for ListError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let d = match *self {
-                        ListError::ChannelNotFound => "channel_not_found: Value passed for channel was invalid.",
-ListError::NotAuthed => "not_authed: No authentication token provided.",
-ListError::InvalidAuth => "invalid_auth: Invalid authentication token.",
-ListError::AccountInactive => "account_inactive: Authentication token is for a deleted user or team.",
-ListError::InvalidArgName => "invalid_arg_name: The method was passed an argument whose name falls outside the bounds of common decency. This includes very long names and names with non-alphanumeric characters other than _. If you get this error, it is typically an indication that you have made a very malformed API call.",
-ListError::InvalidArrayArg => "invalid_array_arg: The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API.",
-ListError::InvalidCharset => "invalid_charset: The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1.",
-ListError::InvalidFormData => "invalid_form_data: The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid.",
-ListError::InvalidPostType => "invalid_post_type: The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/x-www-form-urlencoded multipart/form-data text/plain.",
-ListError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
-ListError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
-ListError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        ListError::MalformedResponse(_, ref e) => return write!(f, "{}", e),
-                        ListError::Unknown(ref s) => return write!(f, "{}", s),
-                        ListError::Client(ref inner) => return write!(f, "{}", inner),
-                    };
-        write!(f, "{}", d)
+        match *self {
+            ListError::AccountInactive => write!(f, "Server returned error account_inactive"),
+            ListError::ChannelNotFound => write!(f, "Server returned error channel_not_found"),
+            ListError::InvalidArgName => write!(f, "Server returned error invalid_arg_name"),
+            ListError::InvalidArrayArg => write!(f, "Server returned error invalid_array_arg"),
+            ListError::InvalidAuth => write!(f, "Server returned error invalid_auth"),
+            ListError::InvalidCharset => write!(f, "Server returned error invalid_charset"),
+            ListError::InvalidFormData => write!(f, "Server returned error invalid_form_data"),
+            ListError::InvalidJson => write!(f, "Server returned error invalid_json"),
+            ListError::InvalidPostType => write!(f, "Server returned error invalid_post_type"),
+            ListError::JsonNotObject => write!(f, "Server returned error json_not_object"),
+            ListError::MissingPostType => write!(f, "Server returned error missing_post_type"),
+            ListError::NoPermission => write!(f, "Server returned error no_permission"),
+            ListError::NotAuthed => write!(f, "Server returned error not_authed"),
+            ListError::RequestTimeout => write!(f, "Server returned error request_timeout"),
+            ListError::TeamAddedToOrg => write!(f, "Server returned error team_added_to_org"),
+            ListError::UpgradeRequired => write!(f, "Server returned error upgrade_required"),
+            ListError::MalformedResponse(_, ref e) => write!(f, "{}", e),
+            ListError::Unknown(ref s) => write!(f, "{}", s),
+            ListError::Client(ref inner) => write!(f, "{}", inner),
+        }
     }
 }
 
@@ -352,17 +368,14 @@ impl<E: Error + 'static> Error for ListError<E> {
 #[derive(Clone, Default, Debug)]
 pub struct RemoveRequest<'a> {
     /// Channel where the item is pinned to.
-    pub channel: &'a str,
-    /// File to un-pin.
-    pub file: Option<&'a str>,
-    /// File comment to un-pin.
-    pub file_comment: Option<&'a str>,
+    pub channel: Cow<'a, str>,
     /// Timestamp of the message to un-pin.
-    pub timestamp: Option<crate::Timestamp>,
+    pub timestamp: Option<Cow<'a, str>>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct RemoveResponse {
+    pub callstack: Option<String>,
     error: Option<String>,
     #[serde(default)]
     ok: bool,
@@ -377,44 +390,31 @@ impl<E: Error> Into<Result<RemoveResponse, RemoveError<E>>> for RemoveResponse {
         }
     }
 }
+
 #[derive(Debug)]
 pub enum RemoveError<E: Error> {
-    /// Value passed for timestamp was invalid.
-    BadTimestamp,
-    /// File specified by file does not exist.
-    FileNotFound,
-    /// File comment specified by file_comment does not exist.
-    FileCommentNotFound,
-    /// Message specified by channel and timestamp does not exist.
-    MessageNotFound,
-    /// One of file, file_comment, or timestamp was not specified.
-    NoItemSpecified,
-    /// The specified item is not pinned to the channel.
-    NotPinned,
-    /// The user does not have permission to remove pins from the channel.
-    PermissionDenied,
-    /// No authentication token provided.
-    NotAuthed,
-    /// Invalid authentication token.
-    InvalidAuth,
-    /// Authentication token is for a deleted user or team.
     AccountInactive,
-    /// The method was passed an argument whose name falls outside the bounds of common decency. This includes very long names and names with non-alphanumeric characters other than _. If you get this error, it is typically an indication that you have made a very malformed API call.
+    BadTimestamp,
+    FileCommentNotFound,
+    FileNotFound,
     InvalidArgName,
-    /// The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API.
     InvalidArrayArg,
-    /// The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1.
+    InvalidAuth,
     InvalidCharset,
-    /// The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid.
     InvalidFormData,
-    /// The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/x-www-form-urlencoded multipart/form-data text/plain.
-    InvalidPostType,
-    /// The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.
-    MissingPostType,
-    /// The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.
+    InvalidJson,
+    InvalidPostTyp,
+    JsonNotObject,
+    MessageNotFound,
+    MissingPostTyp,
+    NoItemSpecified,
+    NoPermission,
+    NotAuthed,
+    NotPinned,
+    PermissionDenied,
+    RequestTimeou,
     TeamAddedToOrg,
-    /// The method was called via a POST request, but the POST data was either missing or truncated.
-    RequestTimeout,
+    UpgradeRequired,
     /// The response was not parseable as the expected object
     MalformedResponse(String, serde_json::error::Error),
     /// The response returned an error that was unknown to the library
@@ -426,24 +426,28 @@ pub enum RemoveError<E: Error> {
 impl<'a, E: Error> From<&'a str> for RemoveError<E> {
     fn from(s: &'a str) -> Self {
         match s {
-            "bad_timestamp" => RemoveError::BadTimestamp,
-            "file_not_found" => RemoveError::FileNotFound,
-            "file_comment_not_found" => RemoveError::FileCommentNotFound,
-            "message_not_found" => RemoveError::MessageNotFound,
-            "no_item_specified" => RemoveError::NoItemSpecified,
-            "not_pinned" => RemoveError::NotPinned,
-            "permission_denied" => RemoveError::PermissionDenied,
-            "not_authed" => RemoveError::NotAuthed,
-            "invalid_auth" => RemoveError::InvalidAuth,
             "account_inactive" => RemoveError::AccountInactive,
+            "bad_timestamp" => RemoveError::BadTimestamp,
+            "file_comment_not_found" => RemoveError::FileCommentNotFound,
+            "file_not_found" => RemoveError::FileNotFound,
             "invalid_arg_name" => RemoveError::InvalidArgName,
             "invalid_array_arg" => RemoveError::InvalidArrayArg,
+            "invalid_auth" => RemoveError::InvalidAuth,
             "invalid_charset" => RemoveError::InvalidCharset,
             "invalid_form_data" => RemoveError::InvalidFormData,
-            "invalid_post_type" => RemoveError::InvalidPostType,
-            "missing_post_type" => RemoveError::MissingPostType,
+            "invalid_json" => RemoveError::InvalidJson,
+            "invalid_post_typ" => RemoveError::InvalidPostTyp,
+            "json_not_object" => RemoveError::JsonNotObject,
+            "message_not_found" => RemoveError::MessageNotFound,
+            "missing_post_typ" => RemoveError::MissingPostTyp,
+            "no_item_specified" => RemoveError::NoItemSpecified,
+            "no_permission" => RemoveError::NoPermission,
+            "not_authed" => RemoveError::NotAuthed,
+            "not_pinned" => RemoveError::NotPinned,
+            "permission_denied" => RemoveError::PermissionDenied,
+            "request_timeou" => RemoveError::RequestTimeou,
             "team_added_to_org" => RemoveError::TeamAddedToOrg,
-            "request_timeout" => RemoveError::RequestTimeout,
+            "upgrade_required" => RemoveError::UpgradeRequired,
             _ => RemoveError::Unknown(s.to_owned()),
         }
     }
@@ -451,30 +455,35 @@ impl<'a, E: Error> From<&'a str> for RemoveError<E> {
 
 impl<E: Error> fmt::Display for RemoveError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let d = match *self {
-                        RemoveError::BadTimestamp => "bad_timestamp: Value passed for timestamp was invalid.",
-RemoveError::FileNotFound => "file_not_found: File specified by file does not exist.",
-RemoveError::FileCommentNotFound => "file_comment_not_found: File comment specified by file_comment does not exist.",
-RemoveError::MessageNotFound => "message_not_found: Message specified by channel and timestamp does not exist.",
-RemoveError::NoItemSpecified => "no_item_specified: One of file, file_comment, or timestamp was not specified.",
-RemoveError::NotPinned => "not_pinned: The specified item is not pinned to the channel.",
-RemoveError::PermissionDenied => "permission_denied: The user does not have permission to remove pins from the channel.",
-RemoveError::NotAuthed => "not_authed: No authentication token provided.",
-RemoveError::InvalidAuth => "invalid_auth: Invalid authentication token.",
-RemoveError::AccountInactive => "account_inactive: Authentication token is for a deleted user or team.",
-RemoveError::InvalidArgName => "invalid_arg_name: The method was passed an argument whose name falls outside the bounds of common decency. This includes very long names and names with non-alphanumeric characters other than _. If you get this error, it is typically an indication that you have made a very malformed API call.",
-RemoveError::InvalidArrayArg => "invalid_array_arg: The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API.",
-RemoveError::InvalidCharset => "invalid_charset: The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1.",
-RemoveError::InvalidFormData => "invalid_form_data: The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid.",
-RemoveError::InvalidPostType => "invalid_post_type: The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/x-www-form-urlencoded multipart/form-data text/plain.",
-RemoveError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
-RemoveError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
-RemoveError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
-                        RemoveError::MalformedResponse(_, ref e) => return write!(f, "{}", e),
-                        RemoveError::Unknown(ref s) => return write!(f, "{}", s),
-                        RemoveError::Client(ref inner) => return write!(f, "{}", inner),
-                    };
-        write!(f, "{}", d)
+        match *self {
+            RemoveError::AccountInactive => write!(f, "Server returned error account_inactive"),
+            RemoveError::BadTimestamp => write!(f, "Server returned error bad_timestamp"),
+            RemoveError::FileCommentNotFound => {
+                write!(f, "Server returned error file_comment_not_found")
+            }
+            RemoveError::FileNotFound => write!(f, "Server returned error file_not_found"),
+            RemoveError::InvalidArgName => write!(f, "Server returned error invalid_arg_name"),
+            RemoveError::InvalidArrayArg => write!(f, "Server returned error invalid_array_arg"),
+            RemoveError::InvalidAuth => write!(f, "Server returned error invalid_auth"),
+            RemoveError::InvalidCharset => write!(f, "Server returned error invalid_charset"),
+            RemoveError::InvalidFormData => write!(f, "Server returned error invalid_form_data"),
+            RemoveError::InvalidJson => write!(f, "Server returned error invalid_json"),
+            RemoveError::InvalidPostTyp => write!(f, "Server returned error invalid_post_typ"),
+            RemoveError::JsonNotObject => write!(f, "Server returned error json_not_object"),
+            RemoveError::MessageNotFound => write!(f, "Server returned error message_not_found"),
+            RemoveError::MissingPostTyp => write!(f, "Server returned error missing_post_typ"),
+            RemoveError::NoItemSpecified => write!(f, "Server returned error no_item_specified"),
+            RemoveError::NoPermission => write!(f, "Server returned error no_permission"),
+            RemoveError::NotAuthed => write!(f, "Server returned error not_authed"),
+            RemoveError::NotPinned => write!(f, "Server returned error not_pinned"),
+            RemoveError::PermissionDenied => write!(f, "Server returned error permission_denied"),
+            RemoveError::RequestTimeou => write!(f, "Server returned error request_timeou"),
+            RemoveError::TeamAddedToOrg => write!(f, "Server returned error team_added_to_org"),
+            RemoveError::UpgradeRequired => write!(f, "Server returned error upgrade_required"),
+            RemoveError::MalformedResponse(_, ref e) => write!(f, "{}", e),
+            RemoveError::Unknown(ref s) => write!(f, "{}", s),
+            RemoveError::Client(ref inner) => write!(f, "{}", inner),
+        }
     }
 }
 
