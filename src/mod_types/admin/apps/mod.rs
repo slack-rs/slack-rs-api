@@ -29,6 +29,8 @@ use std::fmt;
 pub struct ApproveRequest<'a> {
     /// The id of the app to approve.
     pub app_id: Option<Cow<'a, str>>,
+    /// The ID of the enterprise to approve the app on
+    pub enterprise_id: Option<Cow<'a, str>>,
     /// The id of the request to approve.
     pub request_id: Option<Cow<'a, str>>,
     pub team_id: Option<Cow<'a, str>>,

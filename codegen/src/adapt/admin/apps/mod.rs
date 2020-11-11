@@ -1,7 +1,7 @@
 #![allow(unused_imports)]
 #![allow(clippy::single_match)]
 use crate::adapt::utils::*;
-use crate::rust::{Method, Module};
+use crate::rust::{Method, Module, Parameter, ParameterDataType};
 
 mod approved;
 mod requests;
@@ -26,6 +26,16 @@ pub fn correct(module: &mut Module) {
     }
 }
 
-fn correct_approve(_method: &mut Method) {}
+fn correct_approve(method: &mut Method) {
+    add_parameters(
+        method,
+        vec![Parameter {
+            description: Some("The ID of the enterprise to approve the app on".into()),
+            name: "enterprise_id".into(),
+            required: false,
+            param_type: ParameterDataType::String,
+        }],
+    );
+}
 
 fn correct_restrict(_method: &mut Method) {}

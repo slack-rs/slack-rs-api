@@ -42,6 +42,10 @@ where
             .as_ref()
             .map(|app_id| ("app_id", app_id.as_ref())),
         request
+            .enterprise_id
+            .as_ref()
+            .map(|enterprise_id| ("enterprise_id", enterprise_id.as_ref())),
+        request
             .request_id
             .as_ref()
             .map(|request_id| ("request_id", request_id.as_ref())),

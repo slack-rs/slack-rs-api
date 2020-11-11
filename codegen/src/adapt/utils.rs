@@ -1,4 +1,4 @@
-use crate::rust::{Member, Method, Module, Response, ResponseType};
+use crate::rust::{Member, Method, Module, Parameter, Response, ResponseType};
 
 pub fn set_parameters_required(method: &mut Method, params: &[&str]) {
     for mut param in &mut method.parameters {
@@ -6,6 +6,17 @@ pub fn set_parameters_required(method: &mut Method, params: &[&str]) {
             param.required = true;
         }
     }
+}
+
+pub fn add_parameters(method: &mut Method, params: Vec<Parameter>) {
+    for param in params {
+        if !method.parameters.iter().any(|p| p.name == param.name) {
+            method.parameters.push(param);
+        }
+    }
+    method
+        .parameters
+        .sort_unstable_by(|a, b| a.name.cmp(&b.name));
 }
 
 pub struct ResponseTypeModifier<'a>(Option<&'a mut ResponseType>);
