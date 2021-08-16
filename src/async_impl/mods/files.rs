@@ -166,3 +166,40 @@ where
         })
         .and_then(|o| o.into())
 }
+
+/// Uploads or creates a file.
+///
+/// Wraps https://api.slack.com/methods/files.upload
+
+pub async fn upload<R>(
+    client: &R,
+    token: &str,
+    request: &UploadRequest<'_>,
+) -> Result<UploadResponse, UploadError<R::Error>>
+where
+    R: SlackWebRequestSender,
+{
+    let params = vec![
+        Some(("token", token)),
+        request.file.map(|file| ("file", file)),
+        request.content.map(|content| ("content", content)),
+        request.filetype.map(|filetype| ("filetype", filetype)),
+        Some(("filename", request.filename)),
+        request.title.map(|title| ("title", title)),
+        request
+            .initial_comment
+            .map(|initial_comment| ("initial_comment", initial_comment)),
+        request.channels.map(|channels| ("channels", channels)),
+    ];
+    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let url = crate::get_slack_url_for_method("files.upload");
+    client
+        .send(&url, &params[..])
+        .await
+        .map_err(UploadError::Client)
+        .and_then(|result| {
+            serde_json::from_str::<UploadResponse>(&result)
+                .map_err(|e| UploadError::MalformedResponse(result, e))
+        })
+        .and_then(|o| o.into())
+}

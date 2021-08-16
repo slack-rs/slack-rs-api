@@ -643,3 +643,129 @@ impl<E: Error + 'static> Error for SharedPublicURLError<E> {
         }
     }
 }
+
+#[derive(Clone, Default, Debug)]
+pub struct UploadRequest<'a> {
+    /// File contents via multipart/form-data. If omitting this parameter, you must submit content.
+    pub file: Option<&'a str>,
+    /// File contents via a POST variable. If omitting this parameter, you must provide a file.
+    pub content: Option<&'a str>,
+    /// A file type identifier.
+    pub filetype: Option<&'a str>,
+    /// Filename of file.
+    pub filename: &'a str,
+    /// Title of file.
+    pub title: Option<&'a str>,
+    /// Initial comment to add to file.
+    pub initial_comment: Option<&'a str>,
+    /// Comma-separated list of channel names or IDs where the file will be shared.
+    pub channels: Option<&'a str>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct UploadResponse {
+    error: Option<String>,
+    pub file: Option<crate::File>,
+    #[serde(default)]
+    ok: bool,
+}
+
+impl<E: Error> Into<Result<UploadResponse, UploadError<E>>> for UploadResponse {
+    fn into(self) -> Result<UploadResponse, UploadError<E>> {
+        if self.ok {
+            Ok(self)
+        } else {
+            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+        }
+    }
+}
+#[derive(Debug)]
+pub enum UploadError<E: Error> {
+    /// An admin has restricted posting to the #general channel.
+    PostingToGeneralChannelDenied,
+    /// One or more channels supplied are invalid
+    InvalidChannel,
+    /// No authentication token provided.
+    NotAuthed,
+    /// Invalid authentication token.
+    InvalidAuth,
+    /// Authentication token is for a deleted user or team.
+    AccountInactive,
+    /// The method was passed an argument whose name falls outside the bounds of common decency. This includes very long names and names with non-alphanumeric characters other than _. If you get this error, it is typically an indication that you have made a very malformed API call.
+    InvalidArgName,
+    /// The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API.
+    InvalidArrayArg,
+    /// The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1.
+    InvalidCharset,
+    /// The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid.
+    InvalidFormData,
+    /// The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/x-www-form-urlencoded multipart/form-data text/plain.
+    InvalidPostType,
+    /// The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.
+    MissingPostType,
+    /// The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.
+    TeamAddedToOrg,
+    /// The method was called via a POST request, but the POST data was either missing or truncated.
+    RequestTimeout,
+    /// The response was not parseable as the expected object
+    MalformedResponse(String, serde_json::error::Error),
+    /// The response returned an error that was unknown to the library
+    Unknown(String),
+    /// The client had an error sending the request to Slack
+    Client(E),
+}
+
+impl<'a, E: Error> From<&'a str> for UploadError<E> {
+    fn from(s: &'a str) -> Self {
+        match s {
+            "posting_to_general_channel_denied" => UploadError::PostingToGeneralChannelDenied,
+            "invalid_channel" => UploadError::InvalidChannel,
+            "not_authed" => UploadError::NotAuthed,
+            "invalid_auth" => UploadError::InvalidAuth,
+            "account_inactive" => UploadError::AccountInactive,
+            "invalid_arg_name" => UploadError::InvalidArgName,
+            "invalid_array_arg" => UploadError::InvalidArrayArg,
+            "invalid_charset" => UploadError::InvalidCharset,
+            "invalid_form_data" => UploadError::InvalidFormData,
+            "invalid_post_type" => UploadError::InvalidPostType,
+            "missing_post_type" => UploadError::MissingPostType,
+            "team_added_to_org" => UploadError::TeamAddedToOrg,
+            "request_timeout" => UploadError::RequestTimeout,
+            _ => UploadError::Unknown(s.to_owned()),
+        }
+    }
+}
+
+impl<E: Error> fmt::Display for UploadError<E> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let d = match *self {
+                        UploadError::PostingToGeneralChannelDenied => "posting_to_general_channel_denied: An admin has restricted posting to the #general channel.",
+UploadError::InvalidChannel => "invalid_channel: One or more channels supplied are invalid",
+UploadError::NotAuthed => "not_authed: No authentication token provided.",
+UploadError::InvalidAuth => "invalid_auth: Invalid authentication token.",
+UploadError::AccountInactive => "account_inactive: Authentication token is for a deleted user or team.",
+UploadError::InvalidArgName => "invalid_arg_name: The method was passed an argument whose name falls outside the bounds of common decency. This includes very long names and names with non-alphanumeric characters other than _. If you get this error, it is typically an indication that you have made a very malformed API call.",
+UploadError::InvalidArrayArg => "invalid_array_arg: The method was passed a PHP-style array argument (e.g. with a name like foo[7]). These are never valid with the Slack API.",
+UploadError::InvalidCharset => "invalid_charset: The method was called via a POST request, but the charset specified in the Content-Type header was invalid. Valid charset names are: utf-8 iso-8859-1.",
+UploadError::InvalidFormData => "invalid_form_data: The method was called via a POST request with Content-Type application/x-www-form-urlencoded or multipart/form-data, but the form data was either missing or syntactically invalid.",
+UploadError::InvalidPostType => "invalid_post_type: The method was called via a POST request, but the specified Content-Type was invalid. Valid types are: application/x-www-form-urlencoded multipart/form-data text/plain.",
+UploadError::MissingPostType => "missing_post_type: The method was called via a POST request and included a data payload, but the request did not include a Content-Type header.",
+UploadError::TeamAddedToOrg => "team_added_to_org: The team associated with your request is currently undergoing migration to an Enterprise Organization. Web API and other platform operations will be intermittently unavailable until the transition is complete.",
+UploadError::RequestTimeout => "request_timeout: The method was called via a POST request, but the POST data was either missing or truncated.",
+                        UploadError::MalformedResponse(_, ref e) => return write!(f, "{}", e),
+                        UploadError::Unknown(ref s) => return write!(f, "{}", s),
+                        UploadError::Client(ref inner) => return write!(f, "{}", inner),
+                    };
+        write!(f, "{}", d)
+    }
+}
+
+impl<E: Error + 'static> Error for UploadError<E> {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+        match *self {
+            UploadError::MalformedResponse(_, ref e) => Some(e),
+            UploadError::Client(ref inner) => Some(inner),
+            _ => None,
+        }
+    }
+}
