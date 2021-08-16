@@ -4,9 +4,9 @@ use crate::json_schema::*;
 
 pub static AUTOGEN_HEADER: &str = "
 //=============================================================================
-// 
+//
 //                    WARNING: This file is AUTO-GENERATED
-// 
+//
 // Do not make changes directly to this file.
 //
 // If you would like to make a change to the library, please update the schema
@@ -14,7 +14,7 @@ pub static AUTOGEN_HEADER: &str = "
 //
 // If you would like to make a change how the library was generated,
 // please edit https://github.com/slack-rs/slack-rs-api/tree/master/codegen
-// 
+//
 //=============================================================================
 
 ";
@@ -122,7 +122,7 @@ pub struct Method {
 impl Method {
     pub fn generate(&self, gen_mode: GenMode) -> String {
         // HACK: these methods requires multipart support, which is not yet supported by this library
-        if self.name == "files.upload" || self.name == "users.setPhoto" {
+        if self.name == "users.setPhoto" {
             return String::new();
         }
 
