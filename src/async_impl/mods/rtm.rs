@@ -69,7 +69,7 @@ where
             .include_locale
             .map(|include_locale| ("include_locale", if include_locale { "1" } else { "0" })),
     ];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = params.into_iter().flatten().collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("rtm.start");
     client
         .send(&url, &params[..])

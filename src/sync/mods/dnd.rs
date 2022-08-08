@@ -73,7 +73,7 @@ where
         Some(("token", token)),
         request.user.map(|user| ("user", user)),
     ];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = params.into_iter().flatten().collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("dnd.info");
     client
         .send(&url, &params[..])
@@ -102,7 +102,7 @@ where
         Some(("token", token)),
         Some(("num_minutes", &num_minutes[..])),
     ];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = params.into_iter().flatten().collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("dnd.setSnooze");
     client
         .send(&url, &params[..])
@@ -130,7 +130,7 @@ where
         Some(("token", token)),
         request.users.map(|users| ("users", users)),
     ];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = params.into_iter().flatten().collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("dnd.teamInfo");
     client
         .send(&url, &params[..])

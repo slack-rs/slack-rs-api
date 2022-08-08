@@ -45,7 +45,7 @@ mod reqwest_support {
 
             url.query_pairs_mut().extend_pairs(params);
 
-            Ok(self.get(url).send()?.text()?)
+            self.get(url).send()?.text()
         }
     }
 

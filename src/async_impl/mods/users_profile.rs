@@ -34,7 +34,7 @@ where
             .include_labels
             .map(|include_labels| ("include_labels", if include_labels { "1" } else { "0" })),
     ];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = params.into_iter().flatten().collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("users.profile.get");
     client
         .send(&url, &params[..])
@@ -66,7 +66,7 @@ where
         request.name.map(|name| ("name", name)),
         request.value.map(|value| ("value", value)),
     ];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = params.into_iter().flatten().collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("users.profile.set");
     client
         .send(&url, &params[..])

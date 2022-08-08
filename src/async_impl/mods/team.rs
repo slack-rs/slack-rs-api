@@ -36,7 +36,7 @@ where
         page.as_ref().map(|page| ("page", &page[..])),
         before.as_ref().map(|before| ("before", &before[..])),
     ];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = params.into_iter().flatten().collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("team.accessLogs");
     client
         .send(&url, &params[..])
@@ -65,7 +65,7 @@ where
         Some(("token", token)),
         request.user.map(|user| ("user", user)),
     ];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = params.into_iter().flatten().collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("team.billableInfo");
     client
         .send(&url, &params[..])
@@ -126,7 +126,7 @@ where
         count.as_ref().map(|count| ("count", &count[..])),
         page.as_ref().map(|page| ("page", &page[..])),
     ];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = params.into_iter().flatten().collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("team.integrationLogs");
     client
         .send(&url, &params[..])

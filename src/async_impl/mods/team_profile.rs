@@ -33,7 +33,7 @@ where
             .visibility
             .map(|visibility| ("visibility", visibility)),
     ];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = params.into_iter().flatten().collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("team.profile.get");
     client
         .send(&url, &params[..])

@@ -34,7 +34,7 @@ where
             .redirect_uri
             .map(|redirect_uri| ("redirect_uri", redirect_uri)),
     ];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = params.into_iter().flatten().collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("oauth.access");
     client
         .send(&url, &params[..])

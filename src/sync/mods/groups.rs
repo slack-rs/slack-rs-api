@@ -30,7 +30,7 @@ where
     R: SlackWebRequestSender,
 {
     let params = vec![Some(("token", token)), Some(("channel", request.channel))];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = params.into_iter().flatten().collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("groups.archive");
     client
         .send(&url, &params[..])
@@ -55,7 +55,7 @@ where
     R: SlackWebRequestSender,
 {
     let params = vec![Some(("token", token)), Some(("channel", request.channel))];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = params.into_iter().flatten().collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("groups.close");
     client
         .send(&url, &params[..])
@@ -86,7 +86,7 @@ where
             .validate
             .map(|validate| ("validate", if validate { "1" } else { "0" })),
     ];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = params.into_iter().flatten().collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("groups.create");
     client
         .send(&url, &params[..])
@@ -111,7 +111,7 @@ where
     R: SlackWebRequestSender,
 {
     let params = vec![Some(("token", token)), Some(("channel", request.channel))];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = params.into_iter().flatten().collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("groups.createChild");
     client
         .send(&url, &params[..])
@@ -151,7 +151,7 @@ where
             .unreads
             .map(|unreads| ("unreads", if unreads { "1" } else { "0" })),
     ];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = params.into_iter().flatten().collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("groups.history");
     client
         .send(&url, &params[..])
@@ -176,7 +176,7 @@ where
     R: SlackWebRequestSender,
 {
     let params = vec![Some(("token", token)), Some(("channel", request.channel))];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = params.into_iter().flatten().collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("groups.info");
     client
         .send(&url, &params[..])
@@ -205,7 +205,7 @@ where
         Some(("channel", request.channel)),
         Some(("user", request.user)),
     ];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = params.into_iter().flatten().collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("groups.invite");
     client
         .send(&url, &params[..])
@@ -234,7 +234,7 @@ where
         Some(("channel", request.channel)),
         Some(("user", request.user)),
     ];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = params.into_iter().flatten().collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("groups.kick");
     client
         .send(&url, &params[..])
@@ -259,7 +259,7 @@ where
     R: SlackWebRequestSender,
 {
     let params = vec![Some(("token", token)), Some(("channel", request.channel))];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = params.into_iter().flatten().collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("groups.leave");
     client
         .send(&url, &params[..])
@@ -289,7 +289,7 @@ where
             .exclude_archived
             .map(|exclude_archived| ("exclude_archived", if exclude_archived { "1" } else { "0" })),
     ];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = params.into_iter().flatten().collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("groups.list");
     client
         .send(&url, &params[..])
@@ -319,7 +319,7 @@ where
         Some(("channel", request.channel)),
         Some(("ts", &ts[..])),
     ];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = params.into_iter().flatten().collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("groups.mark");
     client
         .send(&url, &params[..])
@@ -344,7 +344,7 @@ where
     R: SlackWebRequestSender,
 {
     let params = vec![Some(("token", token)), Some(("channel", request.channel))];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = params.into_iter().flatten().collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("groups.open");
     client
         .send(&url, &params[..])
@@ -376,7 +376,7 @@ where
             .validate
             .map(|validate| ("validate", if validate { "1" } else { "0" })),
     ];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = params.into_iter().flatten().collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("groups.rename");
     client
         .send(&url, &params[..])
@@ -406,7 +406,7 @@ where
         Some(("channel", request.channel)),
         Some(("thread_ts", &thread_ts[..])),
     ];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = params.into_iter().flatten().collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("groups.replies");
     client
         .send(&url, &params[..])
@@ -435,7 +435,7 @@ where
         Some(("channel", request.channel)),
         Some(("purpose", request.purpose)),
     ];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = params.into_iter().flatten().collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("groups.setPurpose");
     client
         .send(&url, &params[..])
@@ -464,7 +464,7 @@ where
         Some(("channel", request.channel)),
         Some(("topic", request.topic)),
     ];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = params.into_iter().flatten().collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("groups.setTopic");
     client
         .send(&url, &params[..])
@@ -489,7 +489,7 @@ where
     R: SlackWebRequestSender,
 {
     let params = vec![Some(("token", token)), Some(("channel", request.channel))];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = params.into_iter().flatten().collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("groups.unarchive");
     client
         .send(&url, &params[..])

@@ -34,7 +34,7 @@ where
             .include_disabled
             .map(|include_disabled| ("include_disabled", if include_disabled { "1" } else { "0" })),
     ];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = params.into_iter().flatten().collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("usergroups.users.list");
     client
         .send(&url, &params[..])
@@ -67,7 +67,7 @@ where
             .include_count
             .map(|include_count| ("include_count", if include_count { "1" } else { "0" })),
     ];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = params.into_iter().flatten().collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("usergroups.users.update");
     client
         .send(&url, &params[..])

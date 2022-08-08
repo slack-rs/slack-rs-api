@@ -39,7 +39,7 @@ where
             .as_ref()
             .map(|timestamp| ("timestamp", &timestamp[..])),
     ];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = params.into_iter().flatten().collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("pins.add");
     client
         .send(&url, &params[..])
@@ -65,7 +65,7 @@ where
     R: SlackWebRequestSender,
 {
     let params = vec![Some(("token", token)), Some(("channel", request.channel))];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = params.into_iter().flatten().collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("pins.list");
     client
         .send(&url, &params[..])
@@ -102,7 +102,7 @@ where
             .as_ref()
             .map(|timestamp| ("timestamp", &timestamp[..])),
     ];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = params.into_iter().flatten().collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("pins.remove");
     client
         .send(&url, &params[..])
