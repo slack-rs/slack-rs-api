@@ -37,12 +37,12 @@ pub struct AddResponse {
     ok: bool,
 }
 
-impl<E: Error> Into<Result<AddResponse, AddError<E>>> for AddResponse {
-    fn into(self) -> Result<AddResponse, AddError<E>> {
-        if self.ok {
-            Ok(self)
+impl<E: Error> From<AddResponse> for Result<AddResponse, AddError<E>> {
+    fn from(val: AddResponse) -> Self {
+        if val.ok {
+            Ok(val)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(val.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }
@@ -201,14 +201,14 @@ impl<'de> ::serde::Deserialize<'de> for ListResponseItem {
                 match ty {
                     "message" => ::serde_json::from_value::<ListResponseItemMessage>(value.clone())
                         .map(ListResponseItem::Message)
-                        .map_err(|e| D::Error::custom(&format!("{}", e))),
+                        .map_err(|e| D::Error::custom(format!("{}", e))),
                     "file" => ::serde_json::from_value::<ListResponseItemFile>(value.clone())
                         .map(ListResponseItem::File)
-                        .map_err(|e| D::Error::custom(&format!("{}", e))),
+                        .map_err(|e| D::Error::custom(format!("{}", e))),
                     "file_comment" => {
                         ::serde_json::from_value::<ListResponseItemFileComment>(value.clone())
                             .map(ListResponseItem::FileComment)
-                            .map_err(|e| D::Error::custom(&format!("{}", e)))
+                            .map_err(|e| D::Error::custom(format!("{}", e)))
                     }
                     _ => Err(D::Error::unknown_variant(ty, VARIANTS)),
                 }
@@ -253,12 +253,12 @@ pub struct ListResponseItemMessage {
     pub ty: String,
 }
 
-impl<E: Error> Into<Result<ListResponse, ListError<E>>> for ListResponse {
-    fn into(self) -> Result<ListResponse, ListError<E>> {
-        if self.ok {
-            Ok(self)
+impl<E: Error> From<ListResponse> for Result<ListResponse, ListError<E>> {
+    fn from(val: ListResponse) -> Self {
+        if val.ok {
+            Ok(val)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(val.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }
@@ -368,12 +368,12 @@ pub struct RemoveResponse {
     ok: bool,
 }
 
-impl<E: Error> Into<Result<RemoveResponse, RemoveError<E>>> for RemoveResponse {
-    fn into(self) -> Result<RemoveResponse, RemoveError<E>> {
-        if self.ok {
-            Ok(self)
+impl<E: Error> From<RemoveResponse> for Result<RemoveResponse, RemoveError<E>> {
+    fn from(val: RemoveResponse) -> Self {
+        if val.ok {
+            Ok(val)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(val.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }

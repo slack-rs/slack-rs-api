@@ -34,12 +34,12 @@ pub struct AddResponse {
     ok: bool,
 }
 
-impl<E: Error> Into<Result<AddResponse, AddError<E>>> for AddResponse {
-    fn into(self) -> Result<AddResponse, AddError<E>> {
-        if self.ok {
-            Ok(self)
+impl<E: Error> From<AddResponse> for Result<AddResponse, AddError<E>> {
+    fn from(val: AddResponse) -> Self {
+        if val.ok {
+            Ok(val)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(val.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }
@@ -153,12 +153,12 @@ pub struct DeleteResponse {
     ok: bool,
 }
 
-impl<E: Error> Into<Result<DeleteResponse, DeleteError<E>>> for DeleteResponse {
-    fn into(self) -> Result<DeleteResponse, DeleteError<E>> {
-        if self.ok {
-            Ok(self)
+impl<E: Error> From<DeleteResponse> for Result<DeleteResponse, DeleteError<E>> {
+    fn from(val: DeleteResponse) -> Self {
+        if val.ok {
+            Ok(val)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(val.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }
@@ -275,12 +275,12 @@ pub struct EditResponse {
     ok: bool,
 }
 
-impl<E: Error> Into<Result<EditResponse, EditError<E>>> for EditResponse {
-    fn into(self) -> Result<EditResponse, EditError<E>> {
-        if self.ok {
-            Ok(self)
+impl<E: Error> From<EditResponse> for Result<EditResponse, EditError<E>> {
+    fn from(val: EditResponse) -> Self {
+        if val.ok {
+            Ok(val)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(val.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }

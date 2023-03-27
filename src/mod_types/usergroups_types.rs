@@ -42,12 +42,12 @@ pub struct CreateResponse {
     pub usergroup: Option<crate::Usergroup>,
 }
 
-impl<E: Error> Into<Result<CreateResponse, CreateError<E>>> for CreateResponse {
-    fn into(self) -> Result<CreateResponse, CreateError<E>> {
-        if self.ok {
-            Ok(self)
+impl<E: Error> From<CreateResponse> for Result<CreateResponse, CreateError<E>> {
+    fn from(val: CreateResponse) -> Self {
+        if val.ok {
+            Ok(val)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(val.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }
@@ -158,12 +158,12 @@ pub struct DisableResponse {
     pub usergroup: Option<crate::Usergroup>,
 }
 
-impl<E: Error> Into<Result<DisableResponse, DisableError<E>>> for DisableResponse {
-    fn into(self) -> Result<DisableResponse, DisableError<E>> {
-        if self.ok {
-            Ok(self)
+impl<E: Error> From<DisableResponse> for Result<DisableResponse, DisableError<E>> {
+    fn from(val: DisableResponse) -> Self {
+        if val.ok {
+            Ok(val)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(val.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }
@@ -274,12 +274,12 @@ pub struct EnableResponse {
     pub usergroup: Option<crate::Usergroup>,
 }
 
-impl<E: Error> Into<Result<EnableResponse, EnableError<E>>> for EnableResponse {
-    fn into(self) -> Result<EnableResponse, EnableError<E>> {
-        if self.ok {
-            Ok(self)
+impl<E: Error> From<EnableResponse> for Result<EnableResponse, EnableError<E>> {
+    fn from(val: EnableResponse) -> Self {
+        if val.ok {
+            Ok(val)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(val.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }
@@ -392,12 +392,12 @@ pub struct ListResponse {
     pub usergroups: Option<Vec<crate::Usergroup>>,
 }
 
-impl<E: Error> Into<Result<ListResponse, ListError<E>>> for ListResponse {
-    fn into(self) -> Result<ListResponse, ListError<E>> {
-        if self.ok {
-            Ok(self)
+impl<E: Error> From<ListResponse> for Result<ListResponse, ListError<E>> {
+    fn from(val: ListResponse) -> Self {
+        if val.ok {
+            Ok(val)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(val.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }
@@ -516,12 +516,12 @@ pub struct UpdateResponse {
     pub usergroup: Option<crate::Usergroup>,
 }
 
-impl<E: Error> Into<Result<UpdateResponse, UpdateError<E>>> for UpdateResponse {
-    fn into(self) -> Result<UpdateResponse, UpdateError<E>> {
-        if self.ok {
-            Ok(self)
+impl<E: Error> From<UpdateResponse> for Result<UpdateResponse, UpdateError<E>> {
+    fn from(val: UpdateResponse) -> Self {
+        if val.ok {
+            Ok(val)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(val.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }

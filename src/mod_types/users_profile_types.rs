@@ -34,12 +34,12 @@ pub struct GetResponse {
     pub profile: Option<crate::UserProfile>,
 }
 
-impl<E: Error> Into<Result<GetResponse, GetError<E>>> for GetResponse {
-    fn into(self) -> Result<GetResponse, GetError<E>> {
-        if self.ok {
-            Ok(self)
+impl<E: Error> From<GetResponse> for Result<GetResponse, GetError<E>> {
+    fn from(val: GetResponse) -> Self {
+        if val.ok {
+            Ok(val)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(val.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }
@@ -154,12 +154,12 @@ pub struct SetResponse {
     pub profile: Option<crate::UserProfile>,
 }
 
-impl<E: Error> Into<Result<SetResponse, SetError<E>>> for SetResponse {
-    fn into(self) -> Result<SetResponse, SetError<E>> {
-        if self.ok {
-            Ok(self)
+impl<E: Error> From<SetResponse> for Result<SetResponse, SetError<E>> {
+    fn from(val: SetResponse) -> Self {
+        if val.ok {
+            Ok(val)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(val.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }

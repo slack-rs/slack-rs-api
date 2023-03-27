@@ -34,12 +34,12 @@ pub struct TestResponse {
     ok: bool,
 }
 
-impl<E: Error> Into<Result<TestResponse, TestError<E>>> for TestResponse {
-    fn into(self) -> Result<TestResponse, TestError<E>> {
-        if self.ok {
-            Ok(self)
+impl<E: Error> From<TestResponse> for Result<TestResponse, TestError<E>> {
+    fn from(val: TestResponse) -> Self {
+        if val.ok {
+            Ok(val)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(val.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }

@@ -48,12 +48,12 @@ pub struct InfoResponseBotIcons {
     pub image_72: Option<String>,
 }
 
-impl<E: Error> Into<Result<InfoResponse, InfoError<E>>> for InfoResponse {
-    fn into(self) -> Result<InfoResponse, InfoError<E>> {
-        if self.ok {
-            Ok(self)
+impl<E: Error> From<InfoResponse> for Result<InfoResponse, InfoError<E>> {
+    fn from(val: InfoResponse) -> Self {
+        if val.ok {
+            Ok(val)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(val.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }

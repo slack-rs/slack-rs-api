@@ -27,12 +27,12 @@ pub struct DeletePhotoResponse {
     ok: bool,
 }
 
-impl<E: Error> Into<Result<DeletePhotoResponse, DeletePhotoError<E>>> for DeletePhotoResponse {
-    fn into(self) -> Result<DeletePhotoResponse, DeletePhotoError<E>> {
-        if self.ok {
-            Ok(self)
+impl<E: Error> From<DeletePhotoResponse> for Result<DeletePhotoResponse, DeletePhotoError<E>> {
+    fn from(val: DeletePhotoResponse) -> Self {
+        if val.ok {
+            Ok(val)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(val.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }
@@ -137,12 +137,12 @@ pub struct GetPresenceResponse {
     pub presence: Option<String>,
 }
 
-impl<E: Error> Into<Result<GetPresenceResponse, GetPresenceError<E>>> for GetPresenceResponse {
-    fn into(self) -> Result<GetPresenceResponse, GetPresenceError<E>> {
-        if self.ok {
-            Ok(self)
+impl<E: Error> From<GetPresenceResponse> for Result<GetPresenceResponse, GetPresenceError<E>> {
+    fn from(val: GetPresenceResponse) -> Self {
+        if val.ok {
+            Ok(val)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(val.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }
@@ -238,12 +238,12 @@ pub struct IdentityResponse {
     pub user: Option<crate::User>,
 }
 
-impl<E: Error> Into<Result<IdentityResponse, IdentityError<E>>> for IdentityResponse {
-    fn into(self) -> Result<IdentityResponse, IdentityError<E>> {
-        if self.ok {
-            Ok(self)
+impl<E: Error> From<IdentityResponse> for Result<IdentityResponse, IdentityError<E>> {
+    fn from(val: IdentityResponse) -> Self {
+        if val.ok {
+            Ok(val)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(val.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }
@@ -348,12 +348,12 @@ pub struct InfoResponse {
     pub user: Option<crate::User>,
 }
 
-impl<E: Error> Into<Result<InfoResponse, InfoError<E>>> for InfoResponse {
-    fn into(self) -> Result<InfoResponse, InfoError<E>> {
-        if self.ok {
-            Ok(self)
+impl<E: Error> From<InfoResponse> for Result<InfoResponse, InfoError<E>> {
+    fn from(val: InfoResponse) -> Self {
+        if val.ok {
+            Ok(val)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(val.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }
@@ -462,12 +462,12 @@ pub struct ListResponse {
     ok: bool,
 }
 
-impl<E: Error> Into<Result<ListResponse, ListError<E>>> for ListResponse {
-    fn into(self) -> Result<ListResponse, ListError<E>> {
-        if self.ok {
-            Ok(self)
+impl<E: Error> From<ListResponse> for Result<ListResponse, ListError<E>> {
+    fn from(val: ListResponse) -> Self {
+        if val.ok {
+            Ok(val)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(val.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }
@@ -561,12 +561,12 @@ pub struct SetActiveResponse {
     ok: bool,
 }
 
-impl<E: Error> Into<Result<SetActiveResponse, SetActiveError<E>>> for SetActiveResponse {
-    fn into(self) -> Result<SetActiveResponse, SetActiveError<E>> {
-        if self.ok {
-            Ok(self)
+impl<E: Error> From<SetActiveResponse> for Result<SetActiveResponse, SetActiveError<E>> {
+    fn from(val: SetActiveResponse) -> Self {
+        if val.ok {
+            Ok(val)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(val.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }
@@ -666,12 +666,12 @@ pub struct SetPresenceResponse {
     ok: bool,
 }
 
-impl<E: Error> Into<Result<SetPresenceResponse, SetPresenceError<E>>> for SetPresenceResponse {
-    fn into(self) -> Result<SetPresenceResponse, SetPresenceError<E>> {
-        if self.ok {
-            Ok(self)
+impl<E: Error> From<SetPresenceResponse> for Result<SetPresenceResponse, SetPresenceError<E>> {
+    fn from(val: SetPresenceResponse) -> Self {
+        if val.ok {
+            Ok(val)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(val.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }

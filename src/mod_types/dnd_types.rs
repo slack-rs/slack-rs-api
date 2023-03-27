@@ -27,12 +27,12 @@ pub struct EndDndResponse {
     ok: bool,
 }
 
-impl<E: Error> Into<Result<EndDndResponse, EndDndError<E>>> for EndDndResponse {
-    fn into(self) -> Result<EndDndResponse, EndDndError<E>> {
-        if self.ok {
-            Ok(self)
+impl<E: Error> From<EndDndResponse> for Result<EndDndResponse, EndDndError<E>> {
+    fn from(val: EndDndResponse) -> Self {
+        if val.ok {
+            Ok(val)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(val.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }
@@ -138,12 +138,12 @@ pub struct EndSnoozeResponse {
     pub snooze_enabled: Option<bool>,
 }
 
-impl<E: Error> Into<Result<EndSnoozeResponse, EndSnoozeError<E>>> for EndSnoozeResponse {
-    fn into(self) -> Result<EndSnoozeResponse, EndSnoozeError<E>> {
-        if self.ok {
-            Ok(self)
+impl<E: Error> From<EndSnoozeResponse> for Result<EndSnoozeResponse, EndSnoozeError<E>> {
+    fn from(val: EndSnoozeResponse) -> Self {
+        if val.ok {
+            Ok(val)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(val.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }
@@ -261,12 +261,12 @@ pub struct InfoResponse {
     pub snooze_remaining: Option<f32>,
 }
 
-impl<E: Error> Into<Result<InfoResponse, InfoError<E>>> for InfoResponse {
-    fn into(self) -> Result<InfoResponse, InfoError<E>> {
-        if self.ok {
-            Ok(self)
+impl<E: Error> From<InfoResponse> for Result<InfoResponse, InfoError<E>> {
+    fn from(val: InfoResponse) -> Self {
+        if val.ok {
+            Ok(val)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(val.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }
@@ -373,12 +373,12 @@ pub struct SetSnoozeResponse {
     pub snooze_remaining: Option<f32>,
 }
 
-impl<E: Error> Into<Result<SetSnoozeResponse, SetSnoozeError<E>>> for SetSnoozeResponse {
-    fn into(self) -> Result<SetSnoozeResponse, SetSnoozeError<E>> {
-        if self.ok {
-            Ok(self)
+impl<E: Error> From<SetSnoozeResponse> for Result<SetSnoozeResponse, SetSnoozeError<E>> {
+    fn from(val: SetSnoozeResponse) -> Self {
+        if val.ok {
+            Ok(val)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(val.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }
@@ -491,12 +491,12 @@ pub struct TeamInfoResponse {
     pub users: Option<HashMap<String, bool>>,
 }
 
-impl<E: Error> Into<Result<TeamInfoResponse, TeamInfoError<E>>> for TeamInfoResponse {
-    fn into(self) -> Result<TeamInfoResponse, TeamInfoError<E>> {
-        if self.ok {
-            Ok(self)
+impl<E: Error> From<TeamInfoResponse> for Result<TeamInfoResponse, TeamInfoError<E>> {
+    fn from(val: TeamInfoResponse) -> Self {
+        if val.ok {
+            Ok(val)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(val.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }

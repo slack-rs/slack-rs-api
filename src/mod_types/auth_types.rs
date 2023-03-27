@@ -32,12 +32,12 @@ pub struct RevokeResponse {
     pub revoked: Option<bool>,
 }
 
-impl<E: Error> Into<Result<RevokeResponse, RevokeError<E>>> for RevokeResponse {
-    fn into(self) -> Result<RevokeResponse, RevokeError<E>> {
-        if self.ok {
-            Ok(self)
+impl<E: Error> From<RevokeResponse> for Result<RevokeResponse, RevokeError<E>> {
+    fn from(val: RevokeResponse) -> Self {
+        if val.ok {
+            Ok(val)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(val.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }
@@ -136,12 +136,12 @@ pub struct TestResponse {
     pub user_id: Option<String>,
 }
 
-impl<E: Error> Into<Result<TestResponse, TestError<E>>> for TestResponse {
-    fn into(self) -> Result<TestResponse, TestError<E>> {
-        if self.ok {
-            Ok(self)
+impl<E: Error> From<TestResponse> for Result<TestResponse, TestError<E>> {
+    fn from(val: TestResponse) -> Self {
+        if val.ok {
+            Ok(val)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(val.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }

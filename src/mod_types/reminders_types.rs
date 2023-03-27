@@ -36,12 +36,12 @@ pub struct AddResponse {
     pub reminder: Option<crate::Reminder>,
 }
 
-impl<E: Error> Into<Result<AddResponse, AddError<E>>> for AddResponse {
-    fn into(self) -> Result<AddResponse, AddError<E>> {
-        if self.ok {
-            Ok(self)
+impl<E: Error> From<AddResponse> for Result<AddResponse, AddError<E>> {
+    fn from(val: AddResponse) -> Self {
+        if val.ok {
+            Ok(val)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(val.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }
@@ -169,12 +169,12 @@ pub struct CompleteResponse {
     ok: bool,
 }
 
-impl<E: Error> Into<Result<CompleteResponse, CompleteError<E>>> for CompleteResponse {
-    fn into(self) -> Result<CompleteResponse, CompleteError<E>> {
-        if self.ok {
-            Ok(self)
+impl<E: Error> From<CompleteResponse> for Result<CompleteResponse, CompleteError<E>> {
+    fn from(val: CompleteResponse) -> Self {
+        if val.ok {
+            Ok(val)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(val.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }
@@ -290,12 +290,12 @@ pub struct DeleteResponse {
     ok: bool,
 }
 
-impl<E: Error> Into<Result<DeleteResponse, DeleteError<E>>> for DeleteResponse {
-    fn into(self) -> Result<DeleteResponse, DeleteError<E>> {
-        if self.ok {
-            Ok(self)
+impl<E: Error> From<DeleteResponse> for Result<DeleteResponse, DeleteError<E>> {
+    fn from(val: DeleteResponse) -> Self {
+        if val.ok {
+            Ok(val)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(val.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }
@@ -404,12 +404,12 @@ pub struct InfoResponse {
     pub reminder: Option<crate::Reminder>,
 }
 
-impl<E: Error> Into<Result<InfoResponse, InfoError<E>>> for InfoResponse {
-    fn into(self) -> Result<InfoResponse, InfoError<E>> {
-        if self.ok {
-            Ok(self)
+impl<E: Error> From<InfoResponse> for Result<InfoResponse, InfoError<E>> {
+    fn from(val: InfoResponse) -> Self {
+        if val.ok {
+            Ok(val)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(val.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }
@@ -512,12 +512,12 @@ pub struct ListResponse {
     pub reminders: Option<Vec<crate::Reminder>>,
 }
 
-impl<E: Error> Into<Result<ListResponse, ListError<E>>> for ListResponse {
-    fn into(self) -> Result<ListResponse, ListError<E>> {
-        if self.ok {
-            Ok(self)
+impl<E: Error> From<ListResponse> for Result<ListResponse, ListError<E>> {
+    fn from(val: ListResponse) -> Self {
+        if val.ok {
+            Ok(val)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(val.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }
