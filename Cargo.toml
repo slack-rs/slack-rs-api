@@ -29,7 +29,7 @@ optional = true
 [dev-dependencies.tokio]
 package = "tokio"
 version = "1.2"
-features = ["macros"]
+features = ["macros", "rt-multi-thread"]
 
 [features]
 default = ["reqwest", "with_native_tls"]
