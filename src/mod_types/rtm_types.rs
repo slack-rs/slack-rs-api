@@ -44,12 +44,12 @@ pub struct ConnectResponseTeam {
     pub name: Option<String>,
 }
 
-impl<E: Error> Into<Result<ConnectResponse, ConnectError<E>>> for ConnectResponse {
-    fn into(self) -> Result<ConnectResponse, ConnectError<E>> {
-        if self.ok {
-            Ok(self)
+impl<E: Error> From<ConnectResponse> for Result<ConnectResponse, ConnectError<E>> {
+    fn from(val: ConnectResponse) -> Self {
+        if val.ok {
+            Ok(val)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(val.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }
@@ -167,12 +167,12 @@ pub struct StartResponse {
     pub users: Option<Vec<crate::User>>,
 }
 
-impl<E: Error> Into<Result<StartResponse, StartError<E>>> for StartResponse {
-    fn into(self) -> Result<StartResponse, StartError<E>> {
-        if self.ok {
-            Ok(self)
+impl<E: Error> From<StartResponse> for Result<StartResponse, StartError<E>> {
+    fn from(val: StartResponse) -> Self {
+        if val.ok {
+            Ok(val)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(val.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }

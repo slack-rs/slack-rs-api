@@ -49,7 +49,7 @@ async fn smoke_channels() -> Result<(), Box<dyn std::error::Error>> {
     .channels
     .ok_or("Expected some channels")?;
 
-    assert!(all_channels.len() > 0);
+    assert!(!all_channels.is_empty());
 
     for channel in &all_channels[..10] {
         let channel_id = channel.id.as_ref().ok_or("expected channel id")?;
@@ -58,7 +58,7 @@ async fn smoke_channels() -> Result<(), Box<dyn std::error::Error>> {
             &client,
             &token,
             &slack::channels::InfoRequest {
-                channel: &channel_id,
+                channel: channel_id,
                 ..Default::default()
             },
         )
@@ -72,7 +72,7 @@ async fn smoke_channels() -> Result<(), Box<dyn std::error::Error>> {
             &client,
             &token,
             &slack::channels::HistoryRequest {
-                channel: &channel_id,
+                channel: channel_id,
                 oldest: Some(1234567890.1234.into()),
                 ..Default::default()
             },

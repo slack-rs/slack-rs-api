@@ -39,12 +39,12 @@ pub struct DeleteResponse {
     pub ts: Option<crate::Timestamp>,
 }
 
-impl<E: Error> Into<Result<DeleteResponse, DeleteError<E>>> for DeleteResponse {
-    fn into(self) -> Result<DeleteResponse, DeleteError<E>> {
-        if self.ok {
-            Ok(self)
+impl<E: Error> From<DeleteResponse> for Result<DeleteResponse, DeleteError<E>> {
+    fn from(val: DeleteResponse) -> Self {
+        if val.ok {
+            Ok(val)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(val.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }
@@ -164,12 +164,12 @@ pub struct MeMessageResponse {
     pub ts: Option<crate::Timestamp>,
 }
 
-impl<E: Error> Into<Result<MeMessageResponse, MeMessageError<E>>> for MeMessageResponse {
-    fn into(self) -> Result<MeMessageResponse, MeMessageError<E>> {
-        if self.ok {
-            Ok(self)
+impl<E: Error> From<MeMessageResponse> for Result<MeMessageResponse, MeMessageError<E>> {
+    fn from(val: MeMessageResponse) -> Self {
+        if val.ok {
+            Ok(val)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(val.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }
@@ -320,12 +320,12 @@ pub struct PostMessageResponse {
     pub ts: Option<crate::Timestamp>,
 }
 
-impl<E: Error> Into<Result<PostMessageResponse, PostMessageError<E>>> for PostMessageResponse {
-    fn into(self) -> Result<PostMessageResponse, PostMessageError<E>> {
-        if self.ok {
-            Ok(self)
+impl<E: Error> From<PostMessageResponse> for Result<PostMessageResponse, PostMessageError<E>> {
+    fn from(val: PostMessageResponse) -> Self {
+        if val.ok {
+            Ok(val)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(val.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }
@@ -459,12 +459,12 @@ pub struct UnfurlResponse {
     ok: bool,
 }
 
-impl<E: Error> Into<Result<UnfurlResponse, UnfurlError<E>>> for UnfurlResponse {
-    fn into(self) -> Result<UnfurlResponse, UnfurlError<E>> {
-        if self.ok {
-            Ok(self)
+impl<E: Error> From<UnfurlResponse> for Result<UnfurlResponse, UnfurlError<E>> {
+    fn from(val: UnfurlResponse) -> Self {
+        if val.ok {
+            Ok(val)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(val.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }
@@ -583,12 +583,12 @@ pub struct UpdateResponse {
     pub ts: Option<crate::Timestamp>,
 }
 
-impl<E: Error> Into<Result<UpdateResponse, UpdateError<E>>> for UpdateResponse {
-    fn into(self) -> Result<UpdateResponse, UpdateError<E>> {
-        if self.ok {
-            Ok(self)
+impl<E: Error> From<UpdateResponse> for Result<UpdateResponse, UpdateError<E>> {
+    fn from(val: UpdateResponse) -> Self {
+        if val.ok {
+            Ok(val)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(val.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }

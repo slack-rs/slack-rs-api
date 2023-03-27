@@ -33,12 +33,12 @@ pub struct DeleteResponse {
     ok: bool,
 }
 
-impl<E: Error> Into<Result<DeleteResponse, DeleteError<E>>> for DeleteResponse {
-    fn into(self) -> Result<DeleteResponse, DeleteError<E>> {
-        if self.ok {
-            Ok(self)
+impl<E: Error> From<DeleteResponse> for Result<DeleteResponse, DeleteError<E>> {
+    fn from(val: DeleteResponse) -> Self {
+        if val.ok {
+            Ok(val)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(val.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }
@@ -157,12 +157,12 @@ pub struct InfoResponse {
     pub paging: Option<crate::Paging>,
 }
 
-impl<E: Error> Into<Result<InfoResponse, InfoError<E>>> for InfoResponse {
-    fn into(self) -> Result<InfoResponse, InfoError<E>> {
-        if self.ok {
-            Ok(self)
+impl<E: Error> From<InfoResponse> for Result<InfoResponse, InfoError<E>> {
+    fn from(val: InfoResponse) -> Self {
+        if val.ok {
+            Ok(val)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(val.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }
@@ -296,12 +296,12 @@ pub struct ListResponse {
     pub paging: Option<crate::Paging>,
 }
 
-impl<E: Error> Into<Result<ListResponse, ListError<E>>> for ListResponse {
-    fn into(self) -> Result<ListResponse, ListError<E>> {
-        if self.ok {
-            Ok(self)
+impl<E: Error> From<ListResponse> for Result<ListResponse, ListError<E>> {
+    fn from(val: ListResponse) -> Self {
+        if val.ok {
+            Ok(val)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(val.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }
@@ -414,14 +414,14 @@ pub struct RevokePublicURLResponse {
     ok: bool,
 }
 
-impl<E: Error> Into<Result<RevokePublicURLResponse, RevokePublicURLError<E>>>
-    for RevokePublicURLResponse
+impl<E: Error> From<RevokePublicURLResponse>
+    for Result<RevokePublicURLResponse, RevokePublicURLError<E>>
 {
-    fn into(self) -> Result<RevokePublicURLResponse, RevokePublicURLError<E>> {
-        if self.ok {
-            Ok(self)
+    fn from(val: RevokePublicURLResponse) -> Self {
+        if val.ok {
+            Ok(val)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(val.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }
@@ -534,14 +534,14 @@ pub struct SharedPublicURLResponse {
     ok: bool,
 }
 
-impl<E: Error> Into<Result<SharedPublicURLResponse, SharedPublicURLError<E>>>
-    for SharedPublicURLResponse
+impl<E: Error> From<SharedPublicURLResponse>
+    for Result<SharedPublicURLResponse, SharedPublicURLError<E>>
 {
-    fn into(self) -> Result<SharedPublicURLResponse, SharedPublicURLError<E>> {
-        if self.ok {
-            Ok(self)
+    fn from(val: SharedPublicURLResponse) -> Self {
+        if val.ok {
+            Ok(val)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(val.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }

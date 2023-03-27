@@ -33,7 +33,7 @@ where
             .test
             .map(|test| ("test", if test { "1" } else { "0" })),
     ];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = params.into_iter().flatten().collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("auth.revoke");
     client
         .send(&url, &params[..])

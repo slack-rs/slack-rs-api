@@ -38,7 +38,7 @@ where
             .as_user
             .map(|as_user| ("as_user", if as_user { "1" } else { "0" })),
     ];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = params.into_iter().flatten().collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("chat.delete");
     client
         .send(&url, &params[..])
@@ -67,7 +67,7 @@ where
         Some(("channel", request.channel)),
         Some(("text", request.text)),
     ];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = params.into_iter().flatten().collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("chat.meMessage");
     client
         .send(&url, &params[..])
@@ -124,7 +124,7 @@ where
             .reply_broadcast
             .map(|reply_broadcast| ("reply_broadcast", if reply_broadcast { "1" } else { "0" })),
     ];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = params.into_iter().flatten().collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("chat.postMessage");
     client
         .send(&url, &params[..])
@@ -160,7 +160,7 @@ where
             )
         }),
     ];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = params.into_iter().flatten().collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("chat.unfurl");
     client
         .send(&url, &params[..])
@@ -201,7 +201,7 @@ where
             .as_user
             .map(|as_user| ("as_user", if as_user { "1" } else { "0" })),
     ];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = params.into_iter().flatten().collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("chat.update");
     client
         .send(&url, &params[..])

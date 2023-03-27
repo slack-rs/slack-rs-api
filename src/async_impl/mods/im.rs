@@ -30,7 +30,7 @@ where
     R: SlackWebRequestSender,
 {
     let params = vec![Some(("token", token)), Some(("channel", request.channel))];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = params.into_iter().flatten().collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("im.close");
     client
         .send(&url, &params[..])
@@ -71,7 +71,7 @@ where
             .unreads
             .map(|unreads| ("unreads", if unreads { "1" } else { "0" })),
     ];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = params.into_iter().flatten().collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("im.history");
     client
         .send(&url, &params[..])
@@ -102,7 +102,7 @@ where
         request.cursor.map(|cursor| ("cursor", cursor)),
         limit.as_ref().map(|limit| ("limit", &limit[..])),
     ];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = params.into_iter().flatten().collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("im.list");
     client
         .send(&url, &params[..])
@@ -133,7 +133,7 @@ where
         Some(("channel", request.channel)),
         Some(("ts", &ts[..])),
     ];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = params.into_iter().flatten().collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("im.mark");
     client
         .send(&url, &params[..])
@@ -165,7 +165,7 @@ where
             .return_im
             .map(|return_im| ("return_im", if return_im { "1" } else { "0" })),
     ];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = params.into_iter().flatten().collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("im.open");
     client
         .send(&url, &params[..])
@@ -196,7 +196,7 @@ where
         Some(("channel", request.channel)),
         Some(("thread_ts", &thread_ts[..])),
     ];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = params.into_iter().flatten().collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("im.replies");
     client
         .send(&url, &params[..])

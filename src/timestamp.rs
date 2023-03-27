@@ -67,7 +67,7 @@ impl<'de> ::serde::Deserialize<'de> for Timestamp {
         } else {
             Err(D::Error::custom(format!(
                 "expected a timestamp but got: {}",
-                value.to_string()
+                value
             )))
         }
     }

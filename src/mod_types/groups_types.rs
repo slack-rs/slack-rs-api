@@ -33,12 +33,12 @@ pub struct ArchiveResponse {
     ok: bool,
 }
 
-impl<E: Error> Into<Result<ArchiveResponse, ArchiveError<E>>> for ArchiveResponse {
-    fn into(self) -> Result<ArchiveResponse, ArchiveError<E>> {
-        if self.ok {
-            Ok(self)
+impl<E: Error> From<ArchiveResponse> for Result<ArchiveResponse, ArchiveError<E>> {
+    fn from(val: ArchiveResponse) -> Self {
+        if val.ok {
+            Ok(val)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(val.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }
@@ -162,12 +162,12 @@ pub struct CloseResponse {
     ok: bool,
 }
 
-impl<E: Error> Into<Result<CloseResponse, CloseError<E>>> for CloseResponse {
-    fn into(self) -> Result<CloseResponse, CloseError<E>> {
-        if self.ok {
-            Ok(self)
+impl<E: Error> From<CloseResponse> for Result<CloseResponse, CloseError<E>> {
+    fn from(val: CloseResponse) -> Self {
+        if val.ok {
+            Ok(val)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(val.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }
@@ -274,12 +274,12 @@ pub struct CreateResponse {
     ok: bool,
 }
 
-impl<E: Error> Into<Result<CreateResponse, CreateError<E>>> for CreateResponse {
-    fn into(self) -> Result<CreateResponse, CreateError<E>> {
-        if self.ok {
-            Ok(self)
+impl<E: Error> From<CreateResponse> for Result<CreateResponse, CreateError<E>> {
+    fn from(val: CreateResponse) -> Self {
+        if val.ok {
+            Ok(val)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(val.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }
@@ -420,12 +420,12 @@ pub struct CreateChildResponse {
     ok: bool,
 }
 
-impl<E: Error> Into<Result<CreateChildResponse, CreateChildError<E>>> for CreateChildResponse {
-    fn into(self) -> Result<CreateChildResponse, CreateChildError<E>> {
-        if self.ok {
-            Ok(self)
+impl<E: Error> From<CreateChildResponse> for Result<CreateChildResponse, CreateChildError<E>> {
+    fn from(val: CreateChildResponse) -> Self {
+        if val.ok {
+            Ok(val)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(val.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }
@@ -558,12 +558,12 @@ pub struct HistoryResponse {
     ok: bool,
 }
 
-impl<E: Error> Into<Result<HistoryResponse, HistoryError<E>>> for HistoryResponse {
-    fn into(self) -> Result<HistoryResponse, HistoryError<E>> {
-        if self.ok {
-            Ok(self)
+impl<E: Error> From<HistoryResponse> for Result<HistoryResponse, HistoryError<E>> {
+    fn from(val: HistoryResponse) -> Self {
+        if val.ok {
+            Ok(val)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(val.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }
@@ -676,12 +676,12 @@ pub struct InfoResponse {
     ok: bool,
 }
 
-impl<E: Error> Into<Result<InfoResponse, InfoError<E>>> for InfoResponse {
-    fn into(self) -> Result<InfoResponse, InfoError<E>> {
-        if self.ok {
-            Ok(self)
+impl<E: Error> From<InfoResponse> for Result<InfoResponse, InfoError<E>> {
+    fn from(val: InfoResponse) -> Self {
+        if val.ok {
+            Ok(val)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(val.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }
@@ -788,12 +788,12 @@ pub struct InviteResponse {
     ok: bool,
 }
 
-impl<E: Error> Into<Result<InviteResponse, InviteError<E>>> for InviteResponse {
-    fn into(self) -> Result<InviteResponse, InviteError<E>> {
-        if self.ok {
-            Ok(self)
+impl<E: Error> From<InviteResponse> for Result<InviteResponse, InviteError<E>> {
+    fn from(val: InviteResponse) -> Self {
+        if val.ok {
+            Ok(val)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(val.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }
@@ -927,12 +927,12 @@ pub struct KickResponse {
     ok: bool,
 }
 
-impl<E: Error> Into<Result<KickResponse, KickError<E>>> for KickResponse {
-    fn into(self) -> Result<KickResponse, KickError<E>> {
-        if self.ok {
-            Ok(self)
+impl<E: Error> From<KickResponse> for Result<KickResponse, KickError<E>> {
+    fn from(val: KickResponse) -> Self {
+        if val.ok {
+            Ok(val)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(val.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }
@@ -1060,12 +1060,12 @@ pub struct LeaveResponse {
     ok: bool,
 }
 
-impl<E: Error> Into<Result<LeaveResponse, LeaveError<E>>> for LeaveResponse {
-    fn into(self) -> Result<LeaveResponse, LeaveError<E>> {
-        if self.ok {
-            Ok(self)
+impl<E: Error> From<LeaveResponse> for Result<LeaveResponse, LeaveError<E>> {
+    fn from(val: LeaveResponse) -> Self {
+        if val.ok {
+            Ok(val)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(val.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }
@@ -1182,12 +1182,12 @@ pub struct ListResponse {
     ok: bool,
 }
 
-impl<E: Error> Into<Result<ListResponse, ListError<E>>> for ListResponse {
-    fn into(self) -> Result<ListResponse, ListError<E>> {
-        if self.ok {
-            Ok(self)
+impl<E: Error> From<ListResponse> for Result<ListResponse, ListError<E>> {
+    fn from(val: ListResponse) -> Self {
+        if val.ok {
+            Ok(val)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(val.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }
@@ -1289,12 +1289,12 @@ pub struct MarkResponse {
     ok: bool,
 }
 
-impl<E: Error> Into<Result<MarkResponse, MarkError<E>>> for MarkResponse {
-    fn into(self) -> Result<MarkResponse, MarkError<E>> {
-        if self.ok {
-            Ok(self)
+impl<E: Error> From<MarkResponse> for Result<MarkResponse, MarkError<E>> {
+    fn from(val: MarkResponse) -> Self {
+        if val.ok {
+            Ok(val)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(val.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }
@@ -1402,12 +1402,12 @@ pub struct OpenResponse {
     ok: bool,
 }
 
-impl<E: Error> Into<Result<OpenResponse, OpenError<E>>> for OpenResponse {
-    fn into(self) -> Result<OpenResponse, OpenError<E>> {
-        if self.ok {
-            Ok(self)
+impl<E: Error> From<OpenResponse> for Result<OpenResponse, OpenError<E>> {
+    fn from(val: OpenResponse) -> Self {
+        if val.ok {
+            Ok(val)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(val.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }
@@ -1524,12 +1524,12 @@ pub struct RenameResponseChannel {
     pub name: Option<String>,
 }
 
-impl<E: Error> Into<Result<RenameResponse, RenameError<E>>> for RenameResponse {
-    fn into(self) -> Result<RenameResponse, RenameError<E>> {
-        if self.ok {
-            Ok(self)
+impl<E: Error> From<RenameResponse> for Result<RenameResponse, RenameError<E>> {
+    fn from(val: RenameResponse) -> Self {
+        if val.ok {
+            Ok(val)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(val.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }
@@ -1669,12 +1669,12 @@ pub struct RepliesResponse {
     pub thread_info: Option<crate::ThreadInfo>,
 }
 
-impl<E: Error> Into<Result<RepliesResponse, RepliesError<E>>> for RepliesResponse {
-    fn into(self) -> Result<RepliesResponse, RepliesError<E>> {
-        if self.ok {
-            Ok(self)
+impl<E: Error> From<RepliesResponse> for Result<RepliesResponse, RepliesError<E>> {
+    fn from(val: RepliesResponse) -> Self {
+        if val.ok {
+            Ok(val)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(val.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }
@@ -1789,12 +1789,12 @@ pub struct SetPurposeResponse {
     pub purpose: Option<String>,
 }
 
-impl<E: Error> Into<Result<SetPurposeResponse, SetPurposeError<E>>> for SetPurposeResponse {
-    fn into(self) -> Result<SetPurposeResponse, SetPurposeError<E>> {
-        if self.ok {
-            Ok(self)
+impl<E: Error> From<SetPurposeResponse> for Result<SetPurposeResponse, SetPurposeError<E>> {
+    fn from(val: SetPurposeResponse) -> Self {
+        if val.ok {
+            Ok(val)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(val.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }
@@ -1913,12 +1913,12 @@ pub struct SetTopicResponse {
     pub topic: Option<String>,
 }
 
-impl<E: Error> Into<Result<SetTopicResponse, SetTopicError<E>>> for SetTopicResponse {
-    fn into(self) -> Result<SetTopicResponse, SetTopicError<E>> {
-        if self.ok {
-            Ok(self)
+impl<E: Error> From<SetTopicResponse> for Result<SetTopicResponse, SetTopicError<E>> {
+    fn from(val: SetTopicResponse) -> Self {
+        if val.ok {
+            Ok(val)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(val.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }
@@ -2034,12 +2034,12 @@ pub struct UnarchiveResponse {
     ok: bool,
 }
 
-impl<E: Error> Into<Result<UnarchiveResponse, UnarchiveError<E>>> for UnarchiveResponse {
-    fn into(self) -> Result<UnarchiveResponse, UnarchiveError<E>> {
-        if self.ok {
-            Ok(self)
+impl<E: Error> From<UnarchiveResponse> for Result<UnarchiveResponse, UnarchiveError<E>> {
+    fn from(val: UnarchiveResponse) -> Self {
+        if val.ok {
+            Ok(val)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(val.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }

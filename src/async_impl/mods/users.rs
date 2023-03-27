@@ -54,7 +54,7 @@ where
     R: SlackWebRequestSender,
 {
     let params = vec![Some(("token", token)), Some(("user", request.user))];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = params.into_iter().flatten().collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("users.getPresence");
     client
         .send(&url, &params[..])
@@ -104,7 +104,7 @@ where
     R: SlackWebRequestSender,
 {
     let params = vec![Some(("token", token)), Some(("user", request.user))];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = params.into_iter().flatten().collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("users.info");
     client
         .send(&url, &params[..])
@@ -135,7 +135,7 @@ where
             .presence
             .map(|presence| ("presence", if presence { "1" } else { "0" })),
     ];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = params.into_iter().flatten().collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("users.list");
     client
         .send(&url, &params[..])
@@ -185,7 +185,7 @@ where
     R: SlackWebRequestSender,
 {
     let params = vec![Some(("token", token)), Some(("presence", request.presence))];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = params.into_iter().flatten().collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("users.setPresence");
     client
         .send(&url, &params[..])

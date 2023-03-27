@@ -30,7 +30,7 @@ where
     R: SlackWebRequestSender,
 {
     let params = vec![Some(("token", token)), Some(("channel", request.channel))];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = params.into_iter().flatten().collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("mpim.close");
     client
         .send(&url, &params[..])
@@ -71,7 +71,7 @@ where
             .unreads
             .map(|unreads| ("unreads", if unreads { "1" } else { "0" })),
     ];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = params.into_iter().flatten().collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("mpim.history");
     client
         .send(&url, &params[..])
@@ -123,7 +123,7 @@ where
         Some(("channel", request.channel)),
         Some(("ts", &ts[..])),
     ];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = params.into_iter().flatten().collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("mpim.mark");
     client
         .send(&url, &params[..])
@@ -149,7 +149,7 @@ where
     R: SlackWebRequestSender,
 {
     let params = vec![Some(("token", token)), Some(("users", request.users))];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = params.into_iter().flatten().collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("mpim.open");
     client
         .send(&url, &params[..])
@@ -180,7 +180,7 @@ where
         Some(("channel", request.channel)),
         Some(("thread_ts", &thread_ts[..])),
     ];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = params.into_iter().flatten().collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("mpim.replies");
     client
         .send(&url, &params[..])

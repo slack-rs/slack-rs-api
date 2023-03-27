@@ -51,12 +51,12 @@ pub struct AccessLogsResponseLogin {
     pub username: Option<String>,
 }
 
-impl<E: Error> Into<Result<AccessLogsResponse, AccessLogsError<E>>> for AccessLogsResponse {
-    fn into(self) -> Result<AccessLogsResponse, AccessLogsError<E>> {
-        if self.ok {
-            Ok(self)
+impl<E: Error> From<AccessLogsResponse> for Result<AccessLogsResponse, AccessLogsError<E>> {
+    fn from(val: AccessLogsResponse) -> Self {
+        if val.ok {
+            Ok(val)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(val.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }
@@ -169,12 +169,12 @@ pub struct BillableInfoResponse {
     ok: bool,
 }
 
-impl<E: Error> Into<Result<BillableInfoResponse, BillableInfoError<E>>> for BillableInfoResponse {
-    fn into(self) -> Result<BillableInfoResponse, BillableInfoError<E>> {
-        if self.ok {
-            Ok(self)
+impl<E: Error> From<BillableInfoResponse> for Result<BillableInfoResponse, BillableInfoError<E>> {
+    fn from(val: BillableInfoResponse) -> Self {
+        if val.ok {
+            Ok(val)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(val.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }
@@ -277,12 +277,12 @@ pub struct InfoResponse {
     pub team: Option<crate::Team>,
 }
 
-impl<E: Error> Into<Result<InfoResponse, InfoError<E>>> for InfoResponse {
-    fn into(self) -> Result<InfoResponse, InfoError<E>> {
-        if self.ok {
-            Ok(self)
+impl<E: Error> From<InfoResponse> for Result<InfoResponse, InfoError<E>> {
+    fn from(val: InfoResponse) -> Self {
+        if val.ok {
+            Ok(val)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(val.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }
@@ -409,14 +409,14 @@ pub struct IntegrationLogsResponseLog {
     pub user_name: Option<String>,
 }
 
-impl<E: Error> Into<Result<IntegrationLogsResponse, IntegrationLogsError<E>>>
-    for IntegrationLogsResponse
+impl<E: Error> From<IntegrationLogsResponse>
+    for Result<IntegrationLogsResponse, IntegrationLogsError<E>>
 {
-    fn into(self) -> Result<IntegrationLogsResponse, IntegrationLogsError<E>> {
-        if self.ok {
-            Ok(self)
+    fn from(val: IntegrationLogsResponse) -> Self {
+        if val.ok {
+            Ok(val)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(val.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }

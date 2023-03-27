@@ -30,7 +30,7 @@ where
     R: SlackWebRequestSender,
 {
     let params = vec![Some(("token", token)), Some(("file", request.file))];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = params.into_iter().flatten().collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("files.delete");
     client
         .send(&url, &params[..])
@@ -62,7 +62,7 @@ where
         count.as_ref().map(|count| ("count", &count[..])),
         page.as_ref().map(|page| ("page", &page[..])),
     ];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = params.into_iter().flatten().collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("files.info");
     client
         .send(&url, &params[..])
@@ -100,7 +100,7 @@ where
         count.as_ref().map(|count| ("count", &count[..])),
         page.as_ref().map(|page| ("page", &page[..])),
     ];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = params.into_iter().flatten().collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("files.list");
     client
         .send(&url, &params[..])
@@ -125,7 +125,7 @@ where
     R: SlackWebRequestSender,
 {
     let params = vec![Some(("token", token)), Some(("file", request.file))];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = params.into_iter().flatten().collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("files.revokePublicURL");
     client
         .send(&url, &params[..])
@@ -150,7 +150,7 @@ where
     R: SlackWebRequestSender,
 {
     let params = vec![Some(("token", token)), Some(("file", request.file))];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = params.into_iter().flatten().collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("files.sharedPublicURL");
     client
         .send(&url, &params[..])

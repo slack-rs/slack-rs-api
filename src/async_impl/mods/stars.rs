@@ -39,7 +39,7 @@ where
             .as_ref()
             .map(|timestamp| ("timestamp", &timestamp[..])),
     ];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = params.into_iter().flatten().collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("stars.add");
     client
         .send(&url, &params[..])
@@ -71,7 +71,7 @@ where
         count.as_ref().map(|count| ("count", &count[..])),
         page.as_ref().map(|page| ("page", &page[..])),
     ];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = params.into_iter().flatten().collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("stars.list");
     client
         .send(&url, &params[..])
@@ -108,7 +108,7 @@ where
             .as_ref()
             .map(|timestamp| ("timestamp", &timestamp[..])),
     ];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = params.into_iter().flatten().collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("stars.remove");
     client
         .send(&url, &params[..])

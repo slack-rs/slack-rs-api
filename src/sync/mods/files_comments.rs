@@ -32,7 +32,7 @@ where
         Some(("file", request.file)),
         Some(("comment", request.comment)),
     ];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = params.into_iter().flatten().collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("files.comments.add");
     client
         .send(&url, &params[..])
@@ -61,7 +61,7 @@ where
         Some(("file", request.file)),
         Some(("id", request.id)),
     ];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = params.into_iter().flatten().collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("files.comments.delete");
     client
         .send(&url, &params[..])
@@ -91,7 +91,7 @@ where
         Some(("id", request.id)),
         Some(("comment", request.comment)),
     ];
-    let params = params.into_iter().filter_map(|x| x).collect::<Vec<_>>();
+    let params = params.into_iter().flatten().collect::<Vec<_>>();
     let url = crate::get_slack_url_for_method("files.comments.edit");
     client
         .send(&url, &params[..])

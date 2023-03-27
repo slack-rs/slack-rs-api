@@ -58,12 +58,12 @@ pub struct AllResponseMessages {
     pub paging: crate::Paging,
 }
 
-impl<E: Error> Into<Result<AllResponse, AllError<E>>> for AllResponse {
-    fn into(self) -> Result<AllResponse, AllError<E>> {
-        if self.ok {
-            Ok(self)
+impl<E: Error> From<AllResponse> for Result<AllResponse, AllError<E>> {
+    fn from(val: AllResponse) -> Self {
+        if val.ok {
+            Ok(val)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(val.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }
@@ -186,12 +186,12 @@ pub struct FilesResponseFiles {
     pub total: Option<i32>,
 }
 
-impl<E: Error> Into<Result<FilesResponse, FilesError<E>>> for FilesResponse {
-    fn into(self) -> Result<FilesResponse, FilesError<E>> {
-        if self.ok {
-            Ok(self)
+impl<E: Error> From<FilesResponse> for Result<FilesResponse, FilesError<E>> {
+    fn from(val: FilesResponse) -> Self {
+        if val.ok {
+            Ok(val)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(val.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }
@@ -314,12 +314,12 @@ pub struct MessagesResponseMessages {
     pub total: Option<i32>,
 }
 
-impl<E: Error> Into<Result<MessagesResponse, MessagesError<E>>> for MessagesResponse {
-    fn into(self) -> Result<MessagesResponse, MessagesError<E>> {
-        if self.ok {
-            Ok(self)
+impl<E: Error> From<MessagesResponse> for Result<MessagesResponse, MessagesError<E>> {
+    fn from(val: MessagesResponse) -> Self {
+        if val.ok {
+            Ok(val)
         } else {
-            Err(self.error.as_ref().map(String::as_ref).unwrap_or("").into())
+            Err(val.error.as_ref().map(String::as_ref).unwrap_or("").into())
         }
     }
 }
